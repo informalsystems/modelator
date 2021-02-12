@@ -4,6 +4,6 @@ pub mod command;
 pub mod jsonatr;
 pub mod tester;
 
+pub use crate::tester::TestEnv;
+pub use crate::tester::Tester;
 pub use command::Command;
-pub use tester::TestEnv;
-pub use tester::Tester;
