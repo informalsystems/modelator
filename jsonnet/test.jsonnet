@@ -1,14 +1,14 @@
 // Run with `jrsonnet -o out.json test.jsonnet`
 
-local lib = import 'weights.libjsonnet';
+local instantiate = import 'instantiate.jsonnet';
 
 local Config = {
-  AllNodes: lib.weighted_id_list("n", 100, function(x) x),
+  AllNodes: instantiate.weighted_id_list("n", 100),
   TRUSTED_HEIGHT: 1,
-  TARGET_HEIGHT: lib.weighted_integer(2, 10, function(x) x*x),
+  TARGET_HEIGHT: instantiate.weighted_integer(2, 10, function(x) x*x),
   TRUSTING_PERIOD: 1400,
   IS_PRIMARY_CORRECT: false,
-  Test: lib.weighted_id([
+  Test: instantiate.weighted_id([
     ["TestSuccess", 1],
     ["TestFailure", 1],
     ["Test2NotEnoughTrustSuccess", 2],
@@ -18,8 +18,6 @@ local Config = {
     ["TestNonMonotonicHeight", 4],
     ["TestHeaderFromFuture", 5],
   ]),
-
-  weight:: function(x) x.AllNodes.weight * x.TARGET_HEIGHT.weight * x.Test.weight
 };
 
-lib.instantiate_upto_weight(Config, 100)
+instantiate.upto_weight(Config, 100)

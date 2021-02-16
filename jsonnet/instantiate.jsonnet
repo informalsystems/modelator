@@ -1,6 +1,7 @@
 /* Library for instantiation of weighted configs */
 
 {
+
 // Synonyms for some std functions
 local range = std.range,
 local length = std.length,
@@ -59,10 +60,11 @@ local instantiate(fields, obj) =
     local rest = fields[1:];
     if is_weighted_object(obj[field]) then
       local weighted_instances = instantiate_weighted(obj[field]);
-      std.flatMap(function(x) [obj2 + {[field]: x} for obj2 in instantiate(rest, obj)],  weighted_instances)
+      local extend_with(obj, field, x) = obj + {[field]: x, weighted_fields:: obj.weighted_fields+[field],};
+      std.flatMap(function(x) [extend_with(obj2, field, x) for obj2 in instantiate(rest, obj)],  weighted_instances)
     else
       instantiate(rest, obj)
-  else [obj],
+  else [obj + {weighted_fields::[]}],
 
 // If the given object is a weighted value, replace it with its value dropping the weight
 local replace_weighted_value(obj) = 
@@ -75,11 +77,18 @@ local replace_weighted_value(obj) =
 local replace_weighted_object_values(obj) =
   std.mapWithKey(function(field, value) replace_weighted_value(value), obj),
 
+local object_weight(obj) = 
+  if std.objectHasAll(obj, "weight") then
+    obj.weight(obj)
+  else // calculate the default weight as the product of all weighted fields
+    std.foldl(function(prod,field) prod*obj[field].weight, obj.weighted_fields, 1),
+
 // Instantiate the given config up to the maximum instance weight
 // The instance weight is currently displayed for debugging purposes
-instantiate_upto_weight(config, max_weight):: 
+upto_weight(config, max_weight):: 
   local instances = instantiate(std.objectFields(config), config);
-  local weighted_instances = std.map(function(obj) obj + {instance_weight: obj.weight(obj)}, instances);
+
+  local weighted_instances = std.map(function(obj) obj + {instance_weight: object_weight(obj)}, instances);
   std.filterMap(function(obj) obj.instance_weight <=  max_weight, replace_weighted_object_values, weighted_instances),
 
 }
