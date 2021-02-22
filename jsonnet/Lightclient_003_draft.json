@@ -1,0 +1,3347 @@
+{
+  "module": "Lightclient_003_draft",
+  "declarations": [
+    {
+      "constant": "TRUSTING_PERIOD"
+    },
+    {
+      "constant": "IS_PRIMARY_CORRECT"
+    },
+    {
+      "constant": "AllNodes"
+    },
+    {
+      "constant": "TARGET_HEIGHT"
+    },
+    {
+      "constant": "TRUSTED_HEIGHT"
+    },
+    {
+      "variable": "prevCurrent"
+    },
+    {
+      "variable": "nextHeight"
+    },
+    {
+      "variable": "prevNow"
+    },
+    {
+      "variable": "nprobes"
+    },
+    {
+      "variable": "lightBlockStatus"
+    },
+    {
+      "variable": "now"
+    },
+    {
+      "variable": "state"
+    },
+    {
+      "variable": "latestVerified"
+    },
+    {
+      "variable": "fetchedLightBlocks"
+    },
+    {
+      "variable": "Faulty"
+    },
+    {
+      "variable": "prevVerified"
+    },
+    {
+      "variable": "prevVerdict"
+    },
+    {
+      "variable": "blockchain"
+    },
+    {
+      "operator": "lcvars",
+      "body": {
+        "tuple": [
+          "state",
+          "nextHeight",
+          "fetchedLightBlocks",
+          "lightBlockStatus",
+          "latestVerified"
+        ]
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "InitMonitor",
+      "body": {
+        "and": [
+          {
+            "eq": "prevVerified",
+            "arg": "verified"
+          },
+          {
+            "eq": "prevCurrent",
+            "arg": "current"
+          },
+          {
+            "eq": "prevNow",
+            "arg": "now"
+          },
+          {
+            "eq": "prevVerdict",
+            "arg": "verdict"
+          }
+        ]
+      },
+      "params": [
+        {
+          "name": "verified",
+          "arity": 0
+        },
+        {
+          "name": "current",
+          "arity": 0
+        },
+        {
+          "name": "now",
+          "arity": 0
+        },
+        {
+          "name": "verdict",
+          "arity": 0
+        }
+      ]
+    },
+    {
+      "operator": "NextMonitor",
+      "body": {
+        "and": [
+          {
+            "eq": {
+              "prime": "prevVerified"
+            },
+            "arg": "verified"
+          },
+          {
+            "eq": {
+              "prime": "prevCurrent"
+            },
+            "arg": "current"
+          },
+          {
+            "eq": {
+              "prime": "prevNow"
+            },
+            "arg": "now"
+          },
+          {
+            "eq": {
+              "prime": "prevVerdict"
+            },
+            "arg": "verdict"
+          }
+        ]
+      },
+      "params": [
+        {
+          "name": "verified",
+          "arity": 0
+        },
+        {
+          "name": "current",
+          "arity": 0
+        },
+        {
+          "name": "now",
+          "arity": 0
+        },
+        {
+          "name": "verdict",
+          "arity": 0
+        }
+      ]
+    },
+    {
+      "operator": "bcvars",
+      "body": {
+        "tuple": [
+          "now",
+          "blockchain",
+          "Faulty"
+        ]
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "ULTIMATE_HEIGHT",
+      "body": {
+        "plus": "TARGET_HEIGHT",
+        "arg": 1
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "BC!Heights",
+      "body": {
+        "dotdot": 1,
+        "arg": {
+          "applyOp": "ULTIMATE_HEIGHT",
+          "args": [
+            
+          ]
+        }
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "BC!EmptyNodeSet",
+      "body": {
+        "applyOp": "BC!NodeSet",
+        "args": [
+          {
+            "enumSet": [
+              
+            ]
+          }
+        ]
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "BC!Corr",
+      "body": {
+        "setminus": "AllNodes",
+        "arg": "Faulty"
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "BC!IsLightBlockAllowedByDigitalSignatures",
+      "body": {
+        "or": [
+          {
+            "eq": {
+              "applyFun": "block",
+              "arg": {
+                "str": "header"
+              }
+            },
+            "arg": {
+              "applyFun": "blockchain",
+              "arg": "ht"
+            }
+          },
+          {
+            "and": [
+              {
+                "subseteq": {
+                  "applyFun": "block",
+                  "arg": {
+                    "str": "Commits"
+                  }
+                },
+                "arg": "Faulty"
+              },
+              {
+                "ge": {
+                  "applyFun": {
+                    "applyFun": "block",
+                    "arg": {
+                      "str": "header"
+                    }
+                  },
+                  "arg": {
+                    "str": "time"
+                  }
+                },
+                "arg": 0
+              }
+            ]
+          }
+        ]
+      },
+      "params": [
+        {
+          "name": "ht",
+          "arity": 0
+        },
+        {
+          "name": "block",
+          "arity": 0
+        }
+      ]
+    },
+    {
+      "operator": "BC!InitToHeight",
+      "body": {
+        "and": [
+          {
+            "in": "Faulty",
+            "arg": {
+              "powerset": "AllNodes"
+            }
+          },
+          {
+            "existsBounded": {
+              "key": "vs",
+              "value": {
+                "funSet": {
+                  "applyOp": "BC!Heights",
+                  "args": [
+                    
+                  ]
+                },
+                "arg": {
+                  "powerset": "AllNodes"
+                }
+              }
+            },
+            "that": {
+              "existsBounded": {
+                "key": "lastCommit",
+                "value": {
+                  "funSet": {
+                    "applyOp": "BC!Heights",
+                    "args": [
+                      
+                    ]
+                  },
+                  "arg": {
+                    "powerset": "AllNodes"
+                  }
+                }
+              },
+              "that": {
+                "existsBounded": {
+                  "key": "timestamp",
+                  "value": {
+                    "funSet": {
+                      "applyOp": "BC!Heights",
+                      "args": [
+                        
+                      ]
+                    },
+                    "arg": {
+                      "set": "Int"
+                    }
+                  }
+                },
+                "that": {
+                  "and": [
+                    {
+                      "existsBounded": {
+                        "key": "tm",
+                        "value": {
+                          "set": "Int"
+                        }
+                      },
+                      "that": {
+                        "and": [
+                          {
+                            "eq": "now",
+                            "arg": "tm"
+                          },
+                          {
+                            "ge": "tm",
+                            "arg": {
+                              "applyFun": "timestamp",
+                              "arg": {
+                                "applyOp": "ULTIMATE_HEIGHT",
+                                "args": [
+                                  
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "eq": {
+                        "applyFun": "timestamp",
+                        "arg": 1
+                      },
+                      "arg": 1
+                    },
+                    {
+                      "eq": {
+                        "applyFun": "vs",
+                        "arg": 1
+                      },
+                      "arg": "AllNodes"
+                    },
+                    {
+                      "eq": {
+                        "applyFun": "lastCommit",
+                        "arg": 1
+                      },
+                      "arg": {
+                        "applyOp": "BC!EmptyNodeSet",
+                        "args": [
+                          
+                        ]
+                      }
+                    },
+                    {
+                      "forallBounded": {
+                        "key": "h",
+                        "value": {
+                          "setminus": {
+                            "applyOp": "BC!Heights",
+                            "args": [
+                              
+                            ]
+                          },
+                          "arg": {
+                            "enumSet": [
+                              1
+                            ]
+                          }
+                        }
+                      },
+                      "that": {
+                        "and": [
+                          {
+                            "subseteq": {
+                              "applyFun": "lastCommit",
+                              "arg": "h"
+                            },
+                            "arg": {
+                              "applyFun": "vs",
+                              "arg": {
+                                "minus": "h",
+                                "arg": 1
+                              }
+                            }
+                          },
+                          {
+                            "applyOp": "BC!TwoThirds",
+                            "args": [
+                              {
+                                "applyFun": "vs",
+                                "arg": {
+                                  "minus": "h",
+                                  "arg": 1
+                                }
+                              },
+                              {
+                                "applyFun": "lastCommit",
+                                "arg": "h"
+                              }
+                            ]
+                          },
+                          {
+                            "applyOp": "BC!IsCorrectPower",
+                            "args": [
+                              "Faulty",
+                              {
+                                "applyFun": "vs",
+                                "arg": "h"
+                              }
+                            ]
+                          },
+                          {
+                            "gt": {
+                              "applyFun": "timestamp",
+                              "arg": "h"
+                            },
+                            "arg": {
+                              "applyFun": "timestamp",
+                              "arg": {
+                                "minus": "h",
+                                "arg": 1
+                              }
+                            }
+                          },
+                          {
+                            "lt": {
+                              "applyFun": "timestamp",
+                              "arg": "h"
+                            },
+                            "arg": {
+                              "plus": {
+                                "applyFun": "timestamp",
+                                "arg": {
+                                  "minus": "h",
+                                  "arg": 1
+                                }
+                              },
+                              "arg": "TRUSTING_PERIOD"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "eq": "blockchain",
+                      "arg": {
+                        "funDef": {
+                          "record": [
+                            {
+                              "key": {
+                                "str": "height"
+                              },
+                              "value": "h"
+                            },
+                            {
+                              "key": {
+                                "str": "time"
+                              },
+                              "value": {
+                                "applyFun": "timestamp",
+                                "arg": "h"
+                              }
+                            },
+                            {
+                              "key": {
+                                "str": "VS"
+                              },
+                              "value": {
+                                "applyFun": "vs",
+                                "arg": "h"
+                              }
+                            },
+                            {
+                              "key": {
+                                "str": "NextVS"
+                              },
+                              "value": {
+                                "if": {
+                                  "lt": "h",
+                                  "arg": {
+                                    "applyOp": "ULTIMATE_HEIGHT",
+                                    "args": [
+                                      
+                                    ]
+                                  }
+                                },
+                                "then": {
+                                  "applyFun": "vs",
+                                  "arg": {
+                                    "plus": "h",
+                                    "arg": 1
+                                  }
+                                },
+                                "else": "AllNodes"
+                              }
+                            },
+                            {
+                              "key": {
+                                "str": "lastCommit"
+                              },
+                              "value": {
+                                "applyFun": "lastCommit",
+                                "arg": "h"
+                              }
+                            }
+                          ]
+                        },
+                        "where": [
+                          {
+                            "key": "h",
+                            "value": {
+                              "applyOp": "BC!Heights",
+                              "args": [
+                                
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "BC!BlockHeaders",
+      "body": {
+        "recSet": [
+          {
+            "key": {
+              "str": "height"
+            },
+            "value": {
+              "applyOp": "BC!Heights",
+              "args": [
+                
+              ]
+            }
+          },
+          {
+            "key": {
+              "str": "time"
+            },
+            "value": {
+              "set": "Int"
+            }
+          },
+          {
+            "key": {
+              "str": "lastCommit"
+            },
+            "value": {
+              "applyOp": "BC!Commits",
+              "args": [
+                
+              ]
+            }
+          },
+          {
+            "key": {
+              "str": "VS"
+            },
+            "value": {
+              "powerset": "AllNodes"
+            }
+          },
+          {
+            "key": {
+              "str": "NextVS"
+            },
+            "value": {
+              "powerset": "AllNodes"
+            }
+          }
+        ]
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "BC!LightBlocks",
+      "body": {
+        "recSet": [
+          {
+            "key": {
+              "str": "header"
+            },
+            "value": {
+              "applyOp": "BC!BlockHeaders",
+              "args": [
+                
+              ]
+            }
+          },
+          {
+            "key": {
+              "str": "Commits"
+            },
+            "value": {
+              "applyOp": "BC!Commits",
+              "args": [
+                
+              ]
+            }
+          }
+        ]
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "BC!LBT",
+      "body": {
+        "record": [
+          {
+            "key": {
+              "str": "header"
+            },
+            "value": {
+              "applyOp": "BC!BT",
+              "args": [
+                
+              ]
+            }
+          },
+          {
+            "key": {
+              "str": "Commits"
+            },
+            "value": {
+              "enumSet": [
+                {
+                  "applyOp": "BC!NT",
+                  "args": [
+                    
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "BC!InFaultyZone",
+      "body": {
+        "not": {
+          "applyOp": "BC!FaultAssumption",
+          "args": [
+            "Faulty",
+            "now",
+            "blockchain"
+          ]
+        }
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "BC!OneMoreFault",
+      "body": {
+        "and": [
+          {
+            "existsBounded": {
+              "key": "n",
+              "value": {
+                "setminus": "AllNodes",
+                "arg": "Faulty"
+              }
+            },
+            "that": {
+              "and": [
+                {
+                  "eq": {
+                    "prime": "Faulty"
+                  },
+                  "arg": {
+                    "cup": "Faulty",
+                    "arg": {
+                      "enumSet": [
+                        "n"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "ne": {
+                    "prime": "Faulty"
+                  },
+                  "arg": "AllNodes"
+                }
+              ]
+            }
+          },
+          {
+            "unchanged": {
+              "tuple": [
+                "now",
+                "blockchain"
+              ]
+            }
+          }
+        ]
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "BC!AdvanceTime",
+      "body": {
+        "existsBounded": {
+          "key": "tm",
+          "value": {
+            "set": "Int"
+          }
+        },
+        "that": {
+          "and": [
+            {
+              "and": [
+                {
+                  "ge": "tm",
+                  "arg": "now"
+                },
+                {
+                  "eq": {
+                    "prime": "now"
+                  },
+                  "arg": "tm"
+                }
+              ]
+            },
+            {
+              "unchanged": {
+                "tuple": [
+                  "blockchain",
+                  "Faulty"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "BC!NodeSet",
+      "body": {
+        "lessColon": "S",
+        "arg": {
+          "enumSet": [
+            {
+              "applyOp": "BC!NT",
+              "args": [
+                
+              ]
+            }
+          ]
+        }
+      },
+      "params": [
+        {
+          "name": "S",
+          "arity": 0
+        }
+      ]
+    },
+    {
+      "operator": "BC!FaultAssumption",
+      "body": {
+        "forallBounded": {
+          "key": "h",
+          "value": {
+            "applyOp": "BC!Heights",
+            "args": [
+              
+            ]
+          }
+        },
+        "that": {
+          "implies": {
+            "gt": {
+              "plus": {
+                "applyFun": {
+                  "applyFun": "pBlockchain",
+                  "arg": "h"
+                },
+                "arg": {
+                  "str": "time"
+                }
+              },
+              "arg": "TRUSTING_PERIOD"
+            },
+            "arg": "pNow"
+          },
+          "arg": {
+            "applyOp": "BC!IsCorrectPower",
+            "args": [
+              "pFaultyNodes",
+              {
+                "applyFun": {
+                  "applyFun": "pBlockchain",
+                  "arg": "h"
+                },
+                "arg": {
+                  "str": "NextVS"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "params": [
+        {
+          "name": "pFaultyNodes",
+          "arity": 0
+        },
+        {
+          "name": "pNow",
+          "arity": 0
+        },
+        {
+          "name": "pBlockchain",
+          "arity": 0
+        }
+      ]
+    },
+    {
+      "operator": "BC!InTrustingPeriod",
+      "body": {
+        "lt": "now",
+        "arg": {
+          "plus": {
+            "applyFun": "header",
+            "arg": {
+              "str": "time"
+            }
+          },
+          "arg": "TRUSTING_PERIOD"
+        }
+      },
+      "params": [
+        {
+          "name": "header",
+          "arity": 0
+        }
+      ]
+    },
+    {
+      "operator": "BC!BT",
+      "body": {
+        "record": [
+          {
+            "key": {
+              "str": "height"
+            },
+            "value": {
+              "set": "Int"
+            }
+          },
+          {
+            "key": {
+              "str": "time"
+            },
+            "value": {
+              "set": "Int"
+            }
+          },
+          {
+            "key": {
+              "str": "lastCommit"
+            },
+            "value": {
+              "enumSet": [
+                {
+                  "applyOp": "BC!NT",
+                  "args": [
+                    
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "key": {
+              "str": "VS"
+            },
+            "value": {
+              "enumSet": [
+                {
+                  "applyOp": "BC!NT",
+                  "args": [
+                    
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "key": {
+              "str": "NextVS"
+            },
+            "value": {
+              "enumSet": [
+                {
+                  "applyOp": "BC!NT",
+                  "args": [
+                    
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "BC!IsCorrectPower",
+      "body": {
+        "let": [
+          {
+            "operator": "FN",
+            "body": {
+              "cap": "pFaultyNodes",
+              "arg": "pVS"
+            },
+            "params": [
+              
+            ]
+          },
+          {
+            "operator": "CN",
+            "body": {
+              "setminus": "pVS",
+              "arg": "pFaultyNodes"
+            },
+            "params": [
+              
+            ]
+          },
+          {
+            "operator": "CP",
+            "body": true,
+            "params": [
+              
+            ]
+          },
+          {
+            "operator": "FP",
+            "body": true,
+            "params": [
+              
+            ]
+          }
+        ],
+        "body": {
+          "gt": {
+            "applyOp": "CP",
+            "args": [
+              
+            ]
+          },
+          "arg": {
+            "mult": 2,
+            "arg": {
+              "applyOp": "FP",
+              "args": [
+                
+              ]
+            }
+          }
+        }
+      },
+      "params": [
+        {
+          "name": "pFaultyNodes",
+          "arity": 0
+        },
+        {
+          "name": "pVS",
+          "arity": 0
+        }
+      ]
+    },
+    {
+      "operator": "BC!NT",
+      "body": {
+        "set": "STRING"
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "BC!Commits",
+      "body": {
+        "powerset": "AllNodes"
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "BC!vars",
+      "body": {
+        "tuple": [
+          "now",
+          "blockchain",
+          "Faulty"
+        ]
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "BC!Min",
+      "body": {
+        "if": {
+          "lt": "a",
+          "arg": "b"
+        },
+        "then": "a",
+        "else": "b"
+      },
+      "params": [
+        {
+          "name": "a",
+          "arity": 0
+        },
+        {
+          "name": "b",
+          "arity": 0
+        }
+      ]
+    },
+    {
+      "operator": "BC!TwoThirds",
+      "body": {
+        "let": [
+          {
+            "operator": "TP",
+            "body": true,
+            "params": [
+              
+            ]
+          },
+          {
+            "operator": "SP",
+            "body": true,
+            "params": [
+              
+            ]
+          }
+        ],
+        "body": {
+          "gt": {
+            "mult": 3,
+            "arg": {
+              "applyOp": "SP",
+              "args": [
+                
+              ]
+            }
+          },
+          "arg": {
+            "mult": 2,
+            "arg": {
+              "applyOp": "TP",
+              "args": [
+                
+              ]
+            }
+          }
+        }
+      },
+      "params": [
+        {
+          "name": "pVS",
+          "arity": 0
+        },
+        {
+          "name": "pNodes",
+          "arity": 0
+        }
+      ]
+    },
+    {
+      "operator": "HEIGHTS",
+      "body": {
+        "dotdot": "TRUSTED_HEIGHT",
+        "arg": "TARGET_HEIGHT"
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "States",
+      "body": {
+        "enumSet": [
+          {
+            "str": "working"
+          },
+          {
+            "str": "finishedSuccess"
+          },
+          {
+            "str": "finishedFailure"
+          }
+        ]
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "ValidAndVerifiedPre",
+      "body": {
+        "let": [
+          {
+            "operator": "thdr",
+            "body": {
+              "applyFun": "trusted",
+              "arg": {
+                "str": "header"
+              }
+            },
+            "params": [
+              
+            ]
+          },
+          {
+            "operator": "uhdr",
+            "body": {
+              "applyFun": "untrusted",
+              "arg": {
+                "str": "header"
+              }
+            },
+            "params": [
+              
+            ]
+          }
+        ],
+        "body": {
+          "and": [
+            {
+              "applyOp": "BC!InTrustingPeriod",
+              "args": [
+                {
+                  "applyOp": "thdr",
+                  "args": [
+                    
+                  ]
+                }
+              ]
+            },
+            {
+              "lt": {
+                "applyFun": {
+                  "applyOp": "thdr",
+                  "args": [
+                    
+                  ]
+                },
+                "arg": {
+                  "str": "height"
+                }
+              },
+              "arg": {
+                "applyFun": {
+                  "applyOp": "uhdr",
+                  "args": [
+                    
+                  ]
+                },
+                "arg": {
+                  "str": "height"
+                }
+              }
+            },
+            {
+              "lt": {
+                "applyFun": {
+                  "applyOp": "thdr",
+                  "args": [
+                    
+                  ]
+                },
+                "arg": {
+                  "str": "time"
+                }
+              },
+              "arg": {
+                "applyFun": {
+                  "applyOp": "uhdr",
+                  "args": [
+                    
+                  ]
+                },
+                "arg": {
+                  "str": "time"
+                }
+              }
+            },
+            {
+              "lt": {
+                "applyFun": {
+                  "applyOp": "uhdr",
+                  "args": [
+                    
+                  ]
+                },
+                "arg": {
+                  "str": "time"
+                }
+              },
+              "arg": "now"
+            },
+            {
+              "subseteq": {
+                "applyFun": "untrusted",
+                "arg": {
+                  "str": "Commits"
+                }
+              },
+              "arg": {
+                "applyFun": {
+                  "applyOp": "uhdr",
+                  "args": [
+                    
+                  ]
+                },
+                "arg": {
+                  "str": "VS"
+                }
+              }
+            },
+            {
+              "let": [
+                {
+                  "operator": "TP",
+                  "body": true,
+                  "params": [
+                    
+                  ]
+                },
+                {
+                  "operator": "SP",
+                  "body": true,
+                  "params": [
+                    
+                  ]
+                }
+              ],
+              "body": {
+                "gt": {
+                  "mult": 3,
+                  "arg": {
+                    "applyOp": "SP",
+                    "args": [
+                      
+                    ]
+                  }
+                },
+                "arg": {
+                  "mult": 2,
+                  "arg": {
+                    "applyOp": "TP",
+                    "args": [
+                      
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "implies": {
+                "eq": {
+                  "plus": {
+                    "applyFun": {
+                      "applyOp": "thdr",
+                      "args": [
+                        
+                      ]
+                    },
+                    "arg": {
+                      "str": "height"
+                    }
+                  },
+                  "arg": 1
+                },
+                "arg": {
+                  "applyFun": {
+                    "applyOp": "uhdr",
+                    "args": [
+                      
+                    ]
+                  },
+                  "arg": {
+                    "str": "height"
+                  }
+                }
+              },
+              "arg": {
+                "eq": {
+                  "applyFun": {
+                    "applyOp": "thdr",
+                    "args": [
+                      
+                    ]
+                  },
+                  "arg": {
+                    "str": "NextVS"
+                  }
+                },
+                "arg": {
+                  "applyFun": {
+                    "applyOp": "uhdr",
+                    "args": [
+                      
+                    ]
+                  },
+                  "arg": {
+                    "str": "VS"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "params": [
+        {
+          "name": "trusted",
+          "arity": 0
+        },
+        {
+          "name": "untrusted",
+          "arity": 0
+        }
+      ]
+    },
+    {
+      "operator": "SignedByOneThirdOfTrusted",
+      "body": {
+        "let": [
+          {
+            "operator": "TP",
+            "body": true,
+            "params": [
+              
+            ]
+          },
+          {
+            "operator": "SP",
+            "body": true,
+            "params": [
+              
+            ]
+          }
+        ],
+        "body": {
+          "gt": {
+            "mult": 3,
+            "arg": {
+              "applyOp": "SP",
+              "args": [
+                
+              ]
+            }
+          },
+          "arg": {
+            "applyOp": "TP",
+            "args": [
+              
+            ]
+          }
+        }
+      },
+      "params": [
+        {
+          "name": "trusted",
+          "arity": 0
+        },
+        {
+          "name": "untrusted",
+          "arity": 0
+        }
+      ]
+    },
+    {
+      "operator": "ValidAndVerified",
+      "body": {
+        "if": {
+          "not": {
+            "applyOp": "ValidAndVerifiedPre",
+            "args": [
+              "trusted",
+              "untrusted"
+            ]
+          }
+        },
+        "then": {
+          "str": "INVALID"
+        },
+        "else": {
+          "if": {
+            "not": {
+              "applyOp": "BC!InTrustingPeriod",
+              "args": [
+                {
+                  "applyFun": "untrusted",
+                  "arg": {
+                    "str": "header"
+                  }
+                }
+              ]
+            }
+          },
+          "then": {
+            "str": "FAILED_TRUSTING_PERIOD"
+          },
+          "else": {
+            "if": {
+              "or": [
+                {
+                  "eq": {
+                    "applyFun": {
+                      "applyFun": "untrusted",
+                      "arg": {
+                        "str": "header"
+                      }
+                    },
+                    "arg": {
+                      "str": "height"
+                    }
+                  },
+                  "arg": {
+                    "plus": {
+                      "applyFun": {
+                        "applyFun": "trusted",
+                        "arg": {
+                          "str": "header"
+                        }
+                      },
+                      "arg": {
+                        "str": "height"
+                      }
+                    },
+                    "arg": 1
+                  }
+                },
+                {
+                  "applyOp": "SignedByOneThirdOfTrusted",
+                  "args": [
+                    "trusted",
+                    "untrusted"
+                  ]
+                }
+              ]
+            },
+            "then": {
+              "str": "SUCCESS"
+            },
+            "else": {
+              "str": "NOT_ENOUGH_TRUST"
+            }
+          }
+        }
+      },
+      "params": [
+        {
+          "name": "trusted",
+          "arity": 0
+        },
+        {
+          "name": "untrusted",
+          "arity": 0
+        }
+      ]
+    },
+    {
+      "operator": "LCInit",
+      "body": {
+        "and": [
+          {
+            "eq": "state",
+            "arg": {
+              "str": "working"
+            }
+          },
+          {
+            "eq": "nextHeight",
+            "arg": "TARGET_HEIGHT"
+          },
+          {
+            "eq": "nprobes",
+            "arg": 0
+          },
+          {
+            "let": [
+              {
+                "operator": "trustedBlock",
+                "body": {
+                  "applyFun": "blockchain",
+                  "arg": "TRUSTED_HEIGHT"
+                },
+                "params": [
+                  
+                ]
+              },
+              {
+                "operator": "trustedLightBlock",
+                "body": {
+                  "record": [
+                    {
+                      "key": {
+                        "str": "header"
+                      },
+                      "value": {
+                        "applyOp": "trustedBlock",
+                        "args": [
+                          
+                        ]
+                      }
+                    },
+                    {
+                      "key": {
+                        "str": "Commits"
+                      },
+                      "value": "AllNodes"
+                    }
+                  ]
+                },
+                "params": [
+                  
+                ]
+              }
+            ],
+            "body": {
+              "and": [
+                {
+                  "eq": "fetchedLightBlocks",
+                  "arg": {
+                    "funDef": {
+                      "applyOp": "trustedLightBlock",
+                      "args": [
+                        
+                      ]
+                    },
+                    "where": [
+                      {
+                        "key": "h",
+                        "value": {
+                          "enumSet": [
+                            "TRUSTED_HEIGHT"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "eq": "lightBlockStatus",
+                  "arg": {
+                    "funDef": {
+                      "str": "StateVerified"
+                    },
+                    "where": [
+                      {
+                        "key": "h",
+                        "value": {
+                          "enumSet": [
+                            "TRUSTED_HEIGHT"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "eq": "latestVerified",
+                  "arg": {
+                    "applyOp": "trustedLightBlock",
+                    "args": [
+                      
+                    ]
+                  }
+                },
+                {
+                  "applyOp": "InitMonitor",
+                  "args": [
+                    {
+                      "applyOp": "trustedLightBlock",
+                      "args": [
+                        
+                      ]
+                    },
+                    {
+                      "applyOp": "trustedLightBlock",
+                      "args": [
+                        
+                      ]
+                    },
+                    "now",
+                    {
+                      "str": "SUCCESS"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "CopyLightBlockFromChain",
+      "body": {
+        "let": [
+          {
+            "operator": "ref",
+            "body": {
+              "applyFun": "blockchain",
+              "arg": "height"
+            },
+            "params": [
+              
+            ]
+          },
+          {
+            "operator": "lastCommit",
+            "body": {
+              "if": {
+                "lt": "height",
+                "arg": {
+                  "applyOp": "ULTIMATE_HEIGHT",
+                  "args": [
+                    
+                  ]
+                }
+              },
+              "then": {
+                "applyFun": {
+                  "applyFun": "blockchain",
+                  "arg": {
+                    "plus": "height",
+                    "arg": 1
+                  }
+                },
+                "arg": {
+                  "str": "lastCommit"
+                }
+              },
+              "else": {
+                "applyFun": {
+                  "applyFun": "blockchain",
+                  "arg": "height"
+                },
+                "arg": {
+                  "str": "VS"
+                }
+              }
+            },
+            "params": [
+              
+            ]
+          }
+        ],
+        "body": {
+          "eq": "block",
+          "arg": {
+            "record": [
+              {
+                "key": {
+                  "str": "header"
+                },
+                "value": {
+                  "applyOp": "ref",
+                  "args": [
+                    
+                  ]
+                }
+              },
+              {
+                "key": {
+                  "str": "Commits"
+                },
+                "value": {
+                  "applyOp": "lastCommit",
+                  "args": [
+                    
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "params": [
+        {
+          "name": "block",
+          "arity": 0
+        },
+        {
+          "name": "height",
+          "arity": 0
+        }
+      ]
+    },
+    {
+      "operator": "FetchLightBlockInto",
+      "body": {
+        "if": "IS_PRIMARY_CORRECT",
+        "then": {
+          "applyOp": "CopyLightBlockFromChain",
+          "args": [
+            "block",
+            "height"
+          ]
+        },
+        "else": {
+          "applyOp": "BC!IsLightBlockAllowedByDigitalSignatures",
+          "args": [
+            "height",
+            "block"
+          ]
+        }
+      },
+      "params": [
+        {
+          "name": "block",
+          "arity": 0
+        },
+        {
+          "name": "height",
+          "arity": 0
+        }
+      ]
+    },
+    {
+      "operator": "LightStoreUpdateBlocks",
+      "body": {
+        "let": [
+          {
+            "operator": "ht",
+            "body": {
+              "applyFun": {
+                "applyFun": "block",
+                "arg": {
+                  "str": "header"
+                }
+              },
+              "arg": {
+                "str": "height"
+              }
+            },
+            "params": [
+              
+            ]
+          }
+        ],
+        "body": {
+          "funDef": {
+            "if": {
+              "eq": "h",
+              "arg": {
+                "applyOp": "ht",
+                "args": [
+                  
+                ]
+              }
+            },
+            "then": "block",
+            "else": {
+              "applyFun": "lightBlocks",
+              "arg": "h"
+            }
+          },
+          "where": [
+            {
+              "key": "h",
+              "value": {
+                "cup": {
+                  "domain": "lightBlocks"
+                },
+                "arg": {
+                  "enumSet": [
+                    {
+                      "applyOp": "ht",
+                      "args": [
+                        
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "params": [
+        {
+          "name": "lightBlocks",
+          "arity": 0
+        },
+        {
+          "name": "block",
+          "arity": 0
+        }
+      ]
+    },
+    {
+      "operator": "LightStoreUpdateStates",
+      "body": {
+        "funDef": {
+          "if": {
+            "eq": "h",
+            "arg": "ht"
+          },
+          "then": "blockState",
+          "else": {
+            "applyFun": "statuses",
+            "arg": "h"
+          }
+        },
+        "where": [
+          {
+            "key": "h",
+            "value": {
+              "cup": {
+                "domain": "statuses"
+              },
+              "arg": {
+                "enumSet": [
+                  "ht"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "params": [
+        {
+          "name": "statuses",
+          "arity": 0
+        },
+        {
+          "name": "ht",
+          "arity": 0
+        },
+        {
+          "name": "blockState",
+          "arity": 0
+        }
+      ]
+    },
+    {
+      "operator": "CanScheduleTo",
+      "body": {
+        "let": [
+          {
+            "operator": "ht",
+            "body": {
+              "applyFun": {
+                "applyFun": "pLatestVerified",
+                "arg": {
+                  "str": "header"
+                }
+              },
+              "arg": {
+                "str": "height"
+              }
+            },
+            "params": [
+              
+            ]
+          }
+        ],
+        "body": {
+          "or": [
+            {
+              "and": [
+                {
+                  "eq": {
+                    "applyOp": "ht",
+                    "args": [
+                      
+                    ]
+                  },
+                  "arg": "pNextHeight"
+                },
+                {
+                  "lt": {
+                    "applyOp": "ht",
+                    "args": [
+                      
+                    ]
+                  },
+                  "arg": "pTargetHeight"
+                },
+                {
+                  "lt": "pNextHeight",
+                  "arg": "newHeight"
+                },
+                {
+                  "le": "newHeight",
+                  "arg": "pTargetHeight"
+                }
+              ]
+            },
+            {
+              "and": [
+                {
+                  "lt": {
+                    "applyOp": "ht",
+                    "args": [
+                      
+                    ]
+                  },
+                  "arg": "pNextHeight"
+                },
+                {
+                  "lt": {
+                    "applyOp": "ht",
+                    "args": [
+                      
+                    ]
+                  },
+                  "arg": "pTargetHeight"
+                },
+                {
+                  "lt": {
+                    "applyOp": "ht",
+                    "args": [
+                      
+                    ]
+                  },
+                  "arg": "newHeight"
+                },
+                {
+                  "lt": "newHeight",
+                  "arg": "pNextHeight"
+                }
+              ]
+            },
+            {
+              "and": [
+                {
+                  "eq": {
+                    "applyOp": "ht",
+                    "args": [
+                      
+                    ]
+                  },
+                  "arg": "pTargetHeight"
+                },
+                {
+                  "eq": "newHeight",
+                  "arg": "pTargetHeight"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "params": [
+        {
+          "name": "newHeight",
+          "arity": 0
+        },
+        {
+          "name": "pLatestVerified",
+          "arity": 0
+        },
+        {
+          "name": "pNextHeight",
+          "arity": 0
+        },
+        {
+          "name": "pTargetHeight",
+          "arity": 0
+        }
+      ]
+    },
+    {
+      "operator": "VerifyToTargetLoop",
+      "body": {
+        "and": [
+          {
+            "lt": {
+              "applyFun": {
+                "applyFun": "latestVerified",
+                "arg": {
+                  "str": "header"
+                }
+              },
+              "arg": {
+                "str": "height"
+              }
+            },
+            "arg": "TARGET_HEIGHT"
+          },
+          {
+            "existsBounded": {
+              "key": "current",
+              "value": {
+                "applyOp": "BC!LightBlocks",
+                "args": [
+                  
+                ]
+              }
+            },
+            "that": {
+              "and": [
+                {
+                  "if": {
+                    "in": "nextHeight",
+                    "arg": {
+                      "domain": "fetchedLightBlocks"
+                    }
+                  },
+                  "then": {
+                    "and": [
+                      {
+                        "eq": "current",
+                        "arg": {
+                          "applyFun": "fetchedLightBlocks",
+                          "arg": "nextHeight"
+                        }
+                      },
+                      {
+                        "unchanged": "fetchedLightBlocks"
+                      }
+                    ]
+                  },
+                  "else": {
+                    "and": [
+                      {
+                        "applyOp": "FetchLightBlockInto",
+                        "args": [
+                          "current",
+                          "nextHeight"
+                        ]
+                      },
+                      {
+                        "eq": {
+                          "prime": "fetchedLightBlocks"
+                        },
+                        "arg": {
+                          "applyOp": "LightStoreUpdateBlocks",
+                          "args": [
+                            "fetchedLightBlocks",
+                            "current"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "eq": {
+                    "prime": "nprobes"
+                  },
+                  "arg": {
+                    "plus": "nprobes",
+                    "arg": 1
+                  }
+                },
+                {
+                  "let": [
+                    {
+                      "operator": "verdict",
+                      "body": {
+                        "applyOp": "ValidAndVerified",
+                        "args": [
+                          "latestVerified",
+                          "current"
+                        ]
+                      },
+                      "params": [
+                        
+                      ]
+                    }
+                  ],
+                  "body": {
+                    "and": [
+                      {
+                        "applyOp": "NextMonitor",
+                        "args": [
+                          "latestVerified",
+                          "current",
+                          "now",
+                          {
+                            "applyOp": "verdict",
+                            "args": [
+                              
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "case": [
+                          {
+                            "key": {
+                              "eq": {
+                                "applyOp": "verdict",
+                                "args": [
+                                  
+                                ]
+                              },
+                              "arg": {
+                                "str": "SUCCESS"
+                              }
+                            },
+                            "value": {
+                              "and": [
+                                {
+                                  "eq": {
+                                    "prime": "lightBlockStatus"
+                                  },
+                                  "arg": {
+                                    "applyOp": "LightStoreUpdateStates",
+                                    "args": [
+                                      "lightBlockStatus",
+                                      "nextHeight",
+                                      {
+                                        "str": "StateVerified"
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "eq": {
+                                    "prime": "latestVerified"
+                                  },
+                                  "arg": "current"
+                                },
+                                {
+                                  "eq": {
+                                    "prime": "state"
+                                  },
+                                  "arg": {
+                                    "if": {
+                                      "lt": {
+                                        "applyFun": {
+                                          "applyFun": {
+                                            "prime": "latestVerified"
+                                          },
+                                          "arg": {
+                                            "str": "header"
+                                          }
+                                        },
+                                        "arg": {
+                                          "str": "height"
+                                        }
+                                      },
+                                      "arg": "TARGET_HEIGHT"
+                                    },
+                                    "then": {
+                                      "str": "working"
+                                    },
+                                    "else": {
+                                      "str": "finishedSuccess"
+                                    }
+                                  }
+                                },
+                                {
+                                  "existsBounded": {
+                                    "key": "newHeight",
+                                    "value": {
+                                      "applyOp": "HEIGHTS",
+                                      "args": [
+                                        
+                                      ]
+                                    }
+                                  },
+                                  "that": {
+                                    "and": [
+                                      {
+                                        "applyOp": "CanScheduleTo",
+                                        "args": [
+                                          "newHeight",
+                                          "current",
+                                          "nextHeight",
+                                          "TARGET_HEIGHT"
+                                        ]
+                                      },
+                                      {
+                                        "eq": {
+                                          "prime": "nextHeight"
+                                        },
+                                        "arg": "newHeight"
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "key": {
+                              "eq": {
+                                "applyOp": "verdict",
+                                "args": [
+                                  
+                                ]
+                              },
+                              "arg": {
+                                "str": "NOT_ENOUGH_TRUST"
+                              }
+                            },
+                            "value": {
+                              "and": [
+                                {
+                                  "eq": {
+                                    "prime": "lightBlockStatus"
+                                  },
+                                  "arg": {
+                                    "applyOp": "LightStoreUpdateStates",
+                                    "args": [
+                                      "lightBlockStatus",
+                                      "nextHeight",
+                                      {
+                                        "str": "StateUnverified"
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "existsBounded": {
+                                    "key": "newHeight",
+                                    "value": {
+                                      "applyOp": "HEIGHTS",
+                                      "args": [
+                                        
+                                      ]
+                                    }
+                                  },
+                                  "that": {
+                                    "and": [
+                                      {
+                                        "applyOp": "CanScheduleTo",
+                                        "args": [
+                                          "newHeight",
+                                          "latestVerified",
+                                          "nextHeight",
+                                          "TARGET_HEIGHT"
+                                        ]
+                                      },
+                                      {
+                                        "eq": {
+                                          "prime": "nextHeight"
+                                        },
+                                        "arg": "newHeight"
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "unchanged": {
+                                    "tuple": [
+                                      "latestVerified",
+                                      "state"
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ],
+                        "other": {
+                          "and": [
+                            {
+                              "eq": {
+                                "prime": "lightBlockStatus"
+                              },
+                              "arg": {
+                                "applyOp": "LightStoreUpdateStates",
+                                "args": [
+                                  "lightBlockStatus",
+                                  "nextHeight",
+                                  {
+                                    "str": "StateFailed"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "eq": {
+                                "prime": "state"
+                              },
+                              "arg": {
+                                "str": "finishedFailure"
+                              }
+                            },
+                            {
+                              "unchanged": {
+                                "tuple": [
+                                  "latestVerified",
+                                  "nextHeight"
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "VerifyToTargetDone",
+      "body": {
+        "and": [
+          {
+            "ge": {
+              "applyFun": {
+                "applyFun": "latestVerified",
+                "arg": {
+                  "str": "header"
+                }
+              },
+              "arg": {
+                "str": "height"
+              }
+            },
+            "arg": "TARGET_HEIGHT"
+          },
+          {
+            "eq": {
+              "prime": "state"
+            },
+            "arg": {
+              "str": "finishedSuccess"
+            }
+          },
+          {
+            "unchanged": {
+              "tuple": [
+                "nextHeight",
+                "nprobes",
+                "fetchedLightBlocks",
+                "lightBlockStatus",
+                "latestVerified"
+              ]
+            }
+          },
+          {
+            "unchanged": {
+              "tuple": [
+                "prevVerified",
+                "prevCurrent",
+                "prevNow",
+                "prevVerdict"
+              ]
+            }
+          }
+        ]
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "Init",
+      "body": {
+        "and": [
+          {
+            "applyOp": "BC!InitToHeight",
+            "args": [
+              
+            ]
+          },
+          {
+            "applyOp": "LCInit",
+            "args": [
+              
+            ]
+          }
+        ]
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "Next",
+      "body": {
+        "and": [
+          {
+            "eq": "state",
+            "arg": {
+              "str": "working"
+            }
+          },
+          {
+            "or": [
+              {
+                "applyOp": "VerifyToTargetLoop",
+                "args": [
+                  
+                ]
+              },
+              {
+                "applyOp": "VerifyToTargetDone",
+                "args": [
+                  
+                ]
+              }
+            ]
+          },
+          {
+            "applyOp": "BC!AdvanceTime",
+            "args": [
+              
+            ]
+          }
+        ]
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "TypeOK",
+      "body": {
+        "and": [
+          {
+            "in": "state",
+            "arg": {
+              "applyOp": "States",
+              "args": [
+                
+              ]
+            }
+          },
+          {
+            "in": "nextHeight",
+            "arg": {
+              "applyOp": "HEIGHTS",
+              "args": [
+                
+              ]
+            }
+          },
+          {
+            "in": "latestVerified",
+            "arg": {
+              "applyOp": "BC!LightBlocks",
+              "args": [
+                
+              ]
+            }
+          },
+          {
+            "existsBounded": {
+              "key": "HS",
+              "value": {
+                "powerset": {
+                  "applyOp": "HEIGHTS",
+                  "args": [
+                    
+                  ]
+                }
+              }
+            },
+            "that": {
+              "and": [
+                {
+                  "in": "fetchedLightBlocks",
+                  "arg": {
+                    "funSet": "HS",
+                    "arg": {
+                      "applyOp": "BC!LightBlocks",
+                      "args": [
+                        
+                      ]
+                    }
+                  }
+                },
+                {
+                  "in": "lightBlockStatus",
+                  "arg": {
+                    "funSet": "HS",
+                    "arg": {
+                      "enumSet": [
+                        {
+                          "str": "StateVerified"
+                        },
+                        {
+                          "str": "StateUnverified"
+                        },
+                        {
+                          "str": "StateFailed"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "NeverFinish",
+      "body": {
+        "eq": "state",
+        "arg": {
+          "str": "working"
+        }
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "NeverFinishNegative",
+      "body": {
+        "ne": "state",
+        "arg": {
+          "str": "finishedFailure"
+        }
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "NeverFinishNegativeWhenTrusted",
+      "body": {
+        "implies": {
+          "applyOp": "BC!InTrustingPeriod",
+          "args": [
+            {
+              "applyFun": "blockchain",
+              "arg": "TRUSTED_HEIGHT"
+            }
+          ]
+        },
+        "arg": {
+          "ne": "state",
+          "arg": {
+            "str": "finishedFailure"
+          }
+        }
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "NeverFinishPositive",
+      "body": {
+        "ne": "state",
+        "arg": {
+          "str": "finishedSuccess"
+        }
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "CorrectnessInv",
+      "body": {
+        "forallBounded": {
+          "key": "h",
+          "value": {
+            "domain": "fetchedLightBlocks"
+          }
+        },
+        "that": {
+          "implies": {
+            "eq": {
+              "applyFun": "lightBlockStatus",
+              "arg": "h"
+            },
+            "arg": {
+              "str": "StateVerified"
+            }
+          },
+          "arg": {
+            "eq": {
+              "applyFun": {
+                "applyFun": "fetchedLightBlocks",
+                "arg": "h"
+              },
+              "arg": {
+                "str": "header"
+              }
+            },
+            "arg": {
+              "applyFun": "blockchain",
+              "arg": "h"
+            }
+          }
+        }
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "StoredHeadersAreVerifiedInv",
+      "body": {
+        "implies": {
+          "eq": "state",
+          "arg": {
+            "str": "finishedSuccess"
+          }
+        },
+        "arg": {
+          "forallBounded": {
+            "key": "lh",
+            "value": {
+              "domain": "fetchedLightBlocks"
+            }
+          },
+          "that": {
+            "forallBounded": {
+              "key": "rh",
+              "value": {
+                "domain": "fetchedLightBlocks"
+              }
+            },
+            "that": {
+              "or": [
+                {
+                  "ge": "lh",
+                  "arg": "rh"
+                },
+                {
+                  "existsBounded": {
+                    "key": "mh",
+                    "value": {
+                      "domain": "fetchedLightBlocks"
+                    }
+                  },
+                  "that": {
+                    "and": [
+                      {
+                        "lt": "lh",
+                        "arg": "mh"
+                      },
+                      {
+                        "lt": "mh",
+                        "arg": "rh"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "eq": {
+                    "str": "SUCCESS"
+                  },
+                  "arg": {
+                    "applyOp": "ValidAndVerified",
+                    "args": [
+                      {
+                        "applyFun": "fetchedLightBlocks",
+                        "arg": "lh"
+                      },
+                      {
+                        "applyFun": "fetchedLightBlocks",
+                        "arg": "rh"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "StoredHeadersAreVerifiedOrNotTrustedInv",
+      "body": {
+        "implies": {
+          "eq": "state",
+          "arg": {
+            "str": "finishedSuccess"
+          }
+        },
+        "arg": {
+          "forallBounded": {
+            "key": "lh",
+            "value": {
+              "domain": "fetchedLightBlocks"
+            }
+          },
+          "that": {
+            "forallBounded": {
+              "key": "rh",
+              "value": {
+                "domain": "fetchedLightBlocks"
+              }
+            },
+            "that": {
+              "or": [
+                {
+                  "ge": "lh",
+                  "arg": "rh"
+                },
+                {
+                  "existsBounded": {
+                    "key": "mh",
+                    "value": {
+                      "domain": "fetchedLightBlocks"
+                    }
+                  },
+                  "that": {
+                    "and": [
+                      {
+                        "lt": "lh",
+                        "arg": "mh"
+                      },
+                      {
+                        "lt": "mh",
+                        "arg": "rh"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "eq": {
+                    "str": "SUCCESS"
+                  },
+                  "arg": {
+                    "applyOp": "ValidAndVerified",
+                    "args": [
+                      {
+                        "applyFun": "fetchedLightBlocks",
+                        "arg": "lh"
+                      },
+                      {
+                        "applyFun": "fetchedLightBlocks",
+                        "arg": "rh"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "not": {
+                    "applyOp": "BC!InTrustingPeriod",
+                    "args": [
+                      {
+                        "applyFun": {
+                          "applyFun": "fetchedLightBlocks",
+                          "arg": "lh"
+                        },
+                        "arg": {
+                          "str": "header"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "ProofOfChainOfTrustInv",
+      "body": {
+        "implies": {
+          "eq": "state",
+          "arg": {
+            "str": "finishedSuccess"
+          }
+        },
+        "arg": {
+          "forallBounded": {
+            "key": "lh",
+            "value": {
+              "domain": "fetchedLightBlocks"
+            }
+          },
+          "that": {
+            "forallBounded": {
+              "key": "rh",
+              "value": {
+                "domain": "fetchedLightBlocks"
+              }
+            },
+            "that": {
+              "or": [
+                {
+                  "ge": "lh",
+                  "arg": "rh"
+                },
+                {
+                  "eq": {
+                    "applyFun": "lightBlockStatus",
+                    "arg": "lh"
+                  },
+                  "arg": {
+                    "str": "StateUnverified"
+                  }
+                },
+                {
+                  "eq": {
+                    "applyFun": "lightBlockStatus",
+                    "arg": "rh"
+                  },
+                  "arg": {
+                    "str": "StateUnverified"
+                  }
+                },
+                {
+                  "existsBounded": {
+                    "key": "mh",
+                    "value": {
+                      "domain": "fetchedLightBlocks"
+                    }
+                  },
+                  "that": {
+                    "and": [
+                      {
+                        "and": [
+                          {
+                            "lt": "lh",
+                            "arg": "mh"
+                          },
+                          {
+                            "lt": "mh",
+                            "arg": "rh"
+                          }
+                        ]
+                      },
+                      {
+                        "eq": {
+                          "applyFun": "lightBlockStatus",
+                          "arg": "mh"
+                        },
+                        "arg": {
+                          "str": "StateVerified"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "not": {
+                    "applyOp": "BC!InTrustingPeriod",
+                    "args": [
+                      {
+                        "applyFun": {
+                          "applyFun": "fetchedLightBlocks",
+                          "arg": "lh"
+                        },
+                        "arg": {
+                          "str": "header"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "eq": {
+                    "str": "SUCCESS"
+                  },
+                  "arg": {
+                    "applyOp": "ValidAndVerified",
+                    "args": [
+                      {
+                        "applyFun": "fetchedLightBlocks",
+                        "arg": "lh"
+                      },
+                      {
+                        "applyFun": "fetchedLightBlocks",
+                        "arg": "rh"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "NoFailedBlocksOnSuccessInv",
+      "body": {
+        "implies": {
+          "eq": "state",
+          "arg": {
+            "str": "finishedSuccess"
+          }
+        },
+        "arg": {
+          "forallBounded": {
+            "key": "h",
+            "value": {
+              "domain": "fetchedLightBlocks"
+            }
+          },
+          "that": {
+            "ne": {
+              "applyFun": "lightBlockStatus",
+              "arg": "h"
+            },
+            "arg": {
+              "str": "StateFailed"
+            }
+          }
+        }
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "PositiveBeforeTrustedHeaderExpires",
+      "body": {
+        "implies": {
+          "eq": "state",
+          "arg": {
+            "str": "finishedSuccess"
+          }
+        },
+        "arg": {
+          "applyOp": "BC!InTrustingPeriod",
+          "args": [
+            {
+              "applyFun": "blockchain",
+              "arg": "TRUSTED_HEIGHT"
+            }
+          ]
+        }
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "CorrectPrimaryAndTimeliness",
+      "body": {
+        "implies": {
+          "and": [
+            {
+              "and": [
+                {
+                  "applyOp": "BC!InTrustingPeriod",
+                  "args": [
+                    {
+                      "applyFun": "blockchain",
+                      "arg": "TRUSTED_HEIGHT"
+                    }
+                  ]
+                },
+                {
+                  "ne": "state",
+                  "arg": {
+                    "str": "working"
+                  }
+                }
+              ]
+            },
+            "IS_PRIMARY_CORRECT"
+          ]
+        },
+        "arg": {
+          "eq": "state",
+          "arg": {
+            "str": "finishedSuccess"
+          }
+        }
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "SuccessOnCorrectPrimaryAndChainOfTrust",
+      "body": {
+        "implies": {
+          "existsBounded": {
+            "key": "h",
+            "value": {
+              "domain": "fetchedLightBlocks"
+            }
+          },
+          "that": {
+            "and": [
+              {
+                "and": [
+                  {
+                    "and": [
+                      {
+                        "eq": {
+                          "applyFun": "lightBlockStatus",
+                          "arg": "h"
+                        },
+                        "arg": {
+                          "str": "StateVerified"
+                        }
+                      },
+                      {
+                        "applyOp": "BC!InTrustingPeriod",
+                        "args": [
+                          {
+                            "applyFun": "blockchain",
+                            "arg": "h"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "ne": "state",
+                    "arg": {
+                      "str": "working"
+                    }
+                  }
+                ]
+              },
+              "IS_PRIMARY_CORRECT"
+            ]
+          }
+        },
+        "arg": {
+          "eq": "state",
+          "arg": {
+            "str": "finishedSuccess"
+          }
+        }
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "PrecisionInv",
+      "body": {
+        "implies": {
+          "eq": "state",
+          "arg": {
+            "str": "finishedFailure"
+          }
+        },
+        "arg": {
+          "or": [
+            {
+              "not": {
+                "applyOp": "BC!InTrustingPeriod",
+                "args": [
+                  {
+                    "applyFun": "blockchain",
+                    "arg": "TRUSTED_HEIGHT"
+                  }
+                ]
+              }
+            },
+            {
+              "existsBounded": {
+                "key": "h",
+                "value": {
+                  "domain": "fetchedLightBlocks"
+                }
+              },
+              "that": {
+                "let": [
+                  {
+                    "operator": "lightBlock",
+                    "body": {
+                      "applyFun": "fetchedLightBlocks",
+                      "arg": "h"
+                    },
+                    "params": [
+                      
+                    ]
+                  }
+                ],
+                "body": {
+                  "or": [
+                    {
+                      "ne": {
+                        "applyFun": {
+                          "applyOp": "lightBlock",
+                          "args": [
+                            
+                          ]
+                        },
+                        "arg": {
+                          "str": "header"
+                        }
+                      },
+                      "arg": {
+                        "applyFun": "blockchain",
+                        "arg": "h"
+                      }
+                    },
+                    {
+                      "ne": {
+                        "applyFun": {
+                          "applyOp": "lightBlock",
+                          "args": [
+                            
+                          ]
+                        },
+                        "arg": {
+                          "str": "Commits"
+                        }
+                      },
+                      "arg": {
+                        "applyFun": {
+                          "applyFun": {
+                            "applyOp": "lightBlock",
+                            "args": [
+                              
+                            ]
+                          },
+                          "arg": {
+                            "str": "header"
+                          }
+                        },
+                        "arg": {
+                          "str": "VS"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "PrecisionBuggyInv",
+      "body": {
+        "implies": {
+          "eq": "state",
+          "arg": {
+            "str": "finishedFailure"
+          }
+        },
+        "arg": {
+          "or": [
+            {
+              "not": {
+                "applyOp": "BC!InTrustingPeriod",
+                "args": [
+                  {
+                    "applyFun": "blockchain",
+                    "arg": "TRUSTED_HEIGHT"
+                  }
+                ]
+              }
+            },
+            {
+              "existsBounded": {
+                "key": "h",
+                "value": {
+                  "domain": "fetchedLightBlocks"
+                }
+              },
+              "that": {
+                "let": [
+                  {
+                    "operator": "lightBlock",
+                    "body": {
+                      "applyFun": "fetchedLightBlocks",
+                      "arg": "h"
+                    },
+                    "params": [
+                      
+                    ]
+                  }
+                ],
+                "body": {
+                  "ne": {
+                    "applyFun": {
+                      "applyOp": "lightBlock",
+                      "args": [
+                        
+                      ]
+                    },
+                    "arg": {
+                      "str": "header"
+                    }
+                  },
+                  "arg": {
+                    "applyFun": "blockchain",
+                    "arg": "h"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "params": [
+        
+      ]
+    },
+    {
+      "operator": "Complexity",
+      "body": {
+        "let": [
+          {
+            "operator": "N",
+            "body": {
+              "plus": {
+                "minus": "TARGET_HEIGHT",
+                "arg": "TRUSTED_HEIGHT"
+              },
+              "arg": 1
+            },
+            "params": [
+              
+            ]
+          }
+        ],
+        "body": {
+          "implies": {
+            "ne": "state",
+            "arg": {
+              "str": "working"
+            }
+          },
+          "arg": {
+            "le": {
+              "mult": 2,
+              "arg": "nprobes"
+            },
+            "arg": {
+              "mult": {
+                "applyOp": "N",
+                "args": [
+                  
+                ]
+              },
+              "arg": {
+                "minus": {
+                  "applyOp": "N",
+                  "args": [
+                    
+                  ]
+                },
+                "arg": 1
+              }
+            }
+          }
+        }
+      },
+      "params": [
+        
+      ]
+    }
+  ]
+}
