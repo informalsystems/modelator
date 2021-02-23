@@ -1,6 +1,6 @@
-// Run with `jrsonnet -o out.json test.jsonnet`
-
 local instantiate = import 'instantiate.jsonnet';
+local expected = import 'instantiate_test_expected.json';
+
 
 local Config = {
   AllNodes: instantiate.weighted_id_list("n", 100),
@@ -20,4 +20,6 @@ local Config = {
   ]),
 };
 
-instantiate.upto_weight(Config, 100)
+assert(instantiate.upto_weight(Config, 100) == expected);
+
+"PASS"
