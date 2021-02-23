@@ -10,24 +10,28 @@ local check = import 'check.jsonnet';
 
 // A JSON-RPC request
 request(id, method, params = null)::
-  local x = jsonrpc + 
-  addId(id) +
-  addMethod(method) + 
-  addParams(params);
+  local x = 
+    jsonrpc + 
+    addId(id) +
+    addMethod(method) + 
+    addParams(params);
   x + this.validateRequest(x),
 
 // A JSON-RPC notification
 notification(method, params = null)::
-  local x = jsonrpc + 
-  addMethod(method) + 
-  addParams(params);
+  local x = 
+    jsonrpc + 
+    addMethod(method) + 
+    addParams(params);
   x + this.validateNotification(x),
 
 // A JSON-RPC result response
 responseResult(id, result)::
-  jsonrpc + 
-  addId(id) +
-  { result: result, }, // no restrictions on result
+  local x = 
+    jsonrpc + 
+    addId(id) +
+    { result: result, }; // no restrictions on result
+  x + this.validateResponseResult(x),
 
 // A JSON-RPC general error response
 responseError(id, code, message, data = null)::
