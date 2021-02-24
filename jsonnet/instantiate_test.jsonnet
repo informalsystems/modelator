@@ -20,6 +20,6 @@ local Config = {
   ]),
 };
 
-assert(instantiate.upto_weight(Config, 100) == expected);
+assert(instantiate.instances_upto_weight(Config, 100) == expected);
 
 "PASS"

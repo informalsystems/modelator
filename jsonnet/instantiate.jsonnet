@@ -2,6 +2,39 @@
 
 {
 
+manifest: {
+  module: {
+      name : "instantiate_weighted",
+      description: "A module to generated instances of a weighted JSON configuration", 
+      "version": "0.1.0",
+      "methods": [ "instances_upto_weight" ]
+    },
+  instances_upto_weight: {
+      name : "instances_upto_weight",
+      description: "generate all instances of a weighted JSON configuration up to the given weight", 
+      "inputs": {
+        "config": "weighted_jsonnet",
+        "max_weight": "integer"
+      },
+      "results": {
+        "instances": ["json"]
+      },
+      "errors": {
+        "message": "string",
+        "output": "string"
+      }
+    }
+}, 
+
+// Instantiate the given config up to the maximum instance weight
+// The instance weight is currently displayed for debugging purposes
+instances_upto_weight(config, max_weight):: 
+  local instances = instantiate(std.objectFields(config), config);
+
+  local weighted_instances = std.map(function(obj) obj + {instance_weight: object_weight(obj)}, instances);
+  std.filterMap(function(obj) obj.instance_weight <=  max_weight, replace_weighted_object_values, weighted_instances),
+
+
 // Synonyms for some std functions
 local range = std.range,
 local length = std.length,
@@ -83,12 +116,5 @@ local object_weight(obj) =
   else // calculate the default weight as the product of all weighted fields
     std.foldl(function(prod,field) prod*obj[field].weight, obj.weighted_fields, 1),
 
-// Instantiate the given config up to the maximum instance weight
-// The instance weight is currently displayed for debugging purposes
-upto_weight(config, max_weight):: 
-  local instances = instantiate(std.objectFields(config), config);
-
-  local weighted_instances = std.map(function(obj) obj + {instance_weight: object_weight(obj)}, instances);
-  std.filterMap(function(obj) obj.instance_weight <=  max_weight, replace_weighted_object_values, weighted_instances),
 
 }
