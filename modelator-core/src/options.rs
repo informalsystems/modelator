@@ -1,8 +1,10 @@
 use std::path::{Path, PathBuf};
+#[derive(Clone, Copy, Debug)]
 pub enum ModelChecker {
     TLC,
 }
 
+#[derive(Clone, Debug)]
 pub enum RunMode {
     /// Test mode. The argument is the name of the test.
     Test(String),
@@ -11,6 +13,7 @@ pub enum RunMode {
     Explore(usize),
 }
 
+#[derive(Clone, Copy, Debug)]
 pub enum Workers {
     /// Automatically select the number of model checker worker threads based
     // on the number of available cores.
@@ -19,17 +22,7 @@ pub enum Workers {
     Count(usize),
 }
 
-impl Workers {
-    fn as_arg(&self, model_checker: ModelChecker) -> String {
-        match model_checker {
-            ModelChecker::TLC => match self {
-                Self::Auto => "auto".to_string(),
-                Self::Count(count) => count.to_string(),
-            },
-        }
-    }
-}
-
+#[derive(Clone, Debug)]
 pub struct Options {
     /// Name of the TLA model.
     pub model_name: String,

@@ -1,14 +1,14 @@
 use crate::mc::trace::{TLAState, Trace};
-use crate::Error;
+use crate::{Error, Options};
 
-pub(crate) fn parse(output: String) -> Result<Vec<Trace>, Error> {
+pub(crate) fn parse(output: String, options: &Options) -> Result<Vec<Trace>, Error> {
     let mut traces = Vec::new();
     let mut lines = output.lines();
 
     while let Some(line) = lines.next() {
         // check if found the beginning of the next trace
         if line.starts_with("@!@!@ENDMSG 2121 @!@!@") {
-            if let Some(trace) = parse_trace(&mut lines)? {
+            if let Some(trace) = parse_trace(&mut lines, options)? {
                 traces.push(trace);
             }
         }
@@ -16,12 +16,17 @@ pub(crate) fn parse(output: String) -> Result<Vec<Trace>, Error> {
     Ok(traces)
 }
 
-fn parse_trace<'a>(lines: &mut std::str::Lines<'a>) -> Result<Option<Trace>, Error> {
+fn parse_trace<'a>(
+    lines: &mut std::str::Lines<'a>,
+    options: &Options,
+) -> Result<Option<Trace>, Error> {
     let mut state_index = 0;
     let mut state = None;
-    let mut counterexample = Trace::new();
+    let mut trace = Trace::new();
     loop {
-        let line = lines.next().expect("unexpected TLC log format.");
+        let line = lines
+            .next()
+            .ok_or_else(|| Error::InvalidTLCOutput(options.log.clone()))?;
 
         // check if found the start of the next state
         if line.starts_with("@!@!@STARTMSG 2217:4 @!@!@") {
@@ -31,12 +36,14 @@ fn parse_trace<'a>(lines: &mut std::str::Lines<'a>) -> Result<Option<Trace>, Err
 
         // check if found the end of the current state
         if line.starts_with("@!@!@ENDMSG 2217 @!@!@") {
-            let state = state.take().expect("a state should have been started");
-            counterexample.add(state);
+            let state = state
+                .take()
+                .expect("[modelator] a trace state should have been started");
+            trace.add(state);
             continue;
         }
 
-        // any other tag means that this counterexample has ended
+        // any other tag means that this trace has ended
         if line.starts_with("@!@!@STARTMSG") {
             break;
         }
@@ -46,7 +53,7 @@ fn parse_trace<'a>(lines: &mut std::str::Lines<'a>) -> Result<Option<Trace>, Err
             // start next state
             assert!(
                 state.is_none(),
-                "previous couterexample state has not ended yet"
+                "[modelator] previous trace state has not ended yet"
             );
             state = Some(TLAState::new());
             continue;
@@ -55,15 +62,11 @@ fn parse_trace<'a>(lines: &mut std::str::Lines<'a>) -> Result<Option<Trace>, Err
         // save any remaining line
         let state = state
             .as_mut()
-            .expect("counterexample state should have been started");
+            .expect("[modelator] trace state should have been started");
         state.push_str(line);
         state.push_str("\n");
     }
 
-    let counterexample = if counterexample.is_empty() {
-        None
-    } else {
-        Some(counterexample)
-    };
-    Ok(counterexample)
+    let trace = if trace.is_empty() { None } else { Some(trace) };
+    Ok(trace)
 }

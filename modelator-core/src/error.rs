@@ -22,4 +22,7 @@ pub enum Error {
 
     #[error("No trace found. Check the model checker log: {0}")]
     NoTraceFound(std::path::PathBuf),
+
+    #[error("Invalid TLC output: {0}")]
+    InvalidTLCOutput(std::path::PathBuf),
 }

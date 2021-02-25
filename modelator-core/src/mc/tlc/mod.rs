@@ -3,23 +3,16 @@ mod output;
 
 use super::trace::Trace;
 use super::util;
-use crate::{jar, Error};
-use std::path::{Path, PathBuf};
+use crate::{jar, Error, Options, Workers};
+use std::path::Path;
 use tokio::process::Command;
 
-pub(crate) struct TlcOptions {
-    pub tla_file: PathBuf,
-    pub all_counterexamples: bool,
-    pub workers: String,
-    pub log: PathBuf,
-}
-
 pub(crate) async fn run<P: AsRef<Path>>(
-    modelator_dir: P,
-    options: TlcOptions,
+    model_file: P,
+    options: &Options,
 ) -> Result<Vec<Trace>, Error> {
     // create tlc command
-    let mut cmd = cmd(&modelator_dir, &options);
+    let mut cmd = cmd(model_file, &options);
 
     // start tlc
     let child = cmd.spawn().map_err(Error::IO)?;
@@ -29,17 +22,17 @@ pub(crate) async fn run<P: AsRef<Path>>(
 
     // save tlc log
     let stdout = util::output_to_string(&output.stdout);
-    tokio::fs::write(options.log, &stdout)
+    tokio::fs::write(&options.log, &stdout)
         .await
         .map_err(Error::IO)?;
 
     // convert tlc output to counterexamples
-    output::parse(stdout)
+    output::parse(stdout, &options)
 }
 
-fn cmd<P: AsRef<Path>>(modelator_dir: P, options: &TlcOptions) -> Command {
-    let tla2tools = jar::Jar::Tla.file(&modelator_dir);
-    let community_modules = jar::Jar::CommunityModules.file(&modelator_dir);
+fn cmd<P: AsRef<Path>>(model_file: P, options: &Options) -> Command {
+    let tla2tools = jar::Jar::Tla.file(&options.dir);
+    let community_modules = jar::Jar::CommunityModules.file(&options.dir);
     let mut cmd = Command::new("java");
     cmd
         // set classpath
@@ -51,16 +44,18 @@ fn cmd<P: AsRef<Path>>(modelator_dir: P, options: &TlcOptions) -> Command {
         ))
         // set tla file
         .arg("tlc2.TLC")
-        .arg(&options.tla_file)
+        .arg(model_file.as_ref())
         // set "-tool" flag, which allows easier parsing of TLC's output
         .arg("-tool")
         // set the number of TLC's workers
         .arg("-workers")
-        .arg(&options.workers);
-
-    // maybe set "-continue" flag
-    if options.all_counterexamples {
-        cmd.arg("-continue");
-    }
+        .arg(workers(options.workers));
     cmd
+}
+
+fn workers(workers: Workers) -> String {
+    match workers {
+        Workers::Auto => "auto".to_string(),
+        Workers::Count(count) => count.to_string(),
+    }
 }

@@ -1,5 +1,5 @@
-/// Modelator's config.
-mod config;
+/// Modelator's options.
+mod options;
 
 /// Modelator's error type.
 mod error;
@@ -10,9 +10,9 @@ mod jar;
 /// Model checkers.
 mod mc;
 
-/// Re-exports.
-pub use config::{Options, ModelChecker, Workers};
 pub use error::Error;
+/// Re-exports.
+pub use options::{ModelChecker, Options, Workers};
 
 pub async fn run(options: Options) -> Result<Vec<String>, Error> {
     // create modelator dir (if it doens't already exist)
