@@ -7,14 +7,14 @@ const COMMUNITY_MODULES_VERSION: &str = "202102040137";
 const TLA2JSON_VERSION: &str = "1.0.0";
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
-pub enum Jar {
+pub(crate) enum Jar {
     Tla,
     CommunityModules,
     Tla2Json,
 }
 
 impl Jar {
-    pub fn file<P: AsRef<Path>>(&self, modelator_dir: P) -> PathBuf {
+    pub(crate) fn file<P: AsRef<Path>>(&self, modelator_dir: P) -> PathBuf {
         let file_name = match self {
             Self::Tla => "tla2tools.jar",
             Self::CommunityModules => "CommunityModules.jar",
@@ -68,7 +68,7 @@ impl Jar {
     }
 }
 
-pub async fn download_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Error> {
+pub(crate) async fn download_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Error> {
     // get all existing jars
     let existing_jars = existing_jars(&modelator_dir).await?;
     // download all jars that do not exist yet
