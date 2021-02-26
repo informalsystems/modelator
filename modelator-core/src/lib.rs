@@ -12,7 +12,7 @@ mod mc;
 
 pub use error::Error;
 /// Re-exports.
-pub use options::{ModelChecker, Options, Workers};
+pub use options::{ModelChecker, Options, RunMode, Workers};
 
 pub async fn run(options: Options) -> Result<Vec<String>, Error> {
     // create modelator dir (if it doens't already exist)

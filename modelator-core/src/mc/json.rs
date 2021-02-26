@@ -23,7 +23,7 @@ async fn trace_to_json<P: AsRef<Path>>(modelator_dir: P, trace: Trace) -> Result
     // temporary file where each trace state is written to
     let state_file = modelator_dir
         .as_ref()
-        .join(format!("{}.state", random_string()));
+        .join(format!("{}.state", util::random_string()));
 
     for state in trace.states {
         // tla2json errors with -1 in the TLA state; for this reason we
@@ -73,15 +73,6 @@ async fn trace_to_json<P: AsRef<Path>>(modelator_dir: P, trace: Trace) -> Result
     let counterexample: Value = serde_json::from_str(&json_array).map_err(Error::Serde)?;
     let counterexample = serde_json::to_string_pretty(&counterexample).map_err(Error::Serde)?;
     Ok(counterexample)
-}
-
-fn random_string() -> String {
-    use rand::Rng;
-    rand::thread_rng()
-        .sample_iter(&rand::distributions::Alphanumeric)
-        .take(42)
-        .map(char::from)
-        .collect()
 }
 
 fn cmd<P: AsRef<Path>>(modelator_dir: P, state_file: &PathBuf) -> Command {
