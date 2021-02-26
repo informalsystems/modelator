@@ -2,3 +2,4 @@
 *.cfg
 *.log
 .modelator
+states/

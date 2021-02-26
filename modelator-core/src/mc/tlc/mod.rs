@@ -15,10 +15,8 @@ pub(crate) async fn run<P: AsRef<Path>>(
     let mut cmd = cmd(model_file, &options);
 
     // start tlc
-    let child = cmd.spawn().map_err(Error::IO)?;
-
     // TODO: add timeout
-    let output = child.wait_with_output().await.map_err(Error::IO)?;
+    let output = cmd.output().await.map_err(Error::IO)?;
 
     // save tlc log
     let stdout = util::output_to_string(&output.stdout);
@@ -38,9 +36,9 @@ fn cmd<P: AsRef<Path>>(model_file: P, options: &Options) -> Command {
         // set classpath
         .arg("-cp")
         .arg(format!(
-            "{:?}:{:?}",
-            tla2tools.as_path(),
-            community_modules.as_path()
+            "{}:{}",
+            tla2tools.as_path().to_string_lossy(),
+            community_modules.as_path().to_string_lossy(),
         ))
         // set tla file
         .arg("tlc2.TLC")
