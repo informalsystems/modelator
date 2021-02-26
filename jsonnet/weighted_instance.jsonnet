@@ -4,13 +4,12 @@
 
 manifest: {
   module: {
-      name : "instantiate_weighted",
-      description: "A module to generated instances of a weighted JSON configuration", 
+      name : "weighted_instance",
+      description: "A module to generate instances of a weighted JSON configuration", 
       "version": "0.1.0",
-      "methods": [ "instances_upto_weight" ]
+      "methods": [ "instances_upto" ]
     },
-  instances_upto_weight: {
-      name : "instances_upto_weight",
+  instances_upto: {
       description: "generate all instances of a weighted JSON configuration up to the given weight", 
       "inputs": {
         "config": "weighted_jsonnet",
@@ -28,7 +27,7 @@ manifest: {
 
 // Instantiate the given config up to the maximum instance weight
 // The instance weight is currently displayed for debugging purposes
-instances_upto_weight(config, max_weight):: 
+instances_upto(config, max_weight):: 
   local instances = instantiate(std.objectFields(config), config);
 
   local weighted_instances = std.map(function(obj) obj + {instance_weight: object_weight(obj)}, instances);
@@ -45,7 +44,7 @@ local id_list(prefix, max) = [
 ],
 
 // A weighted integer. The default weight is the integer value itself
-weighted_integer(min, max, weight = function(x) x):: { 
+integer(min, max, weight = function(x) x):: { 
   min: min,
   max: max,
   value:: function(x) x,
@@ -53,7 +52,7 @@ weighted_integer(min, max, weight = function(x) x):: {
 },
 
 // A weighted list of identifiers. The default weight is the length of the list
-weighted_id_list(prefix, max, weight = function(x) x):: { 
+id_list(prefix, max, weight = function(x) x):: { 
   min: 1,
   max: max,
   value:: function(x) id_list(prefix, x),
@@ -61,7 +60,7 @@ weighted_id_list(prefix, max, weight = function(x) x):: {
 },
 
 // A weighted identifier. Each of the possible identifiers comes with its own weight
-weighted_id(ids_with_weights):: { 
+id(ids_with_weights):: { 
   min: 0,
   max: length(ids_with_weights)-1,
   value:: function(x) ids_with_weights[x][0],

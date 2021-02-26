@@ -193,7 +193,8 @@ moduleExtendOperator(module, name, expr)::
       else body + [expr];
     tla.moduleReplaceOperator(module, name, oper { body: tla.and(newBody) }),
 
-
+declarationIsConstant(decl)::
+  std.isObject(decl) && std.objectHas(decl, "constant") && std.isString(decl.constant),
 
 // ===== Internal functions =====
 
