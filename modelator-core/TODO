@@ -1,0 +1,2 @@
+- check if java is installed
+- implement TLA parser and remove need for tla2json

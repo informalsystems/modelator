@@ -1,0 +1,5 @@
+*.tla
+*.cfg
+*.log
+.modelator
+states/
