@@ -64,7 +64,7 @@ fn parse_trace<'a>(
             .as_mut()
             .expect("[modelator] trace state should have been started");
         state.push_str(line);
-        state.push_str("\n");
+        state.push('\n');
     }
 
     let trace = if trace.is_empty() { None } else { Some(trace) };
