@@ -119,7 +119,7 @@ impl std::str::FromStr for RunMode {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parts: Vec<_> = s.split(",").collect();
+        let parts: Vec<_> = s.split(',').collect();
         if parts.len() != 2 {
             return Err(unsupported(s));
         }
