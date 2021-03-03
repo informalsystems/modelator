@@ -44,8 +44,9 @@ impl Jar {
                 COMMUNITY_MODULES_VERSION
             ),
             Self::Tla2Json => format!(
-                "https://github.com/japgolly/tla2json/releases/download/v{}/tla2json.jar",
-                TLA2JSON_VERSION
+                "https://github.com/japgolly/tla2json/releases/download/v{}/tla2json-{}.jar",
+                TLA2JSON_VERSION,
+                TLA2JSON_VERSION,
             ),
         }
     }
