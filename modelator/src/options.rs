@@ -33,6 +33,7 @@ pub struct Options {
     pub dir: PathBuf,
 }
 
+#[allow(clippy::unnecessary_wraps)]
 fn parse_model_name(s: &str) -> clap::Result<String> {
     Ok(strip_tla_extension(s))
 }
