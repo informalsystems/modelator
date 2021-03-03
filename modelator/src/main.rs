@@ -11,7 +11,7 @@ async fn main() -> Result<(), modelator::Error> {
 
     let options: Options = Options::parse();
 
-    let traces = modelator::run(options).await?;
-    println!("TRACES:\n{:#?}", traces);
+    let trace = modelator::run(options).await?;
+    println!("{}", trace.join("\n"));
     Ok(())
 }
