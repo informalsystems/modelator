@@ -1,6 +1,5 @@
 [workspace]
 members = [
-    "modelator-cli",
+    "modelator",
     "tester",
-    "modelator-core",
 ]
