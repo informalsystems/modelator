@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 const TLA_VERSION: &str = "1.8.0";
 const COMMUNITY_MODULES_VERSION: &str = "202102040137";
-const TLA2JSON_VERSION: &str = "1.0.0";
+const TLA2JSON_VERSION: &str = "1.0.1";
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub(crate) enum Jar {
