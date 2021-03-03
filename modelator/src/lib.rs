@@ -15,8 +15,8 @@ pub mod runner;
 
 /// Re-exports.
 pub use error::{Error, TestError};
-pub use options::{ModelChecker, Options, RunMode, Workers};
 pub use mc::JsonTrace;
+pub use options::{ModelChecker, Options, RunMode, Workers};
 
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;

@@ -18,7 +18,7 @@ where
     // parse test
     let steps = trace
         .into_iter()
-        .map(|step| serde_json::from_value(step).map_err(|error| TestError::Deserialize(error)))
+        .map(|step| serde_json::from_value(step).map_err(TestError::Deserialize))
         .collect::<Result<Vec<Step>, _>>()?;
     let step_count = steps.len();
 
