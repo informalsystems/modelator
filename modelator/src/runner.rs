@@ -7,7 +7,7 @@ pub trait TestRunner<S> {
     fn next_step(&mut self, step: S) -> bool;
 }
 
-pub fn test<Runner, Step>(
+pub(crate) fn run<Runner, Step>(
     trace: JsonTrace,
     mut runner: Runner,
 ) -> Result<(), TestError<Runner, Step>>

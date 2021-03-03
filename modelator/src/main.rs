@@ -11,7 +11,7 @@ async fn main() -> Result<(), Error> {
 
     // cargo run -- IBCTests.tla -r test,ICS03ConnectionOpenConfirmOKTest
     let options = Options::parse();
-    let traces = modelator::run(options).await?;
+    let traces = modelator::traces(options).await?;
 
     // aggregate all traces into a json array (and each trace into a json array
     // as well)
