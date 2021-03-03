@@ -15,7 +15,6 @@ use std::path::{Path, PathBuf};
 
 pub(crate) async fn run(options: Options) -> Result<Vec<String>, Error> {
     // check that the model tla file exists
-    // let model_file = format!("{}.tla", &options.model_name);
     let model_file = Path::new(&format!("{}.tla", &options.model_name)).to_path_buf();
     if !model_file.is_file() {
         return Err(Error::FileNotFound(model_file));
