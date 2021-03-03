@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -25,4 +26,23 @@ pub enum Error {
 
     #[error("Invalid TLC output: {0}")]
     InvalidTLCOutput(std::path::PathBuf),
+}
+
+#[derive(Error, Debug)]
+pub enum TestError<Runner: Debug, Step: Debug> {
+    #[error("Error while running modelator: {0}")]
+    Modelator(Error),
+
+    #[error("Test step failed to be deserialized: {0}")]
+    Deserialize(serde_json::Error),
+
+    #[error(
+        "Test failed on step {step_index}/{step_count}:\nsteps: {steps:#?}\nrunner: {runner:#?}"
+    )]
+    FailedTest {
+        step_index: usize,
+        step_count: usize,
+        steps: Vec<Step>,
+        runner: Runner,
+    },
 }
