@@ -11,7 +11,7 @@ mod jar;
 mod mc;
 
 /// Test runner.
-mod runner;
+pub mod runner;
 
 /// Re-exports.
 pub use error::{Error, TestError};
