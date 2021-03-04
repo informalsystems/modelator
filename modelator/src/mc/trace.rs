@@ -19,7 +19,7 @@ impl Trace {
         self.states.is_empty()
     }
 
-    pub(crate) fn to_json(self) -> Result<JsonTrace, Error> {
+    pub(crate) fn parse(self) -> Result<JsonTrace, Error> {
         let states = self
             .states
             .into_iter()

@@ -60,7 +60,7 @@ pub(crate) async fn run(mut options: Options) -> Result<Vec<JsonTrace>, Error> {
     }
 
     // convert each trace to json
-    traces.into_iter().map(|trace| trace.to_json()).collect()
+    traces.into_iter().map(|trace| trace.parse()).collect()
 }
 
 async fn create_test<P: AsRef<Path>>(
