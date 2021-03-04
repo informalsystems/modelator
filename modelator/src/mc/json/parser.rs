@@ -15,10 +15,6 @@ pub(crate) fn parse_state(input: &str) -> IResult<&str, JsonValue> {
     })
 }
 
-fn space(input: &str) -> IResult<&str, &str> {
-    multispace0(input)
-}
-
 fn parse_var(input: &str) -> IResult<&str, (String, JsonValue)> {
     preceded(
         space,
@@ -35,6 +31,15 @@ fn parse_var(input: &str) -> IResult<&str, (String, JsonValue)> {
         ),
     )(input)
     .map(|(input, (var, value))| (input, (var.into_iter().collect(), value)))
+}
+
+fn space(input: &str) -> IResult<&str, &str> {
+    multispace0(input)
+}
+
+fn parse_identifier(input: &str) -> IResult<&str, Vec<char>> {
+    // TODO: what else can TLA var idenfitiers have?
+    many1(satisfy(|c| c.is_alphanumeric() || "_-".contains(c)))(input)
 }
 
 fn parse_any_value(input: &str) -> IResult<&str, JsonValue> {
@@ -132,11 +137,6 @@ fn parse_record_entry(input: &str) -> IResult<&str, (String, JsonValue)> {
     .map(|(input, (var, value))| (input, (var.into_iter().collect(), value)))
 }
 
-fn parse_identifier(input: &str) -> IResult<&str, Vec<char>> {
-    // TODO: what else can TLA var idenfitiers have?
-    many1(satisfy(|c| c.is_alphanumeric() || "_-".contains(c)))(input)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -184,13 +184,14 @@ mod tests {
     #[test]
     fn parse_state_test() {
         let states = vec![
-            (state0(), expected0()),
-            (state1(), expected1()),
+            (booleans_and_numbers_state(), booleans_and_numbers_expected()),
+            (sets_state(), sets_expected()),
+            (records_state(), records_expected()),
+            // (state1(), expected1()),
             // (state2(), expected2()),
             // (state3(), expected3()),
             // (state4(), expected4()),
             // (state5(), expected5()),
-            // (state6(), expected6()),
         ];
         for (state, expected) in states {
             let result = parse_state(state);
@@ -202,7 +203,7 @@ mod tests {
         }
     }
 
-    fn state0() -> &'static str {
+    fn booleans_and_numbers_state() -> &'static str {
         r#"
             /\ empty_set = {}
             /\ set = {1, 2, 3}
@@ -212,7 +213,7 @@ mod tests {
         "#
     }
 
-    fn expected0() -> JsonValue {
+    fn booleans_and_numbers_expected() -> JsonValue {
         json!({
             "empty_set": [],
             "set": [1, 2, 3],
@@ -222,28 +223,68 @@ mod tests {
         })
     }
 
-    /// The tests that follow are translated from some of the tests in https://github.com/japgolly/tla2json
-    fn state1() -> &'static str {
+    fn sets_state() -> &'static str {
         r#"
-            /\ tabs = (t1 :> "-" @@ t2 :> "-")
-            /\ stuff = (set :> {-1, -2, 3} @@ number :> 99)
+            /\ empty_set = {}
+            /\ set = {1, 2, 3}
+            /\ pos_number = 1
+            /\ neg_number = -1
+            /\ bool = TRUE
         "#
     }
 
-    fn expected1() -> JsonValue {
+    fn sets_expected() -> JsonValue {
         json!({
-            "tabs": {
+            "empty_set": [],
+            "set": [1, 2, 3],
+            "pos_number": 1,
+            "neg_number": -1,
+            "bool": true
+        })
+    }
+
+    fn records_state() -> &'static str {
+        r#"
+            /\ record = (t1 :> "-" @@ t2 :> "-")
+            /\ mix = (set :> {-1, -2, 3} @@ number :> 99)
+        "#
+    }
+
+    fn records_expected() -> JsonValue {
+        json!({
+            "record": {
                 "t1": "-",
                 "t2": "-",
             },
-            "stuff": {
+            "mix": {
                 "set": [-1, -2, 3],
                 "number": 99,
             },
         })
     }
 
-    fn state2() -> &'static str {
+    fn functions_state() -> &'static str {
+        r#"
+            /\ function = [t1 |-> "-", t2 |-> "-"]
+            /\ mix = [set |-> {-1, -2, 3}, number |-> 99]
+        "#
+    }
+
+    fn functions_expected() -> JsonValue {
+        json!({
+            "function": {
+                "t1": "-",
+                "t2": "-",
+            },
+            "mix": {
+                "set": [-1, -2, 3],
+                "number": 99,
+            },
+        })
+    }
+
+    /// The tests that follow are translated from some of the tests in https://github.com/japgolly/tla2json
+    fn state1() -> &'static str {
         r#"
             /\ browsers = (b1 :> << >>)
             /\ network = <<>>
@@ -253,7 +294,7 @@ mod tests {
         "#
     }
 
-    fn expected2() -> JsonValue {
+    fn expected1() -> JsonValue {
         json!({
             "browsers": {
                 "b1": []
@@ -279,7 +320,7 @@ mod tests {
         })
     }
 
-    fn state3() -> &'static str {
+    fn state2() -> &'static str {
         r#"
 /\ tabs = ( t1 :> [status |-> "-"] @@
   t2 :>
@@ -297,7 +338,7 @@ mod tests {
 "#
     }
 
-    fn expected3() -> JsonValue {
+    fn expected2() -> JsonValue {
         json!({
             "tabs": {
                 "t1": {
@@ -337,7 +378,7 @@ mod tests {
         })
     }
 
-    fn state4() -> &'static str {
+    fn state3() -> &'static str {
         r#"
 /\ tabs = ( t1 :>
       [ drafts |-> {},
@@ -364,7 +405,7 @@ mod tests {
 "#
     }
 
-    fn expected4() -> JsonValue {
+    fn expected3() -> JsonValue {
         json!({
             "tabs": {
                 "t1": {
@@ -415,14 +456,14 @@ mod tests {
         })
     }
 
-    fn state5() -> &'static str {
+    fn state4() -> &'static str {
         r#"
 /\ tabs = ( t1 :> [drafts |-> {}, worker |-> w2, status |-> "loading", awaiting |-> {}] @@
   t2 :> [worker |-> w1, status |-> "clean"] )
 "#
     }
 
-    fn expected5() -> JsonValue {
+    fn expected4() -> JsonValue {
         json!({
             "tabs": {
                 "t1": {
@@ -439,7 +480,7 @@ mod tests {
         })
     }
 
-    fn state6() -> &'static str {
+    fn state5() -> &'static str {
         r#"
 /\ network = << [ drafts |-> {},
      type |-> "sync:T->W",
@@ -459,7 +500,7 @@ mod tests {
 "#
     }
 
-    fn expected6() -> JsonValue {
+    fn expected5() -> JsonValue {
         json!({
             "network": {
                 "drafts": [],
