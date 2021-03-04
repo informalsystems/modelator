@@ -4,13 +4,11 @@ use std::path::{Path, PathBuf};
 
 const TLA_VERSION: &str = "1.8.0";
 const COMMUNITY_MODULES_VERSION: &str = "202102040137";
-const TLA2JSON_VERSION: &str = "1.0.1";
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub(crate) enum Jar {
     Tla,
     CommunityModules,
-    Tla2Json,
 }
 
 impl Jar {
@@ -18,7 +16,6 @@ impl Jar {
         let file_name = match self {
             Self::Tla => "tla2tools.jar",
             Self::CommunityModules => "CommunityModules.jar",
-            Self::Tla2Json => "tla2json.jar",
         };
         modelator_dir.as_ref().join(file_name)
     }
@@ -28,7 +25,6 @@ impl Jar {
         match file_name {
             "tla2tools.jar" => Self::Tla,
             "CommunityModules.jar" => Self::CommunityModules,
-            "tla2json.jar" => Self::Tla2Json,
             _ => panic!("[modelator] unexpected jar file: {}", file_name),
         }
     }
@@ -42,11 +38,6 @@ impl Jar {
             Self::CommunityModules => format!(
                 "https://github.com/tlaplus/CommunityModules/releases/download/{}/CommunityModules.jar",
                 COMMUNITY_MODULES_VERSION
-            ),
-            Self::Tla2Json => format!(
-                "https://github.com/japgolly/tla2json/releases/download/v{}/tla2json-{}.jar",
-                TLA2JSON_VERSION,
-                TLA2JSON_VERSION,
             ),
         }
     }
@@ -65,7 +56,7 @@ impl Jar {
     }
 
     fn all() -> Vec<Self> {
-        vec![Self::Tla, Self::CommunityModules, Self::Tla2Json]
+        vec![Self::Tla, Self::CommunityModules]
     }
 }
 
