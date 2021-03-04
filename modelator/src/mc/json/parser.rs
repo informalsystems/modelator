@@ -29,26 +29,31 @@ fn parse_var(input: &str) -> IResult<&str, (String, JsonValue)> {
             space,
         ),
     )(input)
-    .map(|(input, (var, value))| (input, (var.into_iter().collect(), value)))
 }
 
 fn space(input: &str) -> IResult<&str, &str> {
     multispace0(input)
 }
 
-fn parse_identifier(input: &str) -> IResult<&str, Vec<char>> {
+fn parse_identifier(input: &str) -> IResult<&str, String> {
     // TODO: what else can TLA var idenfitiers have?
     many1(satisfy(|c| c.is_alphanumeric() || "_-".contains(c)))(input)
+        .map(|(input, value)| (input, value.into_iter().collect()))
 }
 
 fn parse_any_value(input: &str) -> IResult<&str, JsonValue> {
+    // identifiers of model variables can also be used as TLA values
+    let parse_identifiers_as_values =
+        |input| parse_identifier(input).map(|(input, value)| (input, JsonValue::String(value)));
     preceded(
         space,
         alt((
             parse_bool,
             parse_number,
             parse_string,
+            parse_identifiers_as_values,
             parse_set,
+            parse_sequence,
             parse_record,
             parse_function,
         )),
@@ -109,6 +114,20 @@ fn parse_set(input: &str) -> IResult<&str, JsonValue> {
     })
 }
 
+fn parse_sequence(input: &str) -> IResult<&str, JsonValue> {
+    preceded(
+        tag("<<"),
+        cut(terminated(
+            separated_list0(preceded(space, char(',')), parse_any_value),
+            preceded(space, tag(">>")),
+        )),
+    )(input)
+    .map(|(input, value)| {
+        let value = JsonValue::Array(value);
+        (input, value)
+    })
+}
+
 fn parse_record(input: &str) -> IResult<&str, JsonValue> {
     preceded(
         char('('),
@@ -133,7 +152,6 @@ fn parse_record_entry(input: &str) -> IResult<&str, (String, JsonValue)> {
             preceded(space, parse_any_value),
         ),
     )(input)
-    .map(|(input, (var, value))| (input, (var.into_iter().collect(), value)))
 }
 
 fn parse_function(input: &str) -> IResult<&str, JsonValue> {
@@ -160,7 +178,6 @@ fn parse_function_entry(input: &str) -> IResult<&str, (String, JsonValue)> {
             preceded(space, parse_any_value),
         ),
     )(input)
-    .map(|(input, (var, value))| (input, (var.into_iter().collect(), value)))
 }
 
 #[cfg(test)]
@@ -210,12 +227,16 @@ mod tests {
     #[test]
     fn parse_state_test() {
         let states = vec![
-            (booleans_and_numbers_state(), booleans_and_numbers_expected()),
+            (
+                booleans_and_numbers_state(),
+                booleans_and_numbers_expected(),
+            ),
             (sets_state(), sets_expected()),
+            (sequences_state(), sequences_expected()),
             (records_state(), records_expected()),
             (functions_state(), functions_expected()),
-            // (state1(), expected1()),
-            // (state2(), expected2()),
+            (state1(), expected1()),
+            (state2(), expected2()),
             // (state3(), expected3()),
             // (state4(), expected4()),
             // (state5(), expected5()),
@@ -264,6 +285,26 @@ mod tests {
         json!({
             "empty_set": [],
             "set": [1, 2, 3],
+            "pos_number": 1,
+            "neg_number": -1,
+            "bool": true
+        })
+    }
+
+    fn sequences_state() -> &'static str {
+        r#"
+            /\ empty_seq = <<>>
+            /\ seq = <<1, 2, 3>>
+            /\ pos_number = 1
+            /\ neg_number = -1
+            /\ bool = TRUE
+        "#
+    }
+
+    fn sequences_expected() -> JsonValue {
+        json!({
+            "empty_seq": [],
+            "seq": [1, 2, 3],
             "pos_number": 1,
             "neg_number": -1,
             "bool": true
@@ -372,29 +413,25 @@ mod tests {
                     "status": "-"
                 },
                 "t2": {
-                    "status": {
-                        "drafts": [],
-                        "worker": "w1",
-                        "status": "loading",
-                        "awaiting": [
-                            "Remote"
-                        ]
-                    }
+                    "drafts": [],
+                    "worker": "w1",
+                    "status": "loading",
+                    "awaiting": [
+                        "Remote"
+                    ]
                 }
             },
             "workers": {
                 "w1": {
-                    "status": {
-                        "drafts": [],
-                        "time": 1,
-                        "status": "live",
-                        "browser": "b1",
-                        "awaiting": {
-                            "Remote": {
-                                "desired": 0,
-                                "lastReq": 0,
-                                "lastAck": 0,
-                            }
+                    "drafts": [],
+                    "time": 1,
+                    "status": "live",
+                    "browser": "b1",
+                    "synck": {
+                        "Remote": {
+                            "desired": 0,
+                            "lastReq": 0,
+                            "lastAck": 0,
                         }
                     }
                 },
@@ -420,7 +457,7 @@ mod tests {
 /\ workers = ( w1 :>
       [ drafts |-> {},
         time |-> 1,
-        status |-> "live",
+        status |-> "live,
         browser |-> b1,
         sync |-> [Remote |-> [desired |-> 0, lastReq |-> 0, lastAck |-> 0]] ] @@
   w2 :>
@@ -529,19 +566,21 @@ mod tests {
 
     fn expected5() -> JsonValue {
         json!({
-            "network": {
-                "drafts": [],
-                "type": "sync:T->W",
-                "from": "t2",
-                "to": "w1",
-                "newEdit": {
-                    "isEmpty": false,
-                    "get": {
-                        "w1": 0,
-                        "w2": 0
-                    }
-                },
-            },
+            "network": [
+                {
+                    "drafts": [],
+                    "type": "sync:T->W",
+                    "from": "t2",
+                    "to": "w1",
+                    "newEdit": {
+                        "isEmpty": false,
+                        "get": {
+                            "w1": 0,
+                            "w2": 0
+                        }
+                    },
+                }
+            ],
             "tabs": {
                 "t1": {
                     "worker": "w2",
