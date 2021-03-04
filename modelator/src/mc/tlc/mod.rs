@@ -20,22 +20,32 @@ pub(crate) async fn run(options: &Options) -> Result<Vec<Trace>, Error> {
     tracing::debug!("TLC stdout:\n{}", stdout);
     tracing::debug!("TLC stderr:\n{}", stderr);
 
-    if output.status.success() {
-        // save tlc log
-        tokio::fs::write(&options.log, &stdout)
-            .await
-            .map_err(Error::IO)?;
+    match (stdout.is_empty(), stderr.is_empty()) {
+        (false, true) => {
+            // if stderr is empty, but the stdout is not, then no error has
+            // occurred
 
-        // remove tlc 'states' folder: this avoids a TLC error when we're are
-        // able to run TLC twice in the same second, and the folders created
-        // inside the 'states' folder are named using the current date with a
-        // second precision (e.g. 'states/21-03-04-16-42-04')
-        tokio::fs::remove_dir("states").await.map_err(Error::IO)?;
+            // save tlc log
+            tokio::fs::write(&options.log, &stdout)
+                .await
+                .map_err(Error::IO)?;
 
-        // convert tlc output to counterexamples
-        output::parse(stdout, &options)
-    } else {
-        Err(Error::TLCFailure(stderr))
+            // remove tlc 'states' folder: this avoids a TLC error when we're are
+            // able to run TLC twice in the same second, and the folders created
+            // inside the 'states' folder are named using the current date with a
+            // second precision (e.g. 'states/21-03-04-16-42-04')
+            tokio::fs::remove_dir("states").await.map_err(Error::IO)?;
+
+            // convert tlc output to counterexamples
+            output::parse(stdout, &options)
+        }
+        (true, false) => {
+            // if stdout is empty, but the stderr is not, return an error
+            Err(Error::TLCFailure(stderr))
+        }
+        _ => {
+            panic!("[modelator] unexpected TLC's stdout/stderr combination")
+        }
     }
 }
 
