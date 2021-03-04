@@ -31,7 +31,7 @@ pub enum Error {
     Serde(serde_json::Error),
 
     #[error("Nom error: {0}")]
-    Nom(String)
+    Nom(String),
 }
 
 #[derive(Error, Debug)]
