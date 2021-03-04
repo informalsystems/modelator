@@ -6,7 +6,6 @@ use nom::multi::{many0, many1, separated_list0, separated_list1};
 use nom::sequence::{preceded, separated_pair, terminated};
 use nom::IResult;
 use serde_json::Value as JsonValue;
-use std::ops::RangeFrom;
 
 pub(crate) fn parse_state(input: &str) -> IResult<&str, JsonValue> {
     many0(parse_var)(input).map(|(input, value)| {
@@ -51,6 +50,7 @@ fn parse_any_value(input: &str) -> IResult<&str, JsonValue> {
             parse_string,
             parse_set,
             parse_record,
+            parse_function,
         )),
     )(input)
 }
@@ -109,7 +109,6 @@ fn parse_set(input: &str) -> IResult<&str, JsonValue> {
     })
 }
 
-// /\ tabs = (t1 :> [status |-> "-"] @@ t2 :> [status |-> "-"])
 fn parse_record(input: &str) -> IResult<&str, JsonValue> {
     preceded(
         char('('),
@@ -131,6 +130,33 @@ fn parse_record_entry(input: &str) -> IResult<&str, (String, JsonValue)> {
         separated_pair(
             preceded(space, parse_identifier),
             preceded(space, tag(":>")),
+            preceded(space, parse_any_value),
+        ),
+    )(input)
+    .map(|(input, (var, value))| (input, (var.into_iter().collect(), value)))
+}
+
+fn parse_function(input: &str) -> IResult<&str, JsonValue> {
+    preceded(
+        char('['),
+        cut(terminated(
+            separated_list1(preceded(space, char(',')), parse_function_entry),
+            preceded(space, char(']')),
+        )),
+    )(input)
+    .map(|(input, vars)| {
+        let vars = vars.into_iter().collect();
+        let value = JsonValue::Object(vars);
+        (input, value)
+    })
+}
+
+fn parse_function_entry(input: &str) -> IResult<&str, (String, JsonValue)> {
+    preceded(
+        space,
+        separated_pair(
+            preceded(space, parse_identifier),
+            preceded(space, tag("|->")),
             preceded(space, parse_any_value),
         ),
     )(input)
@@ -187,6 +213,7 @@ mod tests {
             (booleans_and_numbers_state(), booleans_and_numbers_expected()),
             (sets_state(), sets_expected()),
             (records_state(), records_expected()),
+            (functions_state(), functions_expected()),
             // (state1(), expected1()),
             // (state2(), expected2()),
             // (state3(), expected3()),
