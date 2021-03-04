@@ -20,13 +20,17 @@ pub(crate) async fn run(options: &Options) -> Result<Vec<Trace>, Error> {
     tracing::debug!("TLC stdout:\n{}", stdout);
     tracing::debug!("TLC stderr:\n{}", stderr);
 
-    // save tlc log
-    tokio::fs::write(&options.log, &stdout)
-        .await
-        .map_err(Error::IO)?;
+    if output.status.success() {
+        // save tlc log
+        tokio::fs::write(&options.log, &stdout)
+            .await
+            .map_err(Error::IO)?;
 
-    // convert tlc output to counterexamples
-    output::parse(stdout, &options)
+        // convert tlc output to counterexamples
+        output::parse(stdout, &options)
+    } else {
+        Err(Error::TLCFailure(stderr))
+    }
 }
 
 fn cmd(options: &Options) -> Command {

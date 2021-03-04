@@ -15,11 +15,14 @@ pub enum Error {
     #[error("Error parsing TLA state:\n{state}\nerror:\n{error}")]
     TlaParse { state: String, error: String },
 
-    #[error("No trace found. Check the model checker log: {0}")]
+    #[error("No trace found. Check the model checker log at {0}")]
     NoTraceFound(std::path::PathBuf),
 
-    #[error("Invalid TLC output: {0}")]
+    #[error("Invalid TLC output at {0}")]
     InvalidTLCOutput(std::path::PathBuf),
+
+    #[error("TLC failure: {0}")]
+    TLCFailure(String),
 
     #[error("Reqwest error: {0}")]
     Reqwest(reqwest::Error),
