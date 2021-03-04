@@ -14,9 +14,13 @@ pub(crate) async fn run(options: &Options) -> Result<Vec<Trace>, Error> {
     // TODO: add timeout
     let output = cmd.output().await.map_err(Error::IO)?;
 
-    // save tlc log
+    // get tlc stdout and stderr
     let stdout = util::output_to_string(&output.stdout);
-    tracing::debug!("TLC output:\n{}", stdout);
+    let stderr = util::output_to_string(&output.stderr);
+    tracing::debug!("TLC stdout:\n{}", stdout);
+    tracing::debug!("TLC stderr:\n{}", stderr);
+
+    // save tlc log
     tokio::fs::write(&options.log, &stdout)
         .await
         .map_err(Error::IO)?;
