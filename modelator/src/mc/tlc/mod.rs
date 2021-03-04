@@ -26,6 +26,12 @@ pub(crate) async fn run(options: &Options) -> Result<Vec<Trace>, Error> {
             .await
             .map_err(Error::IO)?;
 
+        // remove tlc 'states' folder: this avoids a TLC error when we're are
+        // able to run TLC twice in the same second, and the folders created
+        // inside the 'states' folder are named using the current date with a
+        // second precision (e.g. 'states/21-03-04-16-42-04')
+        tokio::fs::remove_dir("states").await.map_err(Error::IO)?;
+
         // convert tlc output to counterexamples
         output::parse(stdout, &options)
     } else {
