@@ -1,8 +1,9 @@
+use crate::Error;
 use serde_json::Value as JsonValue;
 
 pub(crate) type TLAState = String;
 pub(crate) struct Trace {
-    pub states: Vec<TLAState>,
+    states: Vec<TLAState>,
 }
 
 impl Trace {
@@ -17,20 +18,19 @@ impl Trace {
     pub(crate) fn is_empty(&self) -> bool {
         self.states.is_empty()
     }
+
+    pub(crate) fn to_json(self) -> Result<JsonTrace, Error> {
+        let states = self
+            .states
+            .into_iter()
+            .map(|state| crate::mc::json::state_to_json(&state))
+            .collect::<Result<_, _>>()?;
+        Ok(JsonTrace { states })
+    }
 }
 
 pub struct JsonTrace {
-    pub states: Vec<JsonValue>,
-}
-
-impl JsonTrace {
-    pub(crate) fn new() -> Self {
-        Self { states: Vec::new() }
-    }
-
-    pub(crate) fn add(&mut self, state: JsonValue) {
-        self.states.push(state);
-    }
+    states: Vec<JsonValue>,
 }
 
 impl IntoIterator for JsonTrace {
