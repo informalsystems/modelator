@@ -237,9 +237,9 @@ mod tests {
             (functions_state(), functions_expected()),
             (state1(), expected1()),
             (state2(), expected2()),
-            // (state3(), expected3()),
-            // (state4(), expected4()),
-            // (state5(), expected5()),
+            (state3(), expected3()),
+            (state4(), expected4()),
+            (state5(), expected5()),
         ];
         for (state, expected) in states {
             let result = parse_state(state);
@@ -427,7 +427,7 @@ mod tests {
                     "time": 1,
                     "status": "live",
                     "browser": "b1",
-                    "synck": {
+                    "sync": {
                         "Remote": {
                             "desired": 0,
                             "lastReq": 0,
@@ -457,7 +457,7 @@ mod tests {
 /\ workers = ( w1 :>
       [ drafts |-> {},
         time |-> 1,
-        status |-> "live,
+        status |-> "live",
         browser |-> b1,
         sync |-> [Remote |-> [desired |-> 0, lastReq |-> 0, lastAck |-> 0]] ] @@
   w2 :>
@@ -495,7 +495,7 @@ mod tests {
                     "time": 1,
                     "status": "live",
                     "browser": "b1",
-                    "awaiting": {
+                    "sync": {
                         "Remote": {
                             "desired": 0,
                             "lastReq": 0,
@@ -508,7 +508,7 @@ mod tests {
                     "time": 1,
                     "status": "live",
                     "browser": "b1",
-                    "awaiting": {
+                    "sync": {
                         "Remote": {
                             "desired": 0,
                             "lastReq": 0,
@@ -584,7 +584,7 @@ mod tests {
             "tabs": {
                 "t1": {
                     "worker": "w2",
-                    "status": "loading",
+                    "status": "dirty",
                     "draft": {
                         "isEmpty": true,
                     },
