@@ -45,7 +45,13 @@ fn cmd(options: &Options) -> Command {
         // set the number of TLC's workers
         .arg("-workers")
         .arg(workers(options.workers));
-    tracing::debug!("{}", format!("{:?}", cmd).replace("\"", ""));
+
+    // show command being run
+    let pretty = format!("{:?}", cmd).replace("\"", "");
+    let pretty = pretty.trim_start_matches("Command { std:");
+    let pretty = pretty.trim_end_matches(", kill_on_drop: false }");
+    tracing::debug!("{}", pretty);
+
     cmd
 }
 
