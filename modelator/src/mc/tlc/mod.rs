@@ -16,6 +16,7 @@ pub(crate) async fn run(options: &Options) -> Result<Vec<Trace>, Error> {
 
     // save tlc log
     let stdout = util::output_to_string(&output.stdout);
+    tracing::debug!("TLC output:\n{}", stdout);
     tokio::fs::write(&options.log, &stdout)
         .await
         .map_err(Error::IO)?;
@@ -44,6 +45,7 @@ fn cmd(options: &Options) -> Command {
         // set the number of TLC's workers
         .arg("-workers")
         .arg(workers(options.workers));
+    tracing::debug!("{}", format!("{:?}", cmd).replace("\"", ""));
     cmd
 }
 

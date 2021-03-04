@@ -33,6 +33,7 @@ pub async fn traces(options: Options) -> Result<Vec<JsonTrace>, Error> {
     //       see e.g. https://github.com/tensorflow/rust/blob/master/tensorflow-sys/build.rs
     // download missing jars
     jar::download_jars(&options.dir).await?;
+    tracing::trace!("modelator setup completed");
 
     // run model checker
     mc::run(options).await
