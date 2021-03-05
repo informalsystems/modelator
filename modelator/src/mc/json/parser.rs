@@ -1,5 +1,5 @@
 use nom::branch::alt;
-use nom::bytes::complete::{is_a, tag, take_while};
+use nom::bytes::complete::{tag, take_while};
 use nom::character::complete::{char, digit1, multispace0, satisfy};
 use nom::combinator::{cut, value};
 use nom::multi::{many0, many1, separated_list0, separated_list1};
@@ -8,9 +8,9 @@ use nom::IResult;
 use serde_json::Value as JsonValue;
 
 pub(crate) fn parse_state(input: &str) -> IResult<&str, JsonValue> {
-    many0(parse_var)(input).map(|(input, value)| {
-        let vars = value.into_iter().collect();
-        (input, JsonValue::Object(vars))
+    many0(parse_var)(input).map(|(next_input, value)| {
+        let value = value.into_iter().collect();
+        (next_input, JsonValue::Object(value))
     })
 }
 
@@ -37,14 +37,20 @@ fn space(input: &str) -> IResult<&str, &str> {
 
 fn parse_identifier(input: &str) -> IResult<&str, String> {
     // TODO: what else can TLA var idenfitiers have?
-    many1(satisfy(|c| c.is_alphanumeric() || "_-".contains(c)))(input)
-        .map(|(input, value)| (input, value.into_iter().collect()))
+    many1(satisfy(|c| c.is_alphanumeric() || "_-".contains(c)))(input).map(|(next_input, value)| {
+        let value = value.into_iter().collect();
+        (next_input, value)
+    })
 }
 
 fn parse_any_value(input: &str) -> IResult<&str, JsonValue> {
     // identifiers of model variables can also be used as TLA values
-    let parse_identifiers_as_values =
-        |input| parse_identifier(input).map(|(input, value)| (input, JsonValue::String(value)));
+    let parse_identifiers_as_values = |input| {
+        parse_identifier(input).map(|(next_input, value)| {
+            let value = JsonValue::String(value);
+            (next_input, value)
+        })
+    };
     preceded(
         space,
         alt((
@@ -71,20 +77,20 @@ fn parse_number(input: &str) -> IResult<&str, JsonValue> {
 }
 
 fn parse_pos_number(input: &str) -> IResult<&str, JsonValue> {
-    digit1(input).map(|(input, value)| {
+    digit1(input).map(|(next_input, value)| {
         let value: u64 = value
             .parse()
             .expect("u64 parsed by nom should be a valid u64");
-        (input, JsonValue::Number(value.into()))
+        (next_input, JsonValue::Number(value.into()))
     })
 }
 
 fn parse_neg_number(input: &str) -> IResult<&str, JsonValue> {
-    preceded(is_a("-"), digit1)(input).map(|(input, value)| {
+    preceded(tag("-"), digit1)(input).map(|(next_input, value)| {
         let value: i64 = format!("-{}", value)
             .parse()
             .expect("i64 parsed by nom should be a valid i64");
-        (input, JsonValue::Number(value.into()))
+        (next_input, JsonValue::Number(value.into()))
     })
 }
 
@@ -94,9 +100,9 @@ fn parse_string(input: &str) -> IResult<&str, JsonValue> {
         char('\"'),
         cut(terminated(take_while(|c| c != '\"'), char('\"'))),
     )(input)
-    .map(|(input, value)| {
+    .map(|(next_input, value)| {
         let value = JsonValue::String(value.to_owned());
-        (input, value)
+        (next_input, value)
     })
 }
 
@@ -108,9 +114,9 @@ fn parse_set(input: &str) -> IResult<&str, JsonValue> {
             preceded(space, char('}')),
         )),
     )(input)
-    .map(|(input, value)| {
+    .map(|(next_input, value)| {
         let value = JsonValue::Array(value);
-        (input, value)
+        (next_input, value)
     })
 }
 
@@ -122,9 +128,9 @@ fn parse_sequence(input: &str) -> IResult<&str, JsonValue> {
             preceded(space, tag(">>")),
         )),
     )(input)
-    .map(|(input, value)| {
+    .map(|(next_input, value)| {
         let value = JsonValue::Array(value);
-        (input, value)
+        (next_input, value)
     })
 }
 
@@ -136,10 +142,10 @@ fn parse_record(input: &str) -> IResult<&str, JsonValue> {
             preceded(space, char(')')),
         )),
     )(input)
-    .map(|(input, vars)| {
-        let vars = vars.into_iter().collect();
-        let value = JsonValue::Object(vars);
-        (input, value)
+    .map(|(next_input, value)| {
+        let value = value.into_iter().collect();
+        let value = JsonValue::Object(value);
+        (next_input, value)
     })
 }
 
@@ -162,10 +168,10 @@ fn parse_function(input: &str) -> IResult<&str, JsonValue> {
             preceded(space, char(']')),
         )),
     )(input)
-    .map(|(input, vars)| {
-        let vars = vars.into_iter().collect();
-        let value = JsonValue::Object(vars);
-        (input, value)
+    .map(|(next_input, value)| {
+        let value = value.into_iter().collect();
+        let value = JsonValue::Object(value);
+        (next_input, value)
     })
 }
 
