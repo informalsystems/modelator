@@ -30,10 +30,12 @@ pub(crate) async fn run(options: &Options) -> Result<Vec<Trace>, Error> {
                 .await
                 .map_err(Error::IO)?;
 
-            // remove tlc 'states' folder: this avoids a TLC error when we're are
-            // able to run TLC twice in the same second, and the folders created
-            // inside the 'states' folder are named using the current date with a
-            // second precision (e.g. 'states/21-03-04-16-42-04')
+            // remove tlc 'states' folder. on each run, tlc creates a new folder
+            // inside the 'states' folder named using the current date with a
+            // second precision (e.g. 'states/21-03-04-16-42-04'). if we happen
+            // to run tlc twice in the same second, tlc fails when trying to
+            // create this folder for the second time. we avoid this problem by
+            // simply removing the parent folder 'states' after every tlc run
             tokio::fs::remove_dir_all("states")
                 .await
                 .map_err(Error::IO)?;
