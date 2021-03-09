@@ -11,3 +11,12 @@ Cargo.lock
 
 # VSCode files
 .vscode/
+
+# TLA/TLC files
+*.tla
+*.cfg
+states/
+
+# Modelator default directory and log files
+.modelator/
+*.log

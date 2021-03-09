@@ -3,9 +3,8 @@ use std::path::{Path, PathBuf};
 
 #[derive(Clone, Debug, Clap)]
 pub struct Options {
-    /// Name of the TLA model.
-    #[clap(parse(try_from_str = parse_model_name))]
-    pub model_name: String,
+    /// TLA model file.
+    pub model_file: PathBuf,
 
     /// Which model checker to use. Possible values: 'TLC'.
     #[clap(short, long, default_value = "TLC")]
@@ -33,15 +32,10 @@ pub struct Options {
     pub dir: PathBuf,
 }
 
-#[allow(clippy::unnecessary_wraps)]
-fn parse_model_name(s: &str) -> clap::Result<String> {
-    Ok(strip_tla_extension(s))
-}
-
 impl Options {
-    pub fn new<S: Into<String>>(model_name: S) -> Self {
+    pub fn new<P: AsRef<Path>>(model_file: P) -> Self {
         Self {
-            model_name: strip_tla_extension(model_name),
+            model_file: model_file.as_ref().to_path_buf(),
             model_checker: ModelChecker::TLC,
             workers: Workers::Auto,
             run_mode: RunMode::Explore(10),
@@ -85,10 +79,6 @@ impl Options {
         self.dir = dir.as_ref().to_path_buf();
         self
     }
-}
-
-fn strip_tla_extension<S: Into<String>>(model_name: S) -> String {
-    model_name.into().trim_end_matches(".tla").to_owned()
 }
 
 #[derive(Clone, Copy, Debug)]

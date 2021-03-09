@@ -10,31 +10,47 @@ mod json;
 /// Utilitary functions.
 mod util;
 
+/// Re-exports.
+pub use trace::JsonTrace;
+
 use crate::{Error, ModelChecker, Options, RunMode};
 use std::path::{Path, PathBuf};
 
-pub(crate) async fn run(options: Options) -> Result<Vec<String>, Error> {
+pub(crate) async fn run(mut options: Options) -> Result<Vec<JsonTrace>, Error> {
     // check that the model tla file exists
-    let model_file = Path::new(&format!("{}.tla", &options.model_name)).to_path_buf();
-    if !model_file.is_file() {
-        return Err(Error::FileNotFound(model_file));
+    if !options.model_file.is_file() {
+        return Err(Error::FileNotFound(options.model_file));
     }
 
+    // compute model directory
+    let mut model_dir = options.model_file.clone();
+    assert!(model_dir.pop());
+
+    // extract tla model name
+    let model_name = options
+        .model_file
+        .file_name()
+        .unwrap()
+        .to_string_lossy()
+        .trim_end_matches(".tla")
+        .to_owned();
+
     // check that the model cfg file exists
-    let cfg_file = Path::new(&format!("{}.cfg", &options.model_name)).to_path_buf();
+    let cfg_file = model_dir.join(format!("{}.cfg", model_name));
     if !cfg_file.is_file() {
         return Err(Error::FileNotFound(cfg_file));
     }
 
-    // create new model with the tests negated if `RunMode::Test`
-    let model_file = match &options.run_mode {
-        RunMode::Test(test_name) => create_test(&options.model_name, test_name, &cfg_file).await?,
-        RunMode::Explore(_) => model_file,
+    // create new model file with the tests negated if `RunMode::Test`
+    if let RunMode::Test(test_name) = &options.run_mode {
+        let model_file = create_test(model_dir, &model_name, test_name, cfg_file).await?;
+        // update model file in options
+        options.model_file = model_file;
     };
 
     // run the model checker
     let traces = match options.model_checker {
-        ModelChecker::TLC => tlc::run(model_file, &options),
+        ModelChecker::TLC => tlc::run(&options),
     }
     .await?;
 
@@ -48,6 +64,7 @@ pub(crate) async fn run(options: Options) -> Result<Vec<String>, Error> {
 }
 
 async fn create_test<P: AsRef<Path>>(
+    model_dir: P,
     model_name: &str,
     test_name: &str,
     cfg_file: P,
@@ -60,13 +77,13 @@ async fn create_test<P: AsRef<Path>>(
     let test_cfg = test_cfg(&invariant, cfg_file).await?;
 
     // write test model to test model file
-    let test_model_file = Path::new(&format!("{}.tla", test_model_name)).to_path_buf();
+    let test_model_file = model_dir.as_ref().join(format!("{}.tla", test_model_name));
     tokio::fs::write(&test_model_file, test_model)
         .await
         .map_err(Error::IO)?;
 
     // write test cfg to test cfg file
-    let test_cfg_file = Path::new(&format!("{}.cfg", test_model_name)).to_path_buf();
+    let test_cfg_file = model_dir.as_ref().join(format!("{}.cfg", test_model_name));
     tokio::fs::write(&test_cfg_file, test_cfg)
         .await
         .map_err(Error::IO)?;

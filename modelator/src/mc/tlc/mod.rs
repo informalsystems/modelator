@@ -4,15 +4,11 @@ mod output;
 use super::trace::Trace;
 use super::util;
 use crate::{jar, Error, Options, Workers};
-use std::path::Path;
 use tokio::process::Command;
 
-pub(crate) async fn run<P: AsRef<Path>>(
-    model_file: P,
-    options: &Options,
-) -> Result<Vec<Trace>, Error> {
+pub(crate) async fn run(options: &Options) -> Result<Vec<Trace>, Error> {
     // create tlc command
-    let mut cmd = cmd(model_file, &options);
+    let mut cmd = cmd(options);
 
     // start tlc
     // TODO: add timeout
@@ -28,7 +24,7 @@ pub(crate) async fn run<P: AsRef<Path>>(
     output::parse(stdout, &options)
 }
 
-fn cmd<P: AsRef<Path>>(model_file: P, options: &Options) -> Command {
+fn cmd(options: &Options) -> Command {
     let tla2tools = jar::Jar::Tla.file(&options.dir);
     let community_modules = jar::Jar::CommunityModules.file(&options.dir);
     let mut cmd = Command::new("java");
@@ -42,7 +38,7 @@ fn cmd<P: AsRef<Path>>(model_file: P, options: &Options) -> Command {
         ))
         // set tla file
         .arg("tlc2.TLC")
-        .arg(model_file.as_ref())
+        .arg(&options.model_file)
         // set "-tool" flag, which allows easier parsing of TLC's output
         .arg("-tool")
         // set the number of TLC's workers

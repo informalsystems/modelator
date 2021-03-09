@@ -1,25 +1,25 @@
-use super::trace::Trace;
+use super::trace::{JsonTrace, Trace};
 use super::util;
 use crate::{jar, Error};
-use serde_json::Value;
+use serde_json::Value as JsonValue;
 use std::path::{Path, PathBuf};
 use tokio::process::Command;
 
 pub(crate) async fn traces_to_json<P: AsRef<Path>>(
     modelator_dir: P,
     traces: Vec<Trace>,
-) -> Result<Vec<String>, Error> {
-    let mut jsons = Vec::with_capacity(traces.len());
+) -> Result<Vec<JsonTrace>, Error> {
+    let mut json_traces = Vec::with_capacity(traces.len());
     for trace in traces {
-        let json = trace_to_json(&modelator_dir, trace).await?;
-        jsons.push(json);
+        let json_trace = trace_to_json(&modelator_dir, trace).await?;
+        json_traces.push(json_trace);
     }
-    Ok(jsons)
+    Ok(json_traces)
 }
 
-async fn trace_to_json<P: AsRef<Path>>(modelator_dir: P, trace: Trace) -> Result<String, Error> {
-    // list with each trace state converted to json
-    let mut jsons = Vec::new();
+async fn trace_to_json<P: AsRef<Path>>(modelator_dir: P, trace: Trace) -> Result<JsonTrace, Error> {
+    let mut json_trace = JsonTrace::new();
+
     // temporary file where each trace state is written to
     let state_file = modelator_dir
         .as_ref()
@@ -56,23 +56,18 @@ async fn trace_to_json<P: AsRef<Path>>(modelator_dir: P, trace: Trace) -> Result
             // replace constant back
             let json = json.replace(constant, "-1");
 
-            // save json
-            jsons.push(json);
+            // parse json
+            let json: JsonValue = serde_json::from_str(&json).map_err(Error::Serde)?;
+
+            // add to trace
+            json_trace.add(json);
         } else {
             // if the command has not succeeded, get error from the stderr
             let error = util::output_to_string(&output.stderr);
             return Err(Error::Tla2Json { state, error });
         }
     }
-
-    // aggregate all counterexample states (already converted to json) into
-    // a json array
-    let json_array = format!("[{}]", jsons.join(","));
-
-    // pretty print json array
-    let counterexample: Value = serde_json::from_str(&json_array).map_err(Error::Serde)?;
-    let counterexample = serde_json::to_string_pretty(&counterexample).map_err(Error::Serde)?;
-    Ok(counterexample)
+    Ok(json_trace)
 }
 
 fn cmd<P: AsRef<Path>>(modelator_dir: P, state_file: &PathBuf) -> Command {
