@@ -1,3 +1,4 @@
+use crate::Artifact;
 use std::fmt::Debug;
 use thiserror::Error;
 
@@ -26,6 +27,13 @@ pub enum Error {
 
     #[error("Invalid TLC output: {0}")]
     InvalidTLCOutput(std::path::PathBuf),
+
+    #[error("Error while running method {module}.{method}")]
+    ModuleRun {
+        module: String,
+        method: String,
+        errors: Vec<Box<dyn Artifact>>,
+    },
 }
 
 #[derive(Error, Debug)]

@@ -1,6 +1,8 @@
 use serde_json::Value as JsonValue;
 
 pub(crate) type TLAState = String;
+
+#[derive(Debug)]
 pub(crate) struct Trace {
     pub states: Vec<TLAState>,
 }
