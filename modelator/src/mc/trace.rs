@@ -2,6 +2,8 @@ use crate::Error;
 use serde_json::Value as JsonValue;
 
 pub(crate) type TLAState = String;
+
+#[derive(Debug)]
 pub(crate) struct Trace {
     states: Vec<TLAState>,
 }
@@ -30,7 +32,7 @@ impl Trace {
 }
 
 pub struct JsonTrace {
-    states: Vec<JsonValue>,
+    pub states: Vec<JsonValue>,
 }
 
 impl IntoIterator for JsonTrace {

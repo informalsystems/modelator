@@ -4,6 +4,14 @@ mod options;
 /// Modelator's error type.
 mod error;
 
+mod util;
+
+mod module;
+pub use module::{MethodManifest, Module, ModuleManifest};
+
+pub mod artifact;
+pub use artifact::{Artifact, ArtifactManifest};
+
 /// Download jar utilities.
 mod jar;
 
