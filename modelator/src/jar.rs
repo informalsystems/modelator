@@ -42,16 +42,16 @@ impl Jar {
         }
     }
 
-    async fn download<P: AsRef<Path>>(&self, modelator_dir: P) -> Result<(), Error> {
+    fn download<P: AsRef<Path>>(&self, modelator_dir: P) -> Result<(), Error> {
         let modelator_dir = modelator_dir.as_ref();
         // compute jar link and file where it should be stored
         let link = self.link();
         let file = self.file(&modelator_dir);
 
         // download jar
-        let response = reqwest::get(&link).await.map_err(Error::Reqwest)?;
-        let jar = response.bytes().await.map_err(Error::Reqwest)?;
-        tokio::fs::write(file, jar).await.map_err(Error::IO)?;
+        let response = reqwest::blocking::get(&link).map_err(Error::Reqwest)?;
+        let jar = response.bytes().map_err(Error::Reqwest)?;
+        std::fs::write(file, jar).map_err(Error::IO)?;
         Ok(())
     }
 
@@ -60,27 +60,26 @@ impl Jar {
     }
 }
 
-pub(crate) async fn download_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Error> {
+pub(crate) fn download_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Error> {
     // get all existing jars
-    let existing_jars = existing_jars(&modelator_dir).await?;
+    let existing_jars = existing_jars(&modelator_dir)?;
     // download all jars that do not exist yet
     for jar in Jar::all() {
         if !existing_jars.contains(&jar) {
-            jar.download(&modelator_dir).await?;
+            jar.download(&modelator_dir)?;
         }
     }
     Ok(())
 }
 
-async fn existing_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<HashSet<Jar>, Error> {
+fn existing_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<HashSet<Jar>, Error> {
     let mut existing_jars = HashSet::new();
     // read files the modelator directory
-    let mut files = tokio::fs::read_dir(modelator_dir)
-        .await
-        .map_err(Error::IO)?;
-    while let Some(file) = files.next_entry().await.map_err(Error::IO)? {
+    let files = std::fs::read_dir(modelator_dir).map_err(Error::IO)?;
+    for file in files {
         // for each file in the modelator directory, check if it is a jar
         let file_name = file
+            .map_err(Error::IO)?
             .file_name()
             .into_string()
             .map_err(Error::InvalidUnicode)?;

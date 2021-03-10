@@ -16,7 +16,7 @@ pub use trace::JsonTrace;
 use crate::{Error, ModelChecker, Options, RunMode};
 use std::path::{Path, PathBuf};
 
-pub(crate) async fn run(mut options: Options) -> Result<Vec<JsonTrace>, Error> {
+pub(crate) fn run(mut options: Options) -> Result<Vec<JsonTrace>, Error> {
     // check that the model tla file exists
     if !options.model_file.is_file() {
         return Err(Error::FileNotFound(options.model_file));
@@ -43,7 +43,7 @@ pub(crate) async fn run(mut options: Options) -> Result<Vec<JsonTrace>, Error> {
 
     // create new model file with the tests negated if `RunMode::Test`
     if let RunMode::Test(test_name) = &options.run_mode {
-        let model_file = create_test(model_dir, &model_name, test_name, cfg_file).await?;
+        let model_file = create_test(model_dir, &model_name, test_name, cfg_file)?;
         // update model file in options
         options.model_file = model_file;
     };
@@ -51,8 +51,7 @@ pub(crate) async fn run(mut options: Options) -> Result<Vec<JsonTrace>, Error> {
     // run the model checker
     let traces = match options.model_checker {
         ModelChecker::TLC => tlc::run(&options),
-    }
-    .await?;
+    }?;
 
     // check if no trace was found
     if traces.is_empty() {
@@ -63,7 +62,7 @@ pub(crate) async fn run(mut options: Options) -> Result<Vec<JsonTrace>, Error> {
     traces.into_iter().map(|trace| trace.parse()).collect()
 }
 
-async fn create_test<P: AsRef<Path>>(
+fn create_test<P: AsRef<Path>>(
     model_dir: P,
     model_name: &str,
     test_name: &str,
@@ -74,19 +73,15 @@ async fn create_test<P: AsRef<Path>>(
     // create test model where the test is negated
     let test_model = test_model(model_name, test_name, &test_model_name, &invariant);
     // create test config with negated test as an invariant
-    let test_cfg = test_cfg(&invariant, cfg_file).await?;
+    let test_cfg = test_cfg(&invariant, cfg_file)?;
 
     // write test model to test model file
     let test_model_file = model_dir.as_ref().join(format!("{}.tla", test_model_name));
-    tokio::fs::write(&test_model_file, test_model)
-        .await
-        .map_err(Error::IO)?;
+    std::fs::write(&test_model_file, test_model).map_err(Error::IO)?;
 
     // write test cfg to test cfg file
     let test_cfg_file = model_dir.as_ref().join(format!("{}.cfg", test_model_name));
-    tokio::fs::write(&test_cfg_file, test_cfg)
-        .await
-        .map_err(Error::IO)?;
+    std::fs::write(&test_cfg_file, test_cfg).map_err(Error::IO)?;
     Ok(test_model_file)
 }
 
@@ -105,10 +100,8 @@ EXTENDS {}
     )
 }
 
-async fn test_cfg<P: AsRef<Path>>(invariant: &str, cfg_file: P) -> Result<String, Error> {
-    let cfg = tokio::fs::read_to_string(cfg_file)
-        .await
-        .map_err(Error::IO)?;
+fn test_cfg<P: AsRef<Path>>(invariant: &str, cfg_file: P) -> Result<String, Error> {
+    let cfg = std::fs::read_to_string(cfg_file).map_err(Error::IO)?;
     Ok(format!(
         r#"
 {}

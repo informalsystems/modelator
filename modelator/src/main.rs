@@ -1,8 +1,7 @@
 use clap::Clap;
 use modelator::{Error, Options};
 
-#[tokio::main]
-async fn main() -> Result<(), Error> {
+fn main() -> Result<(), Error> {
     let _options = Options::new("IBCTests.tla")
         .tlc()
         .workers(modelator::Workers::Auto)
@@ -11,7 +10,7 @@ async fn main() -> Result<(), Error> {
 
     // cargo run -- IBCTests.tla -r test,ICS03ConnectionOpenConfirmOKTest
     let options = Options::parse();
-    let traces = modelator::traces(options).await?;
+    let traces = modelator::traces(options)?;
 
     // aggregate all traces into a json array (and each trace into a json array
     // as well)

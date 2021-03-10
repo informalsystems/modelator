@@ -4,15 +4,15 @@ mod output;
 use super::trace::Trace;
 use super::util;
 use crate::{jar, Error, Options, Workers};
-use tokio::process::Command;
+use std::process::Command;
 
-pub(crate) async fn run(options: &Options) -> Result<Vec<Trace>, Error> {
+pub(crate) fn run(options: &Options) -> Result<Vec<Trace>, Error> {
     // create tlc command
     let mut cmd = cmd(options);
 
     // start tlc
     // TODO: add timeout
-    let output = cmd.output().await.map_err(Error::IO)?;
+    let output = cmd.output().map_err(Error::IO)?;
 
     // get tlc stdout and stderr
     let stdout = util::output_to_string(&output.stdout);
@@ -26,9 +26,7 @@ pub(crate) async fn run(options: &Options) -> Result<Vec<Trace>, Error> {
             // occurred
 
             // save tlc log
-            tokio::fs::write(&options.log, &stdout)
-                .await
-                .map_err(Error::IO)?;
+            std::fs::write(&options.log, &stdout).map_err(Error::IO)?;
 
             // remove tlc 'states' folder. on each run, tlc creates a new folder
             // inside the 'states' folder named using the current date with a
@@ -36,9 +34,7 @@ pub(crate) async fn run(options: &Options) -> Result<Vec<Trace>, Error> {
             // to run tlc twice in the same second, tlc fails when trying to
             // create this folder for the second time. we avoid this problem by
             // simply removing the parent folder 'states' after every tlc run
-            tokio::fs::remove_dir_all("states")
-                .await
-                .map_err(Error::IO)?;
+            std::fs::remove_dir_all("states").map_err(Error::IO)?;
 
             // convert tlc output to counterexamples
             output::parse(stdout, &options)
