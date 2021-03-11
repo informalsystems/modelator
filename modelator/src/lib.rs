@@ -52,7 +52,7 @@ pub fn traces<P: AsRef<Path>>(
     // convert each tla trace to json
     traces
         .into_iter()
-        .map(|tla_trace| module::Tla::tla_trace_to_json_trace(tla_trace))
+        .map(module::Tla::tla_trace_to_json_trace)
         .collect()
 }
 

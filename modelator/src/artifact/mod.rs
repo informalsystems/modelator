@@ -16,5 +16,4 @@ use serde::Serialize;
 /// (from string/file).
 pub trait Artifact: Serialize + DeserializeOwned {}
 
-
 // TODO: assert that all artifacts implement the above trait.
