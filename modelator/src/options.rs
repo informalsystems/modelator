@@ -1,76 +1,18 @@
-use clap::Clap;
 use std::path::{Path, PathBuf};
 
-#[derive(Clone, Debug, Clap)]
+#[derive(Clone, Debug)]
 pub struct Options {
-    /// TLA model file.
-    pub model_file: PathBuf,
-
-    /// Which model checker to use. Possible values: 'TLC'.
-    #[clap(short, long, default_value = "TLC")]
-    pub model_checker: ModelChecker,
-
-    /// Model checher run mode. Possible values: 'explore,10' to explore the
-    /// model randomly and generate 10 random traces; and 'test,X' to generate
-    /// a test for X (if possible).
-    #[clap(short, long, default_value = "explore,10")]
-    pub run_mode: RunMode,
-
-    /// Number of model checker workers. Possible values: 'auto' to select the
-    /// number of model checker worker threads based on on the number of
-    /// available cores; and any number (e.g. '4') precising the number of
-    /// workers threads.
-    #[clap(short, long, default_value = "auto")]
-    pub workers: Workers,
-
-    /// Model checker log file for debugging purposes.
-    #[clap(long, default_value = "mc.log")]
-    pub log: PathBuf,
+    /// Model checker options.
+    pub model_checker_options: ModelCheckerOptions,
 
     /// Modelator directory.
-    #[clap(long, default_value = ".modelator")]
     pub dir: PathBuf,
 }
 
 impl Options {
-    pub fn new<P: AsRef<Path>>(model_file: P) -> Self {
-        Self {
-            model_file: model_file.as_ref().to_path_buf(),
-            model_checker: ModelChecker::TLC,
-            workers: Workers::Auto,
-            run_mode: RunMode::Explore(10),
-            log: Path::new("mc.log").to_path_buf(),
-            dir: Path::new(".modelator").to_path_buf(),
-        }
-    }
-
-    /// Set the TLC model checker.
-    pub fn tlc(mut self) -> Self {
-        self.model_checker = ModelChecker::TLC;
-        self
-    }
-
-    /// Set the test run mode given the test name.
-    pub fn test<S: Into<String>>(mut self, test_name: S) -> Self {
-        self.run_mode = RunMode::Test(test_name.into());
-        self
-    }
-
-    /// Set the explore run mode given the number of traces to be generated.
-    pub fn explore(mut self, trace_count: usize) -> Self {
-        self.run_mode = RunMode::Explore(trace_count);
-        self
-    }
-
-    /// Set number of model checker workers.
-    pub fn workers(mut self, workers: Workers) -> Self {
-        self.workers = workers;
-        self
-    }
-
-    /// Set model checker log file.
-    pub fn log(mut self, log: impl AsRef<Path>) -> Self {
-        self.log = log.as_ref().to_path_buf();
+    /// Set TLC options.
+    pub fn model_checker_options(mut self, model_checker_options: ModelCheckerOptions) -> Self {
+        self.model_checker_options = model_checker_options;
         self
     }
 
@@ -81,64 +23,59 @@ impl Options {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-pub enum ModelChecker {
-    TLC,
-}
-
-impl std::str::FromStr for ModelChecker {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "TLC" => Ok(Self::TLC),
-            _ => Err(unsupported(s)),
+impl Default for Options {
+    fn default() -> Self {
+        Self {
+            model_checker_options: ModelCheckerOptions::default(),
+            dir: Path::new(".modelator").to_path_buf(),
         }
     }
 }
 
 #[derive(Clone, Debug)]
-pub enum RunMode {
-    /// Test mode. The argument is the name of the test.
-    Test(String),
-    /// Exploration mode. The argument is the number of traces to be generated.
-    /// This mode corresponds to TLC's simulation mode.
-    Explore(usize),
+pub struct ModelCheckerOptions {
+    /// Number of model checker worker threads. Possible values: 'auto' to
+    /// select the number of worker threads based on the number of available
+    /// cores; and any number (e.g. '4') precising the number of workers threads.
+    pub workers: ModelCheckerWorkers,
+
+    /// Model checker log file for debugging purposes.
+    pub log: PathBuf,
 }
 
-impl std::str::FromStr for RunMode {
-    type Err = String;
+impl ModelCheckerOptions {
+    /// Set number of model checker workers.
+    pub fn workers(mut self, workers: ModelCheckerWorkers) -> Self {
+        self.workers = workers;
+        self
+    }
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parts: Vec<_> = s.split(',').collect();
-        if parts.len() != 2 {
-            return Err(unsupported(s));
-        }
+    /// Set model checker log file.
+    pub fn log(mut self, log: impl AsRef<Path>) -> Self {
+        self.log = log.as_ref().to_path_buf();
+        self
+    }
+}
 
-        match parts[0] {
-            "test" => Ok(Self::Test(parts[1].to_string())),
-            "explore" => {
-                if let Ok(count) = parts[1].parse() {
-                    Ok(Self::Explore(count))
-                } else {
-                    Err(unsupported(s))
-                }
-            }
-            _ => Err(unsupported(s)),
+impl Default for ModelCheckerOptions {
+    fn default() -> Self {
+        Self {
+            workers: ModelCheckerWorkers::Auto,
+            log: Path::new("mc.log").to_path_buf(),
         }
     }
 }
 
 #[derive(Clone, Copy, Debug)]
-pub enum Workers {
+pub enum ModelCheckerWorkers {
     /// Automatically select the number of model checker worker threads based
-    // on the number of available cores.
+    /// on the number of available cores.
     Auto,
     /// Number of model checker worker threads.
     Count(usize),
 }
 
-impl std::str::FromStr for Workers {
+impl std::str::FromStr for ModelCheckerWorkers {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {

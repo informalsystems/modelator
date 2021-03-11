@@ -1,34 +1,41 @@
-use std::{fmt::Display, path::Path};
+use std::path::{Path, PathBuf};
 
-#[derive(Debug)]
-pub(crate) struct TLAFile {}
+pub struct TlaFile {
+    path: PathBuf,
+}
 
-impl Display for TLAFile {
-    fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Ok(())
+impl TlaFile {
+    pub(crate) fn new<P: AsRef<Path>>(path: P) -> Self {
+        Self {
+            path: path.as_ref().to_path_buf(),
+        }
+    }
+
+    pub(crate) fn path(&self) -> &PathBuf {
+        &self.path
+    }
+
+    /// Infer TLA module name. We assume that the TLA module name matches the
+    /// name of the file.
+    pub(crate) fn tla_module_name(&self) -> Option<String> {
+        if self.path.is_file() {
+            self.path.file_name().map(|file_name| {
+                file_name
+                    .to_string_lossy()
+                    .trim_end_matches(".tla")
+                    .to_owned()
+            })
+        } else {
+            None
+        }
     }
 }
 
-impl crate::artifact::Artifact for TLAFile {
-    fn name(&self) -> &'static str {
-        "TLA+ file"
-    }
-
-    fn from_string(_s: &str) -> Result<Self, crate::Error>
-    where
-        Self: Sized,
-    {
-        todo!()
-    }
-
-    fn from_file(_f: &Path) -> Result<Self, crate::Error>
-    where
-        Self: Sized,
-    {
-        todo!()
-    }
-
-    fn to_file(&self, _f: &Path) -> Result<(), crate::Error> {
-        todo!()
+impl<P> From<P> for TlaFile
+where
+    P: AsRef<Path>,
+{
+    fn from(path: P) -> Self {
+        Self::new(path.as_ref().to_path_buf())
     }
 }

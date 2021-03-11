@@ -1,7 +1,7 @@
 use crate::artifact::tla_trace::{TlaState, TlaTrace};
-use crate::{Error, Options};
+use crate::{Error, ModelCheckerOptions};
 
-pub(crate) fn parse(output: String, options: &Options) -> Result<Vec<TlaTrace>, Error> {
+pub(crate) fn parse(output: String, options: &ModelCheckerOptions) -> Result<Vec<TlaTrace>, Error> {
     let mut traces = Vec::new();
     let mut lines = output.lines();
 
@@ -18,7 +18,7 @@ pub(crate) fn parse(output: String, options: &Options) -> Result<Vec<TlaTrace>, 
 
 fn parse_trace<'a>(
     lines: &mut std::str::Lines<'a>,
-    options: &Options,
+    options: &ModelCheckerOptions,
 ) -> Result<Option<TlaTrace>, Error> {
     let mut state_index = 0;
     let mut state = None;

@@ -13,20 +13,22 @@ pub mod module;
 /// Download jar utilities.
 mod jar;
 
-/// Model checkers.
-mod mc;
-
 /// Test runner.
 pub mod runner;
 
 /// Re-exports.
 pub use error::{Error, TestError};
-pub use options::{ModelChecker, Options, RunMode, Workers};
+pub use options::{ModelCheckerOptions, ModelCheckerWorkers, Options};
 
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
+use std::path::Path;
 
-pub fn traces(options: Options) -> Result<Vec<artifact::JsonTrace>, Error> {
+pub fn traces<P: AsRef<Path>>(
+    tla_tests_file: P,
+    tla_config_file: P,
+    options: Options,
+) -> Result<Vec<artifact::JsonTrace>, Error> {
     // create modelator dir (if it doens't already exist)
     if !options.dir.as_path().is_dir() {
         std::fs::create_dir_all(&options.dir).map_err(Error::IO)?;
@@ -38,8 +40,14 @@ pub fn traces(options: Options) -> Result<Vec<artifact::JsonTrace>, Error> {
     jar::download_jars(&options.dir)?;
     tracing::trace!("modelator setup completed");
 
-    // run model checker
-    let traces = mc::run(options)?;
+    // generate tla tests
+    let tests = module::Tla::generate_tests(tla_tests_file.into(), tla_config_file.into())?;
+
+    // run tlc on each tla test
+    let traces = tests
+        .into_iter()
+        .map(|(tla_file, tla_config_file)| module::Tlc::test(tla_file, tla_config_file, &options))
+        .collect::<Result<Vec<_>, _>>()?;
 
     // convert each tla trace to json
     traces
@@ -48,12 +56,18 @@ pub fn traces(options: Options) -> Result<Vec<artifact::JsonTrace>, Error> {
         .collect()
 }
 
-pub fn run<Runner, Step>(options: Options, runner: Runner) -> Result<(), TestError<Runner, Step>>
+pub fn run<P, Runner, Step>(
+    tla_tests_file: P,
+    tla_config_file: P,
+    runner: Runner,
+) -> Result<(), TestError<Runner, Step>>
 where
+    P: AsRef<Path>,
     Runner: runner::TestRunner<Step> + Debug + Clone,
     Step: DeserializeOwned + Debug + Clone,
 {
-    let traces = traces(options).map_err(TestError::Modelator)?;
+    let options = Options::default();
+    let traces = traces(tla_tests_file, tla_config_file, options).map_err(TestError::Modelator)?;
     for trace in traces {
         let runner = runner.clone();
         runner::run(trace, runner)?;
