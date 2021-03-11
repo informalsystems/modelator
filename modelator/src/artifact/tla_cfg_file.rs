@@ -24,3 +24,9 @@ where
         Self::new(path.as_ref().to_path_buf())
     }
 }
+
+impl std::fmt::Display for TlaConfigFile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.path)
+    }
+}

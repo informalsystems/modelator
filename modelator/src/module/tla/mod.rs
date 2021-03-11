@@ -24,6 +24,7 @@ impl Tla {
         tla_tests_file: TlaFile,
         tla_config_file: TlaConfigFile,
     ) -> Result<Vec<(TlaFile, TlaConfigFile)>, Error> {
+        tracing::debug!("Tla::generate_tests {} {}", tla_tests_file, tla_config_file);
         // check that the tla tests file exists
         if !tla_tests_file.path().is_file() {
             return Err(Error::FileNotFound(tla_tests_file.path().clone()));
@@ -43,19 +44,44 @@ impl Tla {
         let tla_tests_module_name = tla_tests_file.tla_module_name().unwrap();
 
         // TODO: retrieve test names from tla tests file
-        let test_names = Vec::new();
-        test_names
+        extract_test_names(&tla_tests_file)?
             .into_iter()
             .map(|test_name| {
                 generate_test(
                     &tla_tests_dir,
                     &tla_tests_module_name,
-                    test_name,
+                    &test_name,
                     &tla_config_file,
                 )
             })
             .collect()
     }
+}
+
+fn extract_test_names(tla_test_file: &TlaFile) -> Result<Vec<String>, Error> {
+    let content = std::fs::read_to_string(tla_test_file.path()).map_err(Error::IO)?;
+    let test_names = content
+        .lines()
+        .filter_map(|line| {
+            // take the first element in the split
+            line.trim().split("==").next()
+        })
+        .filter_map(|name| {
+            let name = name.trim();
+            // consider this as a test name if it starts/ends Test
+            if name.starts_with("Test") || name.ends_with("Test") {
+                Some(name.to_string())
+            } else {
+                None
+            }
+        })
+        .collect();
+    tracing::debug!(
+        "test names extracted from {}:\n{:?}",
+        tla_test_file,
+        test_names
+    );
+    Ok(test_names)
 }
 
 fn generate_test(
