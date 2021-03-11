@@ -1,22 +1,14 @@
-/// Definition of a Trace.
-mod trace;
-
 /// TLC model-checker.
 mod tlc;
-
-/// Conversion from TLA counterexamples to JSON.
-mod json;
 
 /// Utilitary functions.
 mod util;
 
-/// Re-exports.
-pub use trace::JsonTrace;
-
+use crate::artifact::TlaTrace;
 use crate::{Error, ModelChecker, Options, RunMode};
 use std::path::{Path, PathBuf};
 
-pub(crate) fn run(mut options: Options) -> Result<Vec<JsonTrace>, Error> {
+pub(crate) fn run(mut options: Options) -> Result<Vec<TlaTrace>, Error> {
     // check that the model tla file exists
     if !options.model_file.is_file() {
         return Err(Error::FileNotFound(options.model_file));
@@ -58,8 +50,7 @@ pub(crate) fn run(mut options: Options) -> Result<Vec<JsonTrace>, Error> {
         return Err(Error::NoTraceFound(options.log));
     }
 
-    // convert each trace to json
-    traces.into_iter().map(|trace| trace.parse()).collect()
+    Ok(traces)
 }
 
 fn create_test<P: AsRef<Path>>(

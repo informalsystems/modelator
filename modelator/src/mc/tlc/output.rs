@@ -1,7 +1,7 @@
-use crate::mc::trace::{TLAState, Trace};
+use crate::artifact::tla_trace::{TlaState, TlaTrace};
 use crate::{Error, Options};
 
-pub(crate) fn parse(output: String, options: &Options) -> Result<Vec<Trace>, Error> {
+pub(crate) fn parse(output: String, options: &Options) -> Result<Vec<TlaTrace>, Error> {
     let mut traces = Vec::new();
     let mut lines = output.lines();
 
@@ -19,10 +19,10 @@ pub(crate) fn parse(output: String, options: &Options) -> Result<Vec<Trace>, Err
 fn parse_trace<'a>(
     lines: &mut std::str::Lines<'a>,
     options: &Options,
-) -> Result<Option<Trace>, Error> {
+) -> Result<Option<TlaTrace>, Error> {
     let mut state_index = 0;
     let mut state = None;
-    let mut trace = Trace::new();
+    let mut trace = TlaTrace::new();
     loop {
         let line = lines
             .next()
@@ -55,7 +55,7 @@ fn parse_trace<'a>(
                 state.is_none(),
                 "[modelator] previous trace state has not ended yet"
             );
-            state = Some(TLAState::new());
+            state = Some(TlaState::new());
             continue;
         }
 

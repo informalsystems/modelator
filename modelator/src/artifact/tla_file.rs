@@ -1,4 +1,3 @@
-use crate::Artifact;
 use std::{fmt::Display, path::Path};
 
 #[derive(Debug)]
@@ -10,7 +9,7 @@ impl Display for TLAFile {
     }
 }
 
-impl Artifact for TLAFile {
+impl crate::artifact::Artifact for TLAFile {
     fn name(&self) -> &'static str {
         "TLA+ file"
     }

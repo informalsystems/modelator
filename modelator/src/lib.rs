@@ -5,7 +5,10 @@ mod options;
 mod error;
 
 /// List of artifacts.
-mod artifact;
+pub mod artifact;
+
+/// List of modules.
+pub mod module;
 
 /// Download jar utilities.
 mod jar;
@@ -17,15 +20,13 @@ mod mc;
 pub mod runner;
 
 /// Re-exports.
-pub use artifact::Artifact;
 pub use error::{Error, TestError};
-pub use mc::JsonTrace;
 pub use options::{ModelChecker, Options, RunMode, Workers};
 
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 
-pub fn traces(options: Options) -> Result<Vec<JsonTrace>, Error> {
+pub fn traces(options: Options) -> Result<Vec<artifact::JsonTrace>, Error> {
     // create modelator dir (if it doens't already exist)
     if !options.dir.as_path().is_dir() {
         std::fs::create_dir_all(&options.dir).map_err(Error::IO)?;
@@ -38,7 +39,13 @@ pub fn traces(options: Options) -> Result<Vec<JsonTrace>, Error> {
     tracing::trace!("modelator setup completed");
 
     // run model checker
-    mc::run(options)
+    let traces = mc::run(options)?;
+
+    // convert each tla trace to json
+    traces
+        .into_iter()
+        .map(|tla_trace| module::Tla::tla_trace_to_json_trace(tla_trace))
+        .collect()
 }
 
 pub fn run<Runner, Step>(options: Options, runner: Runner) -> Result<(), TestError<Runner, Step>>

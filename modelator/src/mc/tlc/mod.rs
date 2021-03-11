@@ -1,12 +1,12 @@
 /// Parsing of TLC's output.
 mod output;
 
-use super::trace::Trace;
+use crate::artifact::TlaTrace;
 use super::util;
 use crate::{jar, Error, Options, Workers};
 use std::process::Command;
 
-pub(crate) fn run(options: &Options) -> Result<Vec<Trace>, Error> {
+pub(crate) fn run(options: &Options) -> Result<Vec<TlaTrace>, Error> {
     // create tlc command
     let mut cmd = cmd(options);
 
