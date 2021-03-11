@@ -68,8 +68,12 @@ fn extract_test_names(tla_test_file: &TlaFile) -> Result<Vec<String>, Error> {
         })
         .filter_map(|name| {
             let name = name.trim();
-            // consider this as a test name if it starts/ends Test
-            if name.starts_with("Test") || name.ends_with("Test") {
+            // consider this as a test name if:
+            // - it starts/ends Test
+            // - it's not commented out
+            let is_test = name.starts_with("Test") || name.ends_with("Test");
+            let is_commented_out = name.starts_with("\\*") || name.starts_with("(*");
+            if is_test && !is_commented_out {
                 Some(name.to_string())
             } else {
                 None
