@@ -4,13 +4,8 @@ mod options;
 /// Modelator's error type.
 mod error;
 
-mod util;
-
-mod module;
-pub use module::{MethodManifest, Module, ModuleManifest};
-
-pub mod artifact;
-pub use artifact::{Artifact, ArtifactManifest};
+/// List of artifacts.
+mod artifact;
 
 /// Download jar utilities.
 mod jar;
@@ -22,6 +17,7 @@ mod mc;
 pub mod runner;
 
 /// Re-exports.
+pub use artifact::Artifact;
 pub use error::{Error, TestError};
 pub use mc::JsonTrace;
 pub use options::{ModelChecker, Options, RunMode, Workers};

@@ -1,7 +1,14 @@
-use crate::{Artifact, ArtifactManifest};
+use crate::Artifact;
 use paste::paste;
 use serde::{Deserialize, Serialize};
 use serde_json;
+
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
+pub struct ArtifactManifest {
+    pub name: &'static str,
+    #[serde(rename = "type")]
+    pub typ: &'static str,
+}
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct ModuleManifest {
@@ -35,6 +42,15 @@ pub trait Module {
 
     //fn run(&self, method: &str, inputs: Vec<Box<dyn Artifact>>) -> Result<Vec<Box<dyn Artifact>>, Vec<Box<dyn Artifact>>>;
 }
+
+// #[modulator::module]
+// struct TLC {
+// }
+
+// impl TLC {
+//     #[modulator::method]
+//     fn check(&self, tla: TLA, )
+// }
 
 pub trait Method {
     fn manifest() -> MethodManifest;
