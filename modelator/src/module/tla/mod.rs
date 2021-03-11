@@ -11,7 +11,7 @@ pub struct Tla;
 impl Tla {
     // #[modelator::method]
     pub fn tla_trace_to_json_trace(tla_trace: TlaTrace) -> Result<JsonTrace, Error> {
-        tracing::debug!("Tla::tla_trace_to_json_trace:\n{:#?}", tla_trace);
+        tracing::debug!("Tla::tla_trace_to_json_trace:\n{}", tla_trace);
         let states: Vec<JsonValue> = tla_trace
             .into_iter()
             .map(|state| json::state_to_json(&state))
