@@ -30,8 +30,8 @@ impl IntoIterator for TlaTrace {
 
 impl std::fmt::Display for TlaTrace {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for state in self.states.iter() {
-            write!(f, "{}", state)?;
+        for (index, state) in self.states.iter().enumerate() {
+            write!(f, "State{} ==\n{}", index + 1, state)?;
         }
         Ok(())
     }
