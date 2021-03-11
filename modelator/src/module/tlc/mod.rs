@@ -91,6 +91,9 @@ fn cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) -> Co
         // set tla file
         .arg("tlc2.TLC")
         .arg(tla_file.as_ref())
+        // set tla config file
+        .arg("-config")
+        .arg(tla_config_file.as_ref())
         // set "-tool" flag, which allows easier parsing of TLC's output
         .arg("-tool")
         // set the number of TLC's workers
