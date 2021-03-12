@@ -26,3 +26,7 @@ counterexample.tla
 
 # Modelator default directory
 .modelator/
+
+# cargo tarpaulin files
+tarpaulin/
+tarpaulin-report.html
