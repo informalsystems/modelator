@@ -1,6 +1,6 @@
 pub(crate) type TlaState = String;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TlaTrace {
     states: Vec<TlaState>,
 }

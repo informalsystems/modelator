@@ -1,4 +1,6 @@
 use serde_json::Value as JsonValue;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct JsonTrace {
     states: Vec<JsonValue>,
 }
