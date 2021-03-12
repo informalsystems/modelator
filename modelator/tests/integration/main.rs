@@ -4,10 +4,10 @@
 use modelator::artifact::JsonTrace;
 use modelator::{Error, Options};
 use modelator::{ModelChecker, ModelCheckerOptions};
+use once_cell::sync::Lazy;
 use serde_json::json;
 use std::path::Path;
-use once_cell::sync::Lazy;
-use std::{sync::Mutex};
+use std::sync::Mutex;
 
 const TLA_DIR: &'static str = "tests/integration/tla";
 
