@@ -1,14 +1,18 @@
 use nom::branch::alt;
 use nom::bytes::complete::{tag, take_while};
 use nom::character::complete::{char, digit1, multispace0, satisfy};
-use nom::combinator::{cut, value};
-use nom::multi::{many0, many1, separated_list0, separated_list1};
+use nom::combinator::{cut, opt, value};
+use nom::multi::{many1, separated_list0, separated_list1};
 use nom::sequence::{preceded, separated_pair, terminated};
 use nom::IResult;
 use serde_json::Value as JsonValue;
 
 pub(crate) fn parse_state(input: &str) -> IResult<&str, JsonValue> {
-    many0(parse_var)(input).map(|(next_input, value)| {
+    preceded(
+        space,
+        preceded(opt(tag("/\\")), separated_list0(tag("/\\"), parse_var)),
+    )(input)
+    .map(|(next_input, value)| {
         let value = value.into_iter().collect();
         (next_input, JsonValue::Object(value))
     })
@@ -18,13 +22,10 @@ fn parse_var(input: &str) -> IResult<&str, (String, JsonValue)> {
     preceded(
         space,
         terminated(
-            preceded(
-                tag("/\\"),
-                separated_pair(
-                    preceded(space, parse_identifier),
-                    preceded(space, char('=')),
-                    preceded(space, parse_any_value),
-                ),
+            separated_pair(
+                preceded(space, parse_identifier),
+                preceded(space, char('=')),
+                preceded(space, parse_any_value),
             ),
             space,
         ),
@@ -234,6 +235,10 @@ mod tests {
     fn parse_state_test() {
         let states = vec![
             (
+                booleans_and_numbers_state_without_first_logical_and(),
+                booleans_and_numbers_expected(),
+            ),
+            (
                 booleans_and_numbers_state(),
                 booleans_and_numbers_expected(),
             ),
@@ -255,6 +260,12 @@ mod tests {
             assert!(input.is_empty());
             assert_eq!(state, expected);
         }
+    }
+
+    fn booleans_and_numbers_state_without_first_logical_and() -> &'static str {
+        r#"
+            empty_set = {} /\ set = {1, 2, 3} /\ pos_number = 1 /\ neg_number = -1 /\ bool = TRUE
+        "#
     }
 
     fn booleans_and_numbers_state() -> &'static str {

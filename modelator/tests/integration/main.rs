@@ -3,20 +3,39 @@
 
 use modelator::artifact::JsonTrace;
 use modelator::{Error, Options};
+use modelator::{ModelChecker, ModelCheckerOptions};
 use serde_json::json;
 use std::path::Path;
+use once_cell::sync::Lazy;
+use std::{sync::Mutex};
 
 const TLA_DIR: &'static str = "tests/integration/tla";
 
+// we use this lock to make sure that the tlc & apalache tests are not run in
+// parallel
+static LOCK: Lazy<Mutex<()>> = Lazy::new(Mutex::default);
+
 #[test]
 fn tlc() {
-    let options = Options::default();
-    if let Err(e) = all_tests(options) {
+    let _guard = LOCK.lock();
+    if let Err(e) = all_tests(ModelChecker::Tlc) {
         panic!("{}", e);
     }
 }
 
-fn all_tests(options: Options) -> Result<(), Error> {
+#[test]
+fn apalache() {
+    let _guard = LOCK.lock();
+    if let Err(e) = all_tests(ModelChecker::Apalache) {
+        panic!("{}", e);
+    }
+}
+
+fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
+    // create modelator options
+    let model_checker_options = ModelCheckerOptions::default().model_checker(model_checker);
+    let options = Options::default().model_checker_options(model_checker_options);
+
     // compute path to tla dir
     let tla_dir = Path::new(TLA_DIR);
 

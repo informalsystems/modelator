@@ -102,11 +102,8 @@ fn cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) -> Co
         .arg(workers(options));
 
     // show command being run
-    let pretty = format!("{:?}", cmd).replace("\"", "");
-    let pretty = pretty.trim_start_matches("Command { std:");
-    let pretty = pretty.trim_end_matches(", kill_on_drop: false }");
-    tracing::debug!("{}", pretty);
-
+    // show command being run
+    tracing::debug!("{}", util::cmd_show(&cmd));
     cmd
 }
 

@@ -34,6 +34,9 @@ impl Default for Options {
 
 #[derive(Clone, Debug)]
 pub struct ModelCheckerOptions {
+    /// Which model checker to use.
+    pub model_checker: ModelChecker,
+
     /// Number of model checker worker threads. Possible values: 'auto' to
     /// select the number of worker threads based on the number of available
     /// cores; and any number (e.g. '4') precising the number of workers threads.
@@ -44,6 +47,12 @@ pub struct ModelCheckerOptions {
 }
 
 impl ModelCheckerOptions {
+    /// Set the model checker.
+    pub fn model_checker(mut self, model_checker: ModelChecker) -> Self {
+        self.model_checker = model_checker;
+        self
+    }
+
     /// Set number of model checker workers.
     pub fn workers(mut self, workers: ModelCheckerWorkers) -> Self {
         self.workers = workers;
@@ -60,10 +69,17 @@ impl ModelCheckerOptions {
 impl Default for ModelCheckerOptions {
     fn default() -> Self {
         Self {
+            model_checker: ModelChecker::Tlc,
             workers: ModelCheckerWorkers::Auto,
             log: Path::new("mc.log").to_path_buf(),
         }
     }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum ModelChecker {
+    Tlc,
+    Apalache,
 }
 
 #[derive(Clone, Copy, Debug)]

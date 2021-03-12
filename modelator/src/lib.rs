@@ -18,7 +18,7 @@ pub mod runner;
 
 /// Re-exports.
 pub use error::{Error, TestError};
-pub use options::{ModelCheckerOptions, ModelCheckerWorkers, Options};
+pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Options};
 
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
@@ -37,9 +37,23 @@ pub fn traces<P: AsRef<Path>>(
 
     // run tlc on each tla test
     let traces = tests
+        .clone()
         .into_iter()
-        .map(|(tla_file, tla_config_file)| module::Tlc::test(tla_file, tla_config_file, &options))
+        .map(
+            |(tla_file, tla_config_file)| match options.model_checker_options.model_checker {
+                ModelChecker::Tlc => module::Tlc::test(tla_file, tla_config_file, &options),
+                ModelChecker::Apalache => {
+                    module::Apalache::test(tla_file, tla_config_file, &options)
+                }
+            },
+        )
         .collect::<Result<Vec<_>, _>>()?;
+
+    // cleanup test files created
+    for (tla_file, tla_config_file) in tests {
+        std::fs::remove_file(tla_file.path()).map_err(Error::IO)?;
+        std::fs::remove_file(tla_config_file.path()).map_err(Error::IO)?;
+    }
 
     // convert each tla trace to json
     traces

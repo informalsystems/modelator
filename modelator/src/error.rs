@@ -24,6 +24,12 @@ pub enum Error {
     #[error("TLC failure: {0}")]
     TLCFailure(String),
 
+    #[error("Apalache failure: {0}")]
+    ApalacheFailure(String),
+
+    #[error("Invalid Apalache counterexample: {0}")]
+    InvalidApalacheCounterexample(String),
+
     #[error("Reqwest error: {0}")]
     Reqwest(reqwest::Error),
 

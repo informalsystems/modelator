@@ -1,14 +1,17 @@
 use crate::error::Error;
+use flate2::read::GzDecoder;
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
 const TLA_VERSION: &str = "1.8.0";
 const COMMUNITY_MODULES_VERSION: &str = "202102040137";
+const APALACHE_VERSION: &str = "0.11.0";
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub(crate) enum Jar {
     Tla,
     CommunityModules,
+    Apalache,
 }
 
 impl Jar {
@@ -16,6 +19,7 @@ impl Jar {
         let file_name = match self {
             Self::Tla => "tla2tools.jar",
             Self::CommunityModules => "CommunityModules.jar",
+            Self::Apalache => "apalache.jar",
         };
         modelator_dir.as_ref().join(file_name)
     }
@@ -25,6 +29,7 @@ impl Jar {
         match file_name {
             "tla2tools.jar" => Self::Tla,
             "CommunityModules.jar" => Self::CommunityModules,
+            "apalache.jar" => Self::Apalache,
             _ => panic!("[modelator] unexpected jar file: {}", file_name),
         }
     }
@@ -39,6 +44,11 @@ impl Jar {
                 "https://github.com/tlaplus/CommunityModules/releases/download/{}/CommunityModules.jar",
                 COMMUNITY_MODULES_VERSION
             ),
+            Self::Apalache => format!(
+                "https://github.com/informalsystems/apalache/releases/download/v{}/apalache-v{}.tgz",
+                APALACHE_VERSION,
+                APALACHE_VERSION,
+            ),
         }
     }
 
@@ -48,15 +58,37 @@ impl Jar {
         let link = self.link();
         let file = self.file(&modelator_dir);
 
-        // download jar
+        // download jar/tgz
         let response = reqwest::blocking::get(&link).map_err(Error::Reqwest)?;
-        let jar = response.bytes().map_err(Error::Reqwest)?;
-        std::fs::write(file, jar).map_err(Error::IO)?;
+        let bytes = response.bytes().map_err(Error::Reqwest)?;
+
+        // in the case of apalache, extract the jar from the tgz
+        if self == &Self::Apalache {
+            let tar_dir = modelator_dir.join(format!("apalache-v{}", APALACHE_VERSION));
+
+            // unpack tar
+            use bytes::Buf;
+            let tar = GzDecoder::new(bytes.reader());
+            let mut archive = tar::Archive::new(tar);
+            archive.unpack(&tar_dir).map_err(Error::IO)?;
+
+            // move jar file to expected
+            let jar = tar_dir
+                .join("mod-distribution")
+                .join("target")
+                .join(format!("apalache-pkg-{}-full.jar", APALACHE_VERSION));
+            std::fs::rename(jar, file).map_err(Error::IO)?;
+
+            // remove tar directory
+            std::fs::remove_dir_all(tar_dir).map_err(Error::IO)?;
+        } else {
+            std::fs::write(file, bytes).map_err(Error::IO)?;
+        }
         Ok(())
     }
 
     fn all() -> Vec<Self> {
-        vec![Self::Tla, Self::CommunityModules]
+        vec![Self::Tla, Self::CommunityModules, Self::Apalache]
     }
 }
 
