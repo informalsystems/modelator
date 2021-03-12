@@ -2,12 +2,12 @@ use crate::artifact::tla_trace::{TlaState, TlaTrace};
 use crate::Error;
 
 pub(crate) fn parse(counterexample: String) -> Result<TlaTrace, Error> {
-    let mut lines = counterexample.lines();
+    let lines = counterexample.lines();
     let mut state_index = 0;
     let mut state = None;
     let mut trace = TlaTrace::new();
 
-    while let Some(line) = lines.next() {
+    for line in lines {
         // ignore comments
         if line.starts_with("(*") || line.starts_with("\\*") {
             continue;
