@@ -20,6 +20,9 @@ detailed.log
 log0.smt
 profile-rules.txt
 x/
+MC.out
+counterexample.json
+counterexample.tla
 
 # Modelator default directory
 .modelator/
