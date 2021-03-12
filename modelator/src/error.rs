@@ -1,4 +1,3 @@
-use crate::Artifact;
 use std::fmt::Debug;
 use thiserror::Error;
 
@@ -33,13 +32,6 @@ pub enum Error {
 
     #[error("Nom error: {0}")]
     Nom(String),
-
-    #[error("Error while running method {module}.{method}")]
-    ModuleRun {
-        module: String,
-        method: String,
-        errors: Vec<Box<dyn Artifact>>,
-    },
 }
 
 #[derive(Error, Debug)]

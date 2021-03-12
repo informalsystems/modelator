@@ -1,4 +1,5 @@
-use crate::{JsonTrace, TestError};
+use crate::artifact::JsonTrace;
+use crate::TestError;
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 

@@ -1,16 +1,12 @@
-use clap::Clap;
 use modelator::{Error, Options};
 
 fn main() -> Result<(), Error> {
-    let _options = Options::new("IBCTests.tla")
-        .tlc()
-        .workers(modelator::Workers::Auto)
-        .test("ICS03ConnectionOpenConfirmOKTest")
-        .log("tlc.log");
-
-    // cargo run -- IBCTests.tla -r test,ICS03ConnectionOpenConfirmOKTest
-    let options = Options::parse();
-    let traces = modelator::traces(options)?;
+    let options = Options::default();
+    let traces = modelator::traces(
+        "../ibc-rs/modules/tests/support/model_based/IBCTests.tla",
+        "../ibc-rs/modules/tests/support/model_based/IBCTests.cfg",
+        options,
+    )?;
 
     // aggregate all traces into a json array (and each trace into a json array
     // as well)
