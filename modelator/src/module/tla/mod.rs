@@ -5,6 +5,7 @@ use crate::artifact::{JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
 use crate::Error;
 use serde_json::Value as JsonValue;
 use std::path::PathBuf;
+
 // #[modelator::module]
 pub struct Tla;
 

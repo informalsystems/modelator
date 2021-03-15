@@ -43,15 +43,6 @@ pub trait Module {
     //fn run(&self, method: &str, inputs: Vec<Box<dyn Artifact>>) -> Result<Vec<Box<dyn Artifact>>, Vec<Box<dyn Artifact>>>;
 }
 
-// #[modulator::module]
-// struct TLC {
-// }
-
-// impl TLC {
-//     #[modulator::method]
-//     fn check(&self, tla: TLA, )
-// }
-
 pub trait Method {
     fn manifest() -> MethodManifest;
     fn run(

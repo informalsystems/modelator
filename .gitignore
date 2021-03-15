@@ -12,11 +12,21 @@ Cargo.lock
 # VSCode files
 .vscode/
 
-# TLA/TLC files
-*.tla
-*.cfg
+# TLC files
 states/
 
-# Modelator default directory and log files
+# Apalache files
+detailed.log
+log0.smt
+profile-rules.txt
+x/
+MC.out
+counterexample.json
+counterexample.tla
+
+# Modelator default directory
 .modelator/
-*.log
+
+# cargo tarpaulin files
+tarpaulin/
+tarpaulin-report.html
