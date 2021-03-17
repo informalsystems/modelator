@@ -23,7 +23,7 @@ mod cli;
 mod util;
 
 /// Re-exports.
-pub use cli::CliOptions;
+pub use cli::{CliOptions, CliOutput, CliStatus};
 pub use error::{Error, TestError};
 pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Options};
 
@@ -42,7 +42,7 @@ pub fn traces<P: AsRef<Path>>(
     // generate tla tests
     let tests = module::Tla::generate_tests(tla_tests_file.into(), tla_config_file.into())?;
 
-    // run tlc on each tla test
+    // run the model checker configured on each tla test
     let traces = tests
         .clone()
         .into_iter()

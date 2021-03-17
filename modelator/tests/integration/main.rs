@@ -2,12 +2,10 @@
 // https://matklad.github.io/2021/02/27/delete-cargo-integration-tests.html
 
 use modelator::artifact::JsonTrace;
-use modelator::{Error, Options};
-use modelator::{ModelChecker, ModelCheckerOptions};
+use modelator::{CliOptions, CliStatus, Error, ModelChecker, ModelCheckerOptions, Options};
 use once_cell::sync::Lazy;
-use serde_json::json;
-use std::path::Path;
-use std::path::PathBuf;
+use serde_json::{json, Value as JsonValue};
+use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 const TLA_DIR: &'static str = "tests/integration/tla";
@@ -44,17 +42,117 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
         for (tla_tests_file, tla_config_file) in
             absolute_and_relative_paths(tla_tests_file, tla_config_file)
         {
-            // generate traces
-            let mut traces = modelator::traces(tla_tests_file, tla_config_file, options.clone())?;
-
+            // generate traces using Rust API
+            let mut traces = modelator::traces(&tla_tests_file, &tla_config_file, options.clone())?;
             // extract single trace
             assert_eq!(traces.len(), 1, "a single trace should have been generated");
             let trace = traces.pop().unwrap();
+            assert_eq!(trace, expected);
 
+            // generate traces using CLI
+            let mut traces = cli_traces(&tla_tests_file, &tla_config_file, options.clone())?;
+            // extract single trace
+            assert_eq!(traces.len(), 1, "a single trace should have been generated");
+            let trace = traces.pop().unwrap();
             assert_eq!(trace, expected);
         }
     }
     Ok(())
+}
+
+fn cli_traces<P: AsRef<Path>>(
+    tla_tests_file: P,
+    tla_config_file: P,
+    options: Options,
+) -> Result<Vec<JsonTrace>, Error> {
+    use clap::Clap;
+    // run CLI to generate tests
+    let cli_output = CliOptions::parse_from(&[
+        "modelator",
+        "tla",
+        "generate-tests",
+        &tla_tests_file.as_ref().to_string_lossy().to_string(),
+        &tla_config_file.as_ref().to_string_lossy().to_string(),
+    ])
+    .run();
+    assert_eq!(cli_output.status, CliStatus::Success);
+    let tests = cli_output
+        .result
+        .as_array()
+        .unwrap()
+        .into_iter()
+        .map(|json_entry| {
+            let test = json_entry.as_object().unwrap();
+            (
+                test.get("tla_file").unwrap().as_str().unwrap(),
+                test.get("tla_config_file").unwrap().as_str().unwrap(),
+            )
+        })
+        .collect::<Vec<_>>();
+
+    // run CLI to run the model checker configured on each tla test
+    let traces = tests
+        .clone()
+        .into_iter()
+        .map(|(tla_file, tla_config_file)| {
+            let module = match options.model_checker_options.model_checker {
+                ModelChecker::Tlc => "tlc",
+                ModelChecker::Apalache => "apalache",
+            };
+            CliOptions::parse_from(&["modelator", module, "test", tla_file, tla_config_file]).run()
+        })
+        .map(|cli_output| {
+            assert_eq!(cli_output.status, CliStatus::Success);
+            cli_output
+                .result
+                .as_object()
+                .unwrap()
+                .get("tla_trace_file")
+                .unwrap()
+                .as_str()
+                .unwrap()
+                .to_owned()
+        })
+        .collect::<Vec<_>>();
+
+    // cleanup test files created
+    for (tla_file, tla_config_file) in tests {
+        std::fs::remove_file(tla_file).unwrap();
+        std::fs::remove_file(tla_config_file).unwrap();
+    }
+
+    // run CLI to convert each tla trace to json
+    let traces = traces
+        .into_iter()
+        .map(|tla_trace_file| {
+            CliOptions::parse_from(&[
+                "modelator",
+                "tla",
+                "tla-trace-to-json-trace",
+                &tla_trace_file,
+            ])
+            .run()
+        })
+        .map(|cli_output| {
+            assert_eq!(cli_output.status, CliStatus::Success);
+            cli_output
+                .result
+                .as_object()
+                .unwrap()
+                .get("json_trace_file")
+                .unwrap()
+                .as_str()
+                .unwrap()
+                .to_owned()
+        })
+        .map(|json_trace_file| {
+            let json_trace = std::fs::read_to_string(json_trace_file).unwrap();
+            serde_json::from_str::<Vec<JsonValue>>(&json_trace)
+                .unwrap()
+                .into()
+        })
+        .collect::<Vec<_>>();
+    Ok(traces)
 }
 
 fn absolute_and_relative_paths(
@@ -67,19 +165,9 @@ fn absolute_and_relative_paths(
     let relative_tla_config_file = tla_dir.join(tla_config_file);
     let absolute_tla_tests_file = relative_tla_tests_file.canonicalize().unwrap();
     let absolute_tla_config_file = relative_tla_config_file.canonicalize().unwrap();
-
-    // generate all possible combinations of relative and absolute paths
     vec![
         (
             relative_tla_tests_file.clone(),
-            relative_tla_config_file.clone(),
-        ),
-        (
-            relative_tla_tests_file.clone(),
-            absolute_tla_config_file.clone(),
-        ),
-        (
-            absolute_tla_tests_file.clone(),
             relative_tla_config_file.clone(),
         ),
         (

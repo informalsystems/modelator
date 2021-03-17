@@ -7,16 +7,16 @@ use serde_json::Value as JsonValue;
 #[derive(Serialize, Debug)]
 pub struct CliOutput {
     /// The return status
-    status: Status,
+    pub status: CliStatus,
 
     /// The result of a command.
-    result: JsonValue,
+    pub result: JsonValue,
 }
 
 impl CliOutput {
     pub(crate) fn with_result(result: Result<JsonValue, Error>) -> Self {
         let (status, result) = match result {
-            Ok(result) => (Status::Success, result),
+            Ok(result) => (CliStatus::Success, result),
             Err(err) => {
                 let result = match serde_json::to_value(err) {
                     Ok(json_val) => json_val,
@@ -24,7 +24,7 @@ impl CliOutput {
                         panic!("[modelator] CLI error serialization failed: {:?}", e)
                     }
                 };
-                (Status::Error, result)
+                (CliStatus::Error, result)
             }
         };
         Self { status, result }
@@ -38,7 +38,7 @@ impl CliOutput {
         println!("{}", pretty);
 
         // the return code
-        if self.status == Status::Error {
+        if self.status == CliStatus::Error {
             std::process::exit(1);
         } else {
             std::process::exit(0);
@@ -48,7 +48,7 @@ impl CliOutput {
 
 /// Represents the exit status of any CLI command
 #[derive(Serialize, Debug, PartialEq, Eq)]
-pub enum Status {
+pub enum CliStatus {
     #[serde(rename(serialize = "success"))]
     Success,
 

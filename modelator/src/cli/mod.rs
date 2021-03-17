@@ -2,7 +2,7 @@
 mod output;
 
 // Re-exports.
-pub use output::CliOutput;
+pub use output::{CliOutput, CliStatus};
 
 use crate::artifact::{JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
 use crate::Error;
