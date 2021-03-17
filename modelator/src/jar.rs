@@ -1,11 +1,16 @@
 use crate::error::Error;
-use flate2::read::GzDecoder;
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
-const TLA_VERSION: &str = "1.8.0";
-const COMMUNITY_MODULES_VERSION: &str = "202102040137";
-const APALACHE_VERSION: &str = "0.11.0";
+pub const TLA_JAR: &'static str = "tla2tools-v1.8.0.jar";
+pub const TLA_JAR_BYTES: &[u8] = include_bytes!("../jars/tla2tools-v1.8.0.jar");
+
+pub const COMMUNITY_MODULES_JAR: &'static str = "CommunityModules-202103092123.jar";
+pub const COMMUNITY_MODULES_JAR_BYTES: &[u8] =
+    include_bytes!("../jars/CommunityModules-202103092123.jar");
+
+pub const APALACHE_JAR: &'static str = "apalache-v0.11.0.jar";
+pub const APALACHE_JAR_BYTES: &[u8] = include_bytes!("../jars/apalache-v0.11.0.jar");
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub(crate) enum Jar {
@@ -17,9 +22,9 @@ pub(crate) enum Jar {
 impl Jar {
     pub(crate) fn file<P: AsRef<Path>>(&self, modelator_dir: P) -> PathBuf {
         let file_name = match self {
-            Self::Tla => "tla2tools.jar",
-            Self::CommunityModules => "CommunityModules.jar",
-            Self::Apalache => "apalache.jar",
+            Self::Tla => TLA_JAR,
+            Self::CommunityModules => COMMUNITY_MODULES_JAR,
+            Self::Apalache => APALACHE_JAR,
         };
         modelator_dir.as_ref().join(file_name)
     }
@@ -27,63 +32,25 @@ impl Jar {
     fn from<F: AsRef<str>>(file_name: F) -> Self {
         let file_name = file_name.as_ref();
         match file_name {
-            "tla2tools.jar" => Self::Tla,
-            "CommunityModules.jar" => Self::CommunityModules,
-            "apalache.jar" => Self::Apalache,
+            TLA_JAR => Self::Tla,
+            COMMUNITY_MODULES_JAR => Self::CommunityModules,
+            APALACHE_JAR => Self::Apalache,
             _ => panic!("[modelator] unexpected jar file: {}", file_name),
         }
     }
 
-    fn link(&self) -> String {
-        match self {
-            Self::Tla => format!(
-                "https://github.com/tlaplus/tlaplus/releases/download/v{}/tla2tools.jar",
-                TLA_VERSION
-            ),
-            Self::CommunityModules => format!(
-                "https://github.com/tlaplus/CommunityModules/releases/download/{}/CommunityModules.jar",
-                COMMUNITY_MODULES_VERSION
-            ),
-            Self::Apalache => format!(
-                "https://github.com/informalsystems/apalache/releases/download/v{}/apalache-v{}.tgz",
-                APALACHE_VERSION,
-                APALACHE_VERSION,
-            ),
-        }
-    }
-
-    fn download<P: AsRef<Path>>(&self, modelator_dir: P) -> Result<(), Error> {
+    fn write<P: AsRef<Path>>(&self, modelator_dir: P) -> Result<(), Error> {
         let modelator_dir = modelator_dir.as_ref();
-        // compute jar link and file where it should be stored
-        let link = self.link();
+        // compute file where the jar should be stored
         let file = self.file(&modelator_dir);
 
-        // download jar/tgz
-        let response = reqwest::blocking::get(&link).map_err(Error::reqwest)?;
-        let bytes = response.bytes().map_err(Error::reqwest)?;
-
-        // in the case of apalache, extract the jar from the tgz
-        if self == &Self::Apalache {
-            let tar_dir = modelator_dir.join(format!("apalache-v{}", APALACHE_VERSION));
-
-            // unpack tar
-            use bytes::Buf;
-            let tar = GzDecoder::new(bytes.reader());
-            let mut archive = tar::Archive::new(tar);
-            archive.unpack(&tar_dir).map_err(Error::io)?;
-
-            // move jar file to expected
-            let jar = tar_dir
-                .join("mod-distribution")
-                .join("target")
-                .join(format!("apalache-pkg-{}-full.jar", APALACHE_VERSION));
-            std::fs::rename(jar, file).map_err(Error::io)?;
-
-            // remove tar directory
-            std::fs::remove_dir_all(tar_dir).map_err(Error::io)?;
-        } else {
-            std::fs::write(file, bytes).map_err(Error::io)?;
-        }
+        // get jar bytes and write them to the file
+        let bytes = match self {
+            Self::Tla => TLA_JAR_BYTES,
+            Self::CommunityModules => COMMUNITY_MODULES_JAR_BYTES,
+            Self::Apalache => APALACHE_JAR_BYTES,
+        };
+        std::fs::write(file, bytes).map_err(Error::io)?;
         Ok(())
     }
 
@@ -92,13 +59,13 @@ impl Jar {
     }
 }
 
-pub(crate) fn download_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Error> {
+pub(crate) fn write_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Error> {
     // get all existing jars
     let existing_jars = existing_jars(&modelator_dir)?;
     // download all jars that do not exist yet
     for jar in Jar::all() {
         if !existing_jars.contains(&jar) {
-            jar.download(&modelator_dir)?;
+            jar.write(&modelator_dir)?;
         }
     }
     Ok(())

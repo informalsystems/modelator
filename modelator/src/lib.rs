@@ -97,7 +97,7 @@ pub(crate) fn setup(options: &Options) -> Result<(), Error> {
     // TODO: maybe replace this and the previous step with a build.rs;
     //       see e.g. https://github.com/tensorflow/rust/blob/master/tensorflow-sys/build.rs
     // download missing jars
-    jar::download_jars(&options.dir)?;
+    jar::write_jars(&options.dir)?;
     tracing::trace!("modelator setup completed");
 
     // init tracing subscriber (in case it's not already)
