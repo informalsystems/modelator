@@ -5,6 +5,8 @@ use std::collections::BTreeMap;
 pub struct Converter {
     converts: BTreeMap<(TypeId, TypeId), Box<dyn Any>>,
     named_converts: BTreeMap<(String, TypeId, TypeId), Box<dyn Any>>,
+
+    // TODO get rid of those by redirecting default -> convert with From == ()
     defaults: BTreeMap<TypeId, Box<dyn Any>>,
     named_defaults: BTreeMap<(String, TypeId), Box<dyn Any>>,
 }
