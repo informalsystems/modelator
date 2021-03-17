@@ -159,6 +159,7 @@ impl TlcMethods {
     }
 }
 
+#[allow(clippy::unnecessary_wraps)]
 fn generated_tests(tests: Vec<(TlaFile, TlaConfigFile)>) -> Result<JsonValue, Error> {
     let json_array_entry = |tla_file: TlaFile, tla_config_file: TlaConfigFile| {
         json!({
