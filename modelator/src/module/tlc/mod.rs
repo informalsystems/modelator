@@ -49,11 +49,20 @@ impl Tlc {
                 // create this folder for the second time. we avoid this problem by
                 // simply removing the parent folder 'states' after every tlc run
                 // compute the directory in which the tla tests file is stored
-                let mut tla_dir = tla_file.path().clone();
-                assert!(tla_dir.pop());
-                let states_dir = tla_dir.join("states");
+                let states_dir = if tla_file.path().is_absolute() {
+                    // if the tla file passed as input to TLC is an absolute
+                    // path, then TLC creates the 'states' directory in the same
+                    // directory as the tla file
+                    let mut tla_dir = tla_file.path().clone();
+                    assert!(tla_dir.pop());
+                    tla_dir.join("states")
+                } else {
+                    // otherwise, it creates the 'states' directory in the
+                    // current directory
+                    Path::new("states").to_path_buf()
+                };
                 tracing::debug!(
-                    "removing TLC directory: {}",
+                    "removing TLC directory: {:?}",
                     crate::util::absolute_path(&states_dir)
                 );
                 std::fs::remove_dir_all(states_dir).map_err(Error::io)?;
