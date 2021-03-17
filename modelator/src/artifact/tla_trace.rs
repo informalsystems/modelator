@@ -20,6 +20,7 @@ impl TlaTrace {
         self.states.is_empty()
     }
 
+    #[allow(clippy::unnecessary_wraps)]
     pub(crate) fn parse(tla_trace: String) -> Result<Self, Error> {
         let lines = tla_trace.lines();
         let mut state_index = 0;
