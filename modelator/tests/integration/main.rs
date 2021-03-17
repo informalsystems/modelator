@@ -7,6 +7,7 @@ use modelator::{ModelChecker, ModelCheckerOptions};
 use once_cell::sync::Lazy;
 use serde_json::json;
 use std::path::Path;
+use std::path::PathBuf;
 use std::sync::Mutex;
 
 const TLA_DIR: &'static str = "tests/integration/tla";
@@ -36,28 +37,56 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
     let model_checker_options = ModelCheckerOptions::default().model_checker(model_checker);
     let options = Options::default().model_checker_options(model_checker_options);
 
-    // compute path to tla dir
-    let tla_dir = Path::new(TLA_DIR);
-
     // create all tests
     let tests = vec![numbers_a_max_b_min_test(), numbers_a_min_b_max_test()];
 
     for (tla_tests_file, tla_config_file, expected) in tests {
-        // generate traces
-        let mut traces = modelator::traces(
-            tla_dir.join(tla_tests_file),
-            tla_dir.join(tla_config_file),
-            options.clone(),
-        )?;
+        for (tla_tests_file, tla_config_file) in
+            absolute_and_relative_paths(tla_tests_file, tla_config_file)
+        {
+            // generate traces
+            let mut traces = modelator::traces(tla_tests_file, tla_config_file, options.clone())?;
 
-        // extract single trace
-        assert_eq!(traces.len(), 1, "a single trace should have been generated");
-        let trace = traces.pop().unwrap();
+            // extract single trace
+            assert_eq!(traces.len(), 1, "a single trace should have been generated");
+            let trace = traces.pop().unwrap();
 
-        assert_eq!(trace, expected);
+            assert_eq!(trace, expected);
+        }
     }
-
     Ok(())
+}
+
+fn absolute_and_relative_paths(
+    tla_tests_file: &'static str,
+    tla_config_file: &'static str,
+) -> Vec<(PathBuf, PathBuf)> {
+    // compute path to tla dir
+    let tla_dir = Path::new(TLA_DIR);
+    let relative_tla_tests_file = tla_dir.join(tla_tests_file);
+    let relative_tla_config_file = tla_dir.join(tla_config_file);
+    let absolute_tla_tests_file = relative_tla_tests_file.canonicalize().unwrap();
+    let absolute_tla_config_file = relative_tla_config_file.canonicalize().unwrap();
+
+    // generate all possible combinations of relative and absolute paths
+    vec![
+        (
+            relative_tla_tests_file.clone(),
+            relative_tla_config_file.clone(),
+        ),
+        (
+            relative_tla_tests_file.clone(),
+            absolute_tla_config_file.clone(),
+        ),
+        (
+            absolute_tla_tests_file.clone(),
+            relative_tla_config_file.clone(),
+        ),
+        (
+            absolute_tla_tests_file.clone(),
+            absolute_tla_config_file.clone(),
+        ),
+    ]
 }
 
 fn numbers_a_max_b_min_test() -> (&'static str, &'static str, JsonTrace) {
