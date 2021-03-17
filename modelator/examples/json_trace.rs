@@ -16,7 +16,8 @@ fn main() -> Result<(), Error> {
             .map(|trace| serde_json::Value::Array(trace.into_iter().collect::<Vec<_>>()))
             .collect::<Vec<_>>(),
     );
-    let pretty = serde_json::to_string_pretty(&json).map_err(Error::Serde)?;
+    let pretty = serde_json::to_string_pretty(&json)
+        .expect("it should be possible to pretty print json traces");
     println!("{}", pretty);
     Ok(())
 }

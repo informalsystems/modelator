@@ -19,6 +19,9 @@ pub mod runner;
 /// Command-line interface.
 mod cli;
 
+/// Utilitary functions.
+mod util;
+
 /// Re-exports.
 pub use cli::CliOptions;
 pub use error::{Error, TestError};
@@ -55,8 +58,8 @@ pub fn traces<P: AsRef<Path>>(
 
     // cleanup test files created
     for (tla_file, tla_config_file) in tests {
-        std::fs::remove_file(tla_file.path()).map_err(Error::IO)?;
-        std::fs::remove_file(tla_config_file.path()).map_err(Error::IO)?;
+        std::fs::remove_file(tla_file.path()).map_err(Error::io)?;
+        std::fs::remove_file(tla_config_file.path()).map_err(Error::io)?;
     }
 
     // convert each tla trace to json
@@ -85,10 +88,10 @@ where
     Ok(())
 }
 
-fn setup(options: &Options) -> Result<(), Error> {
+pub(crate) fn setup(options: &Options) -> Result<(), Error> {
     // create modelator dir (if it doens't already exist)
     if !options.dir.as_path().is_dir() {
-        std::fs::create_dir_all(&options.dir).map_err(Error::IO)?;
+        std::fs::create_dir_all(&options.dir).map_err(Error::io)?;
     }
 
     // TODO: maybe replace this and the previous step with a build.rs;

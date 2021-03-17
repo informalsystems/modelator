@@ -43,6 +43,6 @@ where
 
 impl std::fmt::Display for TlaFile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self.path)
+        write!(f, "{:?}", crate::util::absolute_path(&self.path))
     }
 }

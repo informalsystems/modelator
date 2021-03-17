@@ -19,3 +19,10 @@ impl From<Vec<JsonValue>> for JsonTrace {
         Self { states }
     }
 }
+
+impl std::fmt::Display for JsonTrace {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let json = serde_json::Value::Array(self.states.clone().into_iter().collect());
+        write!(f, "{:#}", json)
+    }
+}

@@ -13,5 +13,5 @@ pub fn state_to_json(state: &str) -> Result<JsonValue, Error> {
             );
             value
         })
-        .map_err(|err| Error::Nom(err.to_string()))
+        .map_err(Error::nom)
 }

@@ -1,7 +1,6 @@
 /// Parsing of TLC's output.
 mod output;
 
-use super::util;
 use crate::artifact::{TlaConfigFile, TlaFile, TlaTrace};
 use crate::{jar, Error, ModelCheckerWorkers, Options};
 use std::path::Path;
@@ -23,11 +22,11 @@ impl Tlc {
 
         // start tlc
         // TODO: add timeout
-        let output = cmd.output().map_err(Error::IO)?;
+        let output = cmd.output().map_err(Error::io)?;
 
         // get tlc stdout and stderr
-        let stdout = util::cmd_output_to_string(&output.stdout);
-        let stderr = util::cmd_output_to_string(&output.stderr);
+        let stdout = crate::util::cmd_output_to_string(&output.stdout);
+        let stderr = crate::util::cmd_output_to_string(&output.stderr);
         tracing::debug!("TLC stdout:\n{}", stdout);
         tracing::debug!("TLC stderr:\n{}", stderr);
 
@@ -37,7 +36,7 @@ impl Tlc {
                 // occurred
 
                 // save tlc log
-                std::fs::write(&options.model_checker_options.log, &stdout).map_err(Error::IO)?;
+                std::fs::write(&options.model_checker_options.log, &stdout).map_err(Error::io)?;
 
                 // remove tlc 'states' folder. on each run, tlc creates a new folder
                 // inside the 'states' folder named using the current date with a
@@ -45,7 +44,7 @@ impl Tlc {
                 // to run tlc twice in the same second, tlc fails when trying to
                 // create this folder for the second time. we avoid this problem by
                 // simply removing the parent folder 'states' after every tlc run
-                std::fs::remove_dir_all("states").map_err(Error::IO)?;
+                std::fs::remove_dir_all("states").map_err(Error::io)?;
 
                 // convert tlc output to traces
                 let mut traces = output::parse(stdout, &options.model_checker_options)?;
@@ -102,8 +101,7 @@ fn cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) -> Co
         .arg(workers(options));
 
     // show command being run
-    // show command being run
-    tracing::debug!("{}", util::cmd_show(&cmd));
+    tracing::debug!("{}", crate::util::cmd_show(&cmd));
     cmd
 }
 
