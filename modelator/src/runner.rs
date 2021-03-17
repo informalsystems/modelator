@@ -10,8 +10,8 @@ pub trait TestRunner<S> {
 
 pub(crate) fn run<Runner, Step>(
     trace: JsonTrace,
-    mut runner: Runner,
-) -> Result<(), TestError<Runner, Step>>
+    runner: &mut Runner,
+) -> Result<(), TestError<Step>>
 where
     Runner: TestRunner<Step> + Debug,
     Step: DeserializeOwned + Debug + Clone,
@@ -36,7 +36,6 @@ where
                 step_index: i + 1,
                 step_count,
                 steps,
-                runner,
             });
         }
     }

@@ -16,9 +16,14 @@ mod jar;
 /// Test runner.
 pub mod runner;
 
+/// Datastructure converter.
+pub mod converter;
+
 /// Re-exports.
 pub use error::{Error, TestError};
 pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Options};
+pub use converter::Converter;
+
 
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
@@ -65,17 +70,17 @@ pub fn traces<P: AsRef<Path>>(
 pub fn run<P, Runner, Step>(
     tla_tests_file: P,
     tla_config_file: P,
-    runner: Runner,
-) -> Result<(), TestError<Runner, Step>>
+    runner: &mut Runner,
+) -> Result<(), TestError<Step>>
 where
     P: AsRef<Path>,
-    Runner: runner::TestRunner<Step> + Debug + Clone,
+    Runner: runner::TestRunner<Step> + Debug,
     Step: DeserializeOwned + Debug + Clone,
 {
     let options = Options::default();
     let traces = traces(tla_tests_file, tla_config_file, options).map_err(TestError::Modelator)?;
     for trace in traces {
-        let runner = runner.clone();
+        //let runner = runner.clone();
         runner::run(trace, runner)?;
     }
     Ok(())

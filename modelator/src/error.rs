@@ -41,7 +41,7 @@ pub enum Error {
 }
 
 #[derive(Error, Debug)]
-pub enum TestError<Runner: Debug, Step: Debug> {
+pub enum TestError<Step: Debug> {
     #[error("Error while running modelator: {0}")]
     Modelator(Error),
 
@@ -49,12 +49,11 @@ pub enum TestError<Runner: Debug, Step: Debug> {
     Deserialize(serde_json::Error),
 
     #[error(
-        "Test failed on step {step_index}/{step_count}:\nsteps: {steps:#?}\nrunner: {runner:#?}"
+        "Test failed on step {step_index}/{step_count}:\nsteps: {steps:#?}"
     )]
     FailedTest {
         step_index: usize,
         step_count: usize,
         steps: Vec<Step>,
-        runner: Runner,
     },
 }
