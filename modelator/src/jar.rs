@@ -2,14 +2,14 @@ use crate::error::Error;
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
-pub const TLA_JAR: &'static str = "tla2tools-v1.8.0.jar";
+pub const TLA_JAR: &str = "tla2tools-v1.8.0.jar";
 pub const TLA_JAR_BYTES: &[u8] = include_bytes!("../jars/tla2tools-v1.8.0.jar");
 
-pub const COMMUNITY_MODULES_JAR: &'static str = "CommunityModules-202103092123.jar";
+pub const COMMUNITY_MODULES_JAR: &str = "CommunityModules-202103092123.jar";
 pub const COMMUNITY_MODULES_JAR_BYTES: &[u8] =
     include_bytes!("../jars/CommunityModules-202103092123.jar");
 
-pub const APALACHE_JAR: &'static str = "apalache-v0.11.0.jar";
+pub const APALACHE_JAR: &str = "apalache-v0.11.0.jar";
 pub const APALACHE_JAR_BYTES: &[u8] = include_bytes!("../jars/apalache-v0.11.0.jar");
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
