@@ -16,7 +16,11 @@ mod jar;
 /// Test runner.
 pub mod runner;
 
+/// Command-line interface.
+mod cli;
+
 /// Re-exports.
+pub use cli::CliOptions;
 pub use error::{Error, TestError};
 pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Options};
 
