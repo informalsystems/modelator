@@ -12,9 +12,9 @@ pub(crate) fn cmd_show(cmd: &Command) -> String {
     cmd.to_owned()
 }
 
-pub(crate) fn absolute_path(path: &PathBuf) -> PathBuf {
+pub(crate) fn absolute_path(path: &PathBuf) -> String {
     match path.canonicalize() {
-        Ok(path) => path,
+        Ok(path) => path.to_string_lossy().to_string(),
         Err(e) => panic!("[modelator] couldn't compute absolute path: {:?}", e),
     }
 }

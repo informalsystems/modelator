@@ -37,6 +37,10 @@ impl Tlc {
 
                 // save tlc log
                 std::fs::write(&options.model_checker_options.log, &stdout).map_err(Error::io)?;
+                tracing::debug!(
+                    "TLC log written to {}",
+                    crate::util::absolute_path(&options.model_checker_options.log)
+                );
 
                 // remove tlc 'states' folder. on each run, tlc creates a new folder
                 // inside the 'states' folder named using the current date with a
@@ -44,7 +48,15 @@ impl Tlc {
                 // to run tlc twice in the same second, tlc fails when trying to
                 // create this folder for the second time. we avoid this problem by
                 // simply removing the parent folder 'states' after every tlc run
-                std::fs::remove_dir_all("states").map_err(Error::io)?;
+                // compute the directory in which the tla tests file is stored
+                let mut tla_dir = tla_file.path().clone();
+                assert!(tla_dir.pop());
+                let states_dir = tla_dir.join("states");
+                tracing::debug!(
+                    "removing TLC directory: {}",
+                    crate::util::absolute_path(&states_dir)
+                );
+                std::fs::remove_dir_all(states_dir).map_err(Error::io)?;
 
                 // convert tlc output to traces
                 let mut traces = output::parse(stdout, &options.model_checker_options)?;

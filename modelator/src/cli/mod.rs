@@ -4,7 +4,7 @@ mod output;
 // Re-exports.
 pub use output::CliOutput;
 
-use crate::artifact::{JsonTrace, TlaTrace};
+use crate::artifact::{JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
 use crate::Error;
 use clap::{Clap, Subcommand};
 use serde_json::{json, Value as JsonValue};
@@ -98,7 +98,8 @@ impl TlaOptions {
 
     fn generate_tests(tla_file: String, tla_config_file: String) -> Result<JsonValue, Error> {
         let tests = crate::module::Tla::generate_tests(tla_file.into(), tla_config_file.into())?;
-        let json_array_entry = |tla_file, tla_config_file| {
+        tracing::debug!("Tla::generate_tests output {:#?}", tests);
+        let json_array_entry = |tla_file: TlaFile, tla_config_file: TlaConfigFile| {
             json!({
                 "tla_file": format!("{}", tla_file),
                 "tla_config_file": format!("{}", tla_config_file),
@@ -119,6 +120,7 @@ impl TlaOptions {
         let tla_trace = std::fs::read_to_string(&tla_trace_file).map_err(Error::io)?;
         let tla_trace = TlaTrace::parse(tla_trace)?;
         let json_trace = crate::module::Tla::tla_trace_to_json_trace(tla_trace)?;
+        tracing::debug!("Tla::tla_trace_to_json_trace output {}", json_trace);
         save_json_trace(json_trace)
     }
 }
@@ -137,6 +139,7 @@ impl ApalacheOptions {
         let options = crate::Options::default();
         let tla_trace =
             crate::module::Apalache::test(tla_file.into(), tla_config_file.into(), &options)?;
+        tracing::debug!("Apalache::test output {}", tla_trace);
         save_tla_trace(tla_trace)
     }
 }
@@ -155,18 +158,23 @@ impl TlcOptions {
         let options = crate::Options::default();
         let tla_trace =
             crate::module::Tlc::test(tla_file.into(), tla_config_file.into(), &options)?;
+        tracing::debug!("Tlc::test output {}", tla_trace);
         save_tla_trace(tla_trace)
     }
 }
 
 fn save_tla_trace(tla_trace: TlaTrace) -> Result<JsonValue, Error> {
-    let file = Path::new("trace.tla");
-    std::fs::write(&file, format!("{}", tla_trace)).map_err(Error::io)?;
-    Ok(JsonValue::Null)
+    let path = Path::new("trace.tla").to_path_buf();
+    std::fs::write(&path, format!("{}", tla_trace)).map_err(Error::io)?;
+    Ok(json!({
+        "tla_trace_file": crate::util::absolute_path(&path),
+    }))
 }
 
 fn save_json_trace(json_trace: JsonTrace) -> Result<JsonValue, Error> {
-    let file = Path::new("trace.json");
-    std::fs::write(&file, format!("{}", json_trace)).map_err(Error::io)?;
-    Ok(JsonValue::Null)
+    let path = Path::new("trace.json").to_path_buf();
+    std::fs::write(&path, format!("{}", json_trace)).map_err(Error::io)?;
+    Ok(json!({
+        "json_trace_file": crate::util::absolute_path(&path),
+    }))
 }

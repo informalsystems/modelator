@@ -79,7 +79,7 @@ impl IntoIterator for TlaTrace {
 impl std::fmt::Display for TlaTrace {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for (index, state) in self.states.iter().enumerate() {
-            write!(f, "State{} ==\n{}", index + 1, state)?;
+            write!(f, "State{} ==\n{}", index, state)?;
         }
         Ok(())
     }

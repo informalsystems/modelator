@@ -28,6 +28,6 @@ where
 
 impl std::fmt::Display for TlaConfigFile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", crate::util::absolute_path(&self.path))
+        write!(f, "{}", crate::util::absolute_path(&self.path))
     }
 }
