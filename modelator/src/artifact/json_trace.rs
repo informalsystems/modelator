@@ -2,7 +2,7 @@ use serde_json::Value as JsonValue;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct JsonTrace {
-    states: Vec<JsonValue>,
+    states: JsonValue,
 }
 
 impl IntoIterator for JsonTrace {
@@ -10,19 +10,26 @@ impl IntoIterator for JsonTrace {
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.states.into_iter()
+        match self.states {
+            JsonValue::Array(states) => states.into_iter(),
+            _ => panic!(
+                "[modelator] JsonTrace {:?} should be a serde_json::Value::Arrray",
+                self
+            ),
+        }
     }
 }
 
 impl From<Vec<JsonValue>> for JsonTrace {
     fn from(states: Vec<JsonValue>) -> Self {
-        Self { states }
+        Self {
+            states: JsonValue::Array(states),
+        }
     }
 }
 
 impl std::fmt::Display for JsonTrace {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let json = serde_json::Value::Array(self.states.clone().into_iter().collect());
-        write!(f, "{:#}", json)
+        write!(f, "{:#}", self.states)
     }
 }

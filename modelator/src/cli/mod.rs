@@ -6,7 +6,7 @@ pub use output::{CliOutput, CliStatus};
 
 use crate::artifact::{JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
 use crate::Error;
-use clap::{Clap, Subcommand, AppSettings};
+use clap::{AppSettings, Clap, Subcommand};
 use serde_json::{json, Value as JsonValue};
 use std::path::Path;
 
