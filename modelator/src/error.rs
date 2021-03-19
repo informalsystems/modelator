@@ -1,10 +1,11 @@
+use serde::Serialize;
 use std::fmt::Debug;
 use thiserror::Error;
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Serialize)]
 pub enum Error {
     #[error("IO error: {0}")]
-    IO(std::io::Error),
+    IO(String),
 
     #[error("Invalid unicode: {0:?}")]
     InvalidUnicode(std::ffi::OsString),
@@ -15,10 +16,13 @@ pub enum Error {
     #[error("Error parsing TLA state:\n{state}\nerror:\n{error}")]
     TlaParse { state: String, error: String },
 
-    #[error("No trace found. Check the model checker log at {0}")]
+    #[error("No test found in {0}")]
+    NoTestFound(std::path::PathBuf),
+
+    #[error("No trace found in {0}")]
     NoTraceFound(std::path::PathBuf),
 
-    #[error("Invalid TLC output at {0}")]
+    #[error("Invalid TLC output: {0}")]
     InvalidTLCOutput(std::path::PathBuf),
 
     #[error("TLC failure: {0}")]
@@ -31,13 +35,24 @@ pub enum Error {
     InvalidApalacheCounterexample(String),
 
     #[error("Reqwest error: {0}")]
-    Reqwest(reqwest::Error),
-
-    #[error("Serde error: {0}")]
-    Serde(serde_json::Error),
+    Reqwest(String),
 
     #[error("Nom error: {0}")]
     Nom(String),
+}
+
+impl Error {
+    pub(crate) fn io(err: std::io::Error) -> Error {
+        Error::IO(err.to_string())
+    }
+
+    pub(crate) fn reqwest(err: reqwest::Error) -> Error {
+        Error::Reqwest(err.to_string())
+    }
+
+    pub(crate) fn nom(err: nom::Err<nom::error::Error<&str>>) -> Error {
+        Error::Nom(err.to_string())
+    }
 }
 
 #[derive(Error, Debug)]

@@ -59,8 +59,8 @@ impl Jar {
         let file = self.file(&modelator_dir);
 
         // download jar/tgz
-        let response = reqwest::blocking::get(&link).map_err(Error::Reqwest)?;
-        let bytes = response.bytes().map_err(Error::Reqwest)?;
+        let response = reqwest::blocking::get(&link).map_err(Error::reqwest)?;
+        let bytes = response.bytes().map_err(Error::reqwest)?;
 
         // in the case of apalache, extract the jar from the tgz
         if self == &Self::Apalache {
@@ -70,19 +70,19 @@ impl Jar {
             use bytes::Buf;
             let tar = GzDecoder::new(bytes.reader());
             let mut archive = tar::Archive::new(tar);
-            archive.unpack(&tar_dir).map_err(Error::IO)?;
+            archive.unpack(&tar_dir).map_err(Error::io)?;
 
             // move jar file to expected
             let jar = tar_dir
                 .join("mod-distribution")
                 .join("target")
                 .join(format!("apalache-pkg-{}-full.jar", APALACHE_VERSION));
-            std::fs::rename(jar, file).map_err(Error::IO)?;
+            std::fs::rename(jar, file).map_err(Error::io)?;
 
             // remove tar directory
-            std::fs::remove_dir_all(tar_dir).map_err(Error::IO)?;
+            std::fs::remove_dir_all(tar_dir).map_err(Error::io)?;
         } else {
-            std::fs::write(file, bytes).map_err(Error::IO)?;
+            std::fs::write(file, bytes).map_err(Error::io)?;
         }
         Ok(())
     }
@@ -107,11 +107,11 @@ pub(crate) fn download_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Erro
 fn existing_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<HashSet<Jar>, Error> {
     let mut existing_jars = HashSet::new();
     // read files the modelator directory
-    let files = std::fs::read_dir(modelator_dir).map_err(Error::IO)?;
+    let files = std::fs::read_dir(modelator_dir).map_err(Error::io)?;
     for file in files {
         // for each file in the modelator directory, check if it is a jar
         let file_name = file
-            .map_err(Error::IO)?
+            .map_err(Error::io)?
             .file_name()
             .into_string()
             .map_err(Error::InvalidUnicode)?;

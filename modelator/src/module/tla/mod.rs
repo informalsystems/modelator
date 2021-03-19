@@ -44,8 +44,16 @@ impl Tla {
         // already checked that the tests file is indeed a file
         let tla_tests_module_name = tla_tests_file.tla_module_name().unwrap();
 
-        // TODO: retrieve test names from tla tests file
-        extract_test_names(&tla_tests_file)?
+        // retrieve test names from tla tests file
+        let test_names = extract_test_names(&tla_tests_file)?;
+
+        // check if no test was found
+        if test_names.is_empty() {
+            return Err(Error::NoTestFound(tla_tests_file.path().to_path_buf()));
+        }
+
+        // generate a tla test file and config for each test name found
+        test_names
             .into_iter()
             .map(|test_name| {
                 generate_test(
@@ -60,7 +68,7 @@ impl Tla {
 }
 
 fn extract_test_names(tla_test_file: &TlaFile) -> Result<Vec<String>, Error> {
-    let content = std::fs::read_to_string(tla_test_file.path()).map_err(Error::IO)?;
+    let content = std::fs::read_to_string(tla_test_file.path()).map_err(Error::io)?;
     let test_names = content
         .lines()
         .filter_map(|line| {
@@ -110,11 +118,11 @@ fn generate_test(
 
     // write test module to test module file
     let test_module_file = tla_tests_dir.join(format!("{}.tla", test_module_name));
-    std::fs::write(&test_module_file, test_module).map_err(Error::IO)?;
+    std::fs::write(&test_module_file, test_module).map_err(Error::io)?;
 
     // write test config to test config file
     let test_config_file = tla_tests_dir.join(format!("{}.cfg", test_module_name));
-    std::fs::write(&test_config_file, test_config).map_err(Error::IO)?;
+    std::fs::write(&test_config_file, test_config).map_err(Error::io)?;
 
     Ok((test_module_file.into(), test_config_file.into()))
 }
@@ -140,7 +148,7 @@ EXTENDS {}
 }
 
 fn generate_test_config(tla_config_file: &TlaConfigFile, invariant: &str) -> Result<String, Error> {
-    let tla_config = std::fs::read_to_string(tla_config_file.path()).map_err(Error::IO)?;
+    let tla_config = std::fs::read_to_string(tla_config_file.path()).map_err(Error::io)?;
     Ok(format!(
         r#"
 {}

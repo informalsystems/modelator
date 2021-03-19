@@ -1,3 +1,5 @@
+use crate::Error;
+
 pub(crate) type TlaState = String;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -17,6 +19,53 @@ impl TlaTrace {
     pub(crate) fn is_empty(&self) -> bool {
         self.states.is_empty()
     }
+
+    #[allow(clippy::unnecessary_wraps)]
+    pub(crate) fn parse(tla_trace: String) -> Result<Self, Error> {
+        let lines = tla_trace.lines();
+        let mut state_index = 0;
+        let mut state = None;
+        let mut trace = TlaTrace::new();
+
+        for line in lines {
+            // check if found the start of the next state
+            let next_state = format!("State{} ==", state_index);
+            if line.starts_with(&next_state) {
+                if state_index > 0 {
+                    // the previous state has ended, so we save it
+                    let state = state
+                        .take()
+                        .expect("[modelator] a TLA trace state should have been started");
+                    trace.add(state);
+                }
+
+                // start a new state with the remaining of this line
+                let mut tla_state = TlaState::new();
+                // trim the prefix
+                let line = line.trim_start_matches(&next_state);
+                // save remaining of the line
+                tla_state.push_str(line);
+                tla_state.push('\n');
+                state = Some(tla_state);
+
+                state_index += 1;
+                continue;
+            }
+
+            // save any line if we have a state started
+            if let Some(state) = state.as_mut() {
+                state.push_str(line);
+                state.push('\n');
+            }
+        }
+
+        // save the last state
+        let state = state
+            .take()
+            .expect("[modelator] a TLA trace should have at least one TLA state");
+        trace.add(state);
+        Ok(trace)
+    }
 }
 
 impl IntoIterator for TlaTrace {
@@ -31,7 +80,7 @@ impl IntoIterator for TlaTrace {
 impl std::fmt::Display for TlaTrace {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for (index, state) in self.states.iter().enumerate() {
-            write!(f, "State{} ==\n{}", index + 1, state)?;
+            write!(f, "State{} ==\n{}", index, state)?;
         }
         Ok(())
     }
