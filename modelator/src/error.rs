@@ -34,9 +34,6 @@ pub enum Error {
     #[error("Invalid Apalache counterexample: {0}")]
     InvalidApalacheCounterexample(String),
 
-    #[error("Reqwest error: {0}")]
-    Reqwest(String),
-
     #[error("Nom error: {0}")]
     Nom(String),
 }
@@ -44,10 +41,6 @@ pub enum Error {
 impl Error {
     pub(crate) fn io(err: std::io::Error) -> Error {
         Error::IO(err.to_string())
-    }
-
-    pub(crate) fn reqwest(err: reqwest::Error) -> Error {
-        Error::Reqwest(err.to_string())
     }
 
     pub(crate) fn nom(err: nom::Err<nom::error::Error<&str>>) -> Error {
