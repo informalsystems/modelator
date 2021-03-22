@@ -1,5 +1,8 @@
 use std::path::PathBuf;
 use std::process::Command;
+use serde::de::DeserializeOwned;
+use crate::Error;
+
 
 pub(crate) fn cmd_output_to_string(output: &[u8]) -> String {
     String::from_utf8_lossy(output).to_string()
@@ -18,3 +21,31 @@ pub(crate) fn absolute_path(path: &PathBuf) -> String {
         Err(e) => panic!("[modelator] couldn't compute absolute path: {:?}", e),
     }
 }
+
+
+/// A macro that generates a complete setter method from a one-liner with necessary information
+#[macro_export]
+macro_rules! set_option {
+    ($name:ident, $t:ty) => {
+        pub fn $name(mut self, $name: $t) -> Self {
+            self.$name = Some($name.clone());
+            self
+        }
+    };
+    ($name:ident, $t:ty, $val:expr) => {
+        pub fn $name(mut self, $name: $t) -> Self {
+            self.$name = $val;
+            self
+        }
+    };
+}
+
+/// Tries to parse a string as the given type; otherwise returns the input wrapped in SimpleError
+pub fn parse_as<T: DeserializeOwned>(input: &str) -> Result<T, Error> {
+    match serde_json::from_str(input) {
+        Ok(res) => Ok(res),
+        Err(e) => Err(Error::ParseError(e.to_string())),
+    }
+}
+
+

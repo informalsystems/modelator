@@ -24,6 +24,8 @@ mod cli;
 /// Utilitary functions.
 mod util;
 
+pub mod tester;
+
 /// Re-exports.
 pub use cli::{CliOptions, CliOutput, CliStatus};
 pub use error::{Error, TestError};
