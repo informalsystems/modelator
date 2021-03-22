@@ -18,8 +18,14 @@ pub mod runner;
 
 /// Datastructure converter.
 pub mod converter;
+/// Command-line interface.
+mod cli;
+
+/// Utilitary functions.
+mod util;
 
 /// Re-exports.
+pub use cli::{CliOptions, CliOutput, CliStatus};
 pub use error::{Error, TestError};
 pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Options};
 pub use converter::Converter;
@@ -40,7 +46,7 @@ pub fn traces<P: AsRef<Path>>(
     // generate tla tests
     let tests = module::Tla::generate_tests(tla_tests_file.into(), tla_config_file.into())?;
 
-    // run tlc on each tla test
+    // run the model checker configured on each tla test
     let traces = tests
         .clone()
         .into_iter()
@@ -56,8 +62,8 @@ pub fn traces<P: AsRef<Path>>(
 
     // cleanup test files created
     for (tla_file, tla_config_file) in tests {
-        std::fs::remove_file(tla_file.path()).map_err(Error::IO)?;
-        std::fs::remove_file(tla_config_file.path()).map_err(Error::IO)?;
+        std::fs::remove_file(tla_file.path()).map_err(Error::io)?;
+        std::fs::remove_file(tla_config_file.path()).map_err(Error::io)?;
     }
 
     // convert each tla trace to json
@@ -86,16 +92,14 @@ where
     Ok(())
 }
 
-fn setup(options: &Options) -> Result<(), Error> {
+pub(crate) fn setup(options: &Options) -> Result<(), Error> {
     // create modelator dir (if it doens't already exist)
     if !options.dir.as_path().is_dir() {
-        std::fs::create_dir_all(&options.dir).map_err(Error::IO)?;
+        std::fs::create_dir_all(&options.dir).map_err(Error::io)?;
     }
 
-    // TODO: maybe replace this and the previous step with a build.rs;
-    //       see e.g. https://github.com/tensorflow/rust/blob/master/tensorflow-sys/build.rs
-    // download missing jars
-    jar::download_jars(&options.dir)?;
+    // write missing jars
+    jar::write_jars(&options.dir)?;
     tracing::trace!("modelator setup completed");
 
     // init tracing subscriber (in case it's not already)

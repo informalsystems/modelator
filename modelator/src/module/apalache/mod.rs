@@ -1,7 +1,6 @@
 /// Parsing of Apalache's counterexample file.
 mod counterexample;
 
-use super::util;
 use crate::artifact::{TlaConfigFile, TlaFile, TlaTrace};
 use crate::{jar, Error, Options};
 use std::path::Path;
@@ -28,11 +27,11 @@ impl Apalache {
 
         // start apalache
         // TODO: add timeout
-        let output = cmd.output().map_err(Error::IO)?;
+        let output = cmd.output().map_err(Error::io)?;
 
         // get apalache stdout and stderr
-        let stdout = util::cmd_output_to_string(&output.stdout);
-        let stderr = util::cmd_output_to_string(&output.stderr);
+        let stdout = crate::util::cmd_output_to_string(&output.stdout);
+        let stderr = crate::util::cmd_output_to_string(&output.stderr);
         tracing::debug!("Apalache stdout:\n{}", stdout);
         tracing::debug!("Apalache stderr:\n{}", stderr);
 
@@ -41,7 +40,7 @@ impl Apalache {
                 // apalache writes all its output to the stdout
 
                 // save apalache log
-                std::fs::write(&options.model_checker_options.log, &stdout).map_err(Error::IO)?;
+                std::fs::write(&options.model_checker_options.log, &stdout).map_err(Error::io)?;
 
                 // check if a failure has occurred
                 if stdout.contains("EXITCODE: ERROR") {
@@ -56,7 +55,7 @@ impl Apalache {
                 let counterexample_path = Path::new("counterexample.tla");
                 if counterexample_path.is_file() {
                     let counterexample =
-                        std::fs::read_to_string(counterexample_path).map_err(Error::IO)?;
+                        std::fs::read_to_string(counterexample_path).map_err(Error::io)?;
                     tracing::debug!("Apalache counterexample:\n{}", counterexample);
                     counterexample::parse(counterexample)
                 } else {
@@ -101,6 +100,6 @@ fn cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) -> Co
     );
 
     // show command being run
-    tracing::debug!("{}", util::cmd_show(&cmd));
+    tracing::debug!("{}", crate::util::cmd_show(&cmd));
     cmd
 }
