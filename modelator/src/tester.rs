@@ -1,27 +1,19 @@
 use crate::util::*;
 use serde::de::DeserializeOwned;
-use std::{
-    panic::{self, RefUnwindSafe, UnwindSafe},
-    sync::{Arc, Mutex},
-};
+use serde_json::Value;
+use std::{panic::{self, RefUnwindSafe, UnwindSafe}, sync::{Arc, Mutex}};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TestResult {
-    ParseError(String),
     Success,
     Failure { message: String, location: String },
     Unhandled
 }
 
-/// A function that takes as input the test file path and its content,
-/// and returns the result of running the test on it
-type TestFn = Box<dyn Fn(&str) -> TestResult>;
-
 pub struct Test {
-    /// test name
     pub name: String,
-    /// test function
-    pub test: TestFn,
+    pub test_str: Box<dyn Fn(&str) -> TestResult>,
+    pub test_value: Box<dyn Fn(&Value) -> TestResult>,
 }
 
 pub struct Tester {
@@ -38,24 +30,32 @@ impl Tester {
     pub fn add_test<T, F>(&mut self, name: &str, test: F)
     where
         T: 'static + DeserializeOwned + UnwindSafe,
-        F: Fn(T) + UnwindSafe + RefUnwindSafe + 'static,
+        F: Fn(T) + UnwindSafe + RefUnwindSafe + 'static + Copy,
     {
-        let test_fn = move |input: &str| match parse_as::<T>(&input) {
+        let test_str = move |input: &str| match parse_from_str::<T>(&input) {
             Ok(test_case) => Tester::capture_test(|| {
                 test(test_case);
             }),
-            Err(e) => TestResult::ParseError(e.to_string()),
+            Err(_) => TestResult::Unhandled,
         };
+        let test_value = move |input: &Value| match parse_from_value::<T>(input.clone()) {
+            Ok(test_case) => Tester::capture_test(|| {
+                test(test_case);
+            }),
+            Err(_) => TestResult::Unhandled,
+        };
+ 
         self.tests.push(Test {
             name: name.to_string(),
-            test: Box::new(test_fn),
+            test_str: Box::new(test_str),
+            test_value: Box::new(test_value),
         });
     }
 
-    pub fn run_on(&mut self, input: &str) -> TestResult {
-        for Test { name, test } in &self.tests {
-            match test(input) {
-                TestResult::ParseError(_) => {
+    pub fn run_on_str(&mut self, input: &str) -> TestResult {
+        for Test { test_str, .. } in &self.tests {
+            match test_str(input) {
+                TestResult::Unhandled => {
                     continue;
                 }
                 res => return res,
@@ -63,6 +63,18 @@ impl Tester {
         }
         TestResult::Unhandled
     }
+
+    pub fn run_on_value(&mut self, input: &Value) -> TestResult {
+        for Test { test_value, .. } in &self.tests {
+            match test_value(input) {
+                TestResult::Unhandled => {
+                    continue;
+                }
+                res => return res,
+            }
+        }
+        TestResult::Unhandled
+    }    
 
     fn capture_test<F>(test: F) -> TestResult
     where
@@ -113,7 +125,7 @@ mod tests {
         assert!(false);
     }
 
-    fn succeeds(t: MyTest) {
+    fn succeeds_if_my_test(t: MyTest) {
         assert!(t.name == "my_test", "got {}", t.name);
     }
 
@@ -121,11 +133,23 @@ mod tests {
     fn test() {
         let mut tester = Tester::new();
         tester.add_test("fails", fails);
-        tester.add_test("succeeds", succeeds);
-        let res = tester.run_on("");
+        tester.add_test("succeeds_if_my_test", succeeds_if_my_test);
+
+        let res = tester.run_on_str("");
         assert!(res == TestResult::Unhandled);
-        let res = tester.run_on("{\"name\": \"my_test\"}");
+
+        let data = "{\"name\": \"test\"}";
+        let res = tester.run_on_str(data);
+        assert!(matches!(res, TestResult::Failure { message, location: _ } if message == "got test"));
+
+        let data = "{\"name\": \"my_test\"}";
+        let res = tester.run_on_str(data);
         assert!(res == TestResult::Success);
+
+        let json: Value = serde_json::from_str(data).unwrap();
+        let res = tester.run_on_value(&json);
+        assert!(res == TestResult::Success);
+
     }
 
 }
