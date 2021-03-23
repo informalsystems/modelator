@@ -16,22 +16,23 @@ mod jar;
 /// Test runner.
 pub mod runner;
 
-/// Datastructure converter.
-pub mod converter;
 /// Command-line interface.
 mod cli;
+/// Datastructure converter.
+pub mod converter;
 
 /// Utilitary functions.
 mod util;
 
 pub mod tester;
 
+pub mod event;
+
 /// Re-exports.
 pub use cli::{CliOptions, CliOutput, CliStatus};
+pub use converter::Converter;
 pub use error::{Error, TestError};
 pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Options};
-pub use converter::Converter;
-
 
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
