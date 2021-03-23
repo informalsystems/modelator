@@ -1,7 +1,7 @@
 use crate::util::*;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-use std::{panic::{self, RefUnwindSafe, UnwindSafe}, sync::{Arc, Mutex}};
+use std::{any::Any, panic::{self, UnwindSafe, AssertUnwindSafe}, sync::{Arc, Mutex}};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TestResult {
@@ -10,63 +10,63 @@ pub enum TestResult {
     Unhandled
 }
 
-pub struct Test {
+pub struct Test<'a> {
     pub name: String,
-    pub test_str: Box<dyn Fn(&str) -> TestResult>,
-    pub test_value: Box<dyn Fn(&Value) -> TestResult>,
+    pub test: Box<dyn FnMut(& dyn Any) -> TestResult + 'a>,
 }
 
-pub struct Tester {
-    tests: Vec<Test>,
+pub struct Tester<'a> {
+    tests: Vec<Test<'a>>,
 }
 
-impl Tester {
-    pub fn new() -> Tester {
+impl<'a> Tester<'a> {
+    pub fn new() -> Tester<'a> {
         Tester {
             tests: vec![],
         }
     }
 
-    pub fn add_test<T, F>(&mut self, name: &str, test: F)
+    pub fn add_test<T, F>(&mut self, name: &str, mut test: F)
     where
-        T: 'static + DeserializeOwned + UnwindSafe,
-        F: Fn(T) + UnwindSafe + RefUnwindSafe + 'static + Copy,
+        T: 'static + DeserializeOwned + UnwindSafe + Clone,
+        F: FnMut(T)  + 'a,
     {
-        let test_str = move |input: &str| match parse_from_str::<T>(&input) {
-            Ok(test_case) => Tester::capture_test(|| {
-                test(test_case);
-            }),
-            Err(_) => TestResult::Unhandled,
-        };
-        let test_value = move |input: &Value| match parse_from_value::<T>(input.clone()) {
-            Ok(test_case) => Tester::capture_test(|| {
-                test(test_case);
-            }),
-            Err(_) => TestResult::Unhandled,
-        };
+        let test_fn = move |input: &dyn Any| 
+            if let Some(test_case) = input.downcast_ref::<T>() {
+                Tester::capture_test(|| {
+                    test(test_case.clone());
+                })
+            }
+            else if let Some(input) = input.downcast_ref::<String>() {
+                match parse_from_str::<T>(input) {
+                    Ok(test_case) => Tester::capture_test(|| {
+                        test(test_case.clone());
+                    }),
+                    Err(_) => TestResult::Unhandled,
+                }
+            }
+            else if let Some(input) = input.downcast_ref::<Value>() {
+                match parse_from_value::<T>(input.clone()) {
+                    Ok(test_case) => Tester::capture_test(|| {
+                        test(test_case.clone());
+                    }),
+                    Err(_) => TestResult::Unhandled,
+                }
+            }
+            else {
+                TestResult::Unhandled
+            }
+        ;
  
         self.tests.push(Test {
             name: name.to_string(),
-            test_str: Box::new(test_str),
-            test_value: Box::new(test_value),
+            test: Box::new(test_fn),
         });
     }
 
-    pub fn run_on_str(&mut self, input: &str) -> TestResult {
-        for Test { test_str, .. } in &self.tests {
-            match test_str(input) {
-                TestResult::Unhandled => {
-                    continue;
-                }
-                res => return res,
-            }
-        }
-        TestResult::Unhandled
-    }
-
-    pub fn run_on_value(&mut self, input: &Value) -> TestResult {
-        for Test { test_value, .. } in &self.tests {
-            match test_value(input) {
+    pub fn test(&mut self, input: &dyn Any) -> TestResult {
+        for Test { test, .. } in &mut self.tests {
+            match test(input) {
                 TestResult::Unhandled => {
                     continue;
                 }
@@ -76,9 +76,9 @@ impl Tester {
         TestResult::Unhandled
     }    
 
-    fn capture_test<F>(test: F) -> TestResult
+    fn capture_test<F>(mut test: F) -> TestResult
     where
-        F: FnOnce() + UnwindSafe,
+        F: FnMut() + 'a,
     {
         let test_result = Arc::new(Mutex::new(TestResult::Unhandled));
         let old_hook = panic::take_hook();
@@ -100,7 +100,9 @@ impl Tester {
                 *result = TestResult::Failure { message, location };
             })
         });
-        let result = panic::catch_unwind(|| test());
+        let result = panic::catch_unwind(
+            AssertUnwindSafe(|| test())
+        );
         panic::set_hook(old_hook);
         match result {
             Ok(_) => TestResult::Success,
@@ -110,18 +112,23 @@ impl Tester {
 }
 
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use serde::Deserialize;
 
-    #[derive(Deserialize)]
+    #[derive(Deserialize, Clone)]
     pub struct MyTest {
-        pub name: String
+        pub name: String,
     }
 
-    fn fails(_: String) {
+    #[derive(Deserialize, Clone)]
+    pub struct MyTest2 {
+        pub id: u64,
+    }
+
+
+    fn fails(_: MyTest2) {
         assert!(false);
     }
 
@@ -135,19 +142,24 @@ mod tests {
         tester.add_test("fails", fails);
         tester.add_test("succeeds_if_my_test", succeeds_if_my_test);
 
-        let res = tester.run_on_str("");
+        let res = tester.test(&"".to_string());
         assert!(res == TestResult::Unhandled);
 
-        let data = "{\"name\": \"test\"}";
-        let res = tester.run_on_str(data);
+        let data = String::from("{\"name\": \"test\"}");
+        let res = tester.test(&data);
         assert!(matches!(res, TestResult::Failure { message, location: _ } if message == "got test"));
 
-        let data = "{\"name\": \"my_test\"}";
-        let res = tester.run_on_str(data);
+        let data = MyTest { name: "my_test".to_string() };
+        let res = tester.test(&data);
+        assert!(res == TestResult::Success);
+        
+        let data = String::from("{\"name\": \"my_test\"}");
+        let res = tester.test(&data);
+        println!("{:?}", res);
         assert!(res == TestResult::Success);
 
-        let json: Value = serde_json::from_str(data).unwrap();
-        let res = tester.run_on_value(&json);
+        let data: Value = serde_json::from_str(&data).unwrap();
+        let res = tester.test(&data);
         assert!(res == TestResult::Success);
 
     }
