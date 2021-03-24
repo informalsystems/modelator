@@ -19,9 +19,6 @@ impl Tlc {
     ) -> Result<TlaTrace, Error> {
         tracing::debug!("Tlc::test {} {} {:?}", tla_file, tla_config_file, options);
 
-        // check java and its version
-        crate::util::check_java_version()?;
-
         // check that the tla file and tla cfg file exist
         tla_file.check_existence()?;
         tla_config_file.check_existence()?;
