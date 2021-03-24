@@ -58,6 +58,7 @@ impl Cache {
         Ok(())
     }
 
+    #[allow(clippy::ptr_arg)]
     fn key_path(&self, key: &String) -> PathBuf {
         self.cache_dir.join(key)
     }
