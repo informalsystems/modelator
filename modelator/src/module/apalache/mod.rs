@@ -2,6 +2,7 @@
 mod counterexample;
 
 use crate::artifact::{TlaConfigFile, TlaFile, TlaTrace};
+use crate::cache::TlaTraceCache;
 use crate::{jar, Error, Options};
 use std::path::Path;
 use std::process::Command;
@@ -30,6 +31,12 @@ impl Apalache {
         tla_file.check_existence()?;
         tla_config_file.check_existence()?;
 
+        // load cache and check if the result is cached
+        let mut cache = TlaTraceCache::new(options)?;
+        if let Some(value) = cache.get(&tla_file, &&tla_config_file, options)? {
+            return Ok(value);
+        }
+
         // create apalache test command
         let cmd = test_cmd(tla_file.path(), tla_config_file.path(), options);
 
@@ -41,7 +48,11 @@ impl Apalache {
         if counterexample_path.is_file() {
             let counterexample = std::fs::read_to_string(counterexample_path).map_err(Error::io)?;
             tracing::debug!("Apalache counterexample:\n{}", counterexample);
-            counterexample::parse(counterexample)
+            let trace = counterexample::parse(counterexample)?;
+
+            // cache trace and then return it
+            cache.insert(&tla_file, &tla_config_file, &trace, options)?;
+            Ok(trace)
         } else {
             panic!("[modelator] expected to find Apalache's counterexample.tla file")
         }

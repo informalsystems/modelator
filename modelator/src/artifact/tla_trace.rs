@@ -1,4 +1,5 @@
 use crate::Error;
+use std::str::FromStr;
 
 pub(crate) type TlaState = String;
 
@@ -19,9 +20,12 @@ impl TlaTrace {
     pub(crate) fn is_empty(&self) -> bool {
         self.states.is_empty()
     }
+}
 
-    #[allow(clippy::unnecessary_wraps)]
-    pub(crate) fn parse(tla_trace: String) -> Result<Self, Error> {
+impl FromStr for TlaTrace {
+    type Err = Error;
+
+    fn from_str(tla_trace: &str) -> Result<Self, Self::Err> {
         let lines = tla_trace.lines();
         let mut state_index = 0;
         let mut state = None;

@@ -1,3 +1,9 @@
+// cache for `TlaTrace`s.
+mod tla_trace;
+
+// Re-exports;
+pub(crate) use tla_trace::TlaTraceCache;
+
 use crate::{Error, Options};
 use std::collections::HashSet;
 use std::path::PathBuf;
@@ -10,7 +16,7 @@ pub(crate) struct Cache {
 impl Cache {
     pub(crate) fn new(options: &Options) -> Result<Self, Error> {
         // create cache dir (if it doesn't exist)
-        let cache_dir = options.dir.join("cache").to_path_buf();
+        let cache_dir = options.dir.join("cache");
         std::fs::create_dir_all(&cache_dir).map_err(Error::io)?;
 
         // read files the cache directory
@@ -22,6 +28,7 @@ impl Cache {
         })
     }
 
+    #[allow(clippy::ptr_arg)]
     pub(crate) fn get(&self, key: &String) -> Result<Option<String>, Error> {
         let value = if self.cached_keys.contains(key) {
             // if this key is cached, read it from disk
@@ -37,7 +44,10 @@ impl Cache {
     pub(crate) fn insert(&mut self, key: String, value: String) -> Result<(), Error> {
         // for each key, there exists at most one value; so we panic in case
         // we're trying insert a key already cached
-        assert!(!self.cached_keys.contains(&key), "[modelator] trying to cache a key alreaday cached");
+        assert!(
+            !self.cached_keys.contains(&key),
+            "[modelator] trying to cache a key already cached"
+        );
 
         // write the value associated with this key to disk
         let path = self.key_path(&key);
