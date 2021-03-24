@@ -15,21 +15,18 @@ pub enum TestResult {
 }
 
 
-pub struct Test<'a> {
-    pub name: String,
-    pub test: Box<dyn FnMut(&dyn Any) -> TestResult + 'a>,
+type SimpleTest<'a> = Box<dyn FnMut(&dyn Any) -> TestResult + 'a>;
+
+pub struct SimpleTester<'a> {
+    tests: Vec<SimpleTest<'a>>,
 }
 
-pub struct Tester<'a> {
-    tests: Vec<Test<'a>>,
-}
-
-impl<'a> Tester<'a> {
-    pub fn new() -> Tester<'a> {
-        Tester { tests: vec![] }
+impl<'a> SimpleTester<'a> {
+    pub fn new() -> SimpleTester<'a> {
+        SimpleTester { tests: vec![] }
     }
 
-    pub fn add_test<T, F>(&mut self, name: &str, mut test: F)
+    pub fn add<T, F>(&mut self, mut test: F)
     where
         T: 'static + DeserializeOwned + UnwindSafe + Clone,
         F: FnMut(T) + 'a,
@@ -51,15 +48,11 @@ impl<'a> Tester<'a> {
                 TestResult::Unhandled
             }
         };
-
-        self.tests.push(Test {
-            name: name.to_string(),
-            test: Box::new(test_fn),
-        });
+        self.tests.push(Box::new(test_fn));
     }
 
     pub fn test(&mut self, input: &dyn Any) -> TestResult {
-        for Test { test, .. } in &mut self.tests {
+        for test in &mut self.tests {
             match test(input) {
                 TestResult::Unhandled => {
                     continue;
@@ -71,29 +64,29 @@ impl<'a> Tester<'a> {
     }
 }
 
+type SystemTest<'a, State> = Box<dyn FnMut(&mut State, &dyn Any) -> TestResult + 'a>;
 
-pub struct StatefulTest<'a, State> {
-    pub name: String,
-    pub test: Box<dyn FnMut(&mut State, &dyn Any) -> TestResult + 'a>,
+
+pub struct SystemTester<'a, State> {
+    tests: Vec<SystemTest<'a, State>>,
 }
 
-pub struct StatefulTester<'a, State> {
-    tests: Vec<StatefulTest<'a, State>>,
-}
-
-impl<'a, State> StatefulTester<'a, State> {
-    pub fn new() -> StatefulTester<'a, State> {
-        StatefulTester { tests: vec![] }
+impl<'a, State> SystemTester<'a, State> {
+    pub fn new() -> SystemTester<'a, State> {
+        SystemTester { tests: vec![] }
     }
 
-    pub fn add_test<T, F>(&mut self, name: &str, mut test: F)
+    pub fn add<T, F>(&mut self, mut test: F)
     where
         T: 'static + DeserializeOwned + UnwindSafe + Clone,
-        F: FnMut(& mut State, T) + 'a,
+        F: FnMut(&mut State, T) + 'a,
     {
         let test_fn = move |state: &mut State, input: &dyn Any| {
             if let Some(test_case) = input.downcast_ref::<T>() {
                 capture_test(|| test(state, test_case.clone()))
+            }
+            else if let Some(test_case) = input.downcast_ref::<Box<T>>() {
+                capture_test(|| test(state, *test_case.clone()))
             } else if let Some(input) = input.downcast_ref::<String>() {
                 match parse_from_str::<T>(input) {
                     Ok(test_case) => capture_test(|| test(state, test_case.clone())),
@@ -108,15 +101,11 @@ impl<'a, State> StatefulTester<'a, State> {
                 TestResult::Unhandled
             }
         };
-
-        self.tests.push(StatefulTest {
-            name: name.to_string(),
-            test: Box::new(test_fn),
-        });
+        self.tests.push(Box::new(test_fn));
     }
 
     pub fn test(&mut self, state: &mut State, input: &dyn Any) -> TestResult {
-        for StatefulTest { test, .. } in &mut self.tests {
+        for test in &mut self.tests {
             match test(state, input) {
                 TestResult::Unhandled => {
                     continue;
@@ -203,8 +192,9 @@ mod tests {
 
     #[test]
     fn test() {
-        let mut tester = Tester::new();
-        tester.add_test("succeeds_if_my_test", succeeds_if_my_test);
+        let mut tester = SimpleTester::new();
+        tester.add(fails);
+        tester.add(succeeds_if_my_test);
 
         let res = tester.test(&"".to_string());
         assert!(res == TestResult::Unhandled);
@@ -230,9 +220,9 @@ mod tests {
         let res = tester.test(&data);
         assert!(res == TestResult::Success);
 
-        let mut tester = StatefulTester::<MyState>::new();
-        tester.add_test("test", MyState::test1);
-        tester.add_test("test", MyState::test2);
+        let mut tester = SystemTester::<MyState>::new();
+        tester.add(MyState::test1);
+        tester.add(MyState::test2);
 
     }
 }
