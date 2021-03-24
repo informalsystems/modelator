@@ -76,7 +76,7 @@ impl Default for ModelCheckerOptions {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ModelChecker {
     Tlc,
     Apalache,

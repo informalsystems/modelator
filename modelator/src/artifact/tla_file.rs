@@ -13,7 +13,7 @@ impl TlaFile {
         }
     }
 
-    pub(crate) fn path(&self) -> &PathBuf {
+    pub fn path(&self) -> &PathBuf {
         &self.path
     }
 
