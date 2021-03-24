@@ -1,4 +1,5 @@
 use crate::Error;
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -32,6 +33,21 @@ pub(crate) fn absolute_path(path: &PathBuf) -> String {
         Ok(path) => path.to_string_lossy().to_string(),
         Err(e) => panic!("[modelator] couldn't compute absolute path: {:?}", e),
     }
+}
+
+pub(crate) fn read_dir<P: AsRef<Path>>(path: P) -> Result<HashSet<String>, Error> {
+    let mut file_names = HashSet::new();
+    let files = std::fs::read_dir(path).map_err(Error::io)?;
+    for file in files {
+        // for each file in the modelator directory, check if it is a jar
+        let file_name = file
+            .map_err(Error::io)?
+            .file_name()
+            .into_string()
+            .map_err(Error::InvalidUnicode)?;
+        assert!(file_names.insert(file_name));
+    }
+    Ok(file_names)
 }
 
 pub(crate) fn check_java_version() -> Result<(), Error> {

@@ -74,14 +74,7 @@ pub(crate) fn write_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Error> 
 fn existing_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<HashSet<Jar>, Error> {
     let mut existing_jars = HashSet::new();
     // read files the modelator directory
-    let files = std::fs::read_dir(modelator_dir).map_err(Error::io)?;
-    for file in files {
-        // for each file in the modelator directory, check if it is a jar
-        let file_name = file
-            .map_err(Error::io)?
-            .file_name()
-            .into_string()
-            .map_err(Error::InvalidUnicode)?;
+    for file_name in crate::util::read_dir(modelator_dir)? {
         if file_name.ends_with(".jar") {
             // if the file is a jar, then save it as already downloaded
             existing_jars.insert(Jar::from(&file_name));
