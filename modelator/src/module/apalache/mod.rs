@@ -26,6 +26,10 @@ impl Apalache {
         // check java and its version
         crate::util::check_java_version()?;
 
+        // check that the tla file and tla cfg file exist
+        tla_file.check_existence()?;
+        tla_config_file.check_existence()?;
+
         // create apalache command
         let cmd = test_cmd(tla_file.path(), tla_config_file.path(), options);
 

@@ -1,3 +1,4 @@
+use crate::Error;
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -14,6 +15,10 @@ impl TlaFile {
 
     pub(crate) fn path(&self) -> &PathBuf {
         &self.path
+    }
+
+    pub(crate) fn check_existence(&self) -> Result<(), Error> {
+        crate::util::check_file_existence(&self.path)
     }
 
     /// Infer TLA module name. We assume that the TLA module name matches the

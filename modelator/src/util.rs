@@ -1,5 +1,5 @@
 use crate::Error;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 // The minimum java version supported by Apalache is Java 8:
@@ -16,6 +16,15 @@ pub(crate) fn cmd_show(cmd: &Command) -> String {
     let cmd = cmd.trim_start_matches("Command { std:");
     let cmd = cmd.trim_end_matches(", kill_on_drop: false }");
     cmd.to_owned()
+}
+
+pub(crate) fn check_file_existence<P: AsRef<Path>>(path: P) -> Result<(), Error> {
+    let path = path.as_ref();
+    if path.is_file() {
+        Ok(())
+    } else {
+        Err(Error::FileNotFound(path.to_path_buf()))
+    }
 }
 
 pub(crate) fn absolute_path(path: &PathBuf) -> String {
