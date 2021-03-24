@@ -30,7 +30,7 @@ impl Apalache {
         tla_file.check_existence()?;
         tla_config_file.check_existence()?;
 
-        // create apalache command
+        // create apalache test command
         let cmd = test_cmd(tla_file.path(), tla_config_file.path(), options);
 
         // run apalache
@@ -45,6 +45,30 @@ impl Apalache {
         } else {
             panic!("[modelator] expected to find Apalache's counterexample.tla file")
         }
+    }
+
+    // #[modelator::method]
+    pub fn parse(tla_file: TlaFile, options: &Options) -> Result<TlaFile, Error> {
+        tracing::debug!("Apalache::parse {} {:?}", tla_file, options);
+
+        // check java and its version
+        crate::util::check_java_version()?;
+
+        // check that the tla file and tla cfg file exist
+        tla_file.check_existence()?;
+
+        // compute the output tla file; it's okay to unwrap as we have already
+        // verified that the file exists
+        let tla_module_name = tla_file.tla_module_name().unwrap();
+        let tla_parsed_file: TlaFile = format!("{}Parsed.tla", tla_module_name).into();
+
+        // create apalache parse command
+        let cmd = parse_cmd(tla_file.path(), tla_parsed_file.path(), options);
+
+        // run apalache
+        run_apalache(cmd, options)?;
+
+        Ok(tla_parsed_file)
     }
 }
 
@@ -83,22 +107,8 @@ fn run_apalache(mut cmd: Command, options: &Options) -> Result<String, Error> {
 }
 
 fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) -> Command {
-    let apalache = jar::Jar::Apalache.file(&options.dir);
-
-    let mut cmd = Command::new("java");
-
-    // compute the directory where the tla file is, so that it can be added as
-    // a tla library
-    if let Some(tla_file_dir) = tla_file.as_ref().parent() {
-        cmd
-            // set tla library
-            .arg(format!("-DTLA-Library={}", tla_file_dir.to_string_lossy()));
-    }
-    cmd
-        // set jar
-        .arg("-jar")
-        .arg(format!("{}", apalache.as_path().to_string_lossy()))
-        .arg("check")
+    let mut cmd = apalache_cmd_start(&tla_file, options);
+    cmd.arg("check")
         // set tla config file
         .arg(format!(
             "--config={}",
@@ -114,5 +124,40 @@ fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) 
 
     // show command being run
     tracing::debug!("{}", crate::util::cmd_show(&cmd));
+    cmd
+}
+
+fn parse_cmd<P: AsRef<Path>>(tla_file: P, tla_parsed_file: P, options: &Options) -> Command {
+    let mut cmd = apalache_cmd_start(&tla_file, options);
+    cmd.arg("parse")
+        // set tla output file
+        .arg(format!(
+            "--output={}",
+            tla_parsed_file.as_ref().to_string_lossy()
+        ))
+        // set tla file
+        .arg(tla_file.as_ref());
+
+    // show command being run
+    tracing::debug!("{}", crate::util::cmd_show(&cmd));
+    cmd
+}
+
+fn apalache_cmd_start<P: AsRef<Path>>(tla_file: P, options: &Options) -> Command {
+    let apalache = jar::Jar::Apalache.file(&options.dir);
+
+    let mut cmd = Command::new("java");
+
+    // compute the directory where the tla file is, so that it can be added as
+    // a tla library
+    if let Some(tla_file_dir) = tla_file.as_ref().parent() {
+        cmd
+            // set tla library
+            .arg(format!("-DTLA-Library={}", tla_file_dir.to_string_lossy()));
+    }
+    cmd
+        // set jar
+        .arg("-jar")
+        .arg(format!("{}", apalache.as_path().to_string_lossy()));
     cmd
 }
