@@ -13,6 +13,12 @@ pub enum Error {
     #[error("File not found: {0}")]
     FileNotFound(std::path::PathBuf),
 
+    #[error("Missing Java. Please install it.")]
+    MissingJava,
+
+    #[error("Current Java version is: {0}. Minimum Java version supported is: {1}")]
+    MinimumJavaVersion(usize, usize),
+
     #[error("Error parsing TLA state:\n{state}\nerror:\n{error}")]
     TlaParse { state: String, error: String },
 

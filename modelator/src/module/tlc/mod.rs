@@ -17,6 +17,10 @@ impl Tlc {
         options: &Options,
     ) -> Result<TlaTrace, Error> {
         tracing::debug!("Tlc::test {} {} {:?}", tla_file, tla_config_file, options);
+
+        // check java and its version
+        crate::util::check_java_version()?;
+
         // create tlc command
         let mut cmd = cmd(tla_file.path(), tla_config_file.path(), options);
 
