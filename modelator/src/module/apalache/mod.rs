@@ -27,53 +27,58 @@ impl Apalache {
         crate::util::check_java_version()?;
 
         // create apalache command
-        let mut cmd = cmd(tla_file.path(), tla_config_file.path(), options);
+        let cmd = test_cmd(tla_file.path(), tla_config_file.path(), options);
 
-        // start apalache
-        // TODO: add timeout
-        let output = cmd.output().map_err(Error::io)?;
+        // run apalache
+        run_apalache(cmd, options)?;
 
-        // get apalache stdout and stderr
-        let stdout = crate::util::cmd_output_to_string(&output.stdout);
-        let stderr = crate::util::cmd_output_to_string(&output.stderr);
-        tracing::debug!("Apalache stdout:\n{}", stdout);
-        tracing::debug!("Apalache stderr:\n{}", stderr);
-
-        match (stdout.is_empty(), stderr.is_empty()) {
-            (false, true) => {
-                // apalache writes all its output to the stdout
-
-                // save apalache log
-                std::fs::write(&options.model_checker_options.log, &stdout).map_err(Error::io)?;
-
-                // check if a failure has occurred
-                if stdout.contains("EXITCODE: ERROR") {
-                    return Err(Error::ApalacheFailure(stdout));
-                }
-                assert!(
-                    stdout.contains("EXITCODE: OK"),
-                    "[modelator] unexpected Apalache stdout"
-                );
-
-                // convert apalache counterexample to a trace
-                let counterexample_path = Path::new("counterexample.tla");
-                if counterexample_path.is_file() {
-                    let counterexample =
-                        std::fs::read_to_string(counterexample_path).map_err(Error::io)?;
-                    tracing::debug!("Apalache counterexample:\n{}", counterexample);
-                    counterexample::parse(counterexample)
-                } else {
-                    panic!("[modelator] expected to find Apalache's counterexample.tla file")
-                }
-            }
-            _ => {
-                panic!("[modelator] unexpected Apalache's stdout/stderr combination")
-            }
+        // convert apalache counterexample to a trace
+        let counterexample_path = Path::new("counterexample.tla");
+        if counterexample_path.is_file() {
+            let counterexample = std::fs::read_to_string(counterexample_path).map_err(Error::io)?;
+            tracing::debug!("Apalache counterexample:\n{}", counterexample);
+            counterexample::parse(counterexample)
+        } else {
+            panic!("[modelator] expected to find Apalache's counterexample.tla file")
         }
     }
 }
 
-fn cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) -> Command {
+fn run_apalache(mut cmd: Command, options: &Options) -> Result<String, Error> {
+    // start apalache
+    // TODO: add timeout
+    let output = cmd.output().map_err(Error::io)?;
+
+    // get apalache stdout and stderr
+    let stdout = crate::util::cmd_output_to_string(&output.stdout);
+    let stderr = crate::util::cmd_output_to_string(&output.stderr);
+    tracing::debug!("Apalache stdout:\n{}", stdout);
+    tracing::debug!("Apalache stderr:\n{}", stderr);
+
+    match (stdout.is_empty(), stderr.is_empty()) {
+        (false, true) => {
+            // apalache writes all its output to the stdout
+
+            // save apalache log
+            std::fs::write(&options.model_checker_options.log, &stdout).map_err(Error::io)?;
+
+            // check if a failure has occurred
+            if stdout.contains("EXITCODE: ERROR") {
+                return Err(Error::ApalacheFailure(stdout));
+            }
+            assert!(
+                stdout.contains("EXITCODE: OK"),
+                "[modelator] unexpected Apalache stdout"
+            );
+            Ok(stdout)
+        }
+        _ => {
+            panic!("[modelator] unexpected Apalache's stdout/stderr combination")
+        }
+    }
+}
+
+fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) -> Command {
     let apalache = jar::Jar::Apalache.file(&options.dir);
 
     let mut cmd = Command::new("java");

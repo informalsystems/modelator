@@ -22,7 +22,7 @@ impl Tlc {
         crate::util::check_java_version()?;
 
         // create tlc command
-        let mut cmd = cmd(tla_file.path(), tla_config_file.path(), options);
+        let mut cmd = test_cmd(tla_file.path(), tla_config_file.path(), options);
 
         // start tlc
         // TODO: add timeout
@@ -100,7 +100,7 @@ impl Tlc {
     }
 }
 
-fn cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) -> Command {
+fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) -> Command {
     let tla2tools = jar::Jar::Tla.file(&options.dir);
     let community_modules = jar::Jar::CommunityModules.file(&options.dir);
 
