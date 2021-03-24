@@ -47,7 +47,7 @@ pub(crate) fn check_java_version() -> Result<(), Error> {
             );
 
             // it's okay to unwrap as we have already asserted that the version exists
-            let version_parts: Vec<_> = versions.pop().unwrap().split("=").collect();
+            let version_parts: Vec<_> = versions.pop().unwrap().split('=').collect();
             assert_eq!(
                 version_parts.len(),
                 2,
