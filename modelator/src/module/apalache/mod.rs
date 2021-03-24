@@ -33,7 +33,8 @@ impl Apalache {
 
         // load cache and check if the result is cached
         let mut cache = TlaTraceCache::new(options)?;
-        if let Some(value) = cache.get(&tla_file, &&tla_config_file, options)? {
+        let cache_key = TlaTraceCache::key(&tla_file, &tla_config_file, options)?;
+        if let Some(value) = cache.get(&cache_key)? {
             return Ok(value);
         }
 
@@ -51,7 +52,7 @@ impl Apalache {
             let trace = counterexample::parse(counterexample)?;
 
             // cache trace and then return it
-            cache.insert(&tla_file, &tla_config_file, &trace, options)?;
+            cache.insert(cache_key, &trace)?;
             Ok(trace)
         } else {
             panic!("[modelator] expected to find Apalache's counterexample.tla file")

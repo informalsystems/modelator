@@ -12,29 +12,17 @@ impl TlaTraceCache {
         Ok(Self { cache })
     }
 
-    pub(crate) fn get(
-        &self,
-        tla_file: &TlaFile,
-        tla_config_file: &TlaConfigFile,
-        options: &Options,
-    ) -> Result<Option<TlaTrace>, Error> {
-        let key = Self::cache_key(tla_file, tla_config_file, options)?;
+    #[allow(clippy::ptr_arg)]
+    pub(crate) fn get(&self, key: &String) -> Result<Option<TlaTrace>, Error> {
         self.cache.get(&key)?.map(|value| value.parse()).transpose()
     }
 
-    pub(crate) fn insert(
-        &mut self,
-        tla_file: &TlaFile,
-        tla_config_file: &TlaConfigFile,
-        tla_trace: &TlaTrace,
-        options: &Options,
-    ) -> Result<(), Error> {
-        let key = Self::cache_key(tla_file, tla_config_file, options)?;
+    pub(crate) fn insert(&mut self, key: String, tla_trace: &TlaTrace) -> Result<(), Error> {
         let value = tla_trace.to_string();
         self.cache.insert(key, value)
     }
 
-    fn cache_key(
+    pub(crate) fn key(
         tla_file: &TlaFile,
         tla_config_file: &TlaConfigFile,
         options: &Options,

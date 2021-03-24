@@ -28,7 +28,8 @@ impl Tlc {
 
         // load cache and check if the result is cached
         let mut cache = TlaTraceCache::new(options)?;
-        if let Some(value) = cache.get(&tla_file, &&tla_config_file, options)? {
+        let cache_key = TlaTraceCache::key(&tla_file, &tla_config_file, options)?;
+        if let Some(value) = cache.get(&cache_key)? {
             return Ok(value);
         }
 
@@ -101,7 +102,7 @@ impl Tlc {
                 let trace = traces.pop().unwrap();
 
                 // cache trace and then return it
-                cache.insert(&tla_file, &tla_config_file, &trace, options)?;
+                cache.insert(cache_key, &trace)?;
                 Ok(trace)
             }
             (true, false) => {
