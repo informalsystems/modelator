@@ -1,18 +1,23 @@
 use crate::util::*;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-use std::{any::Any, panic::{self, UnwindSafe, AssertUnwindSafe}, sync::{Arc, Mutex}};
+use std::{
+    any::Any,
+    panic::{self, AssertUnwindSafe, UnwindSafe},
+    sync::{Arc, Mutex},
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TestResult {
     Success,
     Failure { message: String, location: String },
-    Unhandled
+    Unhandled,
 }
+
 
 pub struct Test<'a> {
     pub name: String,
-    pub test: Box<dyn FnMut(& dyn Any) -> TestResult + 'a>,
+    pub test: Box<dyn FnMut(&dyn Any) -> TestResult + 'a>,
 }
 
 pub struct Tester<'a> {
@@ -21,43 +26,32 @@ pub struct Tester<'a> {
 
 impl<'a> Tester<'a> {
     pub fn new() -> Tester<'a> {
-        Tester {
-            tests: vec![],
-        }
+        Tester { tests: vec![] }
     }
 
     pub fn add_test<T, F>(&mut self, name: &str, mut test: F)
     where
         T: 'static + DeserializeOwned + UnwindSafe + Clone,
-        F: FnMut(T)  + 'a,
+        F: FnMut(T) + 'a,
     {
-        let test_fn = move |input: &dyn Any| 
+        let test_fn = move |input: &dyn Any| {
             if let Some(test_case) = input.downcast_ref::<T>() {
-                Tester::capture_test(|| {
-                    test(test_case.clone());
-                })
-            }
-            else if let Some(input) = input.downcast_ref::<String>() {
+                capture_test(|| test(test_case.clone()))
+            } else if let Some(input) = input.downcast_ref::<String>() {
                 match parse_from_str::<T>(input) {
-                    Ok(test_case) => Tester::capture_test(|| {
-                        test(test_case.clone());
-                    }),
+                    Ok(test_case) => capture_test(|| test(test_case.clone())),
                     Err(_) => TestResult::Unhandled,
                 }
-            }
-            else if let Some(input) = input.downcast_ref::<Value>() {
+            } else if let Some(input) = input.downcast_ref::<Value>() {
                 match parse_from_value::<T>(input.clone()) {
-                    Ok(test_case) => Tester::capture_test(|| {
-                        test(test_case.clone());
-                    }),
+                    Ok(test_case) => capture_test(|| test(test_case.clone())),
                     Err(_) => TestResult::Unhandled,
                 }
-            }
-            else {
+            } else {
                 TestResult::Unhandled
             }
-        ;
- 
+        };
+
         self.tests.push(Test {
             name: name.to_string(),
             test: Box::new(test_fn),
@@ -74,43 +68,100 @@ impl<'a> Tester<'a> {
             }
         }
         TestResult::Unhandled
-    }    
-
-    fn capture_test<F>(mut test: F) -> TestResult
-    where
-        F: FnMut() + 'a,
-    {
-        let test_result = Arc::new(Mutex::new(TestResult::Unhandled));
-        let old_hook = panic::take_hook();
-        panic::set_hook({
-            let result = test_result.clone();
-            Box::new(move |info| {
-                let mut result = result.lock().unwrap();
-                let message = match info.payload().downcast_ref::<&'static str>() {
-                    Some(s) => s.to_string(),
-                    None => match info.payload().downcast_ref::<String>() {
-                        Some(s) => s.clone(),
-                        None => "Unknown error".to_string(),
-                    },
-                };
-                let location = match info.location() {
-                    Some(l) => l.to_string(),
-                    None => "".to_string(),
-                };
-                *result = TestResult::Failure { message, location };
-            })
-        });
-        let result = panic::catch_unwind(
-            AssertUnwindSafe(|| test())
-        );
-        panic::set_hook(old_hook);
-        match result {
-            Ok(_) => TestResult::Success,
-            Err(_) => (*test_result.lock().unwrap()).clone(),
-        }
     }
 }
 
+
+pub struct StatefulTest<'a, State> {
+    pub name: String,
+    pub test: Box<dyn FnMut(&mut State, &dyn Any) -> TestResult + 'a>,
+}
+
+pub struct StatefulTester<'a, State> {
+    tests: Vec<StatefulTest<'a, State>>,
+}
+
+impl<'a, State> StatefulTester<'a, State> {
+    pub fn new() -> StatefulTester<'a, State> {
+        StatefulTester { tests: vec![] }
+    }
+
+    pub fn add_test<T, F>(&mut self, name: &str, mut test: F)
+    where
+        T: 'static + DeserializeOwned + UnwindSafe + Clone,
+        F: FnMut(& mut State, T) + 'a,
+    {
+        let test_fn = move |state: &mut State, input: &dyn Any| {
+            if let Some(test_case) = input.downcast_ref::<T>() {
+                capture_test(|| test(state, test_case.clone()))
+            } else if let Some(input) = input.downcast_ref::<String>() {
+                match parse_from_str::<T>(input) {
+                    Ok(test_case) => capture_test(|| test(state, test_case.clone())),
+                    Err(_) => TestResult::Unhandled,
+                }
+            } else if let Some(input) = input.downcast_ref::<Value>() {
+                match parse_from_value::<T>(input.clone()) {
+                    Ok(test_case) => capture_test(|| test(state, test_case.clone())),
+                    Err(_) => TestResult::Unhandled,
+                }
+            } else {
+                TestResult::Unhandled
+            }
+        };
+
+        self.tests.push(StatefulTest {
+            name: name.to_string(),
+            test: Box::new(test_fn),
+        });
+    }
+
+    pub fn test(&mut self, state: &mut State, input: &dyn Any) -> TestResult {
+        for StatefulTest { test, .. } in &mut self.tests {
+            match test(state, input) {
+                TestResult::Unhandled => {
+                    continue;
+                }
+                res => return res,
+            }
+        }
+        TestResult::Unhandled
+    }
+
+
+}
+
+
+fn capture_test<'a, F>(mut test: F) -> TestResult
+where
+    F: FnMut() + 'a,
+{
+    let test_result = Arc::new(Mutex::new(TestResult::Unhandled));
+    let old_hook = panic::take_hook();
+    panic::set_hook({
+        let result = test_result.clone();
+        Box::new(move |info| {
+            let mut result = result.lock().unwrap();
+            let message = match info.payload().downcast_ref::<&'static str>() {
+                Some(s) => s.to_string(),
+                None => match info.payload().downcast_ref::<String>() {
+                    Some(s) => s.clone(),
+                    None => "Unknown error".to_string(),
+                },
+            };
+            let location = match info.location() {
+                Some(l) => l.to_string(),
+                None => "".to_string(),
+            };
+            *result = TestResult::Failure { message, location };
+        })
+    });
+    let result = panic::catch_unwind(AssertUnwindSafe(|| test()));
+    panic::set_hook(old_hook);
+    match result {
+        Ok(_) => TestResult::Success,
+        Err(_) => (*test_result.lock().unwrap()).clone(),
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -127,7 +178,6 @@ mod tests {
         pub id: u64,
     }
 
-
     fn fails(_: MyTest2) {
         assert!(false);
     }
@@ -136,10 +186,24 @@ mod tests {
         assert!(t.name == "my_test", "got {}", t.name);
     }
 
+    pub struct MyState {
+        pub state: String
+    }
+
+    impl MyState {
+        pub fn test1(&mut self, _: MyTest) {
+
+        }
+
+        pub fn test2(&mut self, _: MyTest2) {
+            
+        }
+
+    }
+
     #[test]
     fn test() {
         let mut tester = Tester::new();
-        tester.add_test("fails", fails);
         tester.add_test("succeeds_if_my_test", succeeds_if_my_test);
 
         let res = tester.test(&"".to_string());
@@ -147,12 +211,16 @@ mod tests {
 
         let data = String::from("{\"name\": \"test\"}");
         let res = tester.test(&data);
-        assert!(matches!(res, TestResult::Failure { message, location: _ } if message == "got test"));
+        assert!(
+            matches!(res, TestResult::Failure { message, location: _ } if message == "got test")
+        );
 
-        let data = MyTest { name: "my_test".to_string() };
+        let data = MyTest {
+            name: "my_test".to_string(),
+        };
         let res = tester.test(&data);
         assert!(res == TestResult::Success);
-        
+
         let data = String::from("{\"name\": \"my_test\"}");
         let res = tester.test(&data);
         println!("{:?}", res);
@@ -162,6 +230,10 @@ mod tests {
         let res = tester.test(&data);
         assert!(res == TestResult::Success);
 
-    }
+        let mut tester = StatefulTester::<MyState>::new();
+        tester.add_test("test", MyState::test1);
+        tester.add_test("test", MyState::test2);
 
+    }
 }
+
