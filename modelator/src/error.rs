@@ -2,6 +2,7 @@ use serde::Serialize;
 use std::fmt::Debug;
 use thiserror::Error;
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Error, Debug, Serialize)]
 pub enum Error {
     #[error("IO error: {0}")]
