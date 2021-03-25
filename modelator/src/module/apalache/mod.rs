@@ -30,7 +30,7 @@ impl Apalache {
 
         // load cache and check if the result is cached
         let mut cache = TlaTraceCache::new(options)?;
-        let cache_key = TlaTraceCache::key(&tla_file, &tla_config_file, options)?;
+        let cache_key = TlaTraceCache::key(&tla_file, &tla_config_file)?;
         if let Some(value) = cache.get(&cache_key)? {
             return Ok(value);
         }
