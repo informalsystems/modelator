@@ -41,19 +41,19 @@ impl Recipe {
     }
 
     // Define default value for type T
-    pub fn def<T: Sized + Any>(&mut self, f: fn(&Self) -> T) {
+    pub fn put<T: Sized + Any>(&mut self, f: fn(&Self) -> T) {
         let type_id = TypeId::of::<T>();
         self.defaults.insert(type_id, Box::new(f));
     }
 
     // Defined named default value for type T
-    pub fn def_as<T: Sized + Any>(&mut self, name: &str, f: fn(&Self) -> T) {
+    pub fn put_as<T: Sized + Any>(&mut self, name: &str, f: fn(&Self) -> T) {
         let type_id = TypeId::of::<T>();
         self.named_defaults
             .insert((name.to_string(), type_id), Box::new(f));
     }
 
-    pub fn cook<From: Sized + Any, To: Sized + Any>(&self, x: From) -> To {
+    pub fn make<From: Sized + Any, To: Sized + Any>(&self, x: From) -> To {
         match self.get::<From, To>() {
             Some(f) => f(x),
             None => panic!(
@@ -64,7 +64,7 @@ impl Recipe {
         }
     }
 
-    pub fn cook_as<From: Sized + Any, To: Sized + Any>(&self, name: &str, x: From) -> To {
+    pub fn make_as<From: Sized + Any, To: Sized + Any>(&self, name: &str, x: From) -> To {
         match self.get_as::<From, To>(name) {
             Some(f) => f(x),
             None => panic!(
@@ -168,27 +168,27 @@ mod tests {
 
     #[test]
     pub fn test() {
-        let mut c = Recipe::new();
-        c.def_as("height", |_| 1u64);
-        c.def_as("id", |_| 0u64);
-        c.def(|c| Provider {
+        let mut r = Recipe::new();
+        r.put_as("height", |_| 1u64);
+        r.put_as("id", |_| 0u64);
+        r.put(|r| Provider {
             name: "default_provider".to_string(),
-            id: c.take_as("id"),
+            id: r.take_as("id"),
         });
-        c.add(|c, name: String| Provider {
+        r.add(|r, name: String| Provider {
             name: name,
-            id: c.take_as("id"),
+            id: r.take_as("id"),
         });
-        c.add(|c, name: String| Chain {
+        r.add(|r, name: String| Chain {
             name: name.clone(),
-            id: c.take_as("id"),
-            default_provider: c.take(),
+            id: r.take_as("id"),
+            default_provider: r.take(),
         });
-        c.add(|c, b: AbstractBlock| Block {
-            chain: c.cook(b.chain),
+        r.add(|r, b: AbstractBlock| Block {
+            chain: r.make(b.chain),
             height: b.height,
-            id: c.take_as("id"),
-            provider: c.cook(b.provider),
+            id: r.take_as("id"),
+            provider: r.make(b.provider),
         });
 
         let a_block = AbstractBlock {
@@ -197,7 +197,7 @@ mod tests {
             provider: "provider2".to_string(),
         };
 
-        let block: Block = c.cook(a_block);
+        let block: Block = r.make(a_block);
 
         let expected = Block {
             chain: Chain {
