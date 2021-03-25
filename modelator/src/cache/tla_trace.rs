@@ -34,6 +34,10 @@ impl TlaTraceCache {
         let tla_parsed = std::fs::read_to_string(tla_parsed_file.path()).map_err(Error::io)?;
         let tla_config = std::fs::read_to_string(tla_config_file.path()).map_err(Error::io)?;
 
+        // cleanup tla parse file
+        std::fs::remove_file(tla_parsed_file.path())
+            .expect("[modelator] it should be possible to remove tla parsed file just created");
+
         // combine both and hash them
         let combined = tla_parsed + &tla_config;
         let hash = sha256::digest(&combined);
