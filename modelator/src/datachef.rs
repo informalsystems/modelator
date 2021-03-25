@@ -2,7 +2,7 @@ use std::any::{type_name, Any, TypeId};
 use std::collections::BTreeMap;
 
 #[derive(Debug)]
-pub struct Converter {
+pub struct Recipe {
     converts: BTreeMap<(TypeId, TypeId), Box<dyn Any>>,
     named_converts: BTreeMap<(String, TypeId, TypeId), Box<dyn Any>>,
 
@@ -11,7 +11,7 @@ pub struct Converter {
     named_defaults: BTreeMap<(String, TypeId), Box<dyn Any>>,
 }
 
-impl Converter {
+impl Recipe {
     // Create a new converter
     pub fn new() -> Self {
         Self {
@@ -31,7 +31,11 @@ impl Converter {
     }
 
     // Add named conversion from From into To
-    pub fn add_as<From: Sized + Any, To: Sized + Any>(&mut self, name: &str, f: fn(&Self, From) -> To) {
+    pub fn add_as<From: Sized + Any, To: Sized + Any>(
+        &mut self,
+        name: &str,
+        f: fn(&Self, From) -> To,
+    ) {
         let type_ids = (name.to_string(), TypeId::of::<From>(), TypeId::of::<To>());
         self.named_converts.insert(type_ids, Box::new(f));
     }
@@ -45,11 +49,11 @@ impl Converter {
     // Defined named default value for type T
     pub fn def_as<T: Sized + Any>(&mut self, name: &str, f: fn(&Self) -> T) {
         let type_id = TypeId::of::<T>();
-        self.named_defaults.insert((name.to_string(),type_id), Box::new(f));
+        self.named_defaults
+            .insert((name.to_string(), type_id), Box::new(f));
     }
 
-    // Apply conversion from From into To
-    pub fn convert<From: Sized + Any, To: Sized + Any>(&self, x: From) -> To {
+    pub fn cook<From: Sized + Any, To: Sized + Any>(&self, x: From) -> To {
         match self.get::<From, To>() {
             Some(f) => f(x),
             None => panic!(
@@ -60,8 +64,7 @@ impl Converter {
         }
     }
 
-    // Apply named conversion from From into To
-    pub fn convert_as<From: Sized + Any, To: Sized + Any>(&self, name: &str, x: From) -> To {
+    pub fn cook_as<From: Sized + Any, To: Sized + Any>(&self, name: &str, x: From) -> To {
         match self.get_as::<From, To>(name) {
             Some(f) => f(x),
             None => panic!(
@@ -74,18 +77,15 @@ impl Converter {
     }
 
     // Generate default value of type T
-    pub fn default<T: Sized + Any>(&self) -> T {
+    pub fn take<T: Sized + Any>(&self) -> T {
         match self.get_default::<T>() {
             Some(f) => f(),
-            None => panic!(
-                "Undefined default for {:?}",
-                type_name::<T>(),
-            ),
+            None => panic!("Undefined default for {:?}", type_name::<T>(),),
         }
-    }    
+    }
 
     // Generate named default value of type T
-    pub fn default_as<T: Sized + Any>(&self, name: &str) -> T {
+    pub fn take_as<T: Sized + Any>(&self, name: &str) -> T {
         match self.get_default_as::<T>(name) {
             Some(f) => f(),
             None => panic!(
@@ -94,7 +94,7 @@ impl Converter {
                 type_name::<T>(),
             ),
         }
-    }    
+    }
 
     pub fn get<From: Sized + Any, To: Sized + Any>(&self) -> Option<Box<dyn Fn(From) -> To + '_>> {
         let type_ids = (TypeId::of::<From>(), TypeId::of::<To>());
@@ -104,7 +104,10 @@ impl Converter {
         })
     }
 
-    pub fn get_as<From: Sized + Any, To: Sized + Any>(&self, name: &str) -> Option<Box<dyn Fn(From) -> To + '_>> {
+    pub fn get_as<From: Sized + Any, To: Sized + Any>(
+        &self,
+        name: &str,
+    ) -> Option<Box<dyn Fn(From) -> To + '_>> {
         let type_ids = (name.to_string(), TypeId::of::<From>(), TypeId::of::<To>());
         self.named_converts.get(&type_ids).and_then(|f| {
             f.downcast_ref::<fn(&Self, From) -> To>()
@@ -122,10 +125,12 @@ impl Converter {
 
     pub fn get_default_as<T: Sized + Any>(&self, name: &str) -> Option<Box<dyn Fn() -> T + '_>> {
         let type_id = TypeId::of::<T>();
-        self.named_defaults.get(&(name.to_string(), type_id)).and_then(|f| {
-            f.downcast_ref::<fn(&Self) -> T>()
-                .and_then(|f| Some(Box::new(move || f(&self)) as Box<dyn Fn() -> T>))
-        })
+        self.named_defaults
+            .get(&(name.to_string(), type_id))
+            .and_then(|f| {
+                f.downcast_ref::<fn(&Self) -> T>()
+                    .and_then(|f| Some(Box::new(move || f(&self)) as Box<dyn Fn() -> T>))
+            })
     }
 }
 
@@ -163,21 +168,27 @@ mod tests {
 
     #[test]
     pub fn test() {
-        let mut c = Converter::new();
+        let mut c = Recipe::new();
         c.def_as("height", |_| 1u64);
         c.def_as("id", |_| 0u64);
-        c.def(|c| Provider { name: "default_provider".to_string(), id: c.default_as("id") });
-        c.add(|c, name: String| Provider { name: name, id: c.default_as("id") });
+        c.def(|c| Provider {
+            name: "default_provider".to_string(),
+            id: c.take_as("id"),
+        });
+        c.add(|c, name: String| Provider {
+            name: name,
+            id: c.take_as("id"),
+        });
         c.add(|c, name: String| Chain {
             name: name.clone(),
-            id: c.default_as("id"),
-            default_provider: c.default(),
+            id: c.take_as("id"),
+            default_provider: c.take(),
         });
         c.add(|c, b: AbstractBlock| Block {
-            chain: c.convert(b.chain),
+            chain: c.cook(b.chain),
             height: b.height,
-            id: c.default_as("id"),
-            provider: c.convert(b.provider),
+            id: c.take_as("id"),
+            provider: c.cook(b.provider),
         });
 
         let a_block = AbstractBlock {
@@ -186,7 +197,7 @@ mod tests {
             provider: "provider2".to_string(),
         };
 
-        let block: Block = c.convert(a_block);
+        let block: Block = c.cook(a_block);
 
         let expected = Block {
             chain: Chain {
