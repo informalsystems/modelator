@@ -55,6 +55,13 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
             assert_eq!(traces.len(), 1, "a single trace should have been generated");
             let trace = traces.pop().unwrap();
             assert_eq!(trace, expected);
+
+            // parse file if apalache and simply assert it works
+            if model_checker == ModelChecker::Apalache {
+                let tla_parsed_file =
+                    modelator::module::Apalache::parse(tla_tests_file.into(), &options).unwrap();
+                std::fs::remove_file(tla_parsed_file.path()).unwrap();
+            }
         }
     }
     Ok(())
