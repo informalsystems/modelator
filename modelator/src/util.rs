@@ -1,6 +1,6 @@
 use crate::Error;
 use std::collections::HashSet;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 
 pub(crate) fn cmd_output_to_string(output: &[u8]) -> String {
@@ -23,8 +23,8 @@ pub(crate) fn check_file_existence<P: AsRef<Path>>(path: P) -> Result<(), Error>
     }
 }
 
-pub(crate) fn absolute_path(path: &PathBuf) -> String {
-    match path.canonicalize() {
+pub(crate) fn absolute_path<P: AsRef<Path>>(path: P) -> String {
+    match path.as_ref().canonicalize() {
         Ok(path) => path.to_string_lossy().to_string(),
         Err(e) => panic!("[modelator] couldn't compute absolute path: {:?}", e),
     }

@@ -4,7 +4,7 @@ mod json;
 use crate::artifact::{JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
 use crate::Error;
 use serde_json::Value as JsonValue;
-use std::path::PathBuf;
+use std::path::Path;
 
 // #[modelator::module]
 pub struct Tla;
@@ -93,7 +93,7 @@ fn extract_test_names(tla_test_file: &TlaFile) -> Result<Vec<String>, Error> {
 }
 
 fn generate_test(
-    tla_tests_dir: &PathBuf,
+    tla_tests_dir: &Path,
     tla_tests_module_name: &str,
     test_name: &str,
     tla_config_file: &TlaConfigFile,
