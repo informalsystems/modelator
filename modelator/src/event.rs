@@ -3,9 +3,10 @@ use serde::de::DeserializeOwned;
 use std::iter::Iterator;
 use crate::tester::*;
 
-pub trait StateSystem<State> {
-    fn init(&mut self, state: State);
-    fn next(&mut self, state: State);
+#[allow(unused_variables)]
+pub trait StateHandler<State> {
+    fn init(&mut self, state: State) {}
+    fn check(&mut self, state: State) {}
 }
 pub trait ActionHandler<Action> {
     fn handle(&mut self, action: Action);
@@ -13,7 +14,7 @@ pub trait ActionHandler<Action> {
 
 pub enum Event {
     Init(Box<dyn Any>),
-    Next(Box<dyn Any>),
+    Check(Box<dyn Any>),
     Action(Box<dyn Any>),
 }
 
@@ -28,17 +29,17 @@ impl EventStream {
         }
     }
 
-    pub fn init<T>(mut self, event: T) -> Self 
+    pub fn init<T>(mut self, state: T) -> Self 
     where T: 'static
     {
-        self.events.push(Event::Init(Box::new(event)));
+        self.events.push(Event::Init(Box::new(state)));
         self
     }
  
-    pub fn next<T>(mut self, event: T) -> Self 
+    pub fn check<T>(mut self, state: T) -> Self 
     where T: 'static
     {
-        self.events.push(Event::Next(Box::new(event)));
+        self.events.push(Event::Check(Box::new(state)));
         self
     }
 
@@ -76,32 +77,31 @@ impl<'a, System> Runner<'a, System> {
         }
     }
 
-    pub fn with_state_system<S>(mut self) -> Self
+    pub fn with_state<S>(mut self) -> Self
     where 
         S: 'static + DeserializeOwned + UnwindSafe + Clone,
-        System: 'static + StateSystem<S>
+        System: 'static + StateHandler<S>
     {
-        self.inits.add(StateSystem::<S>::init);
-        self.nexts.add(StateSystem::<S>::next);
+        self.inits.add(StateHandler::<S>::init);
+        self.nexts.add(StateHandler::<S>::check);
         self
 
     }
 
-    pub fn with_action_handler<A>(mut self) -> Self
+    pub fn with_action<A>(mut self) -> Self
     where 
         A: 'static + DeserializeOwned + UnwindSafe + Clone,
         System: 'static + ActionHandler<A>
     {
         self.actions.add(ActionHandler::<A>::handle);
         self
-
     }    
  
     pub fn run(&mut self, system: &mut System, stream: &mut dyn Iterator<Item = Event>) -> TestResult {
         while let Some(event) = stream.next() {
             let result = match event {
                 Event::Init(input) => self.inits.test(system, &input),
-                Event::Next(input)  => self.nexts.test(system, &input),
+                Event::Check(input)  => self.nexts.test(system, &input),
                 Event::Action(input) => self.actions.test(system, &input)
             };
             match result {
@@ -120,42 +120,59 @@ mod tests {
     use serde::Deserialize;
 
     #[derive(Deserialize, Clone)]
-    pub struct State {
-        pub name: String,
+    pub struct State1 {
+        pub value: String,
+    }
+
+    #[derive(Deserialize, Clone)]
+    pub struct State2 {
+        pub value: String,
     }
 
     #[derive(Deserialize, Clone)]
     pub struct Action1 {
-        pub name: String,
+        pub value: String,
     }
 
     #[derive(Deserialize, Clone)]
     pub struct Action2 {
-        pub name: String,
+        pub value: String,
     }
 
     pub struct MySystem {
-        pub state: String
+        pub state1: String,
+        pub state2: String
     }
 
-    impl StateSystem<State> for MySystem {
-        fn init(&mut self, state: State) {
-            self.state = state.name;
+    impl StateHandler<State1> for MySystem {
+        fn init(&mut self, state: State1) {
+            self.state1 = state.value;
         }
-        fn next(&mut self, state: State) {
-            self.state = state.name;
+
+        fn check(&mut self, state: State1) {
+            assert!(self.state1 == state.value);
+        }
+    }
+
+    impl StateHandler<State2> for MySystem {
+        fn init(&mut self, state: State2) {
+            self.state2 = state.value;
+        }
+
+        fn check(&mut self, state: State2) {
+            assert!(self.state2 == state.value);
         }
     }
 
     impl ActionHandler<Action1> for MySystem {
         fn handle(&mut self, action: Action1) {
-            self.state = action.name;
+            self.state1 = action.value;
         }
     }
 
     impl ActionHandler<Action2> for MySystem {
         fn handle(&mut self, action: Action2) {
-            self.state = action.name;
+            self.state2 = action.value;
         }
     }
 
@@ -163,19 +180,21 @@ mod tests {
     #[test]
     fn test() {
         let events = EventStream::new()
-            .init(State{ name: "init".to_string() })
-            .next(State{ name: "next".to_string() })
-            .action(Action1{ name: "action1".to_string() })
-            .action(Action2{ name: "action2".to_string() });
-
-        let mut system = MySystem { state: "".to_string() };
+            .init(State1{ value: "init state 1".to_string() })
+            .init(State2{ value: "init state 2".to_string() })
+            .action(Action1{ value: "action1 state".to_string() })
+            .action(Action2{ value: "action2 state".to_string() })
+            .check(State1{ value: "action1 state".to_string() })
+            .check(State2{ value: "action2 state".to_string() });
 
         let mut runner = Runner::new()
-            .with_state_system::<State>()
-            .with_action_handler::<Action1>()
-            .with_action_handler::<Action2>();
+            .with_state::<State1>()
+            .with_state::<State2>()
+            .with_action::<Action1>()
+            .with_action::<Action2>();
 
 
+        let mut system = MySystem { state1: "".to_string(), state2: "".to_string() };
         let result = runner.run(&mut system, &mut events.into_iter());
         println!("{:?}", result);
     }

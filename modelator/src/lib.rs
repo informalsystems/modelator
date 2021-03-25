@@ -18,8 +18,9 @@ pub mod runner;
 
 /// Command-line interface.
 mod cli;
+
 /// Datastructure converter.
-pub mod converter;
+pub mod datachef;
 
 /// Utilitary functions.
 mod util;
@@ -30,7 +31,7 @@ pub mod event;
 
 /// Re-exports.
 pub use cli::{CliOptions, CliOutput, CliStatus};
-pub use converter::Converter;
+pub use datachef::Recipe;
 pub use error::{Error, TestError};
 pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Options};
 
