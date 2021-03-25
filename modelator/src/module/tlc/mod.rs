@@ -2,6 +2,7 @@
 mod output;
 
 use crate::artifact::{TlaConfigFile, TlaFile, TlaTrace};
+use crate::cache::TlaTraceCache;
 use crate::{jar, Error, ModelCheckerWorkers, Options};
 use std::path::Path;
 use std::process::Command;
@@ -18,12 +19,16 @@ impl Tlc {
     ) -> Result<TlaTrace, Error> {
         tracing::debug!("Tlc::test {} {} {:?}", tla_file, tla_config_file, options);
 
-        // check java and its version
-        crate::util::check_java_version()?;
-
         // check that the tla file and tla cfg file exist
         tla_file.check_existence()?;
         tla_config_file.check_existence()?;
+
+        // load cache and check if the result is cached
+        let mut cache = TlaTraceCache::new(options)?;
+        let cache_key = TlaTraceCache::key(&tla_file, &tla_config_file, options)?;
+        if let Some(value) = cache.get(&cache_key)? {
+            return Ok(value);
+        }
 
         // create tlc command
         let mut cmd = test_cmd(tla_file.path(), tla_config_file.path(), options);
@@ -91,7 +96,11 @@ impl Tlc {
                     1,
                     "[modelator] unexpected number of traces in TLC's log"
                 );
-                Ok(traces.pop().unwrap())
+                let trace = traces.pop().unwrap();
+
+                // cache trace and then return it
+                cache.insert(cache_key, &trace)?;
+                Ok(trace)
             }
             (true, false) => {
                 // if stdout is empty, but the stderr is not, return an error

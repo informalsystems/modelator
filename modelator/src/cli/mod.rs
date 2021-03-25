@@ -117,8 +117,9 @@ impl TlaMethods {
         if !tla_trace_file.is_file() {
             return Err(Error::FileNotFound(tla_trace_file.to_path_buf()));
         }
-        let tla_trace = std::fs::read_to_string(&tla_trace_file).map_err(Error::io)?;
-        let tla_trace = TlaTrace::parse(tla_trace)?;
+        let tla_trace = std::fs::read_to_string(&tla_trace_file)
+            .map_err(Error::io)?
+            .parse()?;
 
         let json_trace = crate::module::Tla::tla_trace_to_json_trace(tla_trace)?;
         tracing::debug!("Tla::tla_trace_to_json_trace output {}", json_trace);

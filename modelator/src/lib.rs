@@ -10,7 +10,10 @@ pub mod artifact;
 /// List of modules.
 pub mod module;
 
-/// Download jar utilities.
+/// Caching of model-checker outputs.
+mod cache;
+
+/// Jar utilities.
 mod jar;
 
 /// Test runner.
