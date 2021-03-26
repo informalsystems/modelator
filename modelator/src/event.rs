@@ -63,9 +63,9 @@ impl IntoIterator for EventStream {
 
 
 pub struct Runner<'a, System> {
-    inits: SystemTester<'a, System>,
-    nexts: SystemTester<'a, System>,
-    actions: SystemTester<'a, System>,
+    pub inits: SystemTester<'a, System>,
+    pub nexts: SystemTester<'a, System>,
+    pub actions: SystemTester<'a, System>,
 }
 
 impl<'a, System> Runner<'a, System> {
@@ -106,7 +106,7 @@ impl<'a, System> Runner<'a, System> {
             };
             match result {
                 TestResult::Success => continue,
-                other => return other
+                other => return other,
             }
         }
         TestResult::Success
@@ -182,6 +182,7 @@ mod tests {
         let events = EventStream::new()
             .init(State1{ value: "init state 1".to_string() })
             .init(State2{ value: "init state 2".to_string() })
+            .init(State2{ value: "init state 2".to_string() })
             .action(Action1{ value: "action1 state".to_string() })
             .action(Action2{ value: "action2 state".to_string() })
             .check(State1{ value: "action1 state".to_string() })
@@ -196,6 +197,6 @@ mod tests {
 
         let mut system = MySystem { state1: "".to_string(), state2: "".to_string() };
         let result = runner.run(&mut system, &mut events.into_iter());
-        println!("{:?}", result);
+        assert_eq!(result, TestResult::Success);
     }
 }

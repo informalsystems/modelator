@@ -32,20 +32,9 @@ impl<'a> SimpleTester<'a> {
         F: FnMut(T) + 'a,
     {
         let test_fn = move |input: &dyn Any| {
-            if let Some(test_case) = input.downcast_ref::<T>() {
-                capture_test(|| test(test_case.clone()))
-            } else if let Some(input) = input.downcast_ref::<String>() {
-                match parse_from_str::<T>(input) {
-                    Ok(test_case) => capture_test(|| test(test_case.clone())),
-                    Err(_) => TestResult::Unhandled,
-                }
-            } else if let Some(input) = input.downcast_ref::<Value>() {
-                match parse_from_value::<T>(input.clone()) {
-                    Ok(test_case) => capture_test(|| test(test_case.clone())),
-                    Err(_) => TestResult::Unhandled,
-                }
-            } else {
-                TestResult::Unhandled
+            match convert_to::<T>(input) {
+                Some(test_case) => capture_test(|| test(test_case.clone())),
+                None => TestResult::Unhandled
             }
         };
         self.tests.push(Box::new(test_fn));
@@ -54,9 +43,7 @@ impl<'a> SimpleTester<'a> {
     pub fn test(&mut self, input: &dyn Any) -> TestResult {
         for test in &mut self.tests {
             match test(input) {
-                TestResult::Unhandled => {
-                    continue;
-                }
+                TestResult::Unhandled => continue,
                 res => return res,
             }
         }
@@ -82,23 +69,9 @@ impl<'a, State> SystemTester<'a, State> {
         F: FnMut(&mut State, T) + 'a,
     {
         let test_fn = move |state: &mut State, input: &dyn Any| {
-            if let Some(test_case) = input.downcast_ref::<T>() {
-                capture_test(|| test(state, test_case.clone()))
-            }
-            else if let Some(test_case) = input.downcast_ref::<Box<T>>() {
-                capture_test(|| test(state, *test_case.clone()))
-            } else if let Some(input) = input.downcast_ref::<String>() {
-                match parse_from_str::<T>(input) {
-                    Ok(test_case) => capture_test(|| test(state, test_case.clone())),
-                    Err(_) => TestResult::Unhandled,
-                }
-            } else if let Some(input) = input.downcast_ref::<Value>() {
-                match parse_from_value::<T>(input.clone()) {
-                    Ok(test_case) => capture_test(|| test(state, test_case.clone())),
-                    Err(_) => TestResult::Unhandled,
-                }
-            } else {
-                TestResult::Unhandled
+            match convert_to::<T>(input) {
+                Some(test_case) => capture_test(|| test(state, test_case.clone())),
+                None => TestResult::Unhandled
             }
         };
         self.tests.push(Box::new(test_fn));
@@ -107,18 +80,13 @@ impl<'a, State> SystemTester<'a, State> {
     pub fn test(&mut self, state: &mut State, input: &dyn Any) -> TestResult {
         for test in &mut self.tests {
             match test(state, input) {
-                TestResult::Unhandled => {
-                    continue;
-                }
+                TestResult::Unhandled => continue,
                 res => return res,
             }
         }
         TestResult::Unhandled
     }
-
-
 }
-
 
 fn capture_test<'a, F>(mut test: F) -> TestResult
 where
@@ -151,6 +119,36 @@ where
         Err(_) => (*test_result.lock().unwrap()).clone(),
     }
 }
+
+fn convert_to<T>(input: &dyn Any) -> Option<T>
+where T: 'static + DeserializeOwned + Clone
+{
+    if let Some(test_case) = input.downcast_ref::<T>() {
+        Some(test_case.clone())
+    }
+    else if let Some(input) = input.downcast_ref::<String>() {
+        parse_from_str::<T>(input).ok()
+    }
+    else if let Some(input) = input.downcast_ref::<Value>() {
+        parse_from_value::<T>(input.clone()).ok()
+    }
+    else if let Some(input) = input.downcast_ref::<Box<T>>() {
+        Some((**input).clone())
+    }
+    else if let Some(input) = input.downcast_ref::<Box<String>>() {
+        parse_from_str::<T>(&**input).ok()
+    }
+    else if let Some(input) = input.downcast_ref::<Box<Value>>() {
+        parse_from_value::<T>((**input).clone()).ok()
+    }
+    else if let Some(input) = input.downcast_ref::<Box<dyn Any>>() {
+        convert_to::<T>(&**input)
+    } 
+    else {
+        None
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
