@@ -31,6 +31,7 @@ pub mod event;
 
 /// Re-exports.
 pub use cli::{CliOptions, CliOutput, CliStatus};
+pub use event::{StateHandler, ActionHandler, Event, EventStream, Runner};
 pub use datachef::Recipe;
 pub use error::{Error, TestError};
 pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Options};

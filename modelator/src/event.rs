@@ -29,24 +29,42 @@ impl EventStream {
         }
     }
 
-    pub fn init<T>(mut self, state: T) -> Self 
+    pub fn add_init<T>(&mut self, state: T) 
     where T: 'static
     {
         self.events.push(Event::Init(Box::new(state)));
+    }
+ 
+    pub fn init<T>(mut self, state: T) -> Self 
+    where T: 'static
+    {
+        self.add_init(state);
         self
     }
  
-    pub fn check<T>(mut self, state: T) -> Self 
+    pub fn add_check<T>(&mut self, state: T) 
     where T: 'static
     {
         self.events.push(Event::Check(Box::new(state)));
+    }
+
+    pub fn check<T>(mut self, state: T) -> Self 
+    where T: 'static
+    {
+        self.add_check(state);
         self
     }
 
-    pub fn action<T>(mut self, event: T) -> Self 
+    pub fn add_action<T>(&mut self, action: T) 
     where T: 'static
     {
-        self.events.push(Event::Action(Box::new(event)));
+        self.events.push(Event::Action(Box::new(action)));
+    }
+
+    pub fn action<T>(mut self, action: T) -> Self 
+    where T: 'static
+    {
+        self.add_action(action);
         self
     }
 
@@ -100,8 +118,8 @@ impl<'a, System> Runner<'a, System> {
     pub fn run(&mut self, system: &mut System, stream: &mut dyn Iterator<Item = Event>) -> TestResult {
         while let Some(event) = stream.next() {
             let result = match event {
-                Event::Init(input) => self.inits.test(system, &input),
-                Event::Check(input)  => self.nexts.test(system, &input),
+                Event::Init(input) => self.inits.test_all(system, &input),
+                Event::Check(input)  => self.nexts.test_all(system, &input),
                 Event::Action(input) => self.actions.test(system, &input)
             };
             match result {
@@ -117,26 +135,30 @@ impl<'a, System> Runner<'a, System> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde::Deserialize;
+    use serde::{Deserialize, Serialize};
+    use serde_json::Value;
+    use crate::artifact::JsonTrace;
 
-    #[derive(Deserialize, Clone)]
+    #[derive(Deserialize, Serialize, Clone)]
     pub struct State1 {
-        pub value: String,
+        pub state1: String,
     }
 
-    #[derive(Deserialize, Clone)]
+    #[derive(Deserialize, Serialize, Clone)]
     pub struct State2 {
-        pub value: String,
+        pub state2: String,
     }
 
-    #[derive(Deserialize, Clone)]
+    #[derive(Deserialize, Serialize, Clone)]
     pub struct Action1 {
-        pub value: String,
+        pub value1: String,
+        pub outcome: String
     }
 
-    #[derive(Deserialize, Clone)]
+    #[derive(Deserialize, Serialize, Clone)]
     pub struct Action2 {
-        pub value: String,
+        pub value2: String,
+        pub outcome: String
     }
 
     pub struct MySystem {
@@ -146,47 +168,48 @@ mod tests {
 
     impl StateHandler<State1> for MySystem {
         fn init(&mut self, state: State1) {
-            self.state1 = state.value;
+            self.state1 = state.state1;
         }
 
         fn check(&mut self, state: State1) {
-            assert!(self.state1 == state.value);
+            assert!(self.state1 == state.state1);
         }
     }
 
     impl StateHandler<State2> for MySystem {
         fn init(&mut self, state: State2) {
-            self.state2 = state.value;
+            self.state2 = state.state2;
         }
 
         fn check(&mut self, state: State2) {
-            assert!(self.state2 == state.value);
+            assert!(self.state2 == state.state2);
         }
     }
 
     impl ActionHandler<Action1> for MySystem {
         fn handle(&mut self, action: Action1) {
-            self.state1 = action.value;
+            self.state1 = action.value1;
+            assert!(action.outcome == "OK");
         }
     }
 
     impl ActionHandler<Action2> for MySystem {
         fn handle(&mut self, action: Action2) {
-            self.state2 = action.value;
+            self.state2 = action.value2;
+            assert!(action.outcome == "OK");
         }
     }
 
 
     #[test]
-    fn test() {
+    fn test_stream() {
         let events = EventStream::new()
-            .init(State1{ value: "init state 1".to_string() })
-            .init(State2{ value: "init state 2".to_string() })
-            .init(State2{ value: "init state 2".to_string() })
-            .action(Action1{ value: "action1 state".to_string() })
-            .action(Action2{ value: "action2 state".to_string() })
-            .check(State1{ value: "action1 state".to_string() })
-            .check(State2{ value: "action2 state".to_string() });
+            .init(State1{ state1: "init state 1".to_string() })
+            .init(State2{ state2: "init state 2".to_string() })
+            .action(Action1{ value1: "action1 state".to_string(), outcome: "OK".to_string() })
+            .action(Action2{ value2: "action2 state".to_string(), outcome: "OK".to_string() })
+            .check(State1{ state1: "action1 state".to_string() })
+            .check(State2{ state2: "action2 state".to_string() });
 
         let mut runner = Runner::new()
             .with_state::<State1>()
@@ -199,4 +222,60 @@ mod tests {
         let result = runner.run(&mut system, &mut events.into_iter());
         assert_eq!(result, TestResult::Success);
     }
+
+    #[test]
+    fn test_json_trace() {
+        let mut runner = Runner::new()
+            .with_state::<State1>()
+            .with_state::<State2>()
+            .with_action::<Action1>()
+            .with_action::<Action2>();
+
+        let mut system = MySystem { state1: "".to_string(), state2: "".to_string() };
+
+         // Not all state components specified initially
+         let trace: JsonTrace = vec! [
+            r#"{ "state1": "init state 1" }"#,
+        ].into_iter().map(|x| serde_json::from_str(x).unwrap()).collect::<Vec<Value>>().into();
+
+        let events: EventStream = trace.into();
+        let result = runner.run(&mut system, &mut events.into_iter());
+        assert_eq!(result, TestResult::Unhandled);
+
+
+         // Not all state components specified in a check
+         let trace: JsonTrace = vec! [
+            r#"{ "state1": "init state 1", "state2": "init state 2" }"#,
+            r#"{ "action": { "value3": "action1 state", "outcome": "OK" },
+                 "state2": "init state 2" }"#,
+        ].into_iter().map(|x| serde_json::from_str(x).unwrap()).collect::<Vec<Value>>().into();
+
+        let events: EventStream = trace.into();
+        let result = runner.run(&mut system, &mut events.into_iter());
+        assert_eq!(result, TestResult::Unhandled);
+
+        // Unknown action with value3 field
+        let trace: JsonTrace = vec! [
+            r#"{ "state1": "init state 1", "state2": "init state 2" }"#,
+            r#"{ "action": { "value3": "action1 state", "outcome": "OK" },
+                 "state1": "action1 state", "state2": "init state 2" }"#,
+        ].into_iter().map(|x| serde_json::from_str(x).unwrap()).collect::<Vec<Value>>().into();
+
+        let events: EventStream = trace.into();
+        let result = runner.run(&mut system, &mut events.into_iter());
+        assert_eq!(result, TestResult::Unhandled);
+
+
+        let trace: JsonTrace = vec! [
+            r#"{ "state1": "init state 1", "state2": "init state 2" }"#,
+            r#"{ "action": { "value1": "action1 state", "outcome": "OK" },
+                 "state1": "action1 state", "state2": "init state 2" }"#,
+            r#"{ "action": { "value2": "action2 state", "outcome": "OK" },
+                "state1": "action1 state", "state2": "action2 state" }"#
+        ].into_iter().map(|x| serde_json::from_str(x).unwrap()).collect::<Vec<Value>>().into();
+
+        let events: EventStream = trace.into();
+        let result = runner.run(&mut system, &mut events.into_iter());
+        assert_eq!(result, TestResult::Success);
+    }    
 }
