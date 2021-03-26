@@ -41,13 +41,29 @@ impl<'a> SimpleTester<'a> {
     }
 
     pub fn test(&mut self, input: &dyn Any) -> TestResult {
+        let mut last = TestResult::Unhandled;
+        for test in &mut self.tests {
+            let res = test(input);
+            match (&last, res) {
+                // On failure return immediately
+                (_, res @ TestResult::Failure{..}) => return res,
+                // If previously unhandled -> update
+                (TestResult::Unhandled, res) => last = res,
+                // All other cases (Success, Unhandled), (Success, Success) -> do nothing
+                _ => (),
+            };
+        }
+        last
+    }
+    // Require that all testers handle the input
+    pub fn test_all(&mut self, input: &dyn Any) -> TestResult {
         for test in &mut self.tests {
             match test(input) {
-                TestResult::Unhandled => continue,
-                res => return res,
+                TestResult::Success => continue,
+                res => return res
             }
         }
-        TestResult::Unhandled
+        TestResult::Success
     }
 }
 
@@ -78,13 +94,30 @@ impl<'a, State> SystemTester<'a, State> {
     }
 
     pub fn test(&mut self, state: &mut State, input: &dyn Any) -> TestResult {
+        let mut last = TestResult::Unhandled;
+        for test in &mut self.tests {
+            let res = test(state, input);
+            match (&last, res) {
+                // On failure return immediately
+                (_, res @ TestResult::Failure{..}) => return res,
+                // If previously unhandled -> update
+                (TestResult::Unhandled, res) => last = res,
+                // All other cases (Success, Unhandled), (Success, Success) -> do nothing
+                _ => (),
+            };
+        }
+        last
+    }
+
+    // Require that all testers handle the input
+    pub fn test_all(&mut self, state: &mut State, input: &dyn Any) -> TestResult {
         for test in &mut self.tests {
             match test(state, input) {
-                TestResult::Unhandled => continue,
-                res => return res,
+                TestResult::Success => continue,
+                res => return res
             }
         }
-        TestResult::Unhandled
+        TestResult::Success
     }
 }
 

@@ -36,6 +36,9 @@ pub enum Error {
 
     #[error("Nom error: {0}")]
     Nom(String),
+
+    #[error("Parse error: {0}")]
+    ParseError(String),
 }
 
 impl Error {
@@ -56,9 +59,7 @@ pub enum TestError<Step: Debug> {
     #[error("Test step failed to be deserialized: {0}")]
     Deserialize(serde_json::Error),
 
-    #[error(
-        "Test failed on step {step_index}/{step_count}:\nsteps: {steps:#?}"
-    )]
+    #[error("Test failed on step {step_index}/{step_count}:\nsteps: {steps:#?}")]
     FailedTest {
         step_index: usize,
         step_count: usize,
