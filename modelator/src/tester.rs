@@ -1,5 +1,5 @@
 use crate::util::*;
-use serde::de::DeserializeOwned;
+use serde::{Serialize, de::DeserializeOwned};
 use serde_json::Value;
 use std::{
     any::Any,
@@ -9,7 +9,7 @@ use std::{
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TestResult {
-    Success,
+    Success(String),
     Failure { message: String, location: String },
     Unhandled,
 }
@@ -26,10 +26,11 @@ impl<'a> SimpleTester<'a> {
         SimpleTester { tests: vec![] }
     }
 
-    pub fn add<T, F>(&mut self, mut test: F)
+    pub fn add<T, F, R>(&mut self, mut test: F)
     where
         T: 'static + DeserializeOwned + UnwindSafe + Clone,
-        F: FnMut(T) + 'a,
+        F: FnMut(T) -> R + 'a,
+        R: 'static + Serialize
     {
         let test_fn = move |input: &dyn Any| {
             match convert_to::<T>(input) {
@@ -40,10 +41,11 @@ impl<'a> SimpleTester<'a> {
         self.tests.push(Box::new(test_fn));
     }
 
-    pub fn add_fn<T, F>(&mut self, mut test: F)
+    pub fn add_fn<T, F, R>(&mut self, mut test: F)
     where
         T: 'static + UnwindSafe + Clone,
         F: FnMut(T) + 'a,
+        R: 'static + Serialize
     {
         let test_fn = move |input: &dyn Any| {
             match interpret_as::<T>(input) {
@@ -69,16 +71,6 @@ impl<'a> SimpleTester<'a> {
         }
         last
     }
-    // Require that all testers handle the input
-    pub fn test_all(&mut self, input: &dyn Any) -> TestResult {
-        for test in &mut self.tests {
-            match test(input) {
-                TestResult::Success => continue,
-                res => return res
-            }
-        }
-        TestResult::Success
-    }
 }
 
 type SystemTest<'a, State> = Box<dyn FnMut(&mut State, &dyn Any) -> TestResult + 'a>;
@@ -93,10 +85,11 @@ impl<'a, State> SystemTester<'a, State> {
         SystemTester { tests: vec![] }
     }
 
-    pub fn add<T, F>(&mut self, mut test: F)
+    pub fn add<T, F, R>(&mut self, mut test: F)
     where
         T: 'static + DeserializeOwned + UnwindSafe + Clone,
-        F: FnMut(&mut State, T) + 'a,
+        F: FnMut(&mut State, T) -> R + 'a,
+        R: 'static + Serialize
     {
         let test_fn = move |state: &mut State, input: &dyn Any| {
             match convert_to::<T>(input) {
@@ -108,10 +101,11 @@ impl<'a, State> SystemTester<'a, State> {
     }
 
 
-    pub fn add_fn<T, F>(&mut self, mut test: F)
+    pub fn add_fn<T, F, R>(&mut self, mut test: F)
     where
         T: 'static + UnwindSafe + Clone,
-        F: FnMut(&mut State, T) + 'a,
+        F: FnMut(&mut State, T) -> R + 'a,
+        R: 'static + Serialize
     {
         let test_fn = move |state: &mut State, input: &dyn Any| {
             match interpret_as::<T>(input) {
@@ -137,22 +131,12 @@ impl<'a, State> SystemTester<'a, State> {
         }
         last
     }
-
-    // Require that all testers handle the input
-    pub fn test_all(&mut self, state: &mut State, input: &dyn Any) -> TestResult {
-        for test in &mut self.tests {
-            match test(state, input) {
-                TestResult::Success => continue,
-                res => return res
-            }
-        }
-        TestResult::Success
-    }
 }
 
-pub fn capture_test<'a, F>(mut test: F) -> TestResult
+pub fn capture_test<'a, F, R>(mut test: F) -> TestResult
 where
-    F: FnMut() + 'a,
+    F: FnMut() -> R + 'a,
+    R: Serialize
 {
     let test_result = Arc::new(Mutex::new(TestResult::Unhandled));
     let old_hook = panic::take_hook();
@@ -177,7 +161,7 @@ where
     let result = panic::catch_unwind(AssertUnwindSafe(|| test()));
     panic::set_hook(old_hook);
     match result {
-        Ok(_) => TestResult::Success,
+        Ok(res) => TestResult::Success(serde_json::to_string_pretty(&res).unwrap()),
         Err(_) => (*test_result.lock().unwrap()).clone(),
     }
 }
@@ -285,16 +269,16 @@ mod tests {
             name: "my_test".to_string(),
         };
         let res = tester.test(&data);
-        assert!(res == TestResult::Success);
+        assert!(matches!(res,TestResult::Success(_)));
 
         let data = String::from("{\"name\": \"my_test\"}");
         let res = tester.test(&data);
         println!("{:?}", res);
-        assert!(res == TestResult::Success);
+        assert!(matches!(res,TestResult::Success(_)));
 
         let data: Value = serde_json::from_str(&data).unwrap();
         let res = tester.test(&data);
-        assert!(res == TestResult::Success);
+        assert!(matches!(res,TestResult::Success(_)));
 
         let mut tester = SystemTester::<MyState>::new();
         tester.add(MyState::test1);

@@ -44,11 +44,16 @@ impl Into<EventStream> for JsonTrace {
         events.add_init(init);
         for value in values {
             match value.clone() {
-                JsonValue::Object(value) => 
+                JsonValue::Object(value) => {
                     match value.get("action") {
                         Some(action) => events.add_action(action.clone()),
                         None => {}
-                    }    
+                    };
+                    match value.get("actionOutcome") {
+                        Some(outcome) => events.add_outcome(outcome.clone()),
+                        None => {}
+                    }
+                }
                 _ => {}
             }
             events.add_expect(value);

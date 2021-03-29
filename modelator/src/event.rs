@@ -1,5 +1,5 @@
 use std::{any::Any, panic::UnwindSafe, fmt::Debug};
-use serde::de::DeserializeOwned;
+use serde::{Serialize, de::DeserializeOwned};
 use std::iter::Iterator;
 use crate::tester::*;
 
@@ -16,18 +16,22 @@ pub trait StateHandler<State> {
 
 }
 pub trait ActionHandler<Action> {
+    // Type of action outcome. Set to () if none.
+    type Outcome;
+
     // Initialize processing of actions of that type.
     // Guaranteed to be called at the beginning of each test
     fn init(&mut self) {}
 
     // Process an action of that type & modify the concrete state as appropriate.
-    // The action may include the expected outcome, which should be then also checked.
-    fn handle(&mut self, action: Action);
+    // The produces the outcome, which can be checked later.
+    fn handle(&mut self, action: Action) -> Self::Outcome;
 }
 
 pub enum Event {
     Init(Box<dyn Any>),
     Action(Box<dyn Any>),
+    Outcome(String),
     Check(Box<dyn Any>),
     Expect(Box<dyn Any>),
 }
@@ -66,6 +70,19 @@ impl EventStream {
     where T: 'static
     {
         self.add_action(action);
+        self
+    }
+
+    pub fn add_outcome<T>(&mut self, outcome: T) 
+    where   T: 'static + Serialize,
+    {
+        self.events.push(Event::Outcome(serde_json::to_string_pretty(&outcome).unwrap()));
+    }
+
+    pub fn outcome<T>(mut self, outcome: T) -> Self 
+    where T: 'static + Serialize,
+    {
+        self.add_outcome(outcome);
         self
     }
 
@@ -113,6 +130,7 @@ pub struct Runner<'a, System> {
     pub actions: SystemTester<'a, System>,
     pub checks: SystemTester<'a, System>,
     pub expects: SystemTester<'a, System>,
+    pub outcome: String,
 }
 
 impl<'a, System> Runner<'a, System> {
@@ -122,6 +140,7 @@ impl<'a, System> Runner<'a, System> {
             actions: SystemTester::new(),
             checks: SystemTester::new(),
             expects: SystemTester::new(),
+            outcome: String::new(),
         }
     }
 
@@ -140,9 +159,10 @@ impl<'a, System> Runner<'a, System> {
     pub fn with_action<A>(mut self) -> Self
     where 
         A: 'static + DeserializeOwned + UnwindSafe + Clone,
-        System: 'static + ActionHandler<A>
+        System: 'static + ActionHandler<A>,
+        <System as ActionHandler<A>>::Outcome: 'static + Serialize 
     {
-        self.actions.add(ActionHandler::<A>::handle);
+        self.actions.add( ActionHandler::<A>::handle);
         self
     }    
  
@@ -151,15 +171,25 @@ impl<'a, System> Runner<'a, System> {
             let result = match event {
                 Event::Init(input) => self.inits.test(system, &input),
                 Event::Action(input) => self.actions.test(system, &input),
+                Event::Outcome(expected) => 
+                    if self.outcome == expected {
+                        TestResult::Success(self.outcome.clone())
+                    }
+                    else {
+                        TestResult::Failure {
+                            message: format!("Expected action outcome '{}', got '{}'", expected, self.outcome),
+                            location: String::new(),
+                        }
+                    },
                 Event::Check(assertion) => self.checks.test(system, &assertion),
                 Event::Expect(assertion) => self.expects.test(system, &assertion)
             };
             match result {
-                TestResult::Success => continue,
+                TestResult::Success(res) =>  self.outcome = res,
                 other => return other,
             }
         }
-        TestResult::Success
+        TestResult::Success(String::new())
     }
 }
 
@@ -184,18 +214,22 @@ mod tests {
     #[derive(Deserialize, Serialize, Clone)]
     pub struct Action1 {
         pub value1: String,
-        pub outcome: String
+    }
+
+    #[derive(Serialize)]
+    pub enum Outcome {
+        Success(String),
+        Failure(String)
     }
 
     #[derive(Deserialize, Serialize, Clone)]
     pub struct Action2 {
         pub value2: String,
-        pub outcome: String
     }
 
     pub struct MySystem {
         pub state1: String,
-        pub state2: String
+        pub state2: String,
     }
 
     impl StateHandler<State1> for MySystem {
@@ -219,16 +253,20 @@ mod tests {
     }
 
     impl ActionHandler<Action1> for MySystem {
-        fn handle(&mut self, action: Action1) {
+        type Outcome = Outcome;
+
+        fn handle(&mut self, action: Action1) -> Outcome {
             self.state1 = action.value1;
-            assert!(action.outcome == "OK");
+            Outcome::Success("OK".to_string())
         }
     }
 
     impl ActionHandler<Action2> for MySystem {
-        fn handle(&mut self, action: Action2) {
+        type Outcome = Outcome;
+
+        fn handle(&mut self, action: Action2) -> Outcome {
             self.state2 = action.value2;
-            assert!(action.outcome == "OK");
+            Outcome::Failure("NOT OK".to_string())
         }
     }
 
@@ -238,9 +276,11 @@ mod tests {
         let events = EventStream::new()
             .init(State1{ state1: "init state 1".to_string() })
             .init(State2{ state2: "init state 2".to_string() })
-            .action(Action1{ value1: "action1 state".to_string(), outcome: "OK".to_string() })
-            .action(Action2{ value2: "action2 state".to_string(), outcome: "OK".to_string() })
-            .check(|st: State1| assert!(st.state1 == "action1 state"))
+            .action(Action1{ value1: "action1 state".to_string()})
+            .outcome(Outcome::Success("OK".to_string()))
+            .action(Action2{ value2: "action2 state".to_string()})
+            .outcome(Outcome::Failure("NOT OK".to_string()))
+            .check(|state: State1| assert!(state.state1 == "action1 state"))
             .expect( State2 { state2: "action2 state".to_string()})
             ;
 
@@ -254,7 +294,7 @@ mod tests {
 
         let mut system = MySystem { state1: "".to_string(), state2: "".to_string() };
         let result = runner.run(&mut system, &mut events.into_iter());
-        assert_eq!(result, TestResult::Success);
+        assert!(matches!(result, TestResult::Success(_)));
     }
 
     #[test]
@@ -270,7 +310,7 @@ mod tests {
         // Unknown action with value3 field
         let trace: JsonTrace = vec! [
             r#"{ "state1": "init state 1", "state2": "init state 2" }"#,
-            r#"{ "action": { "value3": "action1 state", "outcome": "OK" },
+            r#"{ "action": { "value3": "action1 state" },
                  "state1": "action1 state", "state2": "init state 2" }"#,
         ].into_iter().map(|x| serde_json::from_str(x).unwrap()).collect::<Vec<Value>>().into();
 
@@ -281,14 +321,16 @@ mod tests {
 
         let trace: JsonTrace = vec! [
             r#"{ "state1": "init state 1", "state2": "init state 2" }"#,
-            r#"{ "action": { "value1": "action1 state", "outcome": "OK" },
+            r#"{ "action": { "value1": "action1 state" },
+                 "actionOutcome": { "Success": "OK" },
                  "state1": "action1 state", "state2": "init state 2" }"#,
-            r#"{ "action": { "value2": "action2 state", "outcome": "OK" },
-                "state1": "action1 state", "state2": "action2 state" }"#
+            r#"{ "action": { "value2": "action2 state" },
+                 "actionOutcome": { "Failure": "NOT OK" },
+                 "state1": "action1 state", "state2": "action2 state" }"#
         ].into_iter().map(|x| serde_json::from_str(x).unwrap()).collect::<Vec<Value>>().into();
 
         let events: EventStream = trace.into();
         let result = runner.run(&mut system, &mut events.into_iter());
-        assert_eq!(result, TestResult::Success);
+        assert!(matches!(result, TestResult::Success(_)));
     }    
 }
