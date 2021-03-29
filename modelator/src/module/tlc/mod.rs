@@ -114,8 +114,8 @@ impl Tlc {
 }
 
 fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) -> Command {
-    let tla2tools = jar::Jar::Tla.file(&options.dir);
-    let community_modules = jar::Jar::CommunityModules.file(&options.dir);
+    let tla2tools = jar::Jar::Tla.path(&options.dir);
+    let community_modules = jar::Jar::CommunityModules.path(&options.dir);
 
     let mut cmd = Command::new("java");
     cmd

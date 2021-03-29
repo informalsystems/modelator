@@ -97,8 +97,8 @@ pub(crate) fn setup(options: &Options) -> Result<(), Error> {
         std::fs::create_dir_all(&options.dir).map_err(Error::io)?;
     }
 
-    // write missing jars
-    jar::write_jars(&options.dir)?;
+    // download missing jars
+    jar::download_jars(&options.dir)?;
     tracing::trace!("modelator setup completed");
 
     // init tracing subscriber (in case it's not already)

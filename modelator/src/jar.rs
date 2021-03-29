@@ -9,14 +9,8 @@ use std::process::Command;
 const MIN_JAVA_VERSION: usize = 8;
 
 pub const TLA_JAR: &str = "tla2tools-v1.8.0.jar";
-pub const TLA_JAR_BYTES: &[u8] = include_bytes!("../jars/tla2tools-v1.8.0.jar");
-
 pub const COMMUNITY_MODULES_JAR: &str = "CommunityModules-202103092123.jar";
-pub const COMMUNITY_MODULES_JAR_BYTES: &[u8] =
-    include_bytes!("../jars/CommunityModules-202103092123.jar");
-
 pub const APALACHE_JAR: &str = "apalache-v0.11.0.jar";
-pub const APALACHE_JAR_BYTES: &[u8] = include_bytes!("../jars/apalache-v0.11.0.jar");
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub(crate) enum Jar {
@@ -26,13 +20,16 @@ pub(crate) enum Jar {
 }
 
 impl Jar {
-    pub(crate) fn file<P: AsRef<Path>>(&self, modelator_dir: P) -> PathBuf {
-        let file_name = match self {
+    pub(crate) fn path<P: AsRef<Path>>(&self, modelator_dir: P) -> PathBuf {
+        modelator_dir.as_ref().join(self.file_name())
+    }
+
+    fn file_name(&self) -> &str {
+        match self {
             Self::Tla => TLA_JAR,
             Self::CommunityModules => COMMUNITY_MODULES_JAR,
             Self::Apalache => APALACHE_JAR,
-        };
-        modelator_dir.as_ref().join(file_name)
+        }
     }
 
     fn from<F: AsRef<str>>(file_name: F) -> Self {
@@ -45,18 +42,26 @@ impl Jar {
         }
     }
 
-    fn write<P: AsRef<Path>>(&self, modelator_dir: P) -> Result<(), Error> {
+    fn link(&self) -> String {
+        format!(
+            "https://github.com/informalsystems/modelator/raw/main/modelator/jars/{}",
+            self.file_name()
+        )
+    }
+
+    fn download<P: AsRef<Path>>(&self, modelator_dir: P) -> Result<(), Error> {
         let modelator_dir = modelator_dir.as_ref();
         // compute file where the jar should be stored
-        let file = self.file(&modelator_dir);
+        let path = self.path(&modelator_dir);
 
-        // get jar bytes and write them to the file
-        let bytes = match self {
-            Self::Tla => TLA_JAR_BYTES,
-            Self::CommunityModules => COMMUNITY_MODULES_JAR_BYTES,
-            Self::Apalache => APALACHE_JAR_BYTES,
-        };
-        std::fs::write(file, bytes).map_err(Error::io)?;
+        // download the jar
+        let response = ureq::get(&self.link()).call().map_err(Error::ureq)?;
+        let mut reader = response.into_reader();
+
+        // write jar bytes to the file
+        let file = std::fs::File::create(path).map_err(Error::io)?;
+        let mut file_writer = std::io::BufWriter::new(file);
+        std::io::copy(&mut reader, &mut file_writer).map_err(Error::io)?;
         Ok(())
     }
 
@@ -65,18 +70,18 @@ impl Jar {
     }
 }
 
-pub(crate) fn write_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Error> {
+pub(crate) fn download_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Error> {
     // get all existing jars
     let existing_jars = existing_jars(&modelator_dir)?;
     // download all jars that do not exist yet
     let mut check_java = false;
     for jar in Jar::all() {
         if !existing_jars.contains(&jar) {
-            jar.write(&modelator_dir)?;
+            jar.download(&modelator_dir)?;
             check_java = true;
         }
     }
-    // if we wrote the jar(s) for the first time, check that we have a
+    // if we have downloaded the jar(s) for the first time, check that we have a
     // compatible version of java
     if check_java {
         check_java_version()?;

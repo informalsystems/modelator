@@ -150,7 +150,7 @@ fn parse_cmd<P: AsRef<Path>>(tla_file: P, tla_parsed_file: P, options: &Options)
 }
 
 fn apalache_cmd_start<P: AsRef<Path>>(tla_file: P, options: &Options) -> Command {
-    let apalache = jar::Jar::Apalache.file(&options.dir);
+    let apalache = jar::Jar::Apalache.path(&options.dir);
 
     let mut cmd = Command::new("java");
 
