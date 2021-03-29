@@ -1,21 +1,35 @@
-use std::{any::Any, panic::UnwindSafe};
+use std::{any::Any, panic::UnwindSafe, fmt::Debug};
 use serde::de::DeserializeOwned;
 use std::iter::Iterator;
 use crate::tester::*;
 
 #[allow(unused_variables)]
 pub trait StateHandler<State> {
-    fn init(&mut self, state: State) {}
-    fn check(&mut self, state: State) {}
+    // Initialize concrete state from the abstract one.
+    // Should completely reinitialize the concrete state when called.
+    // Guaranteed to be called at the beginning of each test.
+    fn init(&mut self, state: State);
+
+    // Read the concrete state into the abstract one.
+    fn read(&self) -> State;
+
+
 }
 pub trait ActionHandler<Action> {
+    // Initialize processing of actions of that type.
+    // Guaranteed to be called at the beginning of each test
+    fn init(&mut self) {}
+
+    // Process an action of that type & modify the concrete state as appropriate.
+    // The action may include the expected outcome, which should be then also checked.
     fn handle(&mut self, action: Action);
 }
 
 pub enum Event {
     Init(Box<dyn Any>),
-    Check(Box<dyn Any>),
     Action(Box<dyn Any>),
+    Check(Box<dyn Any>),
+    Expect(Box<dyn Any>),
 }
 
 pub struct EventStream {
@@ -42,19 +56,6 @@ impl EventStream {
         self
     }
  
-    pub fn add_check<T>(&mut self, state: T) 
-    where T: 'static
-    {
-        self.events.push(Event::Check(Box::new(state)));
-    }
-
-    pub fn check<T>(mut self, state: T) -> Self 
-    where T: 'static
-    {
-        self.add_check(state);
-        self
-    }
-
     pub fn add_action<T>(&mut self, action: T) 
     where T: 'static
     {
@@ -65,6 +66,33 @@ impl EventStream {
     where T: 'static
     {
         self.add_action(action);
+        self
+    }
+
+    pub fn add_check<T>(&mut self, assertion: fn(T)) 
+    where T: 'static
+
+    {
+        self.events.push(Event::Check(Box::new(assertion as fn(T))));
+    }    
+
+    pub fn check<T>(mut self, assertion: fn(T)) -> Self 
+    where T: 'static
+    {
+        self.add_check(assertion);
+        self
+    }
+
+    pub fn add_expect<T>(&mut self, state: T) 
+    where T: 'static
+    {
+        self.events.push(Event::Expect(Box::new(state)));
+    }
+
+    pub fn expect<T>(mut self, state: T) -> Self 
+    where T: 'static
+    {
+        self.add_expect(state);
         self
     }
 
@@ -82,26 +110,29 @@ impl IntoIterator for EventStream {
 
 pub struct Runner<'a, System> {
     pub inits: SystemTester<'a, System>,
-    pub nexts: SystemTester<'a, System>,
     pub actions: SystemTester<'a, System>,
+    pub checks: SystemTester<'a, System>,
+    pub expects: SystemTester<'a, System>,
 }
 
 impl<'a, System> Runner<'a, System> {
     pub fn new() -> Self {
         Runner {
             inits: SystemTester::new(),
-            nexts: SystemTester::new(),
-            actions: SystemTester::new()
+            actions: SystemTester::new(),
+            checks: SystemTester::new(),
+            expects: SystemTester::new(),
         }
     }
 
     pub fn with_state<S>(mut self) -> Self
     where 
-        S: 'static + DeserializeOwned + UnwindSafe + Clone,
+        S: 'static + DeserializeOwned + UnwindSafe + Clone + Debug + PartialEq,
         System: 'static + StateHandler<S>
     {
         self.inits.add(StateHandler::<S>::init);
-        self.nexts.add(StateHandler::<S>::check);
+        self.checks.add_fn(|system, assertion: fn(S)| assertion(system.read()));
+        self.expects.add(|system, state: S| assert_eq!(system.read(), state));
         self
 
     }
@@ -118,9 +149,10 @@ impl<'a, System> Runner<'a, System> {
     pub fn run(&mut self, system: &mut System, stream: &mut dyn Iterator<Item = Event>) -> TestResult {
         while let Some(event) = stream.next() {
             let result = match event {
-                Event::Init(input) => self.inits.test_all(system, &input),
-                Event::Check(input)  => self.nexts.test_all(system, &input),
-                Event::Action(input) => self.actions.test(system, &input)
+                Event::Init(input) => self.inits.test(system, &input),
+                Event::Action(input) => self.actions.test(system, &input),
+                Event::Check(assertion) => self.checks.test(system, &assertion),
+                Event::Expect(assertion) => self.expects.test(system, &assertion)
             };
             match result {
                 TestResult::Success => continue,
@@ -139,12 +171,12 @@ mod tests {
     use serde_json::Value;
     use crate::artifact::JsonTrace;
 
-    #[derive(Deserialize, Serialize, Clone)]
+    #[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
     pub struct State1 {
         pub state1: String,
     }
 
-    #[derive(Deserialize, Serialize, Clone)]
+    #[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
     pub struct State2 {
         pub state2: String,
     }
@@ -171,8 +203,8 @@ mod tests {
             self.state1 = state.state1;
         }
 
-        fn check(&mut self, state: State1) {
-            assert!(self.state1 == state.state1);
+        fn read(&self) -> State1 {
+            State1 { state1: self.state1.clone() }
         }
     }
 
@@ -181,8 +213,8 @@ mod tests {
             self.state2 = state.state2;
         }
 
-        fn check(&mut self, state: State2) {
-            assert!(self.state2 == state.state2);
+        fn read(&self) -> State2 {
+            State2 { state2: self.state2.clone() }
         }
     }
 
@@ -208,14 +240,16 @@ mod tests {
             .init(State2{ state2: "init state 2".to_string() })
             .action(Action1{ value1: "action1 state".to_string(), outcome: "OK".to_string() })
             .action(Action2{ value2: "action2 state".to_string(), outcome: "OK".to_string() })
-            .check(State1{ state1: "action1 state".to_string() })
-            .check(State2{ state2: "action2 state".to_string() });
+            .check(|st: State1| assert!(st.state1 == "action1 state"))
+            .expect( State2 { state2: "action2 state".to_string()})
+            ;
 
         let mut runner = Runner::new()
             .with_state::<State1>()
             .with_state::<State2>()
             .with_action::<Action1>()
-            .with_action::<Action2>();
+            .with_action::<Action2>()
+            ;
 
 
         let mut system = MySystem { state1: "".to_string(), state2: "".to_string() };
@@ -232,27 +266,6 @@ mod tests {
             .with_action::<Action2>();
 
         let mut system = MySystem { state1: "".to_string(), state2: "".to_string() };
-
-         // Not all state components specified initially
-         let trace: JsonTrace = vec! [
-            r#"{ "state1": "init state 1" }"#,
-        ].into_iter().map(|x| serde_json::from_str(x).unwrap()).collect::<Vec<Value>>().into();
-
-        let events: EventStream = trace.into();
-        let result = runner.run(&mut system, &mut events.into_iter());
-        assert_eq!(result, TestResult::Unhandled);
-
-
-         // Not all state components specified in a check
-         let trace: JsonTrace = vec! [
-            r#"{ "state1": "init state 1", "state2": "init state 2" }"#,
-            r#"{ "action": { "value3": "action1 state", "outcome": "OK" },
-                 "state2": "init state 2" }"#,
-        ].into_iter().map(|x| serde_json::from_str(x).unwrap()).collect::<Vec<Value>>().into();
-
-        let events: EventStream = trace.into();
-        let result = runner.run(&mut system, &mut events.into_iter());
-        assert_eq!(result, TestResult::Unhandled);
 
         // Unknown action with value3 field
         let trace: JsonTrace = vec! [

@@ -40,6 +40,20 @@ impl<'a> SimpleTester<'a> {
         self.tests.push(Box::new(test_fn));
     }
 
+    pub fn add_fn<T, F>(&mut self, mut test: F)
+    where
+        T: 'static + UnwindSafe + Clone,
+        F: FnMut(T) + 'a,
+    {
+        let test_fn = move |input: &dyn Any| {
+            match interpret_as::<T>(input) {
+                Some(test_case) => capture_test(|| test(test_case.clone())),
+                None => TestResult::Unhandled
+            }
+        };
+        self.tests.push(Box::new(test_fn));
+    }
+
     pub fn test(&mut self, input: &dyn Any) -> TestResult {
         let mut last = TestResult::Unhandled;
         for test in &mut self.tests {
@@ -93,6 +107,21 @@ impl<'a, State> SystemTester<'a, State> {
         self.tests.push(Box::new(test_fn));
     }
 
+
+    pub fn add_fn<T, F>(&mut self, mut test: F)
+    where
+        T: 'static + UnwindSafe + Clone,
+        F: FnMut(&mut State, T) + 'a,
+    {
+        let test_fn = move |state: &mut State, input: &dyn Any| {
+            match interpret_as::<T>(input) {
+                Some(test_case) => capture_test(|| test(state, test_case.clone())),
+                None => TestResult::Unhandled
+            }
+        };
+        self.tests.push(Box::new(test_fn));
+    }
+
     pub fn test(&mut self, state: &mut State, input: &dyn Any) -> TestResult {
         let mut last = TestResult::Unhandled;
         for test in &mut self.tests {
@@ -121,7 +150,7 @@ impl<'a, State> SystemTester<'a, State> {
     }
 }
 
-fn capture_test<'a, F>(mut test: F) -> TestResult
+pub fn capture_test<'a, F>(mut test: F) -> TestResult
 where
     F: FnMut() + 'a,
 {
@@ -182,6 +211,22 @@ where T: 'static + DeserializeOwned + Clone
     }
 }
 
+fn interpret_as<T>(input: &dyn Any) -> Option<T>
+where T: 'static + Clone
+{
+    if let Some(test_case) = input.downcast_ref::<T>() {
+        Some(test_case.clone())
+    }
+    else if let Some(input) = input.downcast_ref::<Box<T>>() {
+        Some((**input).clone())
+    }
+    else if let Some(input) = input.downcast_ref::<Box<dyn Any>>() {
+        interpret_as::<T>(&**input)
+    } 
+    else {
+        None
+    }
+}
 
 #[cfg(test)]
 mod tests {

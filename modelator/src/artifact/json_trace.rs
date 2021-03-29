@@ -51,7 +51,7 @@ impl Into<EventStream> for JsonTrace {
                     }    
                 _ => {}
             }
-            events.add_check(value);
+            events.add_expect(value);
         }
         events
     }
