@@ -43,7 +43,10 @@ pub fn traces<P: AsRef<Path>>(
     setup(&options)?;
 
     // generate tla tests
-    let tests = module::Tla::generate_tests(tla_tests_file.into(), tla_config_file.into())?;
+    use std::convert::TryFrom;
+    let tla_tests_file = artifact::TlaFile::try_from(tla_tests_file.as_ref())?;
+    let tla_config_file = artifact::TlaConfigFile::try_from(tla_config_file.as_ref())?;
+    let tests = module::Tla::generate_tests(tla_tests_file, tla_config_file)?;
 
     // run the model checker configured on each tla test
     let traces = tests

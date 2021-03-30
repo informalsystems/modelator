@@ -19,10 +19,6 @@ impl Tlc {
     ) -> Result<TlaTrace, Error> {
         tracing::debug!("Tlc::test {} {} {:?}", tla_file, tla_config_file, options);
 
-        // check that the tla file and tla cfg file exist
-        tla_file.check_existence()?;
-        tla_config_file.check_existence()?;
-
         // load cache and check if the result is cached
         let mut cache = TlaTraceCache::new(options)?;
         let cache_key = TlaTraceCache::key(&tla_file, &tla_config_file)?;

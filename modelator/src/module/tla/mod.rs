@@ -27,10 +27,6 @@ impl Tla {
     ) -> Result<Vec<(TlaFile, TlaConfigFile)>, Error> {
         tracing::debug!("Tla::generate_tests {} {}", tla_tests_file, tla_config_file);
 
-        // check that the tla tests file and tla cfg file exist
-        tla_tests_file.check_existence()?;
-        tla_config_file.check_existence()?;
-
         // compute the directory in which the tla tests file is stored
         let mut tla_tests_dir = tla_tests_file.path().clone();
         assert!(tla_tests_dir.pop());
@@ -119,7 +115,11 @@ fn generate_test(
     let test_config_file = tla_tests_dir.join(format!("{}.cfg", test_module_name));
     std::fs::write(&test_config_file, test_config).map_err(Error::io)?;
 
-    Ok((test_module_file.into(), test_config_file.into()))
+    // create tla file and tla config file
+    use std::convert::TryFrom;
+    let test_module_file = TlaFile::try_from(test_module_file)?;
+    let test_config_file = TlaConfigFile::try_from(test_config_file)?;
+    Ok((test_module_file, test_config_file))
 }
 
 fn genereate_test_module(

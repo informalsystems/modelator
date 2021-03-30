@@ -24,10 +24,6 @@ impl Apalache {
             options
         );
 
-        // check that the tla file and tla cfg file exist
-        tla_file.check_existence()?;
-        tla_config_file.check_existence()?;
-
         // load cache and check if the result is cached
         let mut cache = TlaTraceCache::new(options)?;
         let cache_key = TlaTraceCache::key(&tla_file, &tla_config_file)?;
@@ -60,20 +56,26 @@ impl Apalache {
     pub fn parse(tla_file: TlaFile, options: &Options) -> Result<TlaFile, Error> {
         tracing::debug!("Apalache::parse {} {:?}", tla_file, options);
 
-        // check that the tla file and tla cfg file exist
-        tla_file.check_existence()?;
+        // compute the directory in which the tla file is stored
+        let mut tla_dir = tla_file.path().clone();
+        assert!(tla_dir.pop());
 
-        // compute the output tla file; it's okay to unwrap as we have already
+        // compute tla module name: it's okay to unwrap as we have already
         // verified that the file exists
         let tla_module_name = tla_file.tla_module_name().unwrap();
-        let tla_parsed_file: TlaFile = format!("{}Parsed.tla", tla_module_name).into();
+
+        // compute the output tla file
+        let tla_parsed_file = tla_dir.join(format!("{}Parsed.tla", tla_module_name));
 
         // create apalache parse command
-        let cmd = parse_cmd(tla_file.path(), tla_parsed_file.path(), options);
+        let cmd = parse_cmd(tla_file.path(), &tla_parsed_file, options);
 
         // run apalache
         run_apalache(cmd, options)?;
 
+        // create tla file
+        use std::convert::TryFrom;
+        let tla_parsed_file = TlaFile::try_from(tla_parsed_file)?;
         Ok(tla_parsed_file)
     }
 }
