@@ -11,6 +11,7 @@ const MIN_JAVA_VERSION: usize = 8;
 pub const TLA_JAR: &str = "tla2tools-v1.8.0.jar";
 pub const COMMUNITY_MODULES_JAR: &str = "CommunityModules-202103092123.jar";
 pub const APALACHE_JAR: &str = "apalache-v0.11.0.jar";
+pub const JARS_CHECKSUM: &str = "55b7131eff44ef1c27bb8733a5b117ab9a327a3d41bdab26bce56dd193dc1f13";
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub(crate) enum Jar {
@@ -74,35 +75,69 @@ pub(crate) fn download_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Erro
     // get all existing jars
     let existing_jars = existing_jars(&modelator_dir)?;
     // download all jars that do not exist yet
-    let mut check_java = false;
+    let mut first_download = false;
     for jar in Jar::all() {
         if !existing_jars.contains(&jar) {
             jar.download(&modelator_dir)?;
-            check_java = true;
+            first_download = true;
         }
     }
+
     // if we have downloaded the jar(s) for the first time, check that we have a
     // compatible version of java
-    if check_java {
+    if first_download {
         check_java_version()?;
+    }
+
+    // if we have downloaded the jar(s) for the first time, check that the
+    // checksums match
+    if first_download && !check_checksums(&modelator_dir)? {
+        eprintln!("Checksum of downloaded jars does not match the expected. Will try again!");
+
+        // delete modelator dir and create it again
+        std::fs::remove_dir_all(&modelator_dir).map_err(Error::io)?;
+        std::fs::create_dir(&modelator_dir).map_err(Error::io)?;
+
+        // try to download jars again
+        return download_jars(modelator_dir);
     }
     Ok(())
 }
 
 fn existing_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<HashSet<Jar>, Error> {
-    let mut existing_jars = HashSet::new();
-    // read files the modelator directory
-    for file_name in crate::util::read_dir(modelator_dir)? {
-        if file_name.ends_with(".jar") {
-            // if the file is a jar, then save it as already downloaded
-            existing_jars.insert(Jar::from(&file_name));
-        }
-    }
+    let existing_jars: HashSet<_> = list_jars(modelator_dir)?
+        .into_iter()
+        .map(|file_name| Jar::from(&file_name))
+        .collect();
     assert!(
         existing_jars.len() <= 3,
         "[modelator] at most 3 jar files should have been downloaded"
     );
     Ok(existing_jars)
+}
+
+fn list_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<HashSet<String>, Error> {
+    let mut jars = HashSet::new();
+    // read files the modelator directory
+    for file_name in crate::util::read_dir(modelator_dir)? {
+        if file_name.ends_with(".jar") {
+            // if the file is a jar, then save it as already downloaded
+            jars.insert(file_name);
+        }
+    }
+    Ok(jars)
+}
+
+fn check_checksums<P: AsRef<Path>>(modelator_dir: P) -> Result<bool, Error> {
+    let files_to_hash = list_jars(&modelator_dir)?
+        .into_iter()
+        .map(|filename| modelator_dir.as_ref().to_path_buf().join(filename))
+        .map(|path| crate::util::absolute_path(&path))
+        .collect();
+    let digest = crate::util::digest::digest_files(files_to_hash)?;
+    let hash = crate::util::digest::encode(digest);
+    tracing::debug!("jars checksum: {} | expected: {}", hash, JARS_CHECKSUM);
+    Ok(hash == JARS_CHECKSUM)
 }
 
 fn check_java_version() -> Result<(), Error> {
