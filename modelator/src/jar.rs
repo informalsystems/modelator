@@ -74,32 +74,36 @@ impl Jar {
 pub(crate) fn download_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Error> {
     // get all existing jars
     let existing_jars = existing_jars(&modelator_dir)?;
-    // download all jars that do not exist yet
-    let mut first_download = false;
-    for jar in Jar::all() {
-        if !existing_jars.contains(&jar) {
+    // compute jars that are missing
+    let missing_jars: HashSet<_> = Jar::all()
+        .into_iter()
+        .filter(|jar| !existing_jars.contains(&jar))
+        .collect();
+
+    if !missing_jars.is_empty() {
+        // download missing jars
+        println!("[modelator] Downloading model-checkers... ");
+        for jar in missing_jars {
             jar.download(&modelator_dir)?;
-            first_download = true;
         }
-    }
+        println!("[modelator] Done!");
 
-    // if we have downloaded the jar(s) for the first time, check that we have a
-    // compatible version of java
-    if first_download {
+        // if we have downloaded the jar(s) for the first time, check that we have a
+        // compatible version of java
         check_java_version()?;
-    }
 
-    // if we have downloaded the jar(s) for the first time, check that the
-    // checksums match
-    if first_download && !check_checksums(&modelator_dir)? {
-        eprintln!("Checksum of downloaded jars does not match the expected. Will try again!");
+        // if we have downloaded the jar(s) for the first time, check that the
+        // checksums match
+        if !check_checksums(&modelator_dir)? {
+            eprintln!("[modelator] Checksum of downloaded jars does not match the expected. Will try again!");
 
-        // delete modelator dir and create it again
-        std::fs::remove_dir_all(&modelator_dir).map_err(Error::io)?;
-        std::fs::create_dir(&modelator_dir).map_err(Error::io)?;
+            // delete modelator dir and create it again
+            std::fs::remove_dir_all(&modelator_dir).map_err(Error::io)?;
+            std::fs::create_dir(&modelator_dir).map_err(Error::io)?;
 
-        // try to download jars again
-        return download_jars(modelator_dir);
+            // try to download jars again
+            return download_jars(modelator_dir);
+        }
     }
     Ok(())
 }
