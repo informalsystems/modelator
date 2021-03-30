@@ -92,15 +92,6 @@ where
 }
 
 pub(crate) fn setup(options: &Options) -> Result<(), Error> {
-    // create modelator dir (if it doens't already exist)
-    if !options.dir.as_path().is_dir() {
-        std::fs::create_dir_all(&options.dir).map_err(Error::io)?;
-    }
-
-    // download missing jars
-    jar::download_jars(&options.dir)?;
-    tracing::trace!("modelator setup completed");
-
     // init tracing subscriber (in case it's not already)
     if let Err(e) = tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
@@ -111,6 +102,15 @@ pub(crate) fn setup(options: &Options) -> Result<(), Error> {
             e
         );
     }
+
+    // create modelator dir (if it doens't already exist)
+    if !options.dir.as_path().is_dir() {
+        std::fs::create_dir_all(&options.dir).map_err(Error::io)?;
+    }
+
+    // download missing jars
+    jar::download_jars(&options.dir)?;
+    tracing::trace!("modelator setup completed");
 
     Ok(())
 }
