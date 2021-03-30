@@ -44,3 +44,38 @@ pub(crate) fn read_dir<P: AsRef<Path>>(path: P) -> Result<HashSet<String>, Error
     }
     Ok(file_names)
 }
+
+pub(crate) mod digest {
+    use super::*;
+    use sha2::Digest;
+    use std::collections::BTreeSet;
+
+    pub(crate) fn digest_files(paths: BTreeSet<String>) -> Result<sha2::Sha256, Error> {
+        let mut digest = sha2::Sha256::default();
+        for path in paths {
+            digest_file(path, &mut digest)?;
+        }
+        Ok(digest)
+    }
+
+    pub(crate) fn encode(digest: sha2::Sha256) -> String {
+        hex::encode(digest.finalize())
+    }
+
+    fn digest_file(path: String, digest: &mut sha2::Sha256) -> Result<(), Error> {
+        let file = std::fs::File::open(path).map_err(Error::io)?;
+        let mut reader = std::io::BufReader::new(file);
+
+        let mut buffer = [0; 1024];
+        loop {
+            use std::io::Read;
+            let count = reader.read(&mut buffer).map_err(Error::io)?;
+            if count == 0 {
+                break;
+            }
+            digest.update(&buffer[..count]);
+        }
+
+        Ok(())
+    }
+}

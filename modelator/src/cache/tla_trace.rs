@@ -1,8 +1,6 @@
 use super::Cache;
 use crate::artifact::{TlaConfigFile, TlaFile, TlaTrace};
 use crate::{Error, Options};
-use sha2::Digest;
-use std::collections::BTreeSet;
 
 pub(crate) struct TlaTraceCache {
     cache: Cache,
@@ -46,41 +44,17 @@ impl TlaTraceCache {
             .collect();
 
         tracing::debug!("files to hash: {:?}", files_to_hash);
-        let mut digest = hash_files(files_to_hash)?;
+        let mut digest = crate::util::digest::digest_files(files_to_hash)?;
 
         // also add the absolute path of the tla file to the digest; this makes
         // sure that two tla tests files living in the same directory and using
         // the same tla configuration (which we shouldn't happen when using
         // `modelator::module::tla::generate_tests`) will have different hashes
+        use sha2::Digest;
         digest.update(&crate::util::absolute_path(&tla_file.path()));
 
-        let hash = hex::encode(digest.finalize());
+        let hash = crate::util::digest::encode(digest);
         tracing::debug!("computed hash: {}", hash);
         Ok(hash)
     }
-}
-
-fn hash_files(paths: BTreeSet<String>) -> Result<sha2::Sha256, Error> {
-    let mut digest = sha2::Sha256::default();
-    for path in paths {
-        hash_file(path, &mut digest)?;
-    }
-    Ok(digest)
-}
-
-fn hash_file(path: String, digest: &mut sha2::Sha256) -> Result<(), Error> {
-    let file = std::fs::File::open(path).map_err(Error::io)?;
-    let mut reader = std::io::BufReader::new(file);
-
-    let mut buffer = [0; 1024];
-    loop {
-        use std::io::Read;
-        let count = reader.read(&mut buffer).map_err(Error::io)?;
-        if count == 0 {
-            break;
-        }
-        digest.update(&buffer[..count]);
-    }
-
-    Ok(())
 }
