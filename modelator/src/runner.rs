@@ -8,10 +8,7 @@ pub trait TestRunner<S> {
     fn next_step(&mut self, step: S) -> bool;
 }
 
-pub(crate) fn run<Runner, Step>(
-    trace: JsonTrace,
-    runner: &mut Runner,
-) -> Result<(), TestError<Step>>
+pub(crate) fn run<Runner, Step>(trace: JsonTrace, mut runner: Runner) -> Result<(), TestError<Step>>
 where
     Runner: TestRunner<Step> + Debug,
     Step: DeserializeOwned + Debug + Clone,

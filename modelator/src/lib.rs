@@ -92,18 +92,17 @@ pub fn traces<P: AsRef<Path>>(
 pub fn run<P, Runner, Step>(
     tla_tests_file: P,
     tla_config_file: P,
-    runner: &mut Runner,
+    options: Options,
+    runner: Runner,
 ) -> Result<(), TestError<Step>>
 where
     P: AsRef<Path>,
-    Runner: runner::TestRunner<Step> + Debug,
+    Runner: runner::TestRunner<Step> + Debug + Clone,
     Step: DeserializeOwned + Debug + Clone,
 {
-    let options = Options::default();
     let traces = traces(tla_tests_file, tla_config_file, options).map_err(TestError::Modelator)?;
     for trace in traces {
-        //let runner = runner.clone();
-        runner::run(trace, runner)?;
+        runner::run(trace, runner.clone())?;
     }
     Ok(())
 }

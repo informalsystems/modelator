@@ -31,37 +31,14 @@ pub(crate) fn absolute_path<P: AsRef<Path>>(path: P) -> String {
     }
 }
 
-/// A macro that generates a complete setter method from a one-liner with necessary information
-#[macro_export]
-macro_rules! set_option {
-    ($name:ident, $t:ty) => {
-        pub fn $name(mut self, $name: $t) -> Self {
-            self.$name = Some($name.clone());
-            self
-        }
-    };
-    ($name:ident, $t:ty, $val:expr) => {
-        pub fn $name(mut self, $name: $t) -> Self {
-            self.$name = $val;
-            self
-        }
-    };
-}
-
 /// Tries to parse a string as the given type
 pub fn parse_from_str<T: DeserializeOwned>(input: &str) -> Result<T, Error> {
-    match serde_json::from_str(input) {
-        Ok(res) => Ok(res),
-        Err(e) => Err(Error::ParseError(e.to_string())),
-    }
+    serde_json::from_str(input).map_err(|e| Error::ParseError(e.to_string()))
 }
 
 /// Tries to parse a Json Value as the given type
 pub fn parse_from_value<T: DeserializeOwned>(input: serde_json::Value) -> Result<T, Error> {
-    match serde_json::from_value(input) {
-        Ok(res) => Ok(res),
-        Err(e) => Err(Error::ParseError(e.to_string())),
-    }
+    serde_json::from_value(input).map_err(|e| Error::ParseError(e.to_string()))
 }
 
 pub(crate) fn read_dir<P: AsRef<Path>>(path: P) -> Result<HashSet<String>, Error> {

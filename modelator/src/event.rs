@@ -1,5 +1,7 @@
+use crate::artifact::JsonTrace;
 use crate::tester::*;
 use serde::{de::DeserializeOwned, Serialize};
+use serde_json::Value as JsonValue;
 use std::iter::Iterator;
 use std::{any::Any, fmt::Debug, panic::UnwindSafe};
 
@@ -192,6 +194,28 @@ impl IntoIterator for EventStream {
 
     fn into_iter(self) -> Self::IntoIter {
         self.events.into_iter()
+    }
+}
+
+impl From<JsonTrace> for EventStream {
+    fn from(trace: JsonTrace) -> Self {
+        let mut events = EventStream::new();
+        for (index, value) in trace.into_iter().enumerate() {
+            if index == 0 {
+                events.add_init(value);
+            } else {
+                if let JsonValue::Object(value) = value.clone() {
+                    if let Some(action) = value.get("action") {
+                        events.add_action(action.clone());
+                    };
+                    if let Some(outcome) = value.get("actionOutcome") {
+                        events.add_outcome(outcome.clone());
+                    }
+                }
+                events.add_expect(value);
+            }
+        }
+        events
     }
 }
 
