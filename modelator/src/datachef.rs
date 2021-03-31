@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 /// It attempts to solve the problem of conversion between data structures
 /// that arises often especially during testing, when concrete structures
 /// need to be produced from the abstract ones and vice versa.
-/// 
+///
 /// # Example
 ///
 /// Imagine your application processes phone records, which it receives
@@ -119,7 +119,7 @@ use std::collections::BTreeMap;
 ///     mobile: r.take(),
 /// });
 ///
-/// // A generic test for phones: the phone being tested 
+/// // A generic test for phones: the phone being tested
 /// // depends on what the recipe produces from the code and the number.
 /// let test_phone = |r: &Recipe| {
 ///     assert!(check_record(r.make((123u32,1234567u32))));
@@ -127,8 +127,8 @@ use std::collections::BTreeMap;
 ///     assert!(!check_record(r.make((1234u32,1234567u32))));
 /// };
 /// test_phone(&r); // tests landline phone
-/// 
-/// // Redefine the recipe to generate a mobile phone 
+///
+/// // Redefine the recipe to generate a mobile phone
 /// r.add(|r, phone: (u32, u32)| Record {
 ///     name: "John Smith".to_string(),
 ///     address: r.take(),
@@ -351,7 +351,7 @@ mod tests {
             landline: r.take(),
             mobile: r.take(),
         });
- 
+
         assert!(check_record(r.make("John Smith".to_string())));
         assert!(!check_record(r.make("short".repeat(1))));
         assert!(!check_record(r.make("long".repeat(100))));
@@ -368,9 +368,9 @@ mod tests {
         });
 
         let test_phone = |r: &Recipe| {
-            assert!(check_record(r.make((123u32,1234567u32))));
-            assert!(!check_record(r.make((1u32,1234567u32))));
-            assert!(!check_record(r.make((1234u32,1234567u32))));
+            assert!(check_record(r.make((123u32, 1234567u32))));
+            assert!(!check_record(r.make((1u32, 1234567u32))));
+            assert!(!check_record(r.make((1234u32, 1234567u32))));
         };
         test_phone(&r);
         r.add(|r, phone: (u32, u32)| Record {
@@ -381,7 +381,6 @@ mod tests {
         });
         test_phone(&r);
     }
-
 
     #[derive(Debug, PartialEq)]
     pub struct Chain {

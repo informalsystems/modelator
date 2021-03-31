@@ -23,15 +23,18 @@ pub mod runner;
 mod cli;
 
 /// Datastructure converter.
-/// Allows to define conversion rules to make (cook) 
-/// concrete data-structures from the abstract ones for testing purposes. 
+/// Allows to define conversion rules to make (cook)
+/// concrete data-structures from the abstract ones for testing purposes.
 pub mod datachef;
 
 /// Utilitary functions.
 mod util;
 
+/// Provides the way to run sets of test functions on several kinds of test inputs.
 pub mod tester;
 
+/// A framework for event-based testing of message-passing systems
+/// with possibly partitioned system state.
 pub mod event;
 
 /// Re-exports.

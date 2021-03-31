@@ -3,46 +3,67 @@ use serde::{de::DeserializeOwned, Serialize};
 use std::iter::Iterator;
 use std::{any::Any, fmt::Debug, panic::UnwindSafe};
 
+/// A trait for handling the mapping between abstract and concrete system states
+/// It is supposed that the tests are described in terms of a
+/// (much simpler) abstract state,
+/// with a lot less components than the concrete system state being tested.
+///
+/// A concrete system state can be partitioned into several state subspaces,
+/// With separate abstract state describing each concrete state subspace.
 #[allow(unused_variables)]
 pub trait StateHandler<State> {
-    // Initialize concrete state from the abstract one.
-    // Should completely reinitialize the concrete state when called.
-    // Guaranteed to be called at the beginning of each test.
+    /// Initialize concrete state from the abstract one.
+    /// Should completely reinitialize the concrete state when called.
+    /// Guaranteed to be called at the beginning of each test.
     fn init(&mut self, state: State);
 
-    // Read the concrete state into the abstract one.
+    /// Read the concrete state into the abstract one.
     fn read(&self) -> State;
 }
+
+/// A trait for handling abstract test actions (messages).
 pub trait ActionHandler<Action> {
-    // Type of action outcome. Set to () if none.
+    /// Type of action outcome. Set to () if none.
     type Outcome;
 
-    // Initialize processing of actions of that type.
-    // Guaranteed to be called at the beginning of each test
+    /// Initialize processing of actions of that type.
+    /// Guaranteed to be called at the beginning of each test
     fn init(&mut self) {}
 
-    // Process an action of that type & modify the concrete state as appropriate.
-    // The produces the outcome, which can be checked later.
+    /// Process an action of that type & modify the concrete state as appropriate.
+    /// The test produces the outcome, which may be checked later.
     fn handle(&mut self, action: Action) -> Self::Outcome;
 }
 
+/// A set of events to describe tests based on abstract states and actions.
 pub enum Event {
+    /// Initialize the concrete system state from the abstract one.
     Init(Box<dyn Any>),
+    /// Process the abstract action, modifying the system state.
     Action(Box<dyn Any>),
+    /// Expect the provided outcome of the last action.
     Outcome(String),
+    /// Check the assertion about the abstract system state.
     Check(Box<dyn Any>),
+    /// Expect exactly the provided abstract system state.
     Expect(Box<dyn Any>),
 }
 
+/// A stream of events; defines the test.
 pub struct EventStream {
     events: Vec<Event>,
 }
 
 impl EventStream {
+    /// Create a new event stream.
     pub fn new() -> EventStream {
         EventStream { events: vec![] }
     }
 
+    /// Add an initial abstract state to the event stream.
+    /// [StateHandler::init] should handle this event and
+    /// initialize the concrete system state from it.
+    /// Modifies the caller.
     pub fn add_init<T>(&mut self, state: T)
     where
         T: 'static,
@@ -50,6 +71,11 @@ impl EventStream {
         self.events.push(Event::Init(Box::new(state)));
     }
 
+    /// Add an initial abstract state to the event stream.
+    /// [StateHandler::init] should handle this event and
+    /// initialize the concrete system state from it.
+    /// Produces the modified version of the caller,
+    /// allowing to chain the events.
     pub fn init<T>(mut self, state: T) -> Self
     where
         T: 'static,
@@ -58,6 +84,10 @@ impl EventStream {
         self
     }
 
+    /// Add an abstract action to the event stream.
+    /// [ActionHandler::handle] should handle the action and
+    /// modify the concrete system state accordingly.
+    /// Modifies the caller.
     pub fn add_action<T>(&mut self, action: T)
     where
         T: 'static,
@@ -65,6 +95,11 @@ impl EventStream {
         self.events.push(Event::Action(Box::new(action)));
     }
 
+    /// Add an abstract action to the event stream.
+    /// [ActionHandler::handle] should handle the action and
+    /// modify the concrete system state accordingly.
+    /// Produces the modified version of the caller,
+    /// allowing to chain the events.
     pub fn action<T>(mut self, action: T) -> Self
     where
         T: 'static,
@@ -73,6 +108,10 @@ impl EventStream {
         self
     }
 
+    /// Add the check for the previous action outcome to the event stream.
+    /// [ActionHandler::handle] to which the previous actions was dispatched,
+    /// should produce exactly this outcome.
+    /// Modifies the caller.
     pub fn add_outcome<T>(&mut self, outcome: T)
     where
         T: 'static + Serialize,
@@ -82,6 +121,11 @@ impl EventStream {
         ));
     }
 
+    /// Add the check for the previous action outcome to the event stream.
+    /// [ActionHandler::handle] to which the previous actions was dispatched,
+    /// should produce exactly this outcome.
+    /// Produces the modified version of the caller,
+    /// allowing to chain the events.
     pub fn outcome<T>(mut self, outcome: T) -> Self
     where
         T: 'static + Serialize,
@@ -90,6 +134,9 @@ impl EventStream {
         self
     }
 
+    /// Add the assertion about the abstract system state to the event stream.
+    /// The check is executed against the state returned by [StateHandler::read].
+    /// Modifies the caller.
     pub fn add_check<T>(&mut self, assertion: fn(T))
     where
         T: 'static,
@@ -97,6 +144,10 @@ impl EventStream {
         self.events.push(Event::Check(Box::new(assertion as fn(T))));
     }
 
+    /// Add the assertion about the abstract system state to the event stream.
+    /// The check is executed against the state returned by [StateHandler::read].
+    /// Produces the modified version of the caller,
+    /// allowing to chain the events.
     pub fn check<T>(mut self, assertion: fn(T)) -> Self
     where
         T: 'static,
@@ -105,6 +156,9 @@ impl EventStream {
         self
     }
 
+    /// Add the expectation about the abstract system state to the event stream.
+    /// The abstract state returned by [StateHandler::read] should exactly match.
+    /// Modifies the caller.
     pub fn add_expect<T>(&mut self, state: T)
     where
         T: 'static,
@@ -112,6 +166,11 @@ impl EventStream {
         self.events.push(Event::Expect(Box::new(state)));
     }
 
+    /// Add the expectation about the abstract system state to the event stream.
+    /// The abstract state returned by [StateHandler::read] should exactly match.
+    /// Modifies the caller.
+    /// Produces the modified version of the caller,
+    /// allowing to chain the events.
     pub fn expect<T>(mut self, state: T) -> Self
     where
         T: 'static,
@@ -130,15 +189,21 @@ impl IntoIterator for EventStream {
     }
 }
 
+/// A runner that allows to run tests specified as event streams
+/// against the given concrete system.
+/// You can implement several instances of [StateHandler]s
+/// and [ActionHandler]s for the `System`, thus allowing your system
+/// to handle several kinds of abstract states or actions.
 pub struct Runner<'a, System> {
-    pub inits: SystemTester<'a, System>,
-    pub actions: SystemTester<'a, System>,
-    pub checks: SystemTester<'a, System>,
-    pub expects: SystemTester<'a, System>,
-    pub outcome: String,
+    inits: SystemTester<'a, System>,
+    actions: SystemTester<'a, System>,
+    checks: SystemTester<'a, System>,
+    expects: SystemTester<'a, System>,
+    outcome: String,
 }
 
 impl<'a, System> Runner<'a, System> {
+    /// Create a new runner for the given `System`.
     pub fn new() -> Self {
         Runner {
             inits: SystemTester::new(),
@@ -149,29 +214,37 @@ impl<'a, System> Runner<'a, System> {
         }
     }
 
-    pub fn with_state<S>(mut self) -> Self
+    /// Equip the runner with the ability to handle given abstract `State`.
+    pub fn with_state<State>(mut self) -> Self
     where
-        S: 'static + DeserializeOwned + UnwindSafe + Clone + Debug + PartialEq,
-        System: 'static + StateHandler<S>,
+        State: 'static + DeserializeOwned + UnwindSafe + Clone + Debug + PartialEq,
+        System: 'static + StateHandler<State>,
     {
-        self.inits.add(StateHandler::<S>::init);
+        self.inits.add(StateHandler::<State>::init);
         self.checks
-            .add_fn(|system, assertion: fn(S)| assertion(system.read()));
+            .add_fn(|system, assertion: fn(State)| assertion(system.read()));
         self.expects
-            .add(|system, state: S| assert_eq!(system.read(), state));
+            .add(|system, state: State| assert_eq!(system.read(), state));
         self
     }
 
-    pub fn with_action<A>(mut self) -> Self
+    /// Equip the runner with the ability to handle given abstract `Action`.
+    pub fn with_action<Action>(mut self) -> Self
     where
-        A: 'static + DeserializeOwned + UnwindSafe + Clone,
-        System: 'static + ActionHandler<A>,
-        <System as ActionHandler<A>>::Outcome: 'static + Serialize,
+        Action: 'static + DeserializeOwned + UnwindSafe + Clone,
+        System: 'static + ActionHandler<Action>,
+        <System as ActionHandler<Action>>::Outcome: 'static + Serialize,
     {
-        self.actions.add(ActionHandler::<A>::handle);
+        self.actions.add(ActionHandler::<Action>::handle);
         self
     }
 
+    /// Run the runner on:
+    /// - the given concrete `system`,
+    ///   which provides storage of concrete system states,
+    ///   as well as the handling of the abstract states and actions;
+    /// - the given stream of events, representing the test.
+    /// Returns the test result.
     pub fn run(
         &mut self,
         system: &mut System,

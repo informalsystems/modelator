@@ -7,15 +7,23 @@ use std::{
     sync::{Arc, Mutex},
 };
 
+/// Result of executing a test or a set of tests.
 #[derive(Debug, Clone, PartialEq)]
 pub enum TestResult {
+    /// Successful test execution, with serialized result.
     Success(String),
+    /// Test(s) failed, with the given message and at the given location.
     Failure { message: String, location: String },
+    /// Test input was unhandled: no test for it has been defined.
     Unhandled,
 }
 
+/// A simple test is a test that accepts a single input,
+/// and produces a test result
 type SimpleTest<'a> = Box<dyn FnMut(&dyn Any) -> TestResult + 'a>;
 
+/// SimpleTester represents a collection of simple test functions,
+/// where each function can handle a specific kind of input.
 pub struct SimpleTester<'a> {
     tests: Vec<SimpleTest<'a>>,
 }
@@ -25,6 +33,7 @@ impl<'a> SimpleTester<'a> {
         SimpleTester { tests: vec![] }
     }
 
+    /// Add a test function to the tester.
     pub fn add<T, F, R>(&mut self, mut test: F)
     where
         T: 'static + DeserializeOwned + UnwindSafe + Clone,
@@ -38,6 +47,7 @@ impl<'a> SimpleTester<'a> {
         self.tests.push(Box::new(test_fn));
     }
 
+    /// Add to the tester a test function that can accept closures as input.
     pub fn add_fn<T, F, R>(&mut self, mut test: F)
     where
         T: 'static + UnwindSafe + Clone,
@@ -51,6 +61,10 @@ impl<'a> SimpleTester<'a> {
         self.tests.push(Box::new(test_fn));
     }
 
+    /// Run the test functions on the provided input.
+    /// The first test function that is able to handle this kind of input,
+    /// will produce the result. If none of the defined test functions is
+    /// able to handle the input, the `unhandled` result will be returned.
     pub fn test(&mut self, input: &dyn Any) -> TestResult {
         let mut last = TestResult::Unhandled;
         for test in &mut self.tests {
@@ -68,8 +82,12 @@ impl<'a> SimpleTester<'a> {
     }
 }
 
+/// A SystemTest is a test function that accepts some system,
+/// which stores modifiable state, and the input.
 type SystemTest<'a, State> = Box<dyn FnMut(&mut State, &dyn Any) -> TestResult + 'a>;
 
+/// SystemTester is similar to [SimpleTester], but allows to
+/// supply test functions that accept also modifiable system state.
 pub struct SystemTester<'a, State> {
     tests: Vec<SystemTest<'a, State>>,
 }
@@ -79,6 +97,7 @@ impl<'a, State> SystemTester<'a, State> {
         SystemTester { tests: vec![] }
     }
 
+    /// Add a test function to the tester.
     pub fn add<T, F, R>(&mut self, mut test: F)
     where
         T: 'static + DeserializeOwned + UnwindSafe + Clone,
@@ -92,6 +111,7 @@ impl<'a, State> SystemTester<'a, State> {
         self.tests.push(Box::new(test_fn));
     }
 
+    /// Add to the tester a test function that can accept closures as input.
     pub fn add_fn<T, F, R>(&mut self, mut test: F)
     where
         T: 'static + UnwindSafe + Clone,
@@ -105,6 +125,10 @@ impl<'a, State> SystemTester<'a, State> {
         self.tests.push(Box::new(test_fn));
     }
 
+    /// Run the test functions on the provided system and input.
+    /// The first test function that is able to handle this kind of input,
+    /// will produce the result. If none of the defined test functions is
+    /// able to handle the input, the `unhandled` result will be returned.
     pub fn test(&mut self, state: &mut State, input: &dyn Any) -> TestResult {
         let mut last = TestResult::Unhandled;
         for test in &mut self.tests {
@@ -122,7 +146,7 @@ impl<'a, State> SystemTester<'a, State> {
     }
 }
 
-pub fn capture_test<'a, F, R>(mut test: F) -> TestResult
+fn capture_test<'a, F, R>(mut test: F) -> TestResult
 where
     F: FnMut() -> R + 'a,
     R: Serialize,
