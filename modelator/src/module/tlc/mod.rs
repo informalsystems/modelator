@@ -2,6 +2,7 @@
 mod output;
 
 use crate::artifact::{TlaConfigFile, TlaFile, TlaTrace};
+use crate::cache::TlaTraceCache;
 use crate::{jar, Error, ModelCheckerWorkers, Options};
 use std::path::Path;
 use std::process::Command;
@@ -17,8 +18,16 @@ impl Tlc {
         options: &Options,
     ) -> Result<TlaTrace, Error> {
         tracing::debug!("Tlc::test {} {} {:?}", tla_file, tla_config_file, options);
+
+        // load cache and check if the result is cached
+        let mut cache = TlaTraceCache::new(options)?;
+        let cache_key = TlaTraceCache::key(&tla_file, &tla_config_file)?;
+        if let Some(value) = cache.get(&cache_key)? {
+            return Ok(value);
+        }
+
         // create tlc command
-        let mut cmd = cmd(tla_file.path(), tla_config_file.path(), options);
+        let mut cmd = test_cmd(tla_file.path(), tla_config_file.path(), options);
 
         // start tlc
         // TODO: add timeout
@@ -83,7 +92,11 @@ impl Tlc {
                     1,
                     "[modelator] unexpected number of traces in TLC's log"
                 );
-                Ok(traces.pop().unwrap())
+                let trace = traces.pop().unwrap();
+
+                // cache trace and then return it
+                cache.insert(cache_key, &trace)?;
+                Ok(trace)
             }
             (true, false) => {
                 // if stdout is empty, but the stderr is not, return an error
@@ -96,9 +109,9 @@ impl Tlc {
     }
 }
 
-fn cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) -> Command {
-    let tla2tools = jar::Jar::Tla.file(&options.dir);
-    let community_modules = jar::Jar::CommunityModules.file(&options.dir);
+fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) -> Command {
+    let tla2tools = jar::Jar::Tla.path(&options.dir);
+    let community_modules = jar::Jar::CommunityModules.path(&options.dir);
 
     let mut cmd = Command::new("java");
     cmd

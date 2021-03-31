@@ -4,7 +4,7 @@ mod json;
 use crate::artifact::{JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
 use crate::Error;
 use serde_json::Value as JsonValue;
-use std::path::PathBuf;
+use std::path::Path;
 
 // #[modelator::module]
 pub struct Tla;
@@ -26,15 +26,6 @@ impl Tla {
         tla_config_file: TlaConfigFile,
     ) -> Result<Vec<(TlaFile, TlaConfigFile)>, Error> {
         tracing::debug!("Tla::generate_tests {} {}", tla_tests_file, tla_config_file);
-        // check that the tla tests file exists
-        if !tla_tests_file.path().is_file() {
-            return Err(Error::FileNotFound(tla_tests_file.path().clone()));
-        }
-
-        // check that the tla cfg file exists
-        if !tla_config_file.path().is_file() {
-            return Err(Error::FileNotFound(tla_config_file.path().clone()));
-        }
 
         // compute the directory in which the tla tests file is stored
         let mut tla_tests_dir = tla_tests_file.path().clone();
@@ -98,7 +89,7 @@ fn extract_test_names(tla_test_file: &TlaFile) -> Result<Vec<String>, Error> {
 }
 
 fn generate_test(
-    tla_tests_dir: &PathBuf,
+    tla_tests_dir: &Path,
     tla_tests_module_name: &str,
     test_name: &str,
     tla_config_file: &TlaConfigFile,
@@ -124,7 +115,11 @@ fn generate_test(
     let test_config_file = tla_tests_dir.join(format!("{}.cfg", test_module_name));
     std::fs::write(&test_config_file, test_config).map_err(Error::io)?;
 
-    Ok((test_module_file.into(), test_config_file.into()))
+    // create tla file and tla config file
+    use std::convert::TryFrom;
+    let test_module_file = TlaFile::try_from(test_module_file)?;
+    let test_config_file = TlaConfigFile::try_from(test_config_file)?;
+    Ok((test_module_file, test_config_file))
 }
 
 fn genereate_test_module(

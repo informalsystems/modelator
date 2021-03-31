@@ -2,6 +2,7 @@ use serde::Serialize;
 use std::fmt::Debug;
 use thiserror::Error;
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Error, Debug, Serialize)]
 pub enum Error {
     #[error("IO error: {0}")]
@@ -12,6 +13,12 @@ pub enum Error {
 
     #[error("File not found: {0}")]
     FileNotFound(std::path::PathBuf),
+
+    #[error("Missing Java. Please install it.")]
+    MissingJava,
+
+    #[error("Current Java version is: {0}. Minimum Java version supported is: {1}")]
+    MinimumJavaVersion(usize, usize),
 
     #[error("Error parsing TLA state:\n{state}\nerror:\n{error}")]
     TlaParse { state: String, error: String },
@@ -34,6 +41,9 @@ pub enum Error {
     #[error("Invalid Apalache counterexample: {0}")]
     InvalidApalacheCounterexample(String),
 
+    #[error("Ureq error: {0}")]
+    Ureq(String),
+
     #[error("Nom error: {0}")]
     Nom(String),
 
@@ -44,6 +54,10 @@ pub enum Error {
 impl Error {
     pub(crate) fn io(err: std::io::Error) -> Error {
         Error::IO(err.to_string())
+    }
+
+    pub(crate) fn ureq(err: ureq::Error) -> Error {
+        Error::Ureq(err.to_string())
     }
 
     pub(crate) fn nom(err: nom::Err<nom::error::Error<&str>>) -> Error {
