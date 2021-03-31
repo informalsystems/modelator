@@ -28,6 +28,12 @@ pub struct SimpleTester<'a> {
     tests: Vec<SimpleTest<'a>>,
 }
 
+impl<'a> Default for SimpleTester<'a> {
+    fn default() -> Self {
+        SimpleTester::new()
+    }
+}
+
 impl<'a> SimpleTester<'a> {
     pub fn new() -> SimpleTester<'a> {
         SimpleTester { tests: vec![] }
@@ -90,6 +96,12 @@ type SystemTest<'a, State> = Box<dyn FnMut(&mut State, &dyn Any) -> TestResult +
 /// supply test functions that accept also modifiable system state.
 pub struct SystemTester<'a, State> {
     tests: Vec<SystemTest<'a, State>>,
+}
+
+impl<'a, State> Default for SystemTester<'a, State> {
+    fn default() -> Self {
+        SystemTester::new()
+    }
 }
 
 impl<'a, State> SystemTester<'a, State> {

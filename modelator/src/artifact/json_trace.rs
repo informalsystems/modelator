@@ -35,26 +35,21 @@ impl std::fmt::Display for JsonTrace {
     }
 }
 
-impl Into<EventStream> for JsonTrace {
-    fn into(self) -> EventStream {
+impl From<JsonTrace> for EventStream {
+    fn from(trace: JsonTrace) -> Self {
         let mut events = EventStream::new();
-        let mut values = self.into_iter();
+        let mut values = trace.into_iter();
         // safe to unwrap here as we check above that JsonTrace in a non-empty array
         let init = values.next().unwrap();
         events.add_init(init);
         for value in values {
-            match value.clone() {
-                JsonValue::Object(value) => {
-                    match value.get("action") {
-                        Some(action) => events.add_action(action.clone()),
-                        None => {}
-                    };
-                    match value.get("actionOutcome") {
-                        Some(outcome) => events.add_outcome(outcome.clone()),
-                        None => {}
-                    }
+            if let JsonValue::Object(value) = value.clone() {
+                if let Some(action) = value.get("action") {
+                    events.add_action(action.clone());
+                };
+                if let Some(outcome) = value.get("actionOutcome") {
+                    events.add_outcome(outcome.clone());
                 }
-                _ => {}
             }
             events.add_expect(value);
         }

@@ -148,6 +148,12 @@ pub struct Recipe {
     named_defaults: BTreeMap<(String, TypeId), Box<dyn Any>>,
 }
 
+impl Default for Recipe {
+    fn default() -> Self {
+        Recipe::new()
+    }
+}
+
 impl Recipe {
     /// Create a new recipe
     pub fn new() -> Self {
@@ -259,7 +265,7 @@ impl Recipe {
         let type_ids = (TypeId::of::<From>(), TypeId::of::<To>());
         self.converts.get(&type_ids).and_then(|f| {
             f.downcast_ref::<fn(&Self, From) -> To>()
-                .and_then(|f| Some(Box::new(move |x: From| f(&self, x)) as Box<dyn Fn(From) -> To>))
+                .map(|f| Box::new(move |x: From| f(&self, x)) as Box<dyn Fn(From) -> To>)
         })
     }
 
@@ -271,7 +277,7 @@ impl Recipe {
         let type_ids = (name.to_string(), TypeId::of::<From>(), TypeId::of::<To>());
         self.named_converts.get(&type_ids).and_then(|f| {
             f.downcast_ref::<fn(&Self, From) -> To>()
-                .and_then(|f| Some(Box::new(move |x: From| f(&self, x)) as Box<dyn Fn(From) -> To>))
+                .map(|f| Box::new(move |x: From| f(&self, x)) as Box<dyn Fn(From) -> To>)
         })
     }
 
@@ -279,7 +285,7 @@ impl Recipe {
         let type_id = TypeId::of::<T>();
         self.defaults.get(&type_id).and_then(|f| {
             f.downcast_ref::<fn(&Self) -> T>()
-                .and_then(|f| Some(Box::new(move || f(&self)) as Box<dyn Fn() -> T>))
+                .map(|f| Box::new(move || f(&self)) as Box<dyn Fn() -> T>)
         })
     }
 
@@ -289,7 +295,7 @@ impl Recipe {
             .get(&(name.to_string(), type_id))
             .and_then(|f| {
                 f.downcast_ref::<fn(&Self) -> T>()
-                    .and_then(|f| Some(Box::new(move || f(&self)) as Box<dyn Fn() -> T>))
+                    .map(|f| Box::new(move || f(&self)) as Box<dyn Fn() -> T>)
             })
     }
 }

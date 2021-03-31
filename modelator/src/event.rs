@@ -54,6 +54,13 @@ pub struct EventStream {
     events: Vec<Event>,
 }
 
+impl Default for EventStream {
+    fn default() -> Self {
+        EventStream::new()
+    }
+}
+
+
 impl EventStream {
     /// Create a new event stream.
     pub fn new() -> EventStream {
@@ -202,6 +209,13 @@ pub struct Runner<'a, System> {
     outcome: String,
 }
 
+impl<'a, System> Default for Runner<'a, System> {
+    fn default() -> Self {
+        Runner::new()
+    }
+}
+
+
 impl<'a, System> Runner<'a, System> {
     /// Create a new runner for the given `System`.
     pub fn new() -> Self {
@@ -251,7 +265,7 @@ impl<'a, System> Runner<'a, System> {
         system: &mut System,
         stream: &mut dyn Iterator<Item = Event>,
     ) -> TestResult {
-        while let Some(event) = stream.next() {
+        for event in stream {
             let result = match event {
                 Event::Init(input) => self.inits.test(system, &input),
                 Event::Action(input) => self.actions.test(system, &input),
