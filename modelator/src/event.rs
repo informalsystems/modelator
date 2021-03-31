@@ -60,7 +60,6 @@ impl Default for EventStream {
     }
 }
 
-
 impl EventStream {
     /// Create a new event stream.
     pub fn new() -> EventStream {
@@ -214,7 +213,6 @@ impl<'a, System> Default for Runner<'a, System> {
         Runner::new()
     }
 }
-
 
 impl<'a, System> Runner<'a, System> {
     /// Create a new runner for the given `System`.
