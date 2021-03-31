@@ -244,6 +244,7 @@ impl<'a, System> Runner<'a, System> {
     ///   which provides storage of concrete system states,
     ///   as well as the handling of the abstract states and actions;
     /// - the given stream of events, representing the test.
+    ///
     /// Returns the test result.
     pub fn run(
         &mut self,
