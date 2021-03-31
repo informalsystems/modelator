@@ -1,5 +1,5 @@
-use serde_json::Value as JsonValue;
 use crate::EventStream;
+use serde_json::Value as JsonValue;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct JsonTrace {
@@ -40,7 +40,7 @@ impl Into<EventStream> for JsonTrace {
         let mut events = EventStream::new();
         let mut values = self.into_iter();
         // safe to unwrap here as we check above that JsonTrace in a non-empty array
-        let init = values.next().unwrap(); 
+        let init = values.next().unwrap();
         events.add_init(init);
         for value in values {
             match value.clone() {

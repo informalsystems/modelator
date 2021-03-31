@@ -1,5 +1,5 @@
 use crate::util::*;
-use serde::{Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Serialize};
 use serde_json::Value;
 use std::{
     any::Any,
@@ -13,7 +13,6 @@ pub enum TestResult {
     Failure { message: String, location: String },
     Unhandled,
 }
-
 
 type SimpleTest<'a> = Box<dyn FnMut(&dyn Any) -> TestResult + 'a>;
 
@@ -30,13 +29,11 @@ impl<'a> SimpleTester<'a> {
     where
         T: 'static + DeserializeOwned + UnwindSafe + Clone,
         F: FnMut(T) -> R + 'a,
-        R: 'static + Serialize
+        R: 'static + Serialize,
     {
-        let test_fn = move |input: &dyn Any| {
-            match convert_to::<T>(input) {
-                Some(test_case) => capture_test(|| test(test_case.clone())),
-                None => TestResult::Unhandled
-            }
+        let test_fn = move |input: &dyn Any| match convert_to::<T>(input) {
+            Some(test_case) => capture_test(|| test(test_case.clone())),
+            None => TestResult::Unhandled,
         };
         self.tests.push(Box::new(test_fn));
     }
@@ -45,13 +42,11 @@ impl<'a> SimpleTester<'a> {
     where
         T: 'static + UnwindSafe + Clone,
         F: FnMut(T) + 'a,
-        R: 'static + Serialize
+        R: 'static + Serialize,
     {
-        let test_fn = move |input: &dyn Any| {
-            match interpret_as::<T>(input) {
-                Some(test_case) => capture_test(|| test(test_case.clone())),
-                None => TestResult::Unhandled
-            }
+        let test_fn = move |input: &dyn Any| match interpret_as::<T>(input) {
+            Some(test_case) => capture_test(|| test(test_case.clone())),
+            None => TestResult::Unhandled,
         };
         self.tests.push(Box::new(test_fn));
     }
@@ -62,7 +57,7 @@ impl<'a> SimpleTester<'a> {
             let res = test(input);
             match (&last, res) {
                 // On failure return immediately
-                (_, res @ TestResult::Failure{..}) => return res,
+                (_, res @ TestResult::Failure { .. }) => return res,
                 // If previously unhandled -> update
                 (TestResult::Unhandled, res) => last = res,
                 // All other cases (Success, Unhandled), (Success, Success) -> do nothing
@@ -74,7 +69,6 @@ impl<'a> SimpleTester<'a> {
 }
 
 type SystemTest<'a, State> = Box<dyn FnMut(&mut State, &dyn Any) -> TestResult + 'a>;
-
 
 pub struct SystemTester<'a, State> {
     tests: Vec<SystemTest<'a, State>>,
@@ -89,29 +83,24 @@ impl<'a, State> SystemTester<'a, State> {
     where
         T: 'static + DeserializeOwned + UnwindSafe + Clone,
         F: FnMut(&mut State, T) -> R + 'a,
-        R: 'static + Serialize
+        R: 'static + Serialize,
     {
-        let test_fn = move |state: &mut State, input: &dyn Any| {
-            match convert_to::<T>(input) {
-                Some(test_case) => capture_test(|| test(state, test_case.clone())),
-                None => TestResult::Unhandled
-            }
+        let test_fn = move |state: &mut State, input: &dyn Any| match convert_to::<T>(input) {
+            Some(test_case) => capture_test(|| test(state, test_case.clone())),
+            None => TestResult::Unhandled,
         };
         self.tests.push(Box::new(test_fn));
     }
-
 
     pub fn add_fn<T, F, R>(&mut self, mut test: F)
     where
         T: 'static + UnwindSafe + Clone,
         F: FnMut(&mut State, T) -> R + 'a,
-        R: 'static + Serialize
+        R: 'static + Serialize,
     {
-        let test_fn = move |state: &mut State, input: &dyn Any| {
-            match interpret_as::<T>(input) {
-                Some(test_case) => capture_test(|| test(state, test_case.clone())),
-                None => TestResult::Unhandled
-            }
+        let test_fn = move |state: &mut State, input: &dyn Any| match interpret_as::<T>(input) {
+            Some(test_case) => capture_test(|| test(state, test_case.clone())),
+            None => TestResult::Unhandled,
         };
         self.tests.push(Box::new(test_fn));
     }
@@ -122,7 +111,7 @@ impl<'a, State> SystemTester<'a, State> {
             let res = test(state, input);
             match (&last, res) {
                 // On failure return immediately
-                (_, res @ TestResult::Failure{..}) => return res,
+                (_, res @ TestResult::Failure { .. }) => return res,
                 // If previously unhandled -> update
                 (TestResult::Unhandled, res) => last = res,
                 // All other cases (Success, Unhandled), (Success, Success) -> do nothing
@@ -136,7 +125,7 @@ impl<'a, State> SystemTester<'a, State> {
 pub fn capture_test<'a, F, R>(mut test: F) -> TestResult
 where
     F: FnMut() -> R + 'a,
-    R: Serialize
+    R: Serialize,
 {
     let test_result = Arc::new(Mutex::new(TestResult::Unhandled));
     let old_hook = panic::take_hook();
@@ -167,47 +156,39 @@ where
 }
 
 fn convert_to<T>(input: &dyn Any) -> Option<T>
-where T: 'static + DeserializeOwned + Clone
+where
+    T: 'static + DeserializeOwned + Clone,
 {
     if let Some(test_case) = input.downcast_ref::<T>() {
         Some(test_case.clone())
-    }
-    else if let Some(input) = input.downcast_ref::<String>() {
+    } else if let Some(input) = input.downcast_ref::<String>() {
         parse_from_str::<T>(input).ok()
-    }
-    else if let Some(input) = input.downcast_ref::<Value>() {
+    } else if let Some(input) = input.downcast_ref::<Value>() {
         parse_from_value::<T>(input.clone()).ok()
-    }
-    else if let Some(input) = input.downcast_ref::<Box<T>>() {
+    } else if let Some(input) = input.downcast_ref::<Box<T>>() {
         Some((**input).clone())
-    }
-    else if let Some(input) = input.downcast_ref::<Box<String>>() {
+    } else if let Some(input) = input.downcast_ref::<Box<String>>() {
         parse_from_str::<T>(&**input).ok()
-    }
-    else if let Some(input) = input.downcast_ref::<Box<Value>>() {
+    } else if let Some(input) = input.downcast_ref::<Box<Value>>() {
         parse_from_value::<T>((**input).clone()).ok()
-    }
-    else if let Some(input) = input.downcast_ref::<Box<dyn Any>>() {
+    } else if let Some(input) = input.downcast_ref::<Box<dyn Any>>() {
         convert_to::<T>(&**input)
-    } 
-    else {
+    } else {
         None
     }
 }
 
 fn interpret_as<T>(input: &dyn Any) -> Option<T>
-where T: 'static + Clone
+where
+    T: 'static + Clone,
 {
     if let Some(test_case) = input.downcast_ref::<T>() {
         Some(test_case.clone())
-    }
-    else if let Some(input) = input.downcast_ref::<Box<T>>() {
+    } else if let Some(input) = input.downcast_ref::<Box<T>>() {
         Some((**input).clone())
-    }
-    else if let Some(input) = input.downcast_ref::<Box<dyn Any>>() {
+    } else if let Some(input) = input.downcast_ref::<Box<dyn Any>>() {
         interpret_as::<T>(&**input)
-    } 
-    else {
+    } else {
         None
     }
 }
@@ -236,18 +217,13 @@ mod tests {
     }
 
     pub struct MyState {
-        pub state: String
+        pub state: String,
     }
 
     impl MyState {
-        pub fn test1(&mut self, _: MyTest) {
+        pub fn test1(&mut self, _: MyTest) {}
 
-        }
-
-        pub fn test2(&mut self, _: MyTest2) {
-            
-        }
-
+        pub fn test2(&mut self, _: MyTest2) {}
     }
 
     #[test]
@@ -269,21 +245,19 @@ mod tests {
             name: "my_test".to_string(),
         };
         let res = tester.test(&data);
-        assert!(matches!(res,TestResult::Success(_)));
+        assert!(matches!(res, TestResult::Success(_)));
 
         let data = String::from("{\"name\": \"my_test\"}");
         let res = tester.test(&data);
         println!("{:?}", res);
-        assert!(matches!(res,TestResult::Success(_)));
+        assert!(matches!(res, TestResult::Success(_)));
 
         let data: Value = serde_json::from_str(&data).unwrap();
         let res = tester.test(&data);
-        assert!(matches!(res,TestResult::Success(_)));
+        assert!(matches!(res, TestResult::Success(_)));
 
         let mut tester = SystemTester::<MyState>::new();
         tester.add(MyState::test1);
         tester.add(MyState::test2);
-
     }
 }
-

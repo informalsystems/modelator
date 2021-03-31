@@ -20,6 +20,8 @@ pub mod runner;
 mod cli;
 
 /// Datastructure converter.
+/// Allows to define conversion rules to make (cook) 
+/// concrete data-structures from the abstract ones for testing purposes. 
 pub mod datachef;
 
 /// Utilitary functions.
@@ -31,9 +33,9 @@ pub mod event;
 
 /// Re-exports.
 pub use cli::{CliOptions, CliOutput, CliStatus};
-pub use event::{StateHandler, ActionHandler, Event, EventStream, Runner};
 pub use datachef::Recipe;
 pub use error::{Error, TestError};
+pub use event::{ActionHandler, Event, EventStream, Runner, StateHandler};
 pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Options};
 
 use serde::de::DeserializeOwned;
