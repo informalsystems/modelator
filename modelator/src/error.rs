@@ -41,6 +41,9 @@ pub enum Error {
     #[error("Invalid Apalache counterexample: {0}")]
     InvalidApalacheCounterexample(String),
 
+    #[error("Ureq error: {0}")]
+    Ureq(String),
+
     #[error("Nom error: {0}")]
     Nom(String),
 }
@@ -48,6 +51,10 @@ pub enum Error {
 impl Error {
     pub(crate) fn io(err: std::io::Error) -> Error {
         Error::IO(err.to_string())
+    }
+
+    pub(crate) fn ureq(err: ureq::Error) -> Error {
+        Error::Ureq(err.to_string())
     }
 
     pub(crate) fn nom(err: nom::Err<nom::error::Error<&str>>) -> Error {
