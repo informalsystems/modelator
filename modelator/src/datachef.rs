@@ -34,7 +34,7 @@ use std::collections::BTreeMap;
 /// ```
 ///
 /// And the checking function could look like that:
-/// ```
+/// ```ignore
 /// fn check_record(r: Record) -> bool {
 ///     // Name is not too short or too long
 ///     r.name.len() >= 6 &&
@@ -53,7 +53,7 @@ use std::collections::BTreeMap;
 ///
 /// Now, the question is how do you prepare tests for this function?
 /// You could of course each time create concrete records:
-/// ```
+/// ```ignore
 /// let record = Record {
 ///     name: "John Smith".to_string(),
 ///     address: Address {
@@ -71,7 +71,7 @@ use std::collections::BTreeMap;
 /// but using dummies is also quite ad-hoc and inflexible,
 /// Our data chef recommends you to define a recipe instead!
 ///
-/// ```
+/// ```ignore
 /// let mut r = Recipe::new();
 /// // default phone
 /// r.put(|_| Phone {
@@ -97,14 +97,14 @@ use std::collections::BTreeMap;
 /// for `Phone` and `Address`, and define a simple recipe to make (prepare)
 /// a `Record` from a name, using defaults for other fields.
 /// With that recipe we can already test `check_record()`:
-/// ```
+/// ```ignore
 /// assert!(check_record(r.make("John Smith".to_string())));
 /// assert!(!check_record(r.make("short".repeat(1))));
 /// assert!(!check_record(r.make("long".repeat(100))));
 /// ```
 /// Now, what if we want to test how the phones are handled?
 /// Add more recipes to cook phones!
-/// ```
+/// ```ignore
 /// // Recipe for cooking a phone out of a code and a number
 /// r.add(|_, phone: (u32, u32)| Phone {
 ///     area_code: phone.0,
