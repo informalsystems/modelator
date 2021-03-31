@@ -8,10 +8,11 @@ use std::process::Command;
 // TLC doesn't seem to have such requirement.
 const MIN_JAVA_VERSION: usize = 8;
 
-pub const TLA_JAR: &str = "tla2tools-v1.8.0.jar";
-pub const COMMUNITY_MODULES_JAR: &str = "CommunityModules-202103092123.jar";
-pub const APALACHE_JAR: &str = "apalache-v0.11.0.jar";
-pub const JARS_CHECKSUM: &str = "55b7131eff44ef1c27bb8733a5b117ab9a327a3d41bdab26bce56dd193dc1f13";
+pub(crate) const TLA_JAR: &str = "tla2tools-v1.8.0.jar";
+pub(crate) const COMMUNITY_MODULES_JAR: &str = "CommunityModules-202103092123.jar";
+pub(crate) const APALACHE_JAR: &str = "apalache-v0.11.0.jar";
+pub(crate) const JARS_CHECKSUM: &str =
+    "55b7131eff44ef1c27bb8733a5b117ab9a327a3d41bdab26bce56dd193dc1f13";
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub(crate) enum Jar {

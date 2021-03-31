@@ -2,6 +2,7 @@ use crate::Error;
 use std::convert::TryFrom;
 use std::path::{Path, PathBuf};
 
+/// `modelator`'s artifact representing a TLA+ file.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TlaFile {
     path: PathBuf,
@@ -14,6 +15,7 @@ impl TlaFile {
         Ok(Self { path })
     }
 
+    /// Returns the path to the TLA+ file.
     pub fn path(&self) -> &PathBuf {
         &self.path
     }
@@ -37,6 +39,13 @@ impl TlaFile {
 // TODO: replace the following `TryFrom` implementations with one with generic
 //       bound `AsRef<Path>` once https://github.com/rust-lang/rust/issues/50133
 //       is fixed
+impl TryFrom<&str> for TlaFile {
+    type Error = crate::Error;
+    fn try_from(path: &str) -> Result<Self, Self::Error> {
+        Self::new(path)
+    }
+}
+
 impl TryFrom<String> for TlaFile {
     type Error = crate::Error;
     fn try_from(path: String) -> Result<Self, Self::Error> {

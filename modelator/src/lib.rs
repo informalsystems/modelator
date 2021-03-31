@@ -1,3 +1,13 @@
+//! `modelator` is a framework for model-based testing.
+#![warn(
+    unreachable_pub,
+    missing_docs,
+    missing_copy_implementations,
+    trivial_numeric_casts,
+    unused_extern_crates,
+    rust_2018_idioms
+)]
+
 /// Modelator's options.
 mod options;
 
@@ -38,7 +48,7 @@ pub mod tester;
 pub mod event;
 
 /// Re-exports.
-pub use cli::{CliOptions, CliOutput, CliStatus};
+pub use cli::{output::CliOutput, output::CliStatus, CliOptions};
 pub use datachef::Recipe;
 pub use error::{Error, TestError};
 pub use event::{ActionHandler, Event, EventStream, Runner, StateHandler};
@@ -48,10 +58,22 @@ use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 use std::path::Path;
 
+/// Generate TLA+ traces (encoded as JSON) given a [crate::artifact::TlaFile]
+/// containing TLA+ assertions and a [crate::artifact::TlaConfigFile].
+///
+/// # Examples
+///
+/// ```
+/// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
+/// let tla_config_file = "tests/integration/tla/Numbers.cfg";
+/// let options = modelator::Options::default();
+/// let traces = modelator::traces(tla_tests_file, tla_config_file, &options).unwrap();
+/// println!("{:?}", traces);
+/// ```
 pub fn traces<P: AsRef<Path>>(
     tla_tests_file: P,
     tla_config_file: P,
-    options: Options,
+    options: &Options,
 ) -> Result<Vec<artifact::JsonTrace>, Error> {
     // setup modelator
     setup(&options)?;
@@ -68,9 +90,9 @@ pub fn traces<P: AsRef<Path>>(
         .into_iter()
         .map(
             |(tla_file, tla_config_file)| match options.model_checker_options.model_checker {
-                ModelChecker::Tlc => module::Tlc::test(tla_file, tla_config_file, &options),
+                ModelChecker::Tlc => module::Tlc::test(tla_file, tla_config_file, options),
                 ModelChecker::Apalache => {
-                    module::Apalache::test(tla_file, tla_config_file, &options)
+                    module::Apalache::test(tla_file, tla_config_file, options)
                 }
             },
         )
@@ -89,10 +111,57 @@ pub fn traces<P: AsRef<Path>>(
         .collect()
 }
 
+/// Generate TLA+ traces using [`traces`] and executes them against the Rust
+/// implementation of the modeled system using a test `runner`.
+/// This `runner` implements the [crate::runner::TestRunner] trait.
+///
+/// For more information, please consult the documentation of [`traces`] and
+/// [crate::runner::TestRunner].
+///
+/// # Examples
+///
+/// ```
+/// use serde::Deserialize;
+/// use modelator::runner::TestRunner;
+///
+/// #[derive(Debug, Clone)]
+/// struct NumbersTestRunner;
+///
+/// impl NumbersTestRunner {
+///     fn is_even(number: usize) -> bool {
+///         number % 2 == 0
+///     }
+/// }
+///
+/// #[derive(Debug, Clone, Deserialize)]
+/// struct NumbersStep {
+///     a: usize,
+///     b: usize,
+/// }
+///
+/// impl TestRunner<NumbersStep> for NumbersTestRunner {
+///     fn initial_step(&mut self, step: NumbersStep) -> bool {
+///         Self::is_even(step.b)
+///     }
+///
+///     fn next_step(&mut self, step: NumbersStep) -> bool {
+///         Self::is_even(step.b)
+///     }
+/// }
+///
+/// fn main() {
+///     let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
+///     let tla_config_file = "tests/integration/tla/Numbers.cfg";
+///     let options = modelator::Options::default();
+///     let runner = NumbersTestRunner;
+///     assert!(modelator::run(tla_tests_file, tla_config_file, &options, runner).is_ok());
+/// }
+/// ```
+#[allow(clippy::needless_doctest_main)]
 pub fn run<P, Runner, Step>(
     tla_tests_file: P,
     tla_config_file: P,
-    options: Options,
+    options: &Options,
     runner: Runner,
 ) -> Result<(), TestError<Step>>
 where

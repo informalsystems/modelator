@@ -304,23 +304,23 @@ impl Recipe {
 mod tests {
     use super::*;
 
-    pub struct Record {
-        pub name: String,
-        pub address: Address,
-        pub landline: Phone,
-        pub mobile: Phone,
+    struct Record {
+        name: String,
+        address: Address,
+        landline: Phone,
+        mobile: Phone,
     }
 
-    pub struct Address {
-        pub postal_code: u32,
-        pub city: String,
-        pub street: String,
-        pub door: u32,
+    struct Address {
+        postal_code: u32,
+        _city: String,
+        _street: String,
+        _door: u32,
     }
 
-    pub struct Phone {
-        pub area_code: u32,
-        pub number: u32,
+    struct Phone {
+        area_code: u32,
+        _number: u32,
     }
 
     fn check_record(r: Record) -> bool {
@@ -343,13 +343,13 @@ mod tests {
         let mut r = Recipe::new();
         r.put(|_| Phone {
             area_code: 123,
-            number: 456789,
+            _number: 456789,
         });
         r.put(|_| Address {
             postal_code: 10179,
-            city: "Berlin".to_string(),
-            street: "Molkenmarkt".to_string(),
-            door: 1,
+            _city: "Berlin".to_string(),
+            _street: "Molkenmarkt".to_string(),
+            _door: 1,
         });
         r.add(|r, name: String| Record {
             name,
@@ -364,7 +364,7 @@ mod tests {
 
         r.add(|_, phone: (u32, u32)| Phone {
             area_code: phone.0,
-            number: phone.1,
+            _number: phone.1,
         });
         r.add(|r, phone: (u32, u32)| Record {
             name: "John Smith".to_string(),
@@ -389,20 +389,20 @@ mod tests {
     }
 
     #[derive(Debug, PartialEq)]
-    pub struct Chain {
+    struct Chain {
         name: String,
         id: u64,
         default_provider: Provider,
     }
 
     #[derive(Debug, PartialEq)]
-    pub struct Provider {
+    struct Provider {
         name: String,
         id: u64,
     }
 
     #[derive(Debug, PartialEq)]
-    pub struct Block {
+    struct Block {
         chain: Chain,
         height: u64,
         id: u64,
@@ -410,14 +410,14 @@ mod tests {
     }
 
     #[derive(Debug, PartialEq)]
-    pub struct AbstractBlock {
+    struct AbstractBlock {
         chain: String,
         height: u64,
         provider: String,
     }
 
     #[test]
-    pub fn test() {
+    fn test() {
         let mut r = Recipe::new();
         r.put_as("height", |_| 1u64);
         r.put_as("id", |_| 0u64);

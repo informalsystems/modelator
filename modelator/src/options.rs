@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 
+/// Set of options to configure `modelator`.
 #[derive(Clone, Debug)]
 pub struct Options {
     /// Model checker options.
@@ -32,6 +33,7 @@ impl Default for Options {
     }
 }
 
+/// Set of options to select the model checker to be used and configure them.
 #[derive(Clone, Debug)]
 pub struct ModelCheckerOptions {
     /// Which model checker to use.
@@ -76,12 +78,18 @@ impl Default for ModelCheckerOptions {
     }
 }
 
+/// Configuration option to select the model checker to be used.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ModelChecker {
+    /// Option representing the [TLC](https://github.com/tlaplus/tlaplus) model
+    /// checker.
     Tlc,
+    /// Option representing the [Apalache](http://github.com/informalsystems/apalache)
+    /// mode checker.
     Apalache,
 }
 
+/// Configuration option to select the number of model checker workers.
 #[derive(Clone, Copy, Debug)]
 pub enum ModelCheckerWorkers {
     /// Automatically select the number of model checker worker threads based

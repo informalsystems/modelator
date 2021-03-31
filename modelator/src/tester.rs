@@ -1,6 +1,7 @@
-use crate::util::*;
+use crate::Error;
 use serde::{de::DeserializeOwned, Serialize};
-use serde_json::Value;
+use serde_json::Value as JsonValue;
+use std::fmt::Debug;
 use std::{
     any::Any,
     panic::{self, AssertUnwindSafe, UnwindSafe},
@@ -13,7 +14,12 @@ pub enum TestResult {
     /// Successful test execution, with serialized result.
     Success(String),
     /// Test(s) failed, with the given message and at the given location.
-    Failure { message: String, location: String },
+    Failure {
+        /// Failure message.
+        message: String,
+        /// Failure location.
+        location: String,
+    },
     /// Test input was unhandled: no test for it has been defined.
     Unhandled,
 }
@@ -35,6 +41,7 @@ impl<'a> Default for SimpleTester<'a> {
 }
 
 impl<'a> SimpleTester<'a> {
+    /// Create a new tester.
     pub fn new() -> SimpleTester<'a> {
         SimpleTester { tests: vec![] }
     }
@@ -105,6 +112,7 @@ impl<'a, State> Default for SystemTester<'a, State> {
 }
 
 impl<'a, State> SystemTester<'a, State> {
+    /// Create a new tester.
     pub fn new() -> SystemTester<'a, State> {
         SystemTester { tests: vec![] }
     }
@@ -199,13 +207,13 @@ where
         Some(test_case.clone())
     } else if let Some(input) = input.downcast_ref::<String>() {
         parse_from_str::<T>(input).ok()
-    } else if let Some(input) = input.downcast_ref::<Value>() {
+    } else if let Some(input) = input.downcast_ref::<JsonValue>() {
         parse_from_value::<T>(input.clone()).ok()
     } else if let Some(input) = input.downcast_ref::<Box<T>>() {
         Some((**input).clone())
     } else if let Some(input) = input.downcast_ref::<Box<String>>() {
         parse_from_str::<T>(&**input).ok()
-    } else if let Some(input) = input.downcast_ref::<Box<Value>>() {
+    } else if let Some(input) = input.downcast_ref::<Box<JsonValue>>() {
         parse_from_value::<T>((**input).clone()).ok()
     } else if let Some(input) = input.downcast_ref::<Box<dyn Any>>() {
         convert_to::<T>(&**input)
@@ -229,19 +237,29 @@ where
     }
 }
 
+/// Tries to parse a string as the given type
+fn parse_from_str<T: DeserializeOwned>(input: &str) -> Result<T, Error> {
+    serde_json::from_str(input).map_err(|e| Error::JsonParseError(e.to_string()))
+}
+
+/// Tries to parse a Json Value as the given type
+fn parse_from_value<T: DeserializeOwned>(input: serde_json::Value) -> Result<T, Error> {
+    serde_json::from_value(input).map_err(|e| Error::JsonParseError(e.to_string()))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use serde::Deserialize;
 
     #[derive(Deserialize, Clone)]
-    pub struct MyTest {
-        pub name: String,
+    struct MyTest {
+        name: String,
     }
 
     #[derive(Deserialize, Clone)]
-    pub struct MyTest2 {
-        pub id: u64,
+    struct MyTest2 {
+        id: u64,
     }
 
     fn fails(_: MyTest2) {
@@ -252,14 +270,14 @@ mod tests {
         assert!(t.name == "my_test", "got {}", t.name);
     }
 
-    pub struct MyState {
-        pub state: String,
+    struct MyState {
+        _state: String,
     }
 
     impl MyState {
-        pub fn test1(&mut self, _: MyTest) {}
+        fn test1(&mut self, _: MyTest) {}
 
-        pub fn test2(&mut self, _: MyTest2) {}
+        fn test2(&mut self, _: MyTest2) {}
     }
 
     #[test]
@@ -288,7 +306,7 @@ mod tests {
         println!("{:?}", res);
         assert!(matches!(res, TestResult::Success(_)));
 
-        let data: Value = serde_json::from_str(&data).unwrap();
+        let data: JsonValue = serde_json::from_str(&data).unwrap();
         let res = tester.test(&data);
         assert!(matches!(res, TestResult::Success(_)));
 

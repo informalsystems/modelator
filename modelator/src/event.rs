@@ -38,6 +38,7 @@ pub trait ActionHandler<Action> {
 }
 
 /// A set of events to describe tests based on abstract states and actions.
+#[derive(Debug)]
 pub enum Event {
     /// Initialize the concrete system state from the abstract one.
     Init(Box<dyn Any>),
@@ -52,6 +53,7 @@ pub enum Event {
 }
 
 /// A stream of events; defines the test.
+#[derive(Debug)]
 pub struct EventStream {
     events: Vec<Event>,
 }
@@ -149,7 +151,7 @@ impl EventStream {
     where
         T: 'static,
     {
-        self.events.push(Event::Check(Box::new(assertion as fn(T))));
+        self.events.push(Event::Check(Box::new(assertion)));
     }
 
     /// Add the assertion about the abstract system state to the event stream.
@@ -324,34 +326,34 @@ mod tests {
     use serde_json::Value;
 
     #[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
-    pub struct State1 {
-        pub state1: String,
+    struct State1 {
+        state1: String,
     }
 
     #[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
-    pub struct State2 {
-        pub state2: String,
+    struct State2 {
+        state2: String,
     }
 
     #[derive(Deserialize, Serialize, Clone)]
-    pub struct Action1 {
-        pub value1: String,
+    struct Action1 {
+        value1: String,
     }
 
     #[derive(Serialize)]
-    pub enum Outcome {
+    enum Outcome {
         Success(String),
         Failure(String),
     }
 
     #[derive(Deserialize, Serialize, Clone)]
-    pub struct Action2 {
-        pub value2: String,
+    struct Action2 {
+        value2: String,
     }
 
-    pub struct MySystem {
-        pub state1: String,
-        pub state2: String,
+    struct MySystem {
+        state1: String,
+        state2: String,
     }
 
     impl StateHandler<State1> for MySystem {

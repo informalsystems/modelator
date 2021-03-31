@@ -6,11 +6,33 @@ use crate::Error;
 use serde_json::Value as JsonValue;
 use std::path::Path;
 
-// #[modelator::module]
+/// `modelator`'s TLA module.
+#[derive(Debug, Clone, Copy)]
 pub struct Tla;
 
 impl Tla {
-    // #[modelator::method]
+    /// Convert a [TlaTrace] into a [JsonTrace].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use modelator::artifact::{TlaFile, TlaConfigFile};
+    /// use modelator::module::{Tla, Tlc};
+    /// use modelator::Options;
+    /// use std::convert::TryFrom;
+    ///
+    /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
+    /// let tla_config_file = "tests/integration/tla/Numbers.cfg";
+    /// let tla_tests_file = TlaFile::try_from(tla_tests_file).unwrap();
+    /// let tla_config_file = TlaConfigFile::try_from(tla_config_file).unwrap();
+    ///
+    /// let mut tests = Tla::generate_tests(tla_tests_file, tla_config_file).unwrap();
+    /// let (tla_test_file, tla_test_config_file) = tests.pop().unwrap();
+    /// let options = Options::default();
+    /// let tla_trace = Tlc::test(tla_test_file, tla_test_config_file, &options).unwrap();
+    /// let json_trace = Tla::tla_trace_to_json_trace(tla_trace).unwrap();
+    /// println!("{:?}", json_trace);
+    /// ```
     pub fn tla_trace_to_json_trace(tla_trace: TlaTrace) -> Result<JsonTrace, Error> {
         tracing::debug!("Tla::tla_trace_to_json_trace:\n{}", tla_trace);
         let states: Vec<JsonValue> = tla_trace
@@ -20,7 +42,24 @@ impl Tla {
         Ok(states.into())
     }
 
-    // #[modelator::method]
+    /// Generate TLA+ test and config files given a [TlaFile] containing TLA+
+    /// test assertions and a [TlaConfigFile].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use modelator::artifact::{TlaFile, TlaConfigFile};
+    /// use modelator::module::Tla;
+    /// use modelator::Options;
+    /// use std::convert::TryFrom;
+    ///
+    /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
+    /// let tla_config_file = "tests/integration/tla/Numbers.cfg";
+    /// let tla_tests_file = TlaFile::try_from(tla_tests_file).unwrap();
+    /// let tla_config_file = TlaConfigFile::try_from(tla_config_file).unwrap();
+    /// let mut tests = Tla::generate_tests(tla_tests_file, tla_config_file).unwrap();
+    /// println!("{:?}", tests);
+    /// ```
     pub fn generate_tests(
         tla_tests_file: TlaFile,
         tla_config_file: TlaConfigFile,

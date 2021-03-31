@@ -1,5 +1,6 @@
 use serde_json::Value as JsonValue;
 
+/// `modelator`'s artifact containing a test trace encoded as JSON.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct JsonTrace {
     states: JsonValue,

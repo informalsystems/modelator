@@ -4,6 +4,8 @@ use crate::Error;
 use serde::Serialize;
 use serde_json::Value as JsonValue;
 
+/// Struct representing the output of `modelator` CLI.
+/// See [super::CliOptions].
 #[derive(Serialize, Debug)]
 pub struct CliOutput {
     /// The return status
@@ -30,6 +32,8 @@ impl CliOutput {
         Self { status, result }
     }
 
+    /// Function that exits the program with a proper error code given the
+    /// the [CliOutput].
     pub fn exit(self) {
         let pretty = match serde_json::to_string_pretty(&self) {
             Ok(pretty) => pretty,
@@ -47,11 +51,13 @@ impl CliOutput {
 }
 
 /// Represents the exit status of any CLI command
-#[derive(Serialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
 pub enum CliStatus {
+    /// An exit status representing success.
     #[serde(rename(serialize = "success"))]
     Success,
 
+    /// An exit status representing an error.
     #[serde(rename(serialize = "error"))]
     Error,
 }

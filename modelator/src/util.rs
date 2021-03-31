@@ -1,5 +1,4 @@
 use crate::Error;
-use serde::de::DeserializeOwned;
 use std::collections::HashSet;
 use std::path::Path;
 use std::process::Command;
@@ -29,16 +28,6 @@ pub(crate) fn absolute_path<P: AsRef<Path>>(path: P) -> String {
         Ok(path) => path.to_string_lossy().to_string(),
         Err(e) => panic!("[modelator] couldn't compute absolute path: {:?}", e),
     }
-}
-
-/// Tries to parse a string as the given type
-pub fn parse_from_str<T: DeserializeOwned>(input: &str) -> Result<T, Error> {
-    serde_json::from_str(input).map_err(|e| Error::ParseError(e.to_string()))
-}
-
-/// Tries to parse a Json Value as the given type
-pub fn parse_from_value<T: DeserializeOwned>(input: serde_json::Value) -> Result<T, Error> {
-    serde_json::from_value(input).map_err(|e| Error::ParseError(e.to_string()))
 }
 
 pub(crate) fn read_dir<P: AsRef<Path>>(path: P) -> Result<HashSet<String>, Error> {

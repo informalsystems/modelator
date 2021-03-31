@@ -4,7 +4,7 @@ mod parser;
 use crate::Error;
 use serde_json::Value as JsonValue;
 
-pub fn state_to_json(state: &str) -> Result<JsonValue, Error> {
+pub(crate) fn state_to_json(state: &str) -> Result<JsonValue, Error> {
     parser::parse_state(state)
         .map(|(input, value)| {
             assert!(

@@ -7,11 +7,33 @@ use crate::{jar, Error, ModelCheckerWorkers, Options};
 use std::path::Path;
 use std::process::Command;
 
-// #[modelator::module]
+/// `modelator`'s TLC module.
+#[derive(Debug, Clone, Copy)]
 pub struct Tlc;
 
 impl Tlc {
-    // #[modelator::method]
+    /// Generate a TLA+ trace given a [TlaFile] and a [TlaConfigFile] produced
+    /// by [crate::module::Tla::generate_tests].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use modelator::artifact::{TlaFile, TlaConfigFile};
+    /// use modelator::module::{Tla, Tlc};
+    /// use modelator::Options;
+    /// use std::convert::TryFrom;
+    ///
+    /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
+    /// let tla_config_file = "tests/integration/tla/Numbers.cfg";
+    /// let tla_tests_file = TlaFile::try_from(tla_tests_file).unwrap();
+    /// let tla_config_file = TlaConfigFile::try_from(tla_config_file).unwrap();
+    ///
+    /// let mut tests = Tla::generate_tests(tla_tests_file, tla_config_file).unwrap();
+    /// let (tla_test_file, tla_test_config_file) = tests.pop().unwrap();
+    /// let options = Options::default();
+    /// let tla_trace = Tlc::test(tla_test_file, tla_test_config_file, &options).unwrap();
+    /// println!("{:?}", tla_trace);
+    /// ```
     pub fn test(
         tla_file: TlaFile,
         tla_config_file: TlaConfigFile,
@@ -81,7 +103,7 @@ impl Tlc {
 
                 // check if no trace was found
                 if traces.is_empty() {
-                    return Err(Error::NoTraceFound(
+                    return Err(Error::NoTestTraceFound(
                         options.model_checker_options.log.clone(),
                     ));
                 }
