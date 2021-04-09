@@ -289,6 +289,8 @@ impl<'a, System> Runner<'a, System> {
         system: &mut System,
         stream: &mut dyn Iterator<Item = Event>,
     ) -> TestResult {
+        // TODO: check that all inits for states are called
+        // TODO: call inits for all actions
         for event in stream {
             let result = match event {
                 Event::Init(input) => self.inits.test(system, &input),

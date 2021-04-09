@@ -191,10 +191,20 @@ fn numbers_a_max_b_min_test() -> (&'static str, &'static str, JsonTrace) {
     let tla_config_file = "Numbers.cfg";
     let expected: Vec<_> = (0..=10)
         .map(|a| {
-            json!({
-                "a": a,
-                "b": 0,
-            })
+            if a==0 {
+                json!({
+                    "a": a,
+                    "b": 0,
+                    "action": ""
+                })
+            }
+            else {
+                json!({
+                    "a": a,
+                    "b": 0,
+                    "action": "IncreaseA"
+                })
+            }
         })
         .collect();
     (tla_tests_file, tla_config_file, expected.into())
@@ -206,10 +216,20 @@ fn numbers_a_min_b_max_test() -> (&'static str, &'static str, JsonTrace) {
     let expected: Vec<_> = (0..=10)
         .step_by(2)
         .map(|b| {
-            json!({
-                "a": 0,
-                "b": b,
-            })
+            if b==0 {
+                json!({
+                    "a": 0,
+                    "b": b,
+                    "action": ""
+                })
+            }
+            else {
+                json!({
+                    "a": 0,
+                    "b": b,
+                    "action": "IncreaseB"
+                })
+            }
         })
         .collect();
     (tla_tests_file, tla_config_file, expected.into())
