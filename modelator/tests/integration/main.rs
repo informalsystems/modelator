@@ -2,11 +2,76 @@
 // https://matklad.github.io/2021/02/27/delete-cargo-integration-tests.html
 
 use modelator::artifact::{JsonTrace, TlaFile};
+use modelator::{event::Runner, tester::TestResult, ActionHandler, EventStream, StateHandler};
 use modelator::{CliOptions, CliStatus, Error, ModelChecker, ModelCheckerOptions, Options};
 use once_cell::sync::Lazy;
-use serde_json::{json, Value as JsonValue};
+use serde::Deserialize;
+use serde_json::Value as JsonValue;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
+
+#[derive(Default, Debug, PartialEq)]
+struct Numbers {
+    a: i64,
+    b: i64,
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq)]
+struct A {
+    a: i64,
+}
+#[derive(Debug, Clone, Deserialize, PartialEq)]
+struct B {
+    b: i64,
+}
+
+impl StateHandler<A> for Numbers {
+    fn init(&mut self, state: A) {
+        self.a = state.a
+    }
+    fn read(&self) -> A {
+        A { a: self.a }
+    }
+}
+impl StateHandler<B> for Numbers {
+    fn init(&mut self, state: B) {
+        self.b = state.b
+    }
+    fn read(&self) -> B {
+        B { b: self.b }
+    }
+}
+
+impl ActionHandler<String> for Numbers {
+    type Outcome = ();
+
+    fn handle(&mut self, action: String) -> Self::Outcome {
+        match action.as_str() {
+            "IncreaseA" => self.a = self.a + 1,
+            "IncreaseB" => self.b = self.b + 2,
+            _ => panic!("unexpected action '{}'", action),
+        }
+    }
+}
+
+#[test]
+fn event_runner() {
+    let events = EventStream::new()
+        .init(A { a: 0 })
+        .init(B { b: 0 })
+        .action("IncreaseA".to_string())
+        .action("IncreaseB".to_string())
+        .check(|state: A| assert!(state.a == 1))
+        .check(|state: B| assert!(state.b == 2));
+
+    let mut runner = Runner::new()
+        .with_state::<A>()
+        .with_state::<B>()
+        .with_action::<String>();
+    let mut system = Numbers::default();
+    let result = runner.run(&mut system, &mut events.into_iter());
+    assert!(matches!(result, TestResult::Success(_)));
+}
 
 const TLA_DIR: &'static str = "tests/integration/tla";
 
@@ -36,25 +101,41 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
     let options = Options::default().model_checker_options(model_checker_options);
 
     // create all tests
-    let tests = vec![numbers_a_max_b_min_test(), numbers_a_min_b_max_test()];
+    let tests = vec![
+        numbers_a_max_b_min_test(),
+        numbers_a_min_b_max_test(),
+        numbers_a_max_b_max_test(),
+    ];
 
     for (tla_tests_file, tla_config_file, expected) in tests {
         for (tla_tests_file, tla_config_file) in
             absolute_and_relative_paths(tla_tests_file, tla_config_file)
         {
+            let mut runner = Runner::new()
+                .with_state::<A>()
+                .with_state::<B>()
+                .with_action::<String>();
+
             // generate traces using Rust API
             let mut traces = modelator::traces(&tla_tests_file, &tla_config_file, &options)?;
             // extract single trace
             assert_eq!(traces.len(), 1, "a single trace should have been generated");
             let trace = traces.pop().unwrap();
-            assert_eq!(trace, expected);
+
+            let mut system = Numbers::default();
+            let result = runner.run(&mut system, &mut EventStream::from(trace).into_iter());
+            assert!(matches!(result, TestResult::Success(_)));
+            assert_eq!(system, expected);
 
             // generate traces using CLI
             let mut traces = cli_traces(&tla_tests_file, &tla_config_file, &options)?;
             // extract single trace
             assert_eq!(traces.len(), 1, "a single trace should have been generated");
             let trace = traces.pop().unwrap();
-            assert_eq!(trace, expected);
+            let mut system = Numbers::default();
+            let result = runner.run(&mut system, &mut EventStream::from(trace).into_iter());
+            assert!(matches!(result, TestResult::Success(_)));
+            assert_eq!(system, expected);
 
             // parse file if apalache and simply assert it works
             if model_checker == ModelChecker::Apalache {
@@ -186,51 +267,23 @@ fn absolute_and_relative_paths(
     ]
 }
 
-fn numbers_a_max_b_min_test() -> (&'static str, &'static str, JsonTrace) {
+fn numbers_a_max_b_min_test() -> (&'static str, &'static str, Numbers) {
     let tla_tests_file = "NumbersAMaxBMinTest.tla";
     let tla_config_file = "Numbers.cfg";
-    let expected: Vec<_> = (0..=10)
-        .map(|a| {
-            if a==0 {
-                json!({
-                    "a": a,
-                    "b": 0,
-                    "action": ""
-                })
-            }
-            else {
-                json!({
-                    "a": a,
-                    "b": 0,
-                    "action": "IncreaseA"
-                })
-            }
-        })
-        .collect();
-    (tla_tests_file, tla_config_file, expected.into())
+    let expected = Numbers { a: 10, b: 0 };
+    (tla_tests_file, tla_config_file, expected)
 }
 
-fn numbers_a_min_b_max_test() -> (&'static str, &'static str, JsonTrace) {
+fn numbers_a_min_b_max_test() -> (&'static str, &'static str, Numbers) {
     let tla_tests_file = "NumbersAMinBMaxTest.tla";
     let tla_config_file = "Numbers.cfg";
-    let expected: Vec<_> = (0..=10)
-        .step_by(2)
-        .map(|b| {
-            if b==0 {
-                json!({
-                    "a": 0,
-                    "b": b,
-                    "action": ""
-                })
-            }
-            else {
-                json!({
-                    "a": 0,
-                    "b": b,
-                    "action": "IncreaseB"
-                })
-            }
-        })
-        .collect();
-    (tla_tests_file, tla_config_file, expected.into())
+    let expected = Numbers { a: 0, b: 10 };
+    (tla_tests_file, tla_config_file, expected)
+}
+
+fn numbers_a_max_b_max_test() -> (&'static str, &'static str, Numbers) {
+    let tla_tests_file = "NumbersAMaxBMaxTest.tla";
+    let tla_config_file = "Numbers.cfg";
+    let expected = Numbers { a: 10, b: 10 };
+    (tla_tests_file, tla_config_file, expected)
 }
