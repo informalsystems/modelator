@@ -2,7 +2,7 @@
 // https://matklad.github.io/2021/02/27/delete-cargo-integration-tests.html
 
 use modelator::artifact::{JsonTrace, TlaFile};
-use modelator::{event::Runner, tester::TestResult, ActionHandler, EventStream, StateHandler};
+use modelator::{ActionHandler, EventStream, Runner, StateHandler};
 use modelator::{CliOptions, CliStatus, Error, ModelChecker, ModelCheckerOptions, Options};
 use once_cell::sync::Lazy;
 use serde::Deserialize;
@@ -64,14 +64,31 @@ fn event_runner() {
         .check(|state: A| assert!(state.a == 1))
         .check(|state: B| assert!(state.b == 2));
 
-    let mut runner = Runner::new()
+    let mut runner = Runner::<Numbers>::new()
         .with_state::<A>()
         .with_state::<B>()
         .with_action::<String>();
-    let mut system = Numbers::default();
-    let result = runner.run(&mut system, &mut events.into_iter());
-    assert!(matches!(result, TestResult::Success(_)));
+    let result = runner.run(&mut events.into_iter());
+    assert!(result.is_ok());
 }
+
+// TODO: This test succeeds when run separately,
+// and fails interchangeably with TLC test when run via `cargo test`
+// Seems to be related to https://github.com/informalsystems/modelator/issues/43
+//
+// #[test]
+// fn json_event_runner() {
+//     let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
+//     let tla_config_file = "tests/integration/tla/Numbers.cfg";
+//     let options = modelator::Options::default();
+
+//     let mut runner = Runner::<Numbers>::new()
+//         .with_state::<A>()
+//         .with_state::<B>()
+//         .with_action::<String>();
+
+//     assert!(run(tla_tests_file, tla_config_file, &options, &mut runner).is_ok());
+// }
 
 const TLA_DIR: &'static str = "tests/integration/tla";
 
@@ -111,7 +128,7 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
         for (tla_tests_file, tla_config_file) in
             absolute_and_relative_paths(tla_tests_file, tla_config_file)
         {
-            let mut runner = Runner::new()
+            let mut runner: Runner<Numbers> = Runner::new()
                 .with_state::<A>()
                 .with_state::<B>()
                 .with_action::<String>();
@@ -122,20 +139,19 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
             assert_eq!(traces.len(), 1, "a single trace should have been generated");
             let trace = traces.pop().unwrap();
 
-            let mut system = Numbers::default();
-            let result = runner.run(&mut system, &mut EventStream::from(trace).into_iter());
-            assert!(matches!(result, TestResult::Success(_)));
-            assert_eq!(system, expected);
+            let result = runner.run(&mut EventStream::from(trace).into_iter());
+            println!("{:?}", result);
+            assert!(result.is_ok());
+            assert_eq!(*runner.system(), expected);
 
             // generate traces using CLI
             let mut traces = cli_traces(&tla_tests_file, &tla_config_file, &options)?;
             // extract single trace
             assert_eq!(traces.len(), 1, "a single trace should have been generated");
             let trace = traces.pop().unwrap();
-            let mut system = Numbers::default();
-            let result = runner.run(&mut system, &mut EventStream::from(trace).into_iter());
-            assert!(matches!(result, TestResult::Success(_)));
-            assert_eq!(system, expected);
+            let result = runner.run(&mut EventStream::from(trace).into_iter());
+            assert!(result.is_ok());
+            assert_eq!(*runner.system(), expected);
 
             // parse file if apalache and simply assert it works
             if model_checker == ModelChecker::Apalache {

@@ -1,5 +1,5 @@
-use crate::artifact::JsonTrace;
 use crate::tester::*;
+use crate::{artifact::JsonTrace, TestError};
 use serde::{de::DeserializeOwned, Serialize};
 use serde_json::Value as JsonValue;
 use std::iter::Iterator;
@@ -45,11 +45,11 @@ pub enum Event {
     /// Process the abstract action, modifying the system state.
     Action(Box<dyn Any>),
     /// Expect the provided outcome of the last action.
-    Outcome(String),
+    Expect(String),
     /// Check the assertion about the abstract system state.
     Check(Box<dyn Any>),
     /// Expect exactly the provided abstract system state.
-    Expect(Box<dyn Any>),
+    Equal(Box<dyn Any>),
 }
 
 /// A stream of events; defines the test.
@@ -122,11 +122,11 @@ impl EventStream {
     /// [ActionHandler::handle] to which the previous actions was dispatched,
     /// should produce exactly this outcome.
     /// Modifies the caller.
-    pub fn add_outcome<T>(&mut self, outcome: T)
+    pub fn add_expect<T>(&mut self, outcome: T)
     where
         T: 'static + Serialize,
     {
-        self.events.push(Event::Outcome(
+        self.events.push(Event::Expect(
             serde_json::to_string_pretty(&outcome).unwrap(),
         ));
     }
@@ -136,11 +136,11 @@ impl EventStream {
     /// should produce exactly this outcome.
     /// Produces the modified version of the caller,
     /// allowing to chain the events.
-    pub fn outcome<T>(mut self, outcome: T) -> Self
+    pub fn expect<T>(mut self, outcome: T) -> Self
     where
         T: 'static + Serialize,
     {
-        self.add_outcome(outcome);
+        self.add_expect(outcome);
         self
     }
 
@@ -169,11 +169,11 @@ impl EventStream {
     /// Add the expectation about the abstract system state to the event stream.
     /// The abstract state returned by [StateHandler::read] should exactly match.
     /// Modifies the caller.
-    pub fn add_expect<T>(&mut self, state: T)
+    pub fn add_equal<T>(&mut self, state: T)
     where
         T: 'static,
     {
-        self.events.push(Event::Expect(Box::new(state)));
+        self.events.push(Event::Equal(Box::new(state)));
     }
 
     /// Add the expectation about the abstract system state to the event stream.
@@ -181,11 +181,11 @@ impl EventStream {
     /// Modifies the caller.
     /// Produces the modified version of the caller,
     /// allowing to chain the events.
-    pub fn expect<T>(mut self, state: T) -> Self
+    pub fn equal<T>(mut self, state: T) -> Self
     where
         T: 'static,
     {
-        self.add_expect(state);
+        self.add_equal(state);
         self
     }
 }
@@ -211,10 +211,10 @@ impl From<JsonTrace> for EventStream {
                         events.add_action(action.clone());
                     };
                     if let Some(outcome) = value.get("actionOutcome") {
-                        events.add_outcome(outcome.clone());
+                        events.add_expect(outcome.clone());
                     }
                 }
-                events.add_expect(value);
+                events.add_equal(value);
             }
         }
         events
@@ -226,30 +226,37 @@ impl From<JsonTrace> for EventStream {
 /// You can implement several instances of [StateHandler]s
 /// and [ActionHandler]s for the `System`, thus allowing your system
 /// to handle several kinds of abstract states or actions.
-pub struct Runner<'a, System> {
-    inits: SystemTester<'a, System>,
-    actions: SystemTester<'a, System>,
-    checks: SystemTester<'a, System>,
-    expects: SystemTester<'a, System>,
+pub struct Runner<System: Debug + Default> {
+    sut: System,
+    inits: SystemTester<System>,
+    actions: SystemTester<System>,
+    checks: SystemTester<System>,
+    equals: SystemTester<System>,
     outcome: String,
 }
 
-impl<'a, System> Default for Runner<'a, System> {
+impl<System: Debug + Default> Default for Runner<System> {
     fn default() -> Self {
         Runner::new()
     }
 }
 
-impl<'a, System> Runner<'a, System> {
+impl<System: Debug + Default> Runner<System> {
     /// Create a new runner for the given `System`.
     pub fn new() -> Self {
         Runner {
+            sut: System::default(),
             inits: SystemTester::new(),
             actions: SystemTester::new(),
             checks: SystemTester::new(),
-            expects: SystemTester::new(),
+            equals: SystemTester::new(),
             outcome: String::new(),
         }
+    }
+
+    /// Get a reference to the system being run
+    pub fn system(&self) -> &System {
+        &self.sut
     }
 
     /// Equip the runner with the ability to handle given abstract `State`.
@@ -261,7 +268,7 @@ impl<'a, System> Runner<'a, System> {
         self.inits.add(StateHandler::<State>::init);
         self.checks
             .add_fn(|system, assertion: fn(State)| assertion(system.read()));
-        self.expects
+        self.equals
             .add(|system, state: State| assert_eq!(system.read(), state));
         self
     }
@@ -284,18 +291,14 @@ impl<'a, System> Runner<'a, System> {
     /// - the given stream of events, representing the test.
     ///
     /// Returns the test result.
-    pub fn run(
-        &mut self,
-        system: &mut System,
-        stream: &mut dyn Iterator<Item = Event>,
-    ) -> TestResult {
+    pub fn run(&mut self, stream: &mut dyn Iterator<Item = Event>) -> Result<(), TestError> {
         // TODO: check that all inits for states are called
         // TODO: call inits for all actions
         for event in stream {
             let result = match event {
-                Event::Init(input) => self.inits.test(system, &input),
-                Event::Action(input) => self.actions.test(system, &input),
-                Event::Outcome(expected) => {
+                Event::Init(input) => self.inits.test(&mut self.sut, &input),
+                Event::Action(input) => self.actions.test(&mut self.sut, &input),
+                Event::Expect(expected) => {
                     if self.outcome == expected {
                         TestResult::Success(self.outcome.clone())
                     } else {
@@ -308,15 +311,28 @@ impl<'a, System> Runner<'a, System> {
                         }
                     }
                 }
-                Event::Check(assertion) => self.checks.test(system, &assertion),
-                Event::Expect(assertion) => self.expects.test(system, &assertion),
+                Event::Check(assertion) => self.checks.test(&mut self.sut, &assertion),
+                Event::Equal(state) => self.equals.test(&mut self.sut, &state),
             };
             match result {
                 TestResult::Success(res) => self.outcome = res,
-                other => return other,
+                TestResult::Failure { message, location } => {
+                    return Err(TestError::FailedTest {
+                        message,
+                        location,
+                        test: "".to_string(), // we don't know the test at that point
+                        system: format!("{:?}", self.system()),
+                    });
+                }
+                TestResult::Unhandled => {
+                    return Err(TestError::UnhandledTest {
+                        test: "".to_string(), // we don't know the test at that point
+                        system: format!("{:?}", self.system()),
+                    });
+                }
             }
         }
-        TestResult::Success(String::new())
+        Ok(())
     }
 }
 
@@ -353,6 +369,7 @@ mod tests {
         value2: String,
     }
 
+    #[derive(Debug, Default)]
     struct MySystem {
         state1: String,
         state2: String,
@@ -412,42 +429,33 @@ mod tests {
             .action(Action1 {
                 value1: "action1 state".to_string(),
             })
-            .outcome(Outcome::Success("OK".to_string()))
+            .expect(Outcome::Success("OK".to_string()))
             .action(Action2 {
                 value2: "action2 state".to_string(),
             })
-            .outcome(Outcome::Failure("NOT OK".to_string()))
+            .expect(Outcome::Failure("NOT OK".to_string()))
             .check(|state: State1| assert!(state.state1 == "action1 state"))
-            .expect(State2 {
+            .equal(State2 {
                 state2: "action2 state".to_string(),
             });
 
-        let mut runner = Runner::new()
+        let mut runner = Runner::<MySystem>::new()
             .with_state::<State1>()
             .with_state::<State2>()
             .with_action::<Action1>()
             .with_action::<Action2>();
 
-        let mut system = MySystem {
-            state1: "".to_string(),
-            state2: "".to_string(),
-        };
-        let result = runner.run(&mut system, &mut events.into_iter());
-        assert!(matches!(result, TestResult::Success(_)));
+        let result = runner.run(&mut events.into_iter());
+        assert!(result.is_ok());
     }
 
     #[test]
     fn test_json_trace() {
-        let mut runner = Runner::new()
+        let mut runner = Runner::<MySystem>::new()
             .with_state::<State1>()
             .with_state::<State2>()
             .with_action::<Action1>()
             .with_action::<Action2>();
-
-        let mut system = MySystem {
-            state1: "".to_string(),
-            state2: "".to_string(),
-        };
 
         // Unknown action with value3 field
         let trace: JsonTrace = vec![
@@ -461,8 +469,8 @@ mod tests {
         .into();
 
         let events: EventStream = trace.into();
-        let result = runner.run(&mut system, &mut events.into_iter());
-        assert_eq!(result, TestResult::Unhandled);
+        let result = runner.run(&mut events.into_iter());
+        assert!(matches!(result, Err(TestError::UnhandledTest { .. })));
 
         let trace: JsonTrace = vec![
             r#"{ "state1": "init state 1", "state2": "init state 2" }"#,
@@ -479,7 +487,7 @@ mod tests {
         .into();
 
         let events: EventStream = trace.into();
-        let result = runner.run(&mut system, &mut events.into_iter());
-        assert!(matches!(result, TestResult::Success(_)));
+        let result = runner.run(&mut events.into_iter());
+        assert!(result.is_ok());
     }
 }

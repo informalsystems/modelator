@@ -79,19 +79,30 @@ impl Error {
 
 /// Set of possible errors that can occur when running a test using `modelator`.
 #[derive(Error, Debug)]
-pub enum TestError<Step: Debug> {
+pub enum TestError {
     /// A `modelator` [enum@Error].
     #[error("Error while running modelator: {0}")]
     Modelator(Error),
 
     /// A error that occurs when a test fails.
-    #[error("Test failed on step {step_index}/{step_count}:\nsteps: {steps:#?}")]
+    #[error("Unhandled test: {test}")]
+    UnhandledTest {
+        /// Test content
+        test: String,
+        /// System under test
+        system: String,
+    },
+
+    /// A error that occurs when a test fails.
+    #[error("Test failed: {message}\n   {location}")]
     FailedTest {
-        /// The step index at which the test failed.
-        step_index: usize,
-        /// The total number of steps in the test.
-        step_count: usize,
-        /// All the steps in the test.
-        steps: Vec<Step>,
+        /// Failure message.
+        message: String,
+        /// Failure location.
+        location: String,
+        /// Test content
+        test: String,
+        /// System under test
+        system: String,
     },
 }

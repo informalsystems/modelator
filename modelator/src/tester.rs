@@ -26,23 +26,23 @@ pub enum TestResult {
 
 /// A simple test is a test that accepts a single input,
 /// and produces a test result
-type SimpleTest<'a> = Box<dyn FnMut(&dyn Any) -> TestResult + 'a>;
+type SimpleTest = Box<dyn FnMut(&dyn Any) -> TestResult>;
 
 /// SimpleTester represents a collection of simple test functions,
 /// where each function can handle a specific kind of input.
-pub struct SimpleTester<'a> {
-    tests: Vec<SimpleTest<'a>>,
+pub struct SimpleTester {
+    tests: Vec<SimpleTest>,
 }
 
-impl<'a> Default for SimpleTester<'a> {
+impl Default for SimpleTester {
     fn default() -> Self {
         SimpleTester::new()
     }
 }
 
-impl<'a> SimpleTester<'a> {
+impl SimpleTester {
     /// Create a new tester.
-    pub fn new() -> SimpleTester<'a> {
+    pub fn new() -> SimpleTester {
         SimpleTester { tests: vec![] }
     }
 
@@ -50,7 +50,7 @@ impl<'a> SimpleTester<'a> {
     pub fn add<T, F, R>(&mut self, mut test: F)
     where
         T: 'static + DeserializeOwned + UnwindSafe + Clone,
-        F: FnMut(T) -> R + 'a,
+        F: FnMut(T) -> R + 'static,
         R: 'static + Serialize,
     {
         let test_fn = move |input: &dyn Any| match convert_to::<T>(input) {
@@ -64,7 +64,7 @@ impl<'a> SimpleTester<'a> {
     pub fn add_fn<T, F, R>(&mut self, mut test: F)
     where
         T: 'static + UnwindSafe + Clone,
-        F: FnMut(T) + 'a,
+        F: FnMut(T) + 'static,
         R: 'static + Serialize,
     {
         let test_fn = move |input: &dyn Any| match interpret_as::<T>(input) {
@@ -97,23 +97,23 @@ impl<'a> SimpleTester<'a> {
 
 /// A SystemTest is a test function that accepts some system,
 /// which stores modifiable state, and the input.
-type SystemTest<'a, State> = Box<dyn FnMut(&mut State, &dyn Any) -> TestResult + 'a>;
+type SystemTest<State> = Box<dyn FnMut(&mut State, &dyn Any) -> TestResult>;
 
 /// SystemTester is similar to [SimpleTester], but allows to
 /// supply test functions that accept also modifiable system state.
-pub struct SystemTester<'a, State> {
-    tests: Vec<SystemTest<'a, State>>,
+pub struct SystemTester<State> {
+    tests: Vec<SystemTest<State>>,
 }
 
-impl<'a, State> Default for SystemTester<'a, State> {
+impl<'a, State> Default for SystemTester<State> {
     fn default() -> Self {
         SystemTester::new()
     }
 }
 
-impl<'a, State> SystemTester<'a, State> {
+impl<State> SystemTester<State> {
     /// Create a new tester.
-    pub fn new() -> SystemTester<'a, State> {
+    pub fn new() -> SystemTester<State> {
         SystemTester { tests: vec![] }
     }
 
@@ -121,7 +121,7 @@ impl<'a, State> SystemTester<'a, State> {
     pub fn add<T, F, R>(&mut self, mut test: F)
     where
         T: 'static + DeserializeOwned + UnwindSafe + Clone,
-        F: FnMut(&mut State, T) -> R + 'a,
+        F: FnMut(&mut State, T) -> R + 'static,
         R: 'static + Serialize,
     {
         let test_fn = move |state: &mut State, input: &dyn Any| match convert_to::<T>(input) {
@@ -135,7 +135,7 @@ impl<'a, State> SystemTester<'a, State> {
     pub fn add_fn<T, F, R>(&mut self, mut test: F)
     where
         T: 'static + UnwindSafe + Clone,
-        F: FnMut(&mut State, T) -> R + 'a,
+        F: FnMut(&mut State, T) -> R + 'static,
         R: 'static + Serialize,
     {
         let test_fn = move |state: &mut State, input: &dyn Any| match interpret_as::<T>(input) {
