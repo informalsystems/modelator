@@ -140,7 +140,6 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
             let trace = traces.pop().unwrap();
 
             let result = runner.run(&mut EventStream::from(trace).into_iter());
-            println!("{:?}", result);
             assert!(result.is_ok());
             assert_eq!(*runner.system(), expected);
 
