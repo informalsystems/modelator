@@ -39,6 +39,9 @@ impl Tlc {
         tla_config_file: TlaConfigFile,
         options: &Options,
     ) -> Result<TlaTrace, Error> {
+        // setup modelator
+        crate::setup(&options)?;
+
         tracing::debug!("Tlc::test {} {} {:?}", tla_file, tla_config_file, options);
 
         // load cache and check if the result is cached

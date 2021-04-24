@@ -75,9 +75,6 @@ pub fn traces<P: AsRef<Path>>(
     tla_config_file: P,
     options: &Options,
 ) -> Result<Vec<artifact::JsonTrace>, Error> {
-    // setup modelator
-    setup(&options)?;
-
     // generate tla tests
     use std::convert::TryFrom;
     let tla_tests_file = artifact::TlaFile::try_from(tla_tests_file.as_ref())?;

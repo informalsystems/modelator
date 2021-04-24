@@ -39,6 +39,9 @@ impl Apalache {
         tla_config_file: TlaConfigFile,
         options: &Options,
     ) -> Result<TlaTrace, Error> {
+        // setup modelator
+        crate::setup(&options)?;
+
         tracing::debug!(
             "Apalache::test {} {} {:?}",
             tla_file,
@@ -93,6 +96,9 @@ impl Apalache {
     /// println!("{:?}", tla_parsed_file);
     /// ```
     pub fn parse(tla_file: TlaFile, options: &Options) -> Result<TlaFile, Error> {
+        // setup modelator
+        crate::setup(&options)?;
+
         tracing::debug!("Apalache::parse {} {:?}", tla_file, options);
 
         // compute the directory in which the tla file is stored
