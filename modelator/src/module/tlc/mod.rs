@@ -42,11 +42,11 @@ impl Tlc {
         tracing::debug!("Tlc::test {} {} {:?}", tla_file, tla_config_file, options);
 
         // load cache and check if the result is cached
-        // let mut cache = TlaTraceCache::new(options)?;
-        // let cache_key = TlaTraceCache::key(&tla_file, &tla_config_file)?;
-        // if let Some(value) = cache.get(&cache_key)? {
-        //     return Ok(value);
-        // }
+        let mut cache = TlaTraceCache::new(options)?;
+        let cache_key = TlaTraceCache::key(&tla_file, &tla_config_file)?;
+        if let Some(value) = cache.get(&cache_key)? {
+            return Ok(value);
+        }
 
         // create tlc command
         let mut cmd = test_cmd(tla_file.path(), tla_config_file.path(), options);
@@ -117,7 +117,7 @@ impl Tlc {
                 let trace = traces.pop().unwrap();
 
                 // cache trace and then return it
-                //cache.insert(cache_key, &trace)?;
+                cache.insert(cache_key, &trace)?;
                 Ok(trace)
             }
             (true, false) => {

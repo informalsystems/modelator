@@ -99,10 +99,10 @@ pub fn traces<P: AsRef<Path>>(
         .collect::<Result<Vec<_>, _>>()?;
 
     // cleanup test files created
-    // for (tla_file, tla_config_file) in tests {
-    //     std::fs::remove_file(tla_file.path()).map_err(Error::io)?;
-    //     std::fs::remove_file(tla_config_file.path()).map_err(Error::io)?;
-    // }
+    for (tla_file, tla_config_file) in tests {
+        std::fs::remove_file(tla_file.path()).map_err(Error::io)?;
+        std::fs::remove_file(tla_config_file.path()).map_err(Error::io)?;
+    }
 
     // convert each tla trace to json
     traces

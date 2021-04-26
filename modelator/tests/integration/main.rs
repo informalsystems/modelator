@@ -119,9 +119,9 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
 
     // create all tests
     let tests = vec![
-        numbers_a_max_b_max_test(),
         numbers_a_max_b_min_test(),
         numbers_a_min_b_max_test(),
+        numbers_a_max_b_max_test(),
     ];
 
     for (tla_tests_file, tla_config_file, expected) in tests {
@@ -221,10 +221,10 @@ fn cli_traces<P: AsRef<Path>>(
         .collect::<Vec<_>>();
 
     // cleanup test files created
-    // for (tla_file, tla_config_file) in tests {
-    //     std::fs::remove_file(tla_file).unwrap();
-    //     std::fs::remove_file(tla_config_file).unwrap();
-    // }
+    for (tla_file, tla_config_file) in tests {
+        std::fs::remove_file(tla_file).unwrap();
+        std::fs::remove_file(tla_config_file).unwrap();
+    }
 
     // run CLI to convert each tla trace to json
     let traces = traces
@@ -285,20 +285,20 @@ fn absolute_and_relative_paths(
 fn numbers_a_max_b_min_test() -> (&'static str, &'static str, Numbers) {
     let tla_tests_file = "NumbersAMaxBMinTest.tla";
     let tla_config_file = "Numbers.cfg";
-    let expected = Numbers { a: 10, b: 0 };
+    let expected = Numbers { a: 6, b: 0 };
     (tla_tests_file, tla_config_file, expected)
 }
 
 fn numbers_a_min_b_max_test() -> (&'static str, &'static str, Numbers) {
     let tla_tests_file = "NumbersAMinBMaxTest.tla";
     let tla_config_file = "Numbers.cfg";
-    let expected = Numbers { a: 0, b: 10 };
+    let expected = Numbers { a: 0, b: 6 };
     (tla_tests_file, tla_config_file, expected)
 }
 
 fn numbers_a_max_b_max_test() -> (&'static str, &'static str, Numbers) {
     let tla_tests_file = "NumbersAMaxBMaxTest.tla";
     let tla_config_file = "Numbers.cfg";
-    let expected = Numbers { a: 10, b: 10 };
+    let expected = Numbers { a: 6, b: 6 };
     (tla_tests_file, tla_config_file, expected)
 }
