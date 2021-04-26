@@ -192,7 +192,7 @@ pub fn traces<P: AsRef<Path>>(
 ///     // against the state that the TLA+ model expects
 ///     assert!(result.is_ok());
 ///     // You can also check the final state of your system, if you want.
-///     assert_eq!(runner.system().a, 10);
+///     assert_eq!(runner.system().a, 6);
 ///     assert_eq!(runner.system().b, 0);
 /// }
 /// ```
