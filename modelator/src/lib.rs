@@ -179,21 +179,24 @@ pub fn traces<P: AsRef<Path>>(
 ///     let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
 ///     let tla_config_file = "tests/integration/tla/Numbers.cfg";
 ///     let options = modelator::Options::default();
-///     // We construct a runner, and tell it,
-///     // which system it needs to run, as well asa which states and actions it should process.
-///     let mut runner = Runner::<Numbers>::new()
+///     
+///     // We create a system under test
+///     let mut system = Numbers::default();
+///
+///     // We construct a runner, and tell which which states and actions it should process.
+///     let mut runner = Runner::new()
 ///         .with_state::<A>()
 ///         .with_state::<B>()
 ///         .with_action::<String>();
 ///
 ///     // run your system against the traces produced from TLA+ tests.
-///     let result = run(tla_tests_file, tla_config_file, &options, &mut runner);
+///     let result = run(tla_tests_file, tla_config_file, &options, &mut runner, &mut system);
 ///     // At each step of a test, the state of your system is being checked
 ///     // against the state that the TLA+ model expects
 ///     assert!(result.is_ok());
 ///     // You can also check the final state of your system, if you want.
-///     assert_eq!(runner.system().a, 6);
-///     assert_eq!(runner.system().b, 0);
+///     assert_eq!(system.a, 6);
+///     assert_eq!(system.b, 0);
 /// }
 /// ```
 // #[allow(clippy::needless_doctest_main)]
@@ -203,6 +206,7 @@ pub fn run<P, System>(
     tla_config_file: P,
     options: &Options,
     runner: &mut event::Runner<System>,
+    system: &mut System,
 ) -> Result<(), TestError>
 where
     P: AsRef<Path>,
@@ -211,24 +215,26 @@ where
     let traces = traces(tla_tests_file, tla_config_file, options).map_err(TestError::Modelator)?;
     for trace in traces {
         let events: EventStream = trace.clone().into();
-        runner.run(&mut events.into_iter()).map_err(|op| match op {
-            TestError::UnhandledTest { system, .. } => TestError::UnhandledTest {
-                test: trace.to_string(),
-                system,
-            },
-            TestError::FailedTest {
-                message,
-                location,
-                system,
-                ..
-            } => TestError::FailedTest {
-                test: trace.to_string(),
-                message,
-                location,
-                system,
-            },
-            other => other,
-        })?;
+        runner
+            .run(system, &mut events.into_iter())
+            .map_err(|op| match op {
+                TestError::UnhandledTest { system, .. } => TestError::UnhandledTest {
+                    test: trace.to_string(),
+                    system,
+                },
+                TestError::FailedTest {
+                    message,
+                    location,
+                    system,
+                    ..
+                } => TestError::FailedTest {
+                    test: trace.to_string(),
+                    message,
+                    location,
+                    system,
+                },
+                other => other,
+            })?;
     }
     Ok(())
 }

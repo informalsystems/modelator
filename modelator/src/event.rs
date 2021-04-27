@@ -226,8 +226,7 @@ impl From<JsonTrace> for EventStream {
 /// You can implement several instances of [StateHandler]s
 /// and [ActionHandler]s for the `System`, thus allowing your system
 /// to handle several kinds of abstract states or actions.
-pub struct Runner<System: Debug + Default> {
-    sut: System,
+pub struct Runner<System: Debug> {
     inits: SystemTester<System>,
     actions: SystemTester<System>,
     checks: SystemTester<System>,
@@ -245,18 +244,12 @@ impl<System: Debug + Default> Runner<System> {
     /// Create a new runner for the given `System`.
     pub fn new() -> Self {
         Runner {
-            sut: System::default(),
             inits: SystemTester::new(),
             actions: SystemTester::new(),
             checks: SystemTester::new(),
             equals: SystemTester::new(),
             outcome: String::new(),
         }
-    }
-
-    /// Get a reference to the system being run
-    pub fn system(&self) -> &System {
-        &self.sut
     }
 
     /// Equip the runner with the ability to handle given abstract `State`.
@@ -291,13 +284,17 @@ impl<System: Debug + Default> Runner<System> {
     /// - the given stream of events, representing the test.
     ///
     /// Returns the test result.
-    pub fn run(&mut self, stream: &mut dyn Iterator<Item = Event>) -> Result<(), TestError> {
+    pub fn run(
+        &mut self,
+        system: &mut System,
+        stream: &mut dyn Iterator<Item = Event>,
+    ) -> Result<(), TestError> {
         // TODO: check that all inits for states are called
         // TODO: call inits for all actions
         for event in stream {
             let result = match event {
-                Event::Init(input) => self.inits.test(&mut self.sut, &input),
-                Event::Action(input) => self.actions.test(&mut self.sut, &input),
+                Event::Init(input) => self.inits.test(system, &input),
+                Event::Action(input) => self.actions.test(system, &input),
                 Event::Expect(expected) => {
                     if self.outcome == expected {
                         TestResult::Success(self.outcome.clone())
@@ -311,8 +308,8 @@ impl<System: Debug + Default> Runner<System> {
                         }
                     }
                 }
-                Event::Check(assertion) => self.checks.test(&mut self.sut, &assertion),
-                Event::Equal(state) => self.equals.test(&mut self.sut, &state),
+                Event::Check(assertion) => self.checks.test(system, &assertion),
+                Event::Equal(state) => self.equals.test(system, &state),
             };
             match result {
                 TestResult::Success(res) => self.outcome = res,
@@ -321,13 +318,13 @@ impl<System: Debug + Default> Runner<System> {
                         message,
                         location,
                         test: "".to_string(), // we don't know the test at that point
-                        system: format!("{:?}", self.system()),
+                        system: format!("{:?}", system),
                     });
                 }
                 TestResult::Unhandled => {
                     return Err(TestError::UnhandledTest {
                         test: "".to_string(), // we don't know the test at that point
-                        system: format!("{:?}", self.system()),
+                        system: format!("{:?}", system),
                     });
                 }
             }
@@ -439,19 +436,21 @@ mod tests {
                 state2: "action2 state".to_string(),
             });
 
-        let mut runner = Runner::<MySystem>::new()
+        let mut runner = Runner::new()
             .with_state::<State1>()
             .with_state::<State2>()
             .with_action::<Action1>()
             .with_action::<Action2>();
 
-        let result = runner.run(&mut events.into_iter());
+        let mut system = MySystem::default();
+        let result = runner.run(&mut system, &mut events.into_iter());
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_json_trace() {
-        let mut runner = Runner::<MySystem>::new()
+        let mut system = MySystem::default();
+        let mut runner = Runner::new()
             .with_state::<State1>()
             .with_state::<State2>()
             .with_action::<Action1>()
@@ -469,7 +468,7 @@ mod tests {
         .into();
 
         let events: EventStream = trace.into();
-        let result = runner.run(&mut events.into_iter());
+        let result = runner.run(&mut system, &mut events.into_iter());
         assert!(matches!(result, Err(TestError::UnhandledTest { .. })));
 
         let trace: JsonTrace = vec![
@@ -487,7 +486,7 @@ mod tests {
         .into();
 
         let events: EventStream = trace.into();
-        let result = runner.run(&mut events.into_iter());
+        let result = runner.run(&mut system, &mut events.into_iter());
         assert!(result.is_ok());
     }
 }

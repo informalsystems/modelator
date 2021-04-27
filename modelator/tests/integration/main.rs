@@ -64,11 +64,12 @@ fn event_runner() {
         .check(|state: A| assert!(state.a == 1))
         .check(|state: B| assert!(state.b == 2));
 
-    let mut runner = Runner::<Numbers>::new()
+    let mut system = Numbers::default();
+    let mut runner = Runner::new()
         .with_state::<A>()
         .with_state::<B>()
         .with_action::<String>();
-    let result = runner.run(&mut events.into_iter());
+    let result = runner.run(&mut system, &mut events.into_iter());
     assert!(result.is_ok());
 }
 
@@ -128,7 +129,8 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
         for (tla_tests_file, tla_config_file) in
             absolute_and_relative_paths(tla_tests_file, tla_config_file)
         {
-            let mut runner: Runner<Numbers> = Runner::new()
+            let mut system = Numbers::default();
+            let mut runner = Runner::new()
                 .with_state::<A>()
                 .with_state::<B>()
                 .with_action::<String>();
@@ -139,18 +141,18 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
             assert_eq!(traces.len(), 1, "a single trace should have been generated");
             let trace = traces.pop().unwrap();
 
-            let result = runner.run(&mut EventStream::from(trace).into_iter());
+            let result = runner.run(&mut system, &mut EventStream::from(trace).into_iter());
             assert!(result.is_ok());
-            assert_eq!(*runner.system(), expected);
+            assert_eq!(system, expected);
 
             // generate traces using CLI
             let mut traces = cli_traces(&tla_tests_file, &tla_config_file, &options)?;
             // extract single trace
             assert_eq!(traces.len(), 1, "a single trace should have been generated");
             let trace = traces.pop().unwrap();
-            let result = runner.run(&mut EventStream::from(trace).into_iter());
+            let result = runner.run(&mut system, &mut EventStream::from(trace).into_iter());
             assert!(result.is_ok());
-            assert_eq!(*runner.system(), expected);
+            assert_eq!(system, expected);
 
             // parse file if apalache and simply assert it works
             if model_checker == ModelChecker::Apalache {
