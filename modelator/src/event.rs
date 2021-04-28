@@ -234,13 +234,13 @@ pub struct Runner<System: Debug> {
     outcome: String,
 }
 
-impl<System: Debug + Default> Default for Runner<System> {
+impl<System: Debug> Default for Runner<System> {
     fn default() -> Self {
         Runner::new()
     }
 }
 
-impl<System: Debug + Default> Runner<System> {
+impl<System: Debug> Runner<System> {
     /// Create a new runner for the given `System`.
     pub fn new() -> Self {
         Runner {
