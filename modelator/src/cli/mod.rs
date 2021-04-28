@@ -82,8 +82,6 @@ impl CliOptions {
 
 impl Modules {
     fn run(self) -> Result<JsonValue, Error> {
-        let options = crate::Options::default();
-
         // run the subcommand
         match self {
             Self::Tla(options) => options.run(),
