@@ -1,7 +1,6 @@
-
 const MAX_NUMBER: u64 = 6;
 /// Example system under test (SUT).
-/// Allows to modify the two variables, a and b, 
+/// Allows to modify the two variables, a and b,
 /// if they do not exceed the MAX_NUMBER.
 /// Maintains also the sum and product of the variables.
 #[allow(missing_docs)]
@@ -30,23 +29,21 @@ impl NumberSystem {
         self.sum = self.a + self.b;
         self.prod = self.a * self.b;
     }
-    pub fn increase_a(&mut self, n: u64) -> Result<(), String> { 
+    pub fn increase_a(&mut self, n: u64) -> Result<(), String> {
         if self.a + n <= MAX_NUMBER {
-            self.a = self.a + n;
+            self.a += n;
             self.recalculate();
             Ok(())
-        }
-        else {
+        } else {
             Err("FAIL".to_string())
         }
     }
-    pub fn increase_b(&mut self, n: u64) -> Result<(), String> { 
+    pub fn increase_b(&mut self, n: u64) -> Result<(), String> {
         if self.b + n <= MAX_NUMBER {
-            self.b = self.b + n;
+            self.b += n;
             self.recalculate();
             Ok(())
-        }
-        else {
+        } else {
             Err("FAIL".to_string())
         }
     }

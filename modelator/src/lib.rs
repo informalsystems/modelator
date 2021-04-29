@@ -44,9 +44,7 @@ pub mod tester;
 /// with possibly partitioned system state.
 pub mod event;
 
-/// Test runners
-//pub mod runner;
-
+/// Testing utilities
 pub mod test_util;
 
 /// Re-exports.
@@ -143,11 +141,11 @@ pub fn traces<P: AsRef<Path>>(
 /// struct B {
 ///     b: u64,
 /// }
-/// 
-/// // We also define the abstract actions: do nothing / increase a / increase b. 
+///
+/// // We also define the abstract actions: do nothing / increase a / increase b.
 /// #[derive(Debug, Clone, Deserialize)]
 /// enum Action {
-///     None, 
+///     None,
 ///     IncreaseA,
 ///     IncreaseB
 /// }

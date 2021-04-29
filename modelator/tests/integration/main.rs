@@ -2,6 +2,7 @@
 // https://matklad.github.io/2021/02/27/delete-cargo-integration-tests.html
 
 use modelator::artifact::{JsonTrace, TlaFile};
+use modelator::test_util::NumberSystem;
 use modelator::{ActionHandler, EventStream, Runner, StateHandler};
 use modelator::{CliOptions, CliStatus, Error, ModelChecker, ModelCheckerOptions, Options};
 use once_cell::sync::Lazy;
@@ -9,7 +10,6 @@ use serde::Deserialize;
 use serde_json::Value as JsonValue;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
-use modelator::test_util::NumberSystem;
 
 #[derive(Default, Debug, PartialEq)]
 struct Numbers {
@@ -28,9 +28,9 @@ struct B {
 
 #[derive(Debug, Clone, Deserialize)]
 enum Action {
-    None, 
+    None,
     IncreaseA,
-    IncreaseB
+    IncreaseB,
 }
 
 impl StateHandler<A> for NumberSystem {
@@ -50,20 +50,18 @@ impl StateHandler<B> for NumberSystem {
     }
 }
 
-
-
 impl ActionHandler<Action> for NumberSystem {
     type Outcome = String;
 
     fn handle(&mut self, action: Action) -> Self::Outcome {
         let result_to_outcome = |res| match res {
             Ok(()) => "OK".to_string(),
-            Err(s) => s
+            Err(s) => s,
         };
         match action {
             Action::None => "OK".to_string(),
             Action::IncreaseA => result_to_outcome(self.increase_a(1)),
-            Action::IncreaseB => result_to_outcome(self.increase_b(2))
+            Action::IncreaseB => result_to_outcome(self.increase_b(2)),
         }
     }
 }
@@ -302,20 +300,35 @@ fn absolute_and_relative_paths(
 fn numbers_a_max_b_min_test() -> (&'static str, &'static str, NumberSystem) {
     let tla_tests_file = "NumbersAMaxBMinTest.tla";
     let tla_config_file = "Numbers.cfg";
-    let expected = NumberSystem { a: 6, b: 0, sum: 6, prod: 0 };
+    let expected = NumberSystem {
+        a: 6,
+        b: 0,
+        sum: 6,
+        prod: 0,
+    };
     (tla_tests_file, tla_config_file, expected)
 }
 
 fn numbers_a_min_b_max_test() -> (&'static str, &'static str, NumberSystem) {
     let tla_tests_file = "NumbersAMinBMaxTest.tla";
     let tla_config_file = "Numbers.cfg";
-    let expected = NumberSystem { a: 0, b: 6, sum: 6, prod: 0 };
+    let expected = NumberSystem {
+        a: 0,
+        b: 6,
+        sum: 6,
+        prod: 0,
+    };
     (tla_tests_file, tla_config_file, expected)
 }
 
 fn numbers_a_max_b_max_test() -> (&'static str, &'static str, NumberSystem) {
     let tla_tests_file = "NumbersAMaxBMaxTest.tla";
     let tla_config_file = "Numbers.cfg";
-    let expected = NumberSystem { a: 6, b: 6, sum: 12, prod: 36 };
+    let expected = NumberSystem {
+        a: 6,
+        b: 6,
+        sum: 12,
+        prod: 36,
+    };
     (tla_tests_file, tla_config_file, expected)
 }
