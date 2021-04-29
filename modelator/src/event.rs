@@ -226,7 +226,7 @@ impl From<JsonTrace> for EventStream {
 /// You can implement several instances of [StateHandler]s
 /// and [ActionHandler]s for the `System`, thus allowing your system
 /// to handle several kinds of abstract states or actions.
-pub struct Runner<System: Debug> {
+pub struct EventRunner<System: Debug> {
     inits: SystemTester<System>,
     actions: SystemTester<System>,
     checks: SystemTester<System>,
@@ -234,16 +234,16 @@ pub struct Runner<System: Debug> {
     outcome: String,
 }
 
-impl<System: Debug> Default for Runner<System> {
+impl<System: Debug> Default for EventRunner<System> {
     fn default() -> Self {
-        Runner::new()
+        EventRunner::new()
     }
 }
 
-impl<System: Debug> Runner<System> {
+impl<System: Debug> EventRunner<System> {
     /// Create a new runner for the given `System`.
     pub fn new() -> Self {
-        Runner {
+        EventRunner {
             inits: SystemTester::new(),
             actions: SystemTester::new(),
             checks: SystemTester::new(),
@@ -436,7 +436,7 @@ mod tests {
                 state2: "action2 state".to_string(),
             });
 
-        let mut runner = Runner::new()
+        let mut runner = EventRunner::new()
             .with_state::<State1>()
             .with_state::<State2>()
             .with_action::<Action1>()
@@ -450,7 +450,7 @@ mod tests {
     #[test]
     fn test_json_trace() {
         let mut system = MySystem::default();
-        let mut runner = Runner::new()
+        let mut runner = EventRunner::new()
             .with_state::<State1>()
             .with_state::<State2>()
             .with_action::<Action1>()

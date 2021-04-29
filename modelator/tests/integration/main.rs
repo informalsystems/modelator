@@ -3,7 +3,7 @@
 
 use modelator::artifact::{JsonTrace, TlaFile};
 use modelator::test_util::NumberSystem;
-use modelator::{ActionHandler, EventStream, Runner, StateHandler};
+use modelator::{ActionHandler, EventRunner, EventStream, StateHandler};
 use modelator::{CliOptions, CliStatus, Error, ModelChecker, ModelCheckerOptions, Options};
 use once_cell::sync::Lazy;
 use serde::Deserialize;
@@ -59,7 +59,7 @@ impl ActionHandler<Action> for NumberSystem {
             Err(s) => s,
         };
         match action {
-            Action::None => "OK".to_string(),
+            Action::None => result_to_outcome(Ok(())),
             Action::IncreaseA => result_to_outcome(self.increase_a(1)),
             Action::IncreaseB => result_to_outcome(self.increase_b(2)),
         }
@@ -77,7 +77,7 @@ fn event_runner() {
         .check(|state: B| assert!(state.b == 2));
 
     let mut system = NumberSystem::default();
-    let mut runner = Runner::new()
+    let mut runner = EventRunner::new()
         .with_state::<A>()
         .with_state::<B>()
         .with_action::<Action>();
@@ -143,7 +143,7 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
             absolute_and_relative_paths(tla_tests_file, tla_config_file)
         {
             let mut system = NumberSystem::default();
-            let mut runner = Runner::new()
+            let mut runner = EventRunner::new()
                 .with_state::<A>()
                 .with_state::<B>()
                 .with_action::<Action>();

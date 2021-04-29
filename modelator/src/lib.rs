@@ -44,6 +44,9 @@ pub mod tester;
 /// with possibly partitioned system state.
 pub mod event;
 
+/// A runner for steps obtained from Json traces
+pub mod step_runner;
+
 /// Testing utilities
 pub mod test_util;
 
@@ -51,8 +54,10 @@ pub mod test_util;
 pub use cli::{output::CliOutput, output::CliStatus, CliOptions};
 pub use datachef::Recipe;
 pub use error::{Error, TestError};
-pub use event::{ActionHandler, Event, EventStream, Runner, StateHandler};
+pub use event::{ActionHandler, Event, EventRunner, EventStream, StateHandler};
 pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Options};
+use serde::de::DeserializeOwned;
+pub use step_runner::StepRunner;
 
 use std::fmt::Debug;
 use std::path::Path;
@@ -114,16 +119,115 @@ pub fn traces<P: AsRef<Path>>(
         .collect()
 }
 
-/// Run the concrete system using the abstract events obtained
-/// from TLA+ traces. Traces are generated using [`traces`],
-/// To interpret abstract events a [crate::Runner] needs to be created,
-/// as well as [crate::StateHandler] and [crate::ActionHandler] to be implemented
-/// for abstract states and actions you want to handle.
+/// This is the most simple interface to run your system under test (SUT)
+/// against traces obtained from TLA+ tests.
+/// The function generates TLA+ traces using [`crate::traces`] and execute them against
+/// the SUT that implements [`StepRunner`].
 ///
-/// # Examples
+/// For more information, please consult the documentation of [`traces`] and
+/// [`StepRunner`].
+///
+/// # Example
+///
+/// # Example
 ///
 /// ```
-/// use modelator::{run, Runner, ActionHandler, StateHandler};
+/// use modelator::{run_tla_steps, StepRunner};
+/// use serde::Deserialize;
+///
+/// // Suppose your system under test (SUT) consists of two integer variables,
+/// // where each number can be increased independently;
+/// // SUT also maintains the sum and product of the numbers.
+/// use modelator::test_util::NumberSystem;
+///
+/// // We define a structure that is capable to serialize the states of a TLA+ trace.
+/// #[derive(Debug, Clone, Deserialize)]
+/// #[serde(rename_all = "camelCase")]
+/// struct NumbersStep {
+///     a: u64,
+///     b: u64,
+///     action: Action,
+///     action_outcome: String
+/// }
+///
+/// // We also define the abstract actions: do nothing / increase a / increase b.
+/// #[derive(Debug, Clone, Deserialize)]
+/// enum Action {
+///     None,
+///     IncreaseA,
+///     IncreaseB
+/// }
+///
+/// // We implement `StepRunner` for our SUT
+/// // This implementation needs to define only a couple of functions:
+/// impl StepRunner<NumbersStep> for NumberSystem {
+///     // how to handle the initial step (initialize your system)
+///     fn initial_step(&mut self, step: NumbersStep) -> Result<(), String> {
+///         self.a = step.a;
+///         self.b = step.b;
+///         Ok(())
+///     }
+///
+///     // how to handle all subsequent steps
+///     fn next_step(&mut self, step: NumbersStep) -> Result<(), String> {
+///         // Execute the action, and check the outcome
+///         let res = match step.action {
+///             Action::None => Ok(()),
+///             Action::IncreaseA => self.increase_a(1),
+///             Action::IncreaseB => self.increase_b(2),
+///         };
+///         let outcome = match res {
+///             Ok(()) => "OK".to_string(),
+///             Err(s) => s,
+///         };
+///         assert_eq!(outcome, step.action_outcome);
+///
+///         // Check that the system state matches the state of the model
+///         assert_eq!(self.a, step.a);
+///         assert_eq!(self.b, step.b);
+///
+///         Ok(())
+///     }
+/// }
+///
+/// // To run your system against a TLA+ test, just point to the corresponding TLA+ files.
+/// fn main() {
+///     let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
+///     let tla_config_file = "tests/integration/tla/Numbers.cfg";
+///     let options = modelator::Options::default();
+///     let mut system = NumberSystem::default();
+///     assert!(run_tla_steps(tla_tests_file, tla_config_file, &options, &mut system).is_ok());
+/// }
+/// ```
+// #[allow(clippy::needless_doctest_main)]
+pub fn run_tla_steps<P, System, Step>(
+    tla_tests_file: P,
+    tla_config_file: P,
+    options: &Options,
+    system: &mut System,
+) -> Result<(), TestError>
+where
+    P: AsRef<Path>,
+    System: StepRunner<Step> + Debug + Clone,
+    Step: DeserializeOwned + Debug + Clone,
+{
+    let traces = traces(tla_tests_file, tla_config_file, options).map_err(TestError::Modelator)?;
+    for trace in traces {
+        system.run(trace)?;
+    }
+    Ok(())
+}
+
+/// Run the system under test (SUT) using the abstract events obtained
+/// from TLA+ traces. Traces are generated using [`traces`],
+/// To interpret abstract events an [EventRunner] needs to be created,
+/// as well as [StateHandler] and [ActionHandler] to be implemented
+/// for abstract states and actions you want to handle.
+///
+/// # Example
+///
+/// ```
+/// use modelator::{run_tla_events, EventRunner, ActionHandler, StateHandler};
 /// use serde::Deserialize;
 ///
 /// // Suppose your system under test (SUT) consists of two integer variables,
@@ -196,13 +300,13 @@ pub fn traces<P: AsRef<Path>>(
 ///     let mut system = NumberSystem::default();
 ///
 ///     // We construct a runner, and tell which which states and actions it should process.
-///     let mut runner = Runner::new()
+///     let mut runner = EventRunner::new()
 ///         .with_state::<A>()
 ///         .with_state::<B>()
 ///         .with_action::<Action>();
 ///
-///     // run your system against the traces produced from TLA+ tests.
-///     let result = run(tla_tests_file, tla_config_file, &options, &mut runner, &mut system);
+///     // run your system against the events produced from TLA+ tests.
+///     let result = run_tla_events(tla_tests_file, tla_config_file, &options, &mut system, &mut runner);
 ///     // At each step of a test, the state of your system is being checked
 ///     // against the state that the TLA+ model expects
 ///     assert!(result.is_ok());
@@ -215,12 +319,12 @@ pub fn traces<P: AsRef<Path>>(
 /// ```
 // #[allow(clippy::needless_doctest_main)]
 #[allow(clippy::needless_doctest_main)]
-pub fn run<P, System>(
+pub fn run_tla_events<P, System>(
     tla_tests_file: P,
     tla_config_file: P,
     options: &Options,
-    runner: &mut event::Runner<System>,
     system: &mut System,
+    runner: &mut event::EventRunner<System>,
 ) -> Result<(), TestError>
 where
     P: AsRef<Path>,
