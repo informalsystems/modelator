@@ -44,6 +44,11 @@ pub mod tester;
 /// with possibly partitioned system state.
 pub mod event;
 
+/// Test runners
+//pub mod runner;
+
+pub mod test_util;
+
 /// Re-exports.
 pub use cli::{output::CliOutput, output::CliStatus, CliOptions};
 pub use datachef::Recipe;
@@ -123,28 +128,33 @@ pub fn traces<P: AsRef<Path>>(
 /// use modelator::{run, Runner, ActionHandler, StateHandler};
 /// use serde::Deserialize;
 ///
-/// // Suppose your system under test (SUT) consists of two integer variables.
-/// // We can imagine these variables representing two independent state components.
-/// #[derive(Default, Debug, PartialEq)]
-/// struct Numbers {
-///     a: i64,
-///     b: i64,
-/// }
+/// // Suppose your system under test (SUT) consists of two integer variables,
+/// // where each number can be increased independently;
+/// // SUT also maintains the sum and product of the numbers.
+/// use modelator::test_util::NumberSystem;
 ///
 /// // In order to drive your SUT, we could define two abstract states,
-/// // that drive independently the variables `a` and `b`.
+/// // that contain the state of the variables `a` and `b`.
 /// #[derive(Debug, Clone, Deserialize, PartialEq)]
 /// struct A {
-///     a: i64,
+///     a: u64,
 /// }
 /// #[derive(Debug, Clone, Deserialize, PartialEq)]
 /// struct B {
-///     b: i64,
+///     b: u64,
+/// }
+/// 
+/// // We also define the abstract actions: do nothing / increase a / increase b. 
+/// #[derive(Debug, Clone, Deserialize)]
+/// enum Action {
+///     None, 
+///     IncreaseA,
+///     IncreaseB
 /// }
 ///
 /// // We define StateHandlers that are able to initialize your SUT from
 /// // these abstract states, as well as to read them at any point in time.
-/// impl StateHandler<A> for Numbers {
+/// impl StateHandler<A> for NumberSystem {
 ///     fn init(&mut self, state: A) {
 ///         self.a = state.a
 ///     }
@@ -152,7 +162,7 @@ pub fn traces<P: AsRef<Path>>(
 ///         A { a: self.a }
 ///     }
 /// }
-/// impl StateHandler<B> for Numbers {
+/// impl StateHandler<B> for NumberSystem {
 ///     fn init(&mut self, state: B) {
 ///         self.b = state.b
 ///     }
@@ -162,32 +172,36 @@ pub fn traces<P: AsRef<Path>>(
 /// }
 ///
 /// // We define also an action handler that processes abstract actions
-/// impl ActionHandler<String> for Numbers {
-///     type Outcome = ();
+/// impl ActionHandler<Action> for NumberSystem {
+///     type Outcome = String;
 ///
-///     fn handle(&mut self, action: String) -> Self::Outcome {
-///         match action.as_str() {
-///             "IncreaseA" => self.a = self.a + 1,
-///             "IncreaseB" => self.b = self.b + 2,
-///             _ => panic!("unexpected action '{}'", action),
+///     fn handle(&mut self, action: Action) -> Self::Outcome {
+///         let result_to_outcome = |res| match res {
+///             Ok(()) => "OK".to_string(),
+///             Err(s) => s
+///         };
+///         match action {
+///             Action::None => "OK".to_string(),
+///             Action::IncreaseA => result_to_outcome(self.increase_a(1)),
+///             Action::IncreaseB => result_to_outcome(self.increase_b(2))
 ///         }
 ///     }
 /// }
 ///
 /// // To run your system against a TLA+ test, just point to the corresponding TLA+ files.
 /// fn main() {
-///     let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
+///     let tla_tests_file = "tests/integration/tla/NumbersAMaxBMaxTest.tla";
 ///     let tla_config_file = "tests/integration/tla/Numbers.cfg";
 ///     let options = modelator::Options::default();
 ///     
 ///     // We create a system under test
-///     let mut system = Numbers::default();
+///     let mut system = NumberSystem::default();
 ///
 ///     // We construct a runner, and tell which which states and actions it should process.
 ///     let mut runner = Runner::new()
 ///         .with_state::<A>()
 ///         .with_state::<B>()
-///         .with_action::<String>();
+///         .with_action::<Action>();
 ///
 ///     // run your system against the traces produced from TLA+ tests.
 ///     let result = run(tla_tests_file, tla_config_file, &options, &mut runner, &mut system);
@@ -196,7 +210,9 @@ pub fn traces<P: AsRef<Path>>(
 ///     assert!(result.is_ok());
 ///     // You can also check the final state of your system, if you want.
 ///     assert_eq!(system.a, 6);
-///     assert_eq!(system.b, 0);
+///     assert_eq!(system.b, 6);
+///     assert_eq!(system.sum, 12);
+///     assert_eq!(system.prod, 36);
 /// }
 /// ```
 // #[allow(clippy::needless_doctest_main)]

@@ -9,6 +9,7 @@ use serde::Deserialize;
 use serde_json::Value as JsonValue;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
+use modelator::test_util::NumberSystem;
 
 #[derive(Default, Debug, PartialEq)]
 struct Numbers {
@@ -18,14 +19,21 @@ struct Numbers {
 
 #[derive(Debug, Clone, Deserialize, PartialEq)]
 struct A {
-    a: i64,
+    a: u64,
 }
 #[derive(Debug, Clone, Deserialize, PartialEq)]
 struct B {
-    b: i64,
+    b: u64,
 }
 
-impl StateHandler<A> for Numbers {
+#[derive(Debug, Clone, Deserialize)]
+enum Action {
+    None, 
+    IncreaseA,
+    IncreaseB
+}
+
+impl StateHandler<A> for NumberSystem {
     fn init(&mut self, state: A) {
         self.a = state.a
     }
@@ -33,7 +41,7 @@ impl StateHandler<A> for Numbers {
         A { a: self.a }
     }
 }
-impl StateHandler<B> for Numbers {
+impl StateHandler<B> for NumberSystem {
     fn init(&mut self, state: B) {
         self.b = state.b
     }
@@ -42,14 +50,20 @@ impl StateHandler<B> for Numbers {
     }
 }
 
-impl ActionHandler<String> for Numbers {
-    type Outcome = ();
 
-    fn handle(&mut self, action: String) -> Self::Outcome {
-        match action.as_str() {
-            "IncreaseA" => self.a = self.a + 1,
-            "IncreaseB" => self.b = self.b + 2,
-            _ => panic!("unexpected action '{}'", action),
+
+impl ActionHandler<Action> for NumberSystem {
+    type Outcome = String;
+
+    fn handle(&mut self, action: Action) -> Self::Outcome {
+        let result_to_outcome = |res| match res {
+            Ok(()) => "OK".to_string(),
+            Err(s) => s
+        };
+        match action {
+            Action::None => "OK".to_string(),
+            Action::IncreaseA => result_to_outcome(self.increase_a(1)),
+            Action::IncreaseB => result_to_outcome(self.increase_b(2))
         }
     }
 }
@@ -59,17 +73,18 @@ fn event_runner() {
     let events = EventStream::new()
         .init(A { a: 0 })
         .init(B { b: 0 })
-        .action("IncreaseA".to_string())
-        .action("IncreaseB".to_string())
+        .action(Action::IncreaseA)
+        .action(Action::IncreaseB)
         .check(|state: A| assert!(state.a == 1))
         .check(|state: B| assert!(state.b == 2));
 
-    let mut system = Numbers::default();
+    let mut system = NumberSystem::default();
     let mut runner = Runner::new()
         .with_state::<A>()
         .with_state::<B>()
-        .with_action::<String>();
+        .with_action::<Action>();
     let result = runner.run(&mut system, &mut events.into_iter());
+    println!("{:?}", result);
     assert!(result.is_ok());
 }
 
@@ -129,11 +144,11 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
         for (tla_tests_file, tla_config_file) in
             absolute_and_relative_paths(tla_tests_file, tla_config_file)
         {
-            let mut system = Numbers::default();
+            let mut system = NumberSystem::default();
             let mut runner = Runner::new()
                 .with_state::<A>()
                 .with_state::<B>()
-                .with_action::<String>();
+                .with_action::<Action>();
 
             // generate traces using Rust API
             let mut traces = modelator::traces(&tla_tests_file, &tla_config_file, &options)?;
@@ -284,23 +299,23 @@ fn absolute_and_relative_paths(
     ]
 }
 
-fn numbers_a_max_b_min_test() -> (&'static str, &'static str, Numbers) {
+fn numbers_a_max_b_min_test() -> (&'static str, &'static str, NumberSystem) {
     let tla_tests_file = "NumbersAMaxBMinTest.tla";
     let tla_config_file = "Numbers.cfg";
-    let expected = Numbers { a: 6, b: 0 };
+    let expected = NumberSystem { a: 6, b: 0, sum: 6, prod: 0 };
     (tla_tests_file, tla_config_file, expected)
 }
 
-fn numbers_a_min_b_max_test() -> (&'static str, &'static str, Numbers) {
+fn numbers_a_min_b_max_test() -> (&'static str, &'static str, NumberSystem) {
     let tla_tests_file = "NumbersAMinBMaxTest.tla";
     let tla_config_file = "Numbers.cfg";
-    let expected = Numbers { a: 0, b: 6 };
+    let expected = NumberSystem { a: 0, b: 6, sum: 6, prod: 0 };
     (tla_tests_file, tla_config_file, expected)
 }
 
-fn numbers_a_max_b_max_test() -> (&'static str, &'static str, Numbers) {
+fn numbers_a_max_b_max_test() -> (&'static str, &'static str, NumberSystem) {
     let tla_tests_file = "NumbersAMaxBMaxTest.tla";
     let tla_config_file = "Numbers.cfg";
-    let expected = Numbers { a: 6, b: 6 };
+    let expected = NumberSystem { a: 6, b: 6, sum: 12, prod: 36 };
     (tla_tests_file, tla_config_file, expected)
 }
