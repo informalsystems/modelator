@@ -57,6 +57,8 @@ pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Option
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 use std::path::Path;
+use tempfile::tempdir;
+
 
 /// Generate TLA+ traces (encoded as JSON) given a [crate::artifact::TlaFile]
 /// containing TLA+ assertions and a [crate::artifact::TlaConfigFile].
@@ -78,9 +80,13 @@ pub fn traces<P: AsRef<Path>>(
     // setup modelator
     setup(&options)?;
 
+    // create a temporary directory, and copy TLA+ files there
+    let dir = tempdir().map_err(Error::io)?;
+    let new_tests_file = util::copy_tla_files_into(tla_tests_file, dir.path())?;
+
     // generate tla tests
     use std::convert::TryFrom;
-    let tla_tests_file = artifact::TlaFile::try_from(tla_tests_file.as_ref())?;
+    let tla_tests_file = artifact::TlaFile::try_from(new_tests_file)?;
     let tla_config_file = artifact::TlaConfigFile::try_from(tla_config_file.as_ref())?;
     let tests = module::Tla::generate_tests(tla_tests_file, tla_config_file)?;
 
@@ -98,11 +104,8 @@ pub fn traces<P: AsRef<Path>>(
         )
         .collect::<Result<Vec<_>, _>>()?;
 
-    // cleanup test files created
-    for (tla_file, tla_config_file) in tests {
-        std::fs::remove_file(tla_file.path()).map_err(Error::io)?;
-        std::fs::remove_file(tla_config_file.path()).map_err(Error::io)?;
-    }
+    // cleanup everything by removing the temporary directory
+    dir.close().map_err(Error::io)?;
 
     // convert each tla trace to json
     traces
