@@ -8,6 +8,9 @@
     rust_2018_idioms
 )]
 
+// It makes sense to allow those when the development is active
+#![allow(unused_imports, dead_code)]
+
 /// Modelator's options.
 mod options;
 
