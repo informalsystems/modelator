@@ -55,10 +55,10 @@ pub use event::{ActionHandler, Event, EventStream, Runner, StateHandler};
 pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Options};
 
 use serde::de::DeserializeOwned;
+use std::env;
 use std::fmt::Debug;
 use std::path::Path;
 use tempfile::tempdir;
-
 
 /// Generate TLA+ traces (encoded as JSON) given a [crate::artifact::TlaFile]
 /// containing TLA+ assertions and a [crate::artifact::TlaConfigFile].
@@ -82,12 +82,17 @@ pub fn traces<P: AsRef<Path>>(
 
     // create a temporary directory, and copy TLA+ files there
     let dir = tempdir().map_err(Error::io)?;
-    let new_tests_file = util::copy_tla_files_into(tla_tests_file, dir.path())?;
+    let tla_tests_file = util::copy_files_into("tla", tla_tests_file, dir.path())?;
+    let tla_config_file = util::copy_files_into("cfg", tla_config_file, dir.path())?;
+
+    // save the current, and change to the temporary directory
+    let current_dir = env::current_dir().map_err(Error::io)?;
+    env::set_current_dir(dir.path()).map_err(Error::io)?;
 
     // generate tla tests
     use std::convert::TryFrom;
-    let tla_tests_file = artifact::TlaFile::try_from(new_tests_file)?;
-    let tla_config_file = artifact::TlaConfigFile::try_from(tla_config_file.as_ref())?;
+    let tla_tests_file = artifact::TlaFile::try_from(tla_tests_file)?;
+    let tla_config_file = artifact::TlaConfigFile::try_from(tla_config_file)?;
     let tests = module::Tla::generate_tests(tla_tests_file, tla_config_file)?;
 
     // run the model checker configured on each tla test
@@ -106,6 +111,8 @@ pub fn traces<P: AsRef<Path>>(
 
     // cleanup everything by removing the temporary directory
     dir.close().map_err(Error::io)?;
+    // restore the current directory
+    env::set_current_dir(current_dir).map_err(Error::io)?;
 
     // convert each tla trace to json
     traces

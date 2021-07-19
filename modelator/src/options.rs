@@ -1,3 +1,4 @@
+use std::env;
 use std::path::{Path, PathBuf};
 
 /// Set of options to configure `modelator`.
@@ -28,7 +29,7 @@ impl Default for Options {
     fn default() -> Self {
         Self {
             model_checker_options: ModelCheckerOptions::default(),
-            dir: Path::new(".modelator").to_path_buf(),
+            dir: env::current_dir().unwrap().join(".modelator"), //Path::new(".modelator").to_path_buf(),
         }
     }
 }

@@ -1,8 +1,8 @@
 use crate::Error;
 use std::collections::HashSet;
+use std::fs::copy;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use std::fs::copy;
 use walkdir::WalkDir;
 
 pub(crate) fn cmd_output_to_string(output: &[u8]) -> String {
@@ -82,13 +82,19 @@ pub(crate) mod digest {
     }
 }
 
-/// Copies all TLA+ files in the same directory as the given file into another directory
+/// Copies all files with the given extension in the same directory as the given file into another directory
 /// Returns the new path for the main file
-pub(crate) fn copy_tla_files_into<P: AsRef<Path>, Q: AsRef<Path>>(tla_file: P, dir: Q) -> Result<PathBuf, Error> {
-    let files = all_tla_files(&tla_file)?;
+pub(crate) fn copy_files_into<P: AsRef<Path>, Q: AsRef<Path>>(
+    ext: &str,
+    file: P,
+    dir: Q,
+) -> Result<PathBuf, Error> {
+    let files = list_files(ext, &file)?;
     let dir = PathBuf::from(dir.as_ref());
     if !dir.is_dir() || !dir.exists() {
-        return Err(Error::IO("Can't copy files: destination directory doesn't exist".to_string()));
+        return Err(Error::IO(
+            "Can't copy files: destination directory doesn't exist".to_string(),
+        ));
     }
     for file in files {
         if let Some(file_name) = file.file_name() {
@@ -97,36 +103,43 @@ pub(crate) fn copy_tla_files_into<P: AsRef<Path>, Q: AsRef<Path>>(tla_file: P, d
         }
     }
     // it is OK to unwrap, as the file has been checked before
-    Ok(dir.join(tla_file.as_ref().file_name().unwrap())) 
+    Ok(dir.join(file.as_ref().file_name().unwrap()))
 }
 
-/// Lists all TLA+ files in the same directory as the given file
+/// Lists all files with the given extension in the same directory as the given file
 /// Returns error if the given file doesn't exist, or is not a TLA+ file
-fn all_tla_files<P: AsRef<Path>>(tla_file: P) -> Result<Vec<PathBuf>, Error> {
+fn list_files<P: AsRef<Path>>(ext: &str, file: P) -> Result<Vec<PathBuf>, Error> {
     // Checks that the given path points to an existing TLA+ file
-    let is_tla = |f: &Path| f.extension().map_or("".to_owned(), |x|x.to_string_lossy().to_string()) == "tla";
-    let tla_file = tla_file.as_ref();
-    if !tla_file.exists() || !is_tla(tla_file) {
-        return Err(Error::IO("TLA file doesn't exist".to_string()));
+    let is_ext = |f: &Path| {
+        f.extension()
+            .map_or("".to_owned(), |x| x.to_string_lossy().to_string())
+            == ext
+    };
+    let file = file.as_ref();
+    if !file.exists() || !is_ext(file) {
+        return Err(Error::IO(format!("File doesn't exist: {}", file.display())));
     }
     // The parent directory of the file
-    let dir = tla_file.parent().map_or(PathBuf::from("./"), |p|
+    let dir = file.parent().map_or(PathBuf::from("./"), |p| {
         if p.to_string_lossy().is_empty() {
             PathBuf::from("./")
         } else {
             p.to_path_buf()
         }
-    );
-    // Collect all TLA+ files in this directory
+    });
+    // Collect all files with the same extension in this directory
     let mut files = Vec::new();
     for entry in WalkDir::new(dir)
-        .min_depth(1).max_depth(1).into_iter()
+        .min_depth(1)
+        .max_depth(1)
+        .into_iter()
         .filter_entry(|e| e.file_type().is_file())
-        .filter_map(|e| e.ok()) {
-            let file_name = PathBuf::from(entry.file_name());
-            if is_tla(&file_name) {
-                files.push(entry.path().to_path_buf());
-            }
+        .filter_map(|e| e.ok())
+    {
+        let file_name = PathBuf::from(entry.file_name());
+        if is_ext(&file_name) {
+            files.push(entry.path().to_path_buf());
+        }
     }
     Ok(files)
 }
