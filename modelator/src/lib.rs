@@ -7,7 +7,6 @@
     unused_extern_crates,
     rust_2018_idioms
 )]
-
 // It makes sense to allow those when the development is active
 #![allow(unused_imports, dead_code)]
 
@@ -100,7 +99,6 @@ pub fn traces<P: AsRef<Path>>(
 
     // run the model checker configured on each tla test
     let traces = tests
-        .clone()
         .into_iter()
         .map(
             |(tla_file, tla_config_file)| match options.model_checker_options.model_checker {
