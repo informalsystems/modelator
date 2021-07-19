@@ -3,7 +3,6 @@ use std::collections::HashSet;
 use std::fs::copy;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use walkdir::WalkDir;
 
 pub(crate) fn cmd_output_to_string(output: &[u8]) -> String {
     String::from_utf8_lossy(output).to_string()
@@ -128,18 +127,17 @@ fn list_files<P: AsRef<Path>>(ext: &str, file: P) -> Result<Vec<PathBuf>, Error>
         }
     });
     // Collect all files with the same extension in this directory
-    let mut files = Vec::new();
-    for entry in WalkDir::new(dir)
-        .min_depth(1)
-        .max_depth(1)
-        .into_iter()
-        .filter_entry(|e| e.file_type().is_file())
-        .filter_map(|e| e.ok())
-    {
-        let file_name = PathBuf::from(entry.file_name());
-        if is_ext(&file_name) {
-            files.push(entry.path().to_path_buf());
-        }
-    }
+    let files = std::fs::read_dir(dir)
+        .map_err(Error::io)?
+        .flatten()
+        .filter(|dir_entry| {
+            dir_entry
+                .file_type()
+                .map(|file_type| file_type.is_file())
+                .unwrap_or_default()
+        })
+        .map(|dir_entry| dir_entry.path())
+        .filter(|file_path| is_ext(&file_path))
+        .collect();
     Ok(files)
 }
