@@ -64,7 +64,8 @@ impl Cache {
     }
 }
 
-#[cfg(test)]
+// TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
+//#[cfg(test)]
 mod tests {
     use super::*;
 
