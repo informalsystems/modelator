@@ -110,6 +110,8 @@ const TLA_DIR: &'static str = "tests/integration/tla";
 // parallel
 static LOCK: Lazy<Mutex<()>> = Lazy::new(Mutex::default);
 
+// TODO: disabled because of non-deterministic test failures
+// see https://github.com/informalsystems/modelator/issues/43
 // #[test]
 fn tlc() {
     let _guard = LOCK.lock();

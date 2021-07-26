@@ -292,7 +292,13 @@ mod tests {
         let data = String::from("{\"name\": \"test\"}");
         let res = tester.test(&data);
         assert!(
-            matches!(res, TestResult::Failure { message: _, location: _ }) // if message == "got test")
+            matches!(
+                res,
+                TestResult::Failure {
+                    message: _,
+                    location: _
+                }
+            ) // if message == "got test")
         );
 
         let data = MyTest {
