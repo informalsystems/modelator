@@ -201,7 +201,7 @@ pub fn traces<P: AsRef<Path>>(
 /// }
 ///
 /// // To run your system against a TLA+ test, just point to the corresponding TLA+ files.
-/// fn main() {
+/// fn test() {
 ///     let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
 ///     let tla_config_file = "tests/integration/tla/Numbers.cfg";
 ///     let options = modelator::Options::default();
