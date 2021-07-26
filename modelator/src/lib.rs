@@ -7,6 +7,8 @@
     unused_extern_crates,
     rust_2018_idioms
 )]
+// It makes sense to allow those when the development is active
+#![allow(unused_imports, dead_code)]
 
 /// Modelator's options.
 mod options;
@@ -59,8 +61,10 @@ pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Option
 use serde::de::DeserializeOwned;
 pub use step_runner::StepRunner;
 
+use std::env;
 use std::fmt::Debug;
 use std::path::Path;
+use tempfile::tempdir;
 
 /// Given a [crate::artifact::TlaFile] with TLA+ test assertions,
 /// as well as a [crate::artifact::TlaConfigFile] with TLA+ configuration,
@@ -86,15 +90,23 @@ pub fn traces<P: AsRef<Path>>(
     // setup modelator
     setup(&options)?;
 
+    // create a temporary directory, and copy TLA+ files there
+    let dir = tempdir().map_err(Error::io)?;
+    let tla_tests_file = util::copy_files_into("tla", tla_tests_file, dir.path())?;
+    let tla_config_file = util::copy_files_into("cfg", tla_config_file, dir.path())?;
+
+    // save the current, and change to the temporary directory
+    let current_dir = env::current_dir().map_err(Error::io)?;
+    env::set_current_dir(dir.path()).map_err(Error::io)?;
+
     // generate tla tests
     use std::convert::TryFrom;
-    let tla_tests_file = artifact::TlaFile::try_from(tla_tests_file.as_ref())?;
-    let tla_config_file = artifact::TlaConfigFile::try_from(tla_config_file.as_ref())?;
+    let tla_tests_file = artifact::TlaFile::try_from(tla_tests_file)?;
+    let tla_config_file = artifact::TlaConfigFile::try_from(tla_config_file)?;
     let tests = module::Tla::generate_tests(tla_tests_file, tla_config_file)?;
 
     // run the model checker configured on each tla test
     let traces = tests
-        .clone()
         .into_iter()
         .map(
             |(tla_file, tla_config_file)| match options.model_checker_options.model_checker {
@@ -106,11 +118,10 @@ pub fn traces<P: AsRef<Path>>(
         )
         .collect::<Result<Vec<_>, _>>()?;
 
-    // cleanup test files created
-    for (tla_file, tla_config_file) in tests {
-        std::fs::remove_file(tla_file.path()).map_err(Error::io)?;
-        std::fs::remove_file(tla_config_file.path()).map_err(Error::io)?;
-    }
+    // cleanup everything by removing the temporary directory
+    dir.close().map_err(Error::io)?;
+    // restore the current directory
+    env::set_current_dir(current_dir).map_err(Error::io)?;
 
     // convert each tla trace to json
     traces
