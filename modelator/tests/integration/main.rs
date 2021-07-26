@@ -110,7 +110,7 @@ const TLA_DIR: &'static str = "tests/integration/tla";
 // parallel
 static LOCK: Lazy<Mutex<()>> = Lazy::new(Mutex::default);
 
-#[test]
+// #[test]
 fn tlc() {
     let _guard = LOCK.lock();
     if let Err(e) = all_tests(ModelChecker::Tlc) {

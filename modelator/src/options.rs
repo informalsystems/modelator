@@ -72,7 +72,7 @@ impl ModelCheckerOptions {
 impl Default for ModelCheckerOptions {
     fn default() -> Self {
         Self {
-            model_checker: ModelChecker::Tlc,
+            model_checker: ModelChecker::Apalache,
             workers: ModelCheckerWorkers::Auto,
             log: Path::new("mc.log").to_path_buf(),
         }
