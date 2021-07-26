@@ -140,8 +140,7 @@ pub fn traces<P: AsRef<Path>>(
 ///
 /// # Example
 ///
-/// # Example
-///
+// #[allow(clippy::needless_doctest_main)]
 /// ```
 /// use modelator::{run_tla_steps, StepRunner};
 /// use serde::Deserialize;
@@ -210,7 +209,6 @@ pub fn traces<P: AsRef<Path>>(
 ///     assert!(run_tla_steps(tla_tests_file, tla_config_file, &options, &mut system).is_ok());
 /// }
 /// ```
-// #[allow(clippy::needless_doctest_main)]
 pub fn run_tla_steps<P, System, Step>(
     tla_tests_file: P,
     tla_config_file: P,
