@@ -75,31 +75,6 @@ impl Tlc {
                     crate::util::absolute_path(&options.model_checker_options.log)
                 );
 
-                // remove tlc 'states' folder. on each run, tlc creates a new folder
-                // inside the 'states' folder named using the current date with a
-                // second precision (e.g. 'states/21-03-04-16-42-04'). if we happen
-                // to run tlc twice in the same second, tlc fails when trying to
-                // create this folder for the second time. we avoid this problem by
-                // simply removing the parent folder 'states' after every tlc run
-                // compute the directory in which the tla tests file is stored
-                let states_dir = if tla_file.path().is_absolute() {
-                    // if the tla file passed as input to TLC is an absolute
-                    // path, then TLC creates the 'states' directory in the same
-                    // directory as the tla file
-                    let mut tla_dir = tla_file.path().clone();
-                    assert!(tla_dir.pop());
-                    tla_dir.join("states")
-                } else {
-                    // otherwise, it creates the 'states' directory in the
-                    // current directory
-                    Path::new("states").to_path_buf()
-                };
-                tracing::debug!(
-                    "removing TLC directory: {:?}",
-                    crate::util::absolute_path(&states_dir)
-                );
-                std::fs::remove_dir_all(states_dir).map_err(Error::io)?;
-
                 // convert tlc output to traces
                 let mut traces = output::parse(stdout, &options.model_checker_options)?;
 
