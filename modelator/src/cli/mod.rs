@@ -19,14 +19,17 @@ pub struct CliOptions {
 #[derive(Debug, Subcommand)]
 enum Modules {
     /// Generate TLA+ test cases and parse TLA+ traces.
+    #[clap(subcommand)]
     Tla(TlaMethods),
     /// Generate TLA+ traces using Apalache.
+    #[clap(subcommand)]
     Apalache(ApalacheMethods),
     /// Generate TLA+ traces using TLC.
+    #[clap(subcommand)]
     Tlc(TlcMethods),
 }
 
-#[derive(Debug, Clap)]
+#[derive(Debug, Subcommand)]
 #[clap(setting = AppSettings::DisableHelpSubcommand)]
 enum TlaMethods {
     /// Generate TLA+ tests.
@@ -43,7 +46,7 @@ enum TlaMethods {
     },
 }
 
-#[derive(Debug, Clap)]
+#[derive(Debug, Subcommand)]
 #[clap(setting = AppSettings::DisableHelpSubcommand)]
 enum ApalacheMethods {
     /// Generate TLA+ trace from a TLA+ test.
@@ -60,7 +63,7 @@ enum ApalacheMethods {
     },
 }
 
-#[derive(Debug, Clap)]
+#[derive(Debug, Subcommand)]
 #[clap(setting = AppSettings::DisableHelpSubcommand)]
 enum TlcMethods {
     /// Generate TLA+ trace from a TLA+ test.
