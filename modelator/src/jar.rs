@@ -78,7 +78,7 @@ pub(crate) fn download_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Erro
     // compute jars that are missing
     let missing_jars: HashSet<_> = Jar::all()
         .into_iter()
-        .filter(|jar| !existing_jars.contains(&jar))
+        .filter(|jar| !existing_jars.contains(jar))
         .collect();
 
     if !missing_jars.is_empty() {

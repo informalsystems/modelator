@@ -88,7 +88,7 @@ pub fn traces<P: AsRef<Path>>(
     options: &Options,
 ) -> Result<Vec<artifact::JsonTrace>, Error> {
     // setup modelator
-    setup(&options)?;
+    setup(options)?;
 
     // create a temporary directory, and copy TLA+ files there
     let dir = tempdir().map_err(Error::io)?;

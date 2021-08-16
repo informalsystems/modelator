@@ -14,7 +14,7 @@ impl TlaTraceCache {
 
     #[allow(clippy::ptr_arg)]
     pub(crate) fn get(&self, key: &String) -> Result<Option<TlaTrace>, Error> {
-        self.cache.get(&key)?.map(|value| value.parse()).transpose()
+        self.cache.get(key)?.map(|value| value.parse()).transpose()
     }
 
     pub(crate) fn insert(&mut self, key: String, tla_trace: &TlaTrace) -> Result<(), Error> {

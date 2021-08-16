@@ -137,7 +137,7 @@ fn list_files<P: AsRef<Path>>(ext: &str, file: P) -> Result<Vec<PathBuf>, Error>
                 .unwrap_or_default()
         })
         .map(|dir_entry| dir_entry.path())
-        .filter(|file_path| is_ext(&file_path))
+        .filter(|file_path| is_ext(file_path))
         .collect();
     Ok(files)
 }

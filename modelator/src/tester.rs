@@ -263,7 +263,7 @@ mod tests {
     }
 
     fn fails(_: MyTest2) {
-        assert!(false);
+        unreachable!();
     }
 
     fn succeeds_if_my_test(t: MyTest) {
