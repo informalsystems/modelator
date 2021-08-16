@@ -1,7 +1,7 @@
 // We follow the approach proposed in the following link for integration tests:
 // https://matklad.github.io/2021/02/27/delete-cargo-integration-tests.html
 
-use modelator::artifact::{JsonTrace};
+use modelator::artifact::JsonTrace;
 use modelator::test_util::NumberSystem;
 use modelator::{ActionHandler, EventRunner, EventStream, StateHandler};
 use modelator::{CliOptions, CliStatus, Error, ModelChecker, ModelCheckerOptions, Options};
@@ -292,14 +292,8 @@ fn absolute_and_relative_paths(
     let absolute_tla_tests_file = relative_tla_tests_file.canonicalize().unwrap();
     let absolute_tla_config_file = relative_tla_config_file.canonicalize().unwrap();
     vec![
-        (
-            relative_tla_tests_file,
-            relative_tla_config_file,
-        ),
-        (
-            absolute_tla_tests_file,
-            absolute_tla_config_file,
-        ),
+        (relative_tla_tests_file, relative_tla_config_file),
+        (absolute_tla_tests_file, absolute_tla_config_file),
     ]
 }
 
