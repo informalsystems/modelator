@@ -13,7 +13,7 @@ authors = [
 ]
 
 [dependencies]
-clap = "3.0.0-beta.4"
+clap = "=3.0.0-beta.4"
 hex = "0.4.3"
 nom = "6.1.2"
 serde = { version = "1.0.123", features = ["derive"] }
