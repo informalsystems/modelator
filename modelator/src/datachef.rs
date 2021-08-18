@@ -265,7 +265,7 @@ impl Recipe {
         let type_ids = (TypeId::of::<From>(), TypeId::of::<To>());
         self.converts.get(&type_ids).and_then(|f| {
             f.downcast_ref::<fn(&Self, From) -> To>()
-                .map(|f| Box::new(move |x: From| f(&self, x)) as Box<dyn Fn(From) -> To>)
+                .map(|f| Box::new(move |x: From| f(self, x)) as Box<dyn Fn(From) -> To>)
         })
     }
 
@@ -277,7 +277,7 @@ impl Recipe {
         let type_ids = (name.to_string(), TypeId::of::<From>(), TypeId::of::<To>());
         self.named_converts.get(&type_ids).and_then(|f| {
             f.downcast_ref::<fn(&Self, From) -> To>()
-                .map(|f| Box::new(move |x: From| f(&self, x)) as Box<dyn Fn(From) -> To>)
+                .map(|f| Box::new(move |x: From| f(self, x)) as Box<dyn Fn(From) -> To>)
         })
     }
 
@@ -285,7 +285,7 @@ impl Recipe {
         let type_id = TypeId::of::<T>();
         self.defaults.get(&type_id).and_then(|f| {
             f.downcast_ref::<fn(&Self) -> T>()
-                .map(|f| Box::new(move || f(&self)) as Box<dyn Fn() -> T>)
+                .map(|f| Box::new(move || f(self)) as Box<dyn Fn() -> T>)
         })
     }
 
@@ -295,7 +295,7 @@ impl Recipe {
             .get(&(name.to_string(), type_id))
             .and_then(|f| {
                 f.downcast_ref::<fn(&Self) -> T>()
-                    .map(|f| Box::new(move || f(&self)) as Box<dyn Fn() -> T>)
+                    .map(|f| Box::new(move || f(self)) as Box<dyn Fn() -> T>)
             })
     }
 }
@@ -359,7 +359,7 @@ mod tests {
         });
 
         assert!(check_record(r.make("John Smith".to_string())));
-        assert!(!check_record(r.make("short".repeat(1))));
+        assert!(!check_record(r.make("short".to_string())));
         assert!(!check_record(r.make("long".repeat(100))));
 
         r.add(|_, phone: (u32, u32)| Phone {
@@ -426,11 +426,11 @@ mod tests {
             id: r.take_as("id"),
         });
         r.add(|r, name: String| Provider {
-            name: name,
+            name,
             id: r.take_as("id"),
         });
         r.add(|r, name: String| Chain {
-            name: name.clone(),
+            name,
             id: r.take_as("id"),
             default_provider: r.take(),
         });

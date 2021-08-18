@@ -1,7 +1,7 @@
 // We follow the approach proposed in the following link for integration tests:
 // https://matklad.github.io/2021/02/27/delete-cargo-integration-tests.html
 
-use modelator::artifact::{JsonTrace, TlaFile};
+use modelator::artifact::JsonTrace;
 use modelator::test_util::NumberSystem;
 use modelator::{ActionHandler, EventRunner, EventStream, StateHandler};
 use modelator::{CliOptions, CliStatus, Error, ModelChecker, ModelCheckerOptions, Options};
@@ -104,7 +104,7 @@ fn event_runner() {
 //     assert!(run(tla_tests_file, tla_config_file, &options, &mut runner).is_ok());
 // }
 
-const TLA_DIR: &'static str = "tests/integration/tla";
+const TLA_DIR: &str = "tests/integration/tla";
 
 // we use this lock to make sure that the tlc & apalache tests are not run in
 // parallel
@@ -113,6 +113,7 @@ static LOCK: Lazy<Mutex<()>> = Lazy::new(Mutex::default);
 // TODO: disabled because of non-deterministic test failures
 // see https://github.com/informalsystems/modelator/issues/43
 // #[test]
+#[allow(dead_code)]
 fn tlc() {
     let _guard = LOCK.lock();
     if let Err(e) = all_tests(ModelChecker::Tlc) {
@@ -184,6 +185,7 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
     Ok(())
 }
 
+#[allow(dead_code)]
 fn cli_traces<P: AsRef<Path>>(
     tla_tests_file: P,
     tla_config_file: P,
@@ -204,7 +206,7 @@ fn cli_traces<P: AsRef<Path>>(
         .result
         .as_array()
         .unwrap()
-        .into_iter()
+        .iter()
         .map(|json_entry| {
             let test = json_entry.as_object().unwrap();
             (
@@ -290,14 +292,8 @@ fn absolute_and_relative_paths(
     let absolute_tla_tests_file = relative_tla_tests_file.canonicalize().unwrap();
     let absolute_tla_config_file = relative_tla_config_file.canonicalize().unwrap();
     vec![
-        (
-            relative_tla_tests_file.clone(),
-            relative_tla_config_file.clone(),
-        ),
-        (
-            absolute_tla_tests_file.clone(),
-            absolute_tla_config_file.clone(),
-        ),
+        (relative_tla_tests_file, relative_tla_config_file),
+        (absolute_tla_tests_file, absolute_tla_config_file),
     ]
 }
 
