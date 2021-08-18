@@ -9,11 +9,12 @@ keywords   = ["testing", "model", "model-based", "TLA", "abstraction"]
 repository = "https://github.com/informalsystems/modelator"
 authors = [
     "Vitor Enes <vitorenesduarte@gmail.com>", 
-    "Andrey Kuprianov <andrey@informal.systems>"
+    "Andrey Kuprianov <andrey@informal.systems>",
+    "Ranadeep Biswas <ranadeep@informal.systems>"
 ]
 
 [dependencies]
-clap = "3.0.0-beta.4"
+clap = "=3.0.0-beta.4"
 hex = "0.4.3"
 nom = "6.2.1"
 serde = { version = "1.0.127", features = ["derive"] }
