@@ -57,13 +57,13 @@ impl Jar {
         let path = self.path(&modelator_dir);
 
         // download the jar
-        let response = ureq::get(&self.link()).call().map_err(Error::ureq)?;
+        let response = ureq::get(&self.link()).call()?;
         let mut reader = response.into_reader();
 
         // write jar bytes to the file
-        let file = std::fs::File::create(path).map_err(Error::io)?;
+        let file = std::fs::File::create(path)?;
         let mut file_writer = std::io::BufWriter::new(file);
-        std::io::copy(&mut reader, &mut file_writer).map_err(Error::io)?;
+        std::io::copy(&mut reader, &mut file_writer)?;
         Ok(())
     }
 
@@ -99,8 +99,8 @@ pub(crate) fn download_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Erro
             eprintln!("[modelator] Checksum of downloaded jars does not match the expected. Will try again!");
 
             // delete modelator dir and create it again
-            std::fs::remove_dir_all(&modelator_dir).map_err(Error::io)?;
-            std::fs::create_dir(&modelator_dir).map_err(Error::io)?;
+            std::fs::remove_dir_all(&modelator_dir)?;
+            std::fs::create_dir(&modelator_dir)?;
 
             // try to download jars again
             return download_jars(modelator_dir);

@@ -91,13 +91,13 @@ pub fn traces<P: AsRef<Path>>(
     setup(options)?;
 
     // create a temporary directory, and copy TLA+ files there
-    let dir = tempdir().map_err(Error::io)?;
+    let dir = tempdir()?;
     let tla_tests_file = util::copy_files_into("tla", tla_tests_file, dir.path())?;
     let tla_config_file = util::copy_files_into("cfg", tla_config_file, dir.path())?;
 
     // save the current, and change to the temporary directory
-    let current_dir = env::current_dir().map_err(Error::io)?;
-    env::set_current_dir(dir.path()).map_err(Error::io)?;
+    let current_dir = env::current_dir()?;
+    env::set_current_dir(dir.path())?;
 
     // generate tla tests
     use std::convert::TryFrom;
@@ -119,9 +119,9 @@ pub fn traces<P: AsRef<Path>>(
         .collect::<Result<Vec<_>, _>>()?;
 
     // cleanup everything by removing the temporary directory
-    dir.close().map_err(Error::io)?;
+    dir.close()?;
     // restore the current directory
-    env::set_current_dir(current_dir).map_err(Error::io)?;
+    env::set_current_dir(current_dir)?;
 
     // convert each tla trace to json
     traces
@@ -380,7 +380,7 @@ pub(crate) fn setup(options: &Options) -> Result<(), Error> {
 
     // create modelator dir (if it doens't already exist)
     if !options.dir.as_path().is_dir() {
-        std::fs::create_dir_all(&options.dir).map_err(Error::io)?;
+        std::fs::create_dir_all(&options.dir)?;
     }
 
     // download missing jars
