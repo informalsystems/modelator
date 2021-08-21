@@ -1,8 +1,8 @@
 use nom::bytes::complete::take_while;
 use nom::character::complete::{digit1, multispace0, satisfy};
 use nom::{
-    alt, call, char, complete, many1, map, named, opt, preceded, return_error, separated_list0,
-    separated_list1, separated_pair, tag, terminated, value,
+    alt, char, complete, delimited, many1, map, named, opt, pair, preceded, return_error,
+    separated_list0, separated_list1, separated_pair, tag, value,
 };
 
 use serde_json::Value as JsonValue;
@@ -11,8 +11,11 @@ named!(
     pub(crate) parse_state<&str, JsonValue>,
     map!(
         preceded!(
-            space,
-            preceded!(opt!(tag!("/\\")), separated_list0!(complete!(tag!("/\\")), parse_var))
+            opt!(delimited!(multispace0, complete!(tag!("/\\")), multispace0)),
+            separated_list0!(
+                delimited!(multispace0, complete!(tag!("/\\")), multispace0),
+                parse_var
+            )
         ),
         |value| JsonValue::Object(value.into_iter().collect())
     )
@@ -20,29 +23,22 @@ named!(
 
 named!(
     parse_var<&str, (String, JsonValue)>,
-    preceded!(
-        space,
-        terminated!(
-            separated_pair!(
-                preceded!(space, parse_identifier),
-                preceded!(space, char!('=')),
-                preceded!(space, parse_any_value)
-            ),
-            space
-        )
+    delimited!(
+        multispace0,
+        separated_pair!(
+            parse_identifier,
+            delimited!(multispace0, char!('='), multispace0),
+            parse_any_value
+        ),
+        multispace0
     )
-);
-
-named!(
-    space<&str, &str>,
-    call!(multispace0)
 );
 
 // TODO: what else can TLA var idenfitiers have?
 named!(
     parse_identifier<&str, String>,
     map!(
-        many1!(call!(satisfy(|c| c.is_alphanumeric() || "_-".contains(c)))),
+        many1!(satisfy(|c| c.is_alphanumeric() || "_-".contains(c))),
         |value| value.into_iter().collect()
     )
 );
@@ -58,7 +54,7 @@ named!(
 named!(
     parse_any_value<&str, JsonValue>,
     preceded!(
-        space,
+        multispace0,
         alt!(
             parse_bool
             | parse_number
@@ -88,7 +84,7 @@ named!(
 named!(
     parse_pos_number<&str, JsonValue>,
     map!(
-        call!(digit1),
+        digit1,
         |value| JsonValue::Number(value
             .parse::<u64>()
             .expect("u64 parsed by nom should be a valid u64")
@@ -100,7 +96,7 @@ named!(
 named!(
     parse_neg_number<&str, JsonValue>,
     map!(
-        preceded!(char!('-'), call!(digit1)),
+        preceded!(char!('-'), digit1),
         |value| JsonValue::Number(format!("-{}", value)
             .parse::<i64>()
             .expect("i64 parsed by nom should be a valid i64")
@@ -117,12 +113,10 @@ named!(
 named!(
     parse_string<&str, JsonValue>,
     map!(
-        preceded!(
+        delimited!(
             char!('"'),
-            return_error!(terminated!(
-                call!(take_while(|c| c != '\"')),
-                char!('"')
-            ))
+            return_error!(take_while(|c| c != '"')),
+            char!('"')
         ),
         |value| JsonValue::String(value.into())
     )
@@ -131,15 +125,13 @@ named!(
 named!(
     parse_set<&str, JsonValue>,
     map!(
-        preceded!(
-            char!('{'),
-            return_error!(terminated!(
-                separated_list0!(
-                    preceded!(space, char!(',')),
-                    parse_any_value
-                ),
-                preceded!(space, char!('}'))
-            ))
+        delimited!(
+            pair!(char!('{'), multispace0),
+            return_error!(separated_list0!(
+                delimited!(multispace0, char!(','), multispace0),
+                parse_any_value
+            )),
+            pair!(multispace0, char!('}'))
         ),
         |value| JsonValue::Array(value)
     )
@@ -148,15 +140,13 @@ named!(
 named!(
     parse_sequence<&str, JsonValue>,
     map!(
-        preceded!(
-            tag!("<<"),
-            return_error!(terminated!(
-                separated_list0!(
-                    preceded!(space, char!(',')),
-                    parse_any_value
-                ),
-                preceded!(space, tag!(">>"))
-            ))
+        delimited!(
+            pair!(tag!("<<"), multispace0),
+            return_error!(separated_list0!(
+                delimited!(multispace0, char!(','), multispace0),
+                parse_any_value
+            )),
+            pair!(multispace0, tag!(">>"))
         ),
         |value| JsonValue::Array(value)
     )
@@ -165,15 +155,13 @@ named!(
 named!(
     parse_function<&str, JsonValue>,
     map!(
-        preceded!(
-            char!('('),
-            return_error!(terminated!(
-                separated_list1!(
-                    preceded!(space, tag!("@@")),
-                    parse_function_entry
-                ),
-                preceded!(space, char!(')'))
-            ))
+        delimited!(
+            pair!(char!('('), multispace0),
+            return_error!(separated_list1!(
+                delimited!(multispace0, tag!("@@"), multispace0),
+                parse_function_entry
+            )),
+            preceded!(multispace0, char!(')'))
         ),
         |value| JsonValue::Object(value.into_iter().collect())
     )
@@ -182,11 +170,11 @@ named!(
 named!(
     parse_function_entry<&str, (String, JsonValue)>,
     preceded!(
-        space,
+        multispace0,
         separated_pair!(
-            preceded!(space, parse_identifier),
-            preceded!(space, tag!(":>")),
-            preceded!(space, parse_any_value)
+            parse_identifier,
+            delimited!(multispace0, complete!(tag!(":>")), multispace0),
+            parse_any_value
         )
     )
 );
@@ -194,15 +182,13 @@ named!(
 named!(
     parse_record<&str, JsonValue>,
     map!(
-        preceded!(
-            char!('['),
-            return_error!(terminated!(
-                separated_list1!(
-                    preceded!(space, char!(',')),
-                    parse_record_entry
-                ),
-                preceded!(space, char!(']'))
-            ))
+        delimited!(
+            pair!(char!('['), multispace0),
+            return_error!(separated_list1!(
+                delimited!(multispace0, char!(','), multispace0),
+                parse_record_entry
+            )),
+            pair!(multispace0, char!(']'))
         ),
         |value| JsonValue::Object(value.into_iter().collect())
     )
@@ -211,11 +197,11 @@ named!(
 named!(
     parse_record_entry<&str, (String, JsonValue)>,
     preceded!(
-        space,
+        multispace0,
         separated_pair!(
-            preceded!(space, parse_identifier),
-            preceded!(space, tag!("|->")),
-            preceded!(space, parse_any_value)
+            parse_identifier,
+            delimited!(multispace0, tag!("|->"), multispace0),
+            parse_any_value
         )
     )
 );
