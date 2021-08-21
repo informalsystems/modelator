@@ -57,13 +57,13 @@ named!(
         multispace0,
         alt!(
             parse_bool
+            | parse_function
             | parse_number
             | parse_string
             | parse_identifiers_as_values
             | parse_set
             | parse_sequence
             | parse_record
-            | parse_function
         )
     )
 );
@@ -156,14 +156,36 @@ named!(
     parse_function<&str, JsonValue>,
     map!(
         delimited!(
-            pair!(char!('('), multispace0),
-            return_error!(separated_list1!(
-                delimited!(multispace0, tag!("@@"), multispace0),
-                parse_function_entry
-            )),
-            preceded!(multispace0, char!(')'))
+            multispace0,
+            separated_list1!(
+                delimited!(multispace0, complete!(tag!("@@")), multispace0),
+                alt!(
+                    map!(
+                        parse_function_entry,
+                        |x| JsonValue::Object(vec![x].into_iter().collect())
+                    ) |
+                    delimited!(
+                        pair!(char!('('), multispace0),
+                        parse_function,
+                        pair!(multispace0, char!(')'))
+                    )
+                )
+            ),
+            multispace0
         ),
-        |value| JsonValue::Object(value.into_iter().collect())
+        |values| JsonValue::Object(
+            values
+                .into_iter()
+                .map(|value| value
+                    .as_object()
+                    .unwrap()
+                    .into_iter()
+                    .map(|(k, v)| (k.clone(), v.clone()))
+                    .collect::<Vec<_>>()
+                )
+                .flatten()
+                .collect()
+        )
     )
 );
 
