@@ -163,14 +163,14 @@ named!(
 );
 
 named!(
-    parse_record<&str, JsonValue>,
+    parse_function<&str, JsonValue>,
     map!(
         preceded!(
             char!('('),
             return_error!(terminated!(
                 separated_list1!(
                     preceded!(space, tag!("@@")),
-                    parse_record_entry
+                    parse_function_entry
                 ),
                 preceded!(space, char!(')'))
             ))
@@ -180,7 +180,7 @@ named!(
 );
 
 named!(
-    parse_record_entry<&str, (String, JsonValue)>,
+    parse_function_entry<&str, (String, JsonValue)>,
     preceded!(
         space,
         separated_pair!(
@@ -192,14 +192,14 @@ named!(
 );
 
 named!(
-    parse_function<&str, JsonValue>,
+    parse_record<&str, JsonValue>,
     map!(
         preceded!(
             char!('['),
             return_error!(terminated!(
                 separated_list1!(
                     preceded!(space, char!(',')),
-                    parse_function_entry
+                    parse_record_entry
                 ),
                 preceded!(space, char!(']'))
             ))
@@ -209,7 +209,7 @@ named!(
 );
 
 named!(
-    parse_function_entry<&str, (String, JsonValue)>,
+    parse_record_entry<&str, (String, JsonValue)>,
     preceded!(
         space,
         separated_pair!(
