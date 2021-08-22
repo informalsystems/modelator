@@ -1,10 +1,10 @@
 use nom::{
-    bytes::complete::{take_while, tag, is_not},
-    character::complete::{digit1, multispace0, satisfy, char},
-    combinator::{map, complete, opt, recognize, value, cut},
-    sequence::{preceded, delimited, pair, separated_pair},
-    multi::{separated_list0, separated_list1, many1},
-    branch::{alt},
+    branch::alt,
+    bytes::complete::{is_not, tag, take_while},
+    character::complete::{char, digit1, multispace0, satisfy},
+    combinator::{complete, cut, map, opt, recognize, value},
+    multi::{many1, separated_list0, separated_list1},
+    sequence::{delimited, pair, preceded, separated_pair},
     IResult,
 };
 
@@ -16,12 +16,11 @@ pub(crate) fn parse_state(i: &str) -> IResult<&str, JsonValue> {
             opt(delimited(multispace0, complete(tag("/\\")), multispace0)),
             separated_list0(
                 delimited(multispace0, complete(tag("/\\")), multispace0),
-                parse_var
-            )
+                parse_var,
+            ),
         ),
-        |value| JsonValue::Object(value.into_iter().collect())
-    )
-    (i)
+        |value| JsonValue::Object(value.into_iter().collect()),
+    )(i)
 }
 
 fn parse_var(i: &str) -> IResult<&str, (String, JsonValue)> {
@@ -30,95 +29,78 @@ fn parse_var(i: &str) -> IResult<&str, (String, JsonValue)> {
         separated_pair(
             parse_identifier,
             delimited(multispace0, char('='), multispace0),
-            parse_any_value
+            parse_any_value,
         ),
-        multispace0
-    )
-    (i)
+        multispace0,
+    )(i)
 }
 
 // TODO: what else can TLA var idenfitiers have?
 fn parse_identifier(i: &str) -> IResult<&str, String> {
     map(
         many1(satisfy(|c| c.is_alphanumeric() || "_-".contains(c))),
-        |value| value.into_iter().collect()
-    )
-    (i)
+        |value| value.into_iter().collect(),
+    )(i)
 }
 
 fn parse_identifiers_as_values(i: &str) -> IResult<&str, JsonValue> {
-    map(
-        parse_identifier,
-        |value| JsonValue::String(value)
-    )
-    (i)
+    map(parse_identifier, JsonValue::String)(i)
 }
 
 fn parse_any_value(i: &str) -> IResult<&str, JsonValue> {
     preceded(
         multispace0,
         alt((
-            parse_bool
-            , parse_function
-            , parse_number
-            , parse_string
-            , parse_identifiers_as_values
-            , parse_set
-            , parse_sequence
-            , parse_record
-            )
-        )
-    )
-    (i)
+            parse_bool,
+            parse_function,
+            parse_number,
+            parse_string,
+            parse_identifiers_as_values,
+            parse_set,
+            parse_sequence,
+            parse_record,
+        )),
+    )(i)
 }
 
 fn parse_bool(i: &str) -> IResult<&str, JsonValue> {
     map(
-        alt((value(true, tag("TRUE")) , value(false, tag("FALSE")))),
-        |value| JsonValue::Bool(value)
-    )
-    (i)
+        alt((value(true, tag("TRUE")), value(false, tag("FALSE")))),
+        JsonValue::Bool,
+    )(i)
 }
 
 fn parse_number(i: &str) -> IResult<&str, JsonValue> {
-    alt((parse_pos_number, parse_neg_number))
-    (i)
+    alt((parse_pos_number, parse_neg_number))(i)
 }
 
 fn parse_pos_number(i: &str) -> IResult<&str, JsonValue> {
-    map(
-        digit1,
-        |value: &str| JsonValue::Number(value
-            .parse::<u64>()
-            .expect("u64 parsed by nom should be a valid u64")
-            .into()
+    map(digit1, |value: &str| {
+        JsonValue::Number(
+            value
+                .parse::<u64>()
+                .expect("u64 parsed by nom should be a valid u64")
+                .into(),
         )
-    )
-    (i)
+    })(i)
 }
 
 fn parse_neg_number(i: &str) -> IResult<&str, JsonValue> {
-    map(
-        preceded(char('-'), digit1),
-        |value| JsonValue::Number(format!("-{}", value)
-            .parse::<i64>()
-            .expect("i64 parsed by nom should be a valid i64")
-            .into()
+    map(preceded(char('-'), digit1), |value| {
+        JsonValue::Number(
+            format!("-{}", value)
+                .parse::<i64>()
+                .expect("i64 parsed by nom should be a valid i64")
+                .into(),
         )
-    )
-    (i)
+    })(i)
 }
 
 fn parse_string(i: &str) -> IResult<&str, JsonValue> {
     map(
-        delimited(
-            char('"'),
-            cut(take_while(|c| c != '"')),
-            char('"')
-        ),
-        |value: &str| JsonValue::String(value.into())
-    )
-    (i)
+        delimited(char('"'), cut(take_while(|c| c != '"')), char('"')),
+        |value: &str| JsonValue::String(value.into()),
+    )(i)
 }
 
 fn parse_set(i: &str) -> IResult<&str, JsonValue> {
@@ -127,13 +109,12 @@ fn parse_set(i: &str) -> IResult<&str, JsonValue> {
             pair(char('{'), multispace0),
             cut(separated_list0(
                 delimited(multispace0, char(','), multispace0),
-                parse_any_value
+                parse_any_value,
             )),
-            pair(multispace0, char('}'))
+            pair(multispace0, char('}')),
         ),
-        |value| JsonValue::Array(value)
-    )
-    (i)
+        JsonValue::Array,
+    )(i)
 }
 
 fn parse_sequence(i: &str) -> IResult<&str, JsonValue> {
@@ -142,13 +123,12 @@ fn parse_sequence(i: &str) -> IResult<&str, JsonValue> {
             pair(tag("<<"), multispace0),
             cut(separated_list0(
                 delimited(multispace0, char(','), multispace0),
-                parse_any_value
+                parse_any_value,
             )),
-            pair(multispace0, tag(">>"))
+            pair(multispace0, tag(">>")),
         ),
-        |value| JsonValue::Array(value)
-    )
-    (i)
+        JsonValue::Array,
+    )(i)
 }
 
 fn parse_function(i: &str) -> IResult<&str, JsonValue> {
@@ -158,34 +138,35 @@ fn parse_function(i: &str) -> IResult<&str, JsonValue> {
             separated_list1(
                 delimited(multispace0, complete(tag("@@")), multispace0),
                 alt((
-                    map(
-                        parse_function_entry,
-                        |x| JsonValue::Object(vec![x].into_iter().collect())
-                    ),
+                    map(parse_function_entry, |x| {
+                        JsonValue::Object(vec![x].into_iter().collect())
+                    }),
                     delimited(
                         pair(char('('), multispace0),
                         parse_function,
-                        pair(multispace0, char(')'))
-                    )
-                ))
+                        pair(multispace0, char(')')),
+                    ),
+                )),
             ),
-            multispace0
+            multispace0,
         ),
-        |values| JsonValue::Object(
-            values
-                .into_iter()
-                .map(|value| value
-                    .as_object()
-                    .unwrap()
+        |values| {
+            JsonValue::Object(
+                values
                     .into_iter()
-                    .map(|(k, v)| (k.clone(), v.clone()))
-                    .collect::<Vec<_>>()
-                )
-                .flatten()
-                .collect()
-        )
-    )
-    (i)
+                    .map(|value| {
+                        value
+                            .as_object()
+                            .unwrap()
+                            .into_iter()
+                            .map(|(k, v)| (k.clone(), v.clone()))
+                            .collect::<Vec<_>>()
+                    })
+                    .flatten()
+                    .collect(),
+            )
+        },
+    )(i)
 }
 
 fn parse_function_entry(i: &str) -> IResult<&str, (String, JsonValue)> {
@@ -194,10 +175,9 @@ fn parse_function_entry(i: &str) -> IResult<&str, (String, JsonValue)> {
         separated_pair(
             parse_identifier,
             delimited(multispace0, complete(tag(":>")), multispace0),
-            parse_any_value
-        )
-    )
-    (i)
+            parse_any_value,
+        ),
+    )(i)
 }
 
 fn parse_record(i: &str) -> IResult<&str, JsonValue> {
@@ -206,13 +186,12 @@ fn parse_record(i: &str) -> IResult<&str, JsonValue> {
             pair(char('['), multispace0),
             cut(separated_list1(
                 delimited(multispace0, char(','), multispace0),
-                parse_record_entry
+                parse_record_entry,
             )),
-            pair(multispace0, char(']'))
+            pair(multispace0, char(']')),
         ),
-        |value| JsonValue::Object(value.into_iter().collect())
-    )
-    (i)
+        |value| JsonValue::Object(value.into_iter().collect()),
+    )(i)
 }
 
 fn parse_record_entry(i: &str) -> IResult<&str, (String, JsonValue)> {
@@ -221,10 +200,9 @@ fn parse_record_entry(i: &str) -> IResult<&str, (String, JsonValue)> {
         separated_pair(
             parse_identifier,
             delimited(multispace0, tag("|->"), multispace0),
-            parse_any_value
-        )
-    )
-    (i)
+            parse_any_value,
+        ),
+    )(i)
 }
 
 #[cfg(test)]
