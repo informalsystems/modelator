@@ -2,8 +2,8 @@
 // https://matklad.github.io/2021/02/27/delete-cargo-integration-tests.html
 
 use modelator::{Error, ModelChecker, ModelCheckerOptions, Options};
-use std::path::{Path, PathBuf};
 use once_cell::sync::Lazy;
+use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 // we use this lock to make sure that the tlc & apalache tests are not run in
@@ -34,9 +34,7 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
     let options = Options::default().model_checker_options(model_checker_options);
 
     // create all tests
-    let tests = vec![
-        traffic_test(),
-    ];
+    let tests = vec![traffic_test()];
 
     for (tla_tests_file, tla_config_file) in tests {
         for (tla_tests_file, tla_config_file) in
@@ -45,7 +43,7 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
             // generate traces using Rust API
             let mut traces = modelator::traces(&tla_tests_file, &tla_config_file, &options)?;
             // extract single trace
-            assert_eq!(traces.len(), 1, "a single trace should have been generated");
+            assert_eq!(traces.len(), 3, "expecting 3 traces to be generated");
             let trace = traces.pop().unwrap();
             println!("{}", trace);
         }
@@ -74,4 +72,3 @@ fn traffic_test() -> (&'static str, &'static str) {
     let tla_config_file = "TrafficCrossing.cfg";
     (tla_tests_file, tla_config_file)
 }
-
