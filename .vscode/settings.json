@@ -1,8 +1,19 @@
 {
     "editor.formatOnSave": true,
     "files.exclude": {
+        "LICENSE": true,
         "**/.git": true,
         "**/.DS_Store": true,
+        "cargo.lock": true,
+        "**/.modelator": true,
+        "mc.log": true,
+        "log*.smt": true,
+        "MC.out": true,
+        "profile-rules.txt": true,
+        "trace.tla": true,
+        "detailed.log": true,
+        "counterexample.json": true,
+        "counterexample.tla": true,
     },
     "git.ignoreLimitWarning": true,
     "todohighlight.keywords": [
