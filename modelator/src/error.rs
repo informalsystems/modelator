@@ -63,16 +63,20 @@ pub enum Error {
     JsonParseError(String),
 }
 
-impl Error {
-    pub(crate) fn io(err: std::io::Error) -> Error {
+impl From<std::io::Error> for Error {
+    fn from(err: std::io::Error) -> Self {
         Error::IO(err.to_string())
     }
+}
 
-    pub(crate) fn ureq(err: ureq::Error) -> Error {
+impl From<ureq::Error> for Error {
+    fn from(err: ureq::Error) -> Self {
         Error::Ureq(err.to_string())
     }
+}
 
-    pub(crate) fn nom(err: nom::Err<nom::error::Error<&str>>) -> Error {
+impl From<nom::Err<nom::error::Error<&str>>> for Error {
+    fn from(err: nom::Err<nom::error::Error<&str>>) -> Self {
         Error::Nom(err.to_string())
     }
 }

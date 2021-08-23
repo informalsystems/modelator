@@ -100,7 +100,7 @@ impl Tla {
 }
 
 fn extract_test_names(tla_test_file: &TlaFile) -> Result<Vec<String>, Error> {
-    let content = std::fs::read_to_string(tla_test_file.path()).map_err(Error::io)?;
+    let content = std::fs::read_to_string(tla_test_file.path())?;
     let test_names = content
         .lines()
         .filter_map(|line| {
@@ -150,11 +150,11 @@ fn generate_test(
 
     // write test module to test module file
     let test_module_file = tla_tests_dir.join(format!("{}.tla", test_module_name));
-    std::fs::write(&test_module_file, test_module).map_err(Error::io)?;
+    std::fs::write(&test_module_file, test_module)?;
 
     // write test config to test config file
     let test_config_file = tla_tests_dir.join(format!("{}.cfg", test_module_name));
-    std::fs::write(&test_config_file, test_config).map_err(Error::io)?;
+    std::fs::write(&test_config_file, test_config)?;
 
     // create tla file and tla config file
     use std::convert::TryFrom;
@@ -184,7 +184,7 @@ EXTENDS {}
 }
 
 fn generate_test_config(tla_config_file: &TlaConfigFile, invariant: &str) -> Result<String, Error> {
-    let tla_config = std::fs::read_to_string(tla_config_file.path()).map_err(Error::io)?;
+    let tla_config = std::fs::read_to_string(tla_config_file.path())?;
     Ok(format!(
         r#"
 {}

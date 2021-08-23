@@ -33,11 +33,10 @@ pub(crate) fn absolute_path<P: AsRef<Path>>(path: P) -> String {
 
 pub(crate) fn read_dir<P: AsRef<Path>>(path: P) -> Result<HashSet<String>, Error> {
     let mut file_names = HashSet::new();
-    let files = std::fs::read_dir(path).map_err(Error::io)?;
+    let files = std::fs::read_dir(path)?;
     for file in files {
         // for each file in the modelator directory, check if it is a jar
-        let file_name = file
-            .map_err(Error::io)?
+        let file_name = file?
             .file_name()
             .into_string()
             .map_err(Error::InvalidUnicode)?;
@@ -64,13 +63,13 @@ pub(crate) mod digest {
     }
 
     fn digest_file(path: String, digest: &mut sha2::Sha256) -> Result<(), Error> {
-        let file = std::fs::File::open(path).map_err(Error::io)?;
+        let file = std::fs::File::open(path)?;
         let mut reader = std::io::BufReader::new(file);
 
         let mut buffer = [0; 1024];
         loop {
             use std::io::Read;
-            let count = reader.read(&mut buffer).map_err(Error::io)?;
+            let count = reader.read(&mut buffer)?;
             if count == 0 {
                 break;
             }
@@ -98,7 +97,7 @@ pub(crate) fn copy_files_into<P: AsRef<Path>, Q: AsRef<Path>>(
     for file in files {
         if let Some(file_name) = file.file_name() {
             let dest = dir.join(file_name);
-            copy(file, dest).map_err(Error::io)?;
+            copy(file, dest)?;
         }
     }
     // it is OK to unwrap, as the file has been checked before
@@ -127,8 +126,7 @@ fn list_files<P: AsRef<Path>>(ext: &str, file: P) -> Result<Vec<PathBuf>, Error>
         }
     });
     // Collect all files with the same extension in this directory
-    let files = std::fs::read_dir(dir)
-        .map_err(Error::io)?
+    let files = std::fs::read_dir(dir)?
         .flatten()
         .filter(|dir_entry| {
             dir_entry

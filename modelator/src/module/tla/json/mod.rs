@@ -13,5 +13,5 @@ pub(crate) fn state_to_json(state: &str) -> Result<JsonValue, Error> {
             );
             value
         })
-        .map_err(Error::nom)
+        .map_err(Into::into)
 }
