@@ -30,3 +30,5 @@ tarpaulin-report.html
 
 # VSCode files
 # .vscode/
+trace.tla
+mc.log
