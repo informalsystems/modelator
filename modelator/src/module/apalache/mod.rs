@@ -65,7 +65,7 @@ impl Apalache {
         // convert apalache counterexample to a trace
         let counterexample_path = Path::new("counterexample.tla");
         if counterexample_path.is_file() {
-            let counterexample = std::fs::read_to_string(counterexample_path).map_err(Error::io)?;
+            let counterexample = std::fs::read_to_string(counterexample_path)?;
             tracing::debug!("Apalache counterexample:\n{}", counterexample);
             let trace = counterexample::parse(counterexample)?;
 
@@ -128,7 +128,7 @@ impl Apalache {
 fn run_apalache(mut cmd: Command, options: &Options) -> Result<String, Error> {
     // start apalache
     // TODO: add timeout
-    let output = cmd.output().map_err(Error::io)?;
+    let output = cmd.output()?;
 
     // get apalache stdout and stderr
     let stdout = crate::util::cmd_output_to_string(&output.stdout);
@@ -141,7 +141,7 @@ fn run_apalache(mut cmd: Command, options: &Options) -> Result<String, Error> {
             // apalache writes all its output to the stdout
 
             // save apalache log
-            std::fs::write(&options.model_checker_options.log, &stdout).map_err(Error::io)?;
+            std::fs::write(&options.model_checker_options.log, &stdout)?;
 
             // check if a failure has occurred
             if stdout.contains("EXITCODE: ERROR") {

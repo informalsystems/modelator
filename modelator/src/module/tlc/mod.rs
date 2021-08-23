@@ -55,7 +55,7 @@ impl Tlc {
 
         // start tlc
         // TODO: add timeout
-        let output = cmd.output().map_err(Error::io)?;
+        let output = cmd.output()?;
 
         // get tlc stdout and stderr
         let stdout = crate::util::cmd_output_to_string(&output.stdout);
@@ -69,7 +69,7 @@ impl Tlc {
                 // occurred
 
                 // save tlc log
-                std::fs::write(&options.model_checker_options.log, &stdout).map_err(Error::io)?;
+                std::fs::write(&options.model_checker_options.log, &stdout)?;
                 tracing::debug!(
                     "TLC log written to {}",
                     crate::util::absolute_path(&options.model_checker_options.log)

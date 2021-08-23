@@ -17,7 +17,7 @@ impl Cache {
     pub(crate) fn new(options: &Options) -> Result<Self, Error> {
         // create cache dir (if it doesn't exist)
         let cache_dir = options.dir.join("cache");
-        std::fs::create_dir_all(&cache_dir).map_err(Error::io)?;
+        std::fs::create_dir_all(&cache_dir)?;
 
         // read files the cache directory
         let cached_keys = crate::util::read_dir(&cache_dir)?;
@@ -33,7 +33,7 @@ impl Cache {
         let value = if self.cached_keys.contains(key) {
             // if this key is cached, read it from disk
             let path = self.key_path(key);
-            let value = std::fs::read_to_string(path).map_err(Error::io)?;
+            let value = std::fs::read_to_string(path)?;
             Some(value)
         } else {
             None
@@ -51,7 +51,7 @@ impl Cache {
 
         // write the value associated with this key to disk
         let path = self.key_path(&key);
-        std::fs::write(path, value).map_err(Error::io)?;
+        std::fs::write(path, value)?;
 
         // mark the key as cached
         self.cached_keys.insert(key);
