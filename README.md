@@ -1,7 +1,7 @@
 # Modelator &emsp; [![Docs badge]][Docs link]
 
 [Docs badge]: https://docs.rs/modelator/badge.svg
-[Docs link]: https://docs.rs/modelator/0.2.0/modelator/
+[Docs link]: https://docs.rs/modelator/latest/modelator/
 
 
 The framework and tools for model-based testing.
