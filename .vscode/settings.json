@@ -1,0 +1,31 @@
+{
+    "editor.formatOnSave": true,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.DS_Store": true,
+    },
+    "git.ignoreLimitWarning": true,
+    "todohighlight.keywords": [
+        {
+            "text": "NOTE:",
+            "color": "white",
+            "backgroundColor": "rgb(111, 189, 133)"
+        },
+        {
+            "text": "PARAM!",
+            "color": "white",
+            "backgroundColor": "rgb(182, 90, 199)"
+        },
+        {
+            "text": "HACK:",
+            "color": "white",
+            "backgroundColor": "rgb(199, 96, 0)"
+        },
+        {
+            "text": "NEXT:",
+            "color": "white",
+            "backgroundColor": "rgb(83,158,230)"
+        },
+    ],
+    "cSpell.diagnosticLevel": "Hint",
+}

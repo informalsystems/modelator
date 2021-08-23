@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "modelator debug build",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/target/debug/modelator",
+            "args": [
+                "tla",
+                "generate-tests",
+                "main.tla",
+                "main.cfg"
+            ],
+            "cwd": "${workspaceRoot}",
+        }
+    ],
+}
