@@ -21,6 +21,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
+          args: -- --test-threads=1
       - name: Setup tmate session
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
