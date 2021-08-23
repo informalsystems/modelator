@@ -1,5 +1,6 @@
 use serde_json::Value as JsonValue;
 
+/// `modelator`'s artifact containing a test trace encoded as JSON.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct JsonTrace {
     states: JsonValue,
@@ -13,7 +14,7 @@ impl IntoIterator for JsonTrace {
         match self.states {
             JsonValue::Array(states) => states.into_iter(),
             _ => panic!(
-                "[modelator] JsonTrace {:?} should be a serde_json::Value::Arrray",
+                "[modelator] JsonTrace {:?} should be a serde_json::Value::Array",
                 self
             ),
         }

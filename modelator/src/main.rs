@@ -1,7 +1,6 @@
 use clap::Clap;
-use modelator::CliOptions;
 
 pub fn main() {
-    let options = CliOptions::parse();
+    let options = modelator::CliOptions::parse();
     options.run().exit()
 }

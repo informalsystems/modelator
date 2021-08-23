@@ -1,5 +1,7 @@
+use std::env;
 use std::path::{Path, PathBuf};
 
+/// Set of options to configure `modelator`.
 #[derive(Clone, Debug)]
 pub struct Options {
     /// Model checker options.
@@ -27,11 +29,12 @@ impl Default for Options {
     fn default() -> Self {
         Self {
             model_checker_options: ModelCheckerOptions::default(),
-            dir: Path::new(".modelator").to_path_buf(),
+            dir: env::current_dir().unwrap().join(".modelator"), //Path::new(".modelator").to_path_buf(),
         }
     }
 }
 
+/// Set of options to select the model checker to be used and configure them.
 #[derive(Clone, Debug)]
 pub struct ModelCheckerOptions {
     /// Which model checker to use.
@@ -69,19 +72,25 @@ impl ModelCheckerOptions {
 impl Default for ModelCheckerOptions {
     fn default() -> Self {
         Self {
-            model_checker: ModelChecker::Tlc,
+            model_checker: ModelChecker::Apalache,
             workers: ModelCheckerWorkers::Auto,
             log: Path::new("mc.log").to_path_buf(),
         }
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+/// Configuration option to select the model checker to be used.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ModelChecker {
+    /// Option representing the [TLC](https://github.com/tlaplus/tlaplus) model
+    /// checker.
     Tlc,
+    /// Option representing the [Apalache](http://github.com/informalsystems/apalache)
+    /// mode checker.
     Apalache,
 }
 
+/// Configuration option to select the number of model checker workers.
 #[derive(Clone, Copy, Debug)]
 pub enum ModelCheckerWorkers {
     /// Automatically select the number of model checker worker threads based

@@ -1,4 +1,4 @@
-name: Continuous integration
+name: Rust
 
 on: [push, pull_request]
 
@@ -43,6 +43,20 @@ jobs:
         with:
           command: fmt
           args: --all -- --check
+
+  docs-build:
+     name: Documentation build
+     runs-on: ubuntu-latest
+     steps:
+       - uses: actions/checkout@v2
+       - uses: actions-rs/toolchain@v1
+         with:
+           profile: minimal
+           toolchain: stable
+           override: true
+       - uses: actions-rs/cargo@v1
+         with:
+           command: doc
 
   clippy:
     name: Clippy
