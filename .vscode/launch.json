@@ -6,10 +6,14 @@
             "request": "launch",
             "program": "${workspaceRoot}/target/debug/modelator",
             "args": [
-                "tla",
-                "generate-tests",
-                "main.tla",
-                "main.cfg"
+                "apalache",
+                "test",
+                "/Users/danwt/documents/sandbox-tla/mainTests_MyVarTest.tla",
+                "/Users/danwt/documents/sandbox-tla/mainTests_MyVarTest.cfg",
+                // "tla",
+                // "generate-tests",
+                // "main.tla",
+                // "main.cfg"
             ],
             "cwd": "${workspaceRoot}",
         }
