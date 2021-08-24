@@ -151,11 +151,18 @@ impl ApalacheMethods {
         let options = crate::Options::default();
         use std::convert::TryFrom;
         let tla_file = TlaFile::try_from(tla_file)?;
+        let tla_module = tla_file
+            .path()
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
         let tla_config_file = TlaConfigFile::try_from(tla_config_file)?;
         let tla_trace = crate::module::Apalache::test(tla_file, tla_config_file, &options)?;
         tracing::debug!("Apalache::test output {}", tla_trace);
 
-        save_tla_trace(tla_trace)
+        save_tla_trace(&tla_module, tla_trace)
     }
 
     fn parse(tla_file: String) -> Result<JsonValue, Error> {
@@ -183,11 +190,18 @@ impl TlcMethods {
         let options = crate::Options::default();
         use std::convert::TryFrom;
         let tla_file = TlaFile::try_from(tla_file)?;
+        let tla_module = tla_file
+            .path()
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
         let tla_config_file = TlaConfigFile::try_from(tla_config_file)?;
         let tla_trace = crate::module::Tlc::test(tla_file, tla_config_file, &options)?;
         tracing::debug!("Tlc::test output {}", tla_trace);
 
-        save_tla_trace(tla_trace)
+        save_tla_trace(&tla_module, tla_trace)
     }
 }
 
@@ -206,9 +220,15 @@ fn generated_tests(tests: Vec<(TlaFile, TlaConfigFile)>) -> Result<JsonValue, Er
     Ok(JsonValue::Array(json_array))
 }
 
-fn save_tla_trace(tla_trace: TlaTrace) -> Result<JsonValue, Error> {
+fn save_tla_trace(tla_module: &str, tla_trace: TlaTrace) -> Result<JsonValue, Error> {
     let path = Path::new("trace.tla").to_path_buf();
-    std::fs::write(&path, format!("{}", tla_trace))?;
+    std::fs::write(
+        &path,
+        format!(
+            "---- MODULE trace ----\n\nEXTENDS {}\n\n{}\n====",
+            tla_module, tla_trace
+        ),
+    )?;
     Ok(json!({
         "tla_trace_file": crate::util::absolute_path(&path),
     }))
