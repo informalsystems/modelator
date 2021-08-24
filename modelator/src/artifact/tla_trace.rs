@@ -133,7 +133,7 @@ impl FromStr for TlaTrace {
     fn from_str(tla_trace: &str) -> Result<Self, Self::Err> {
         let tla_trace = remove_tla_comments(tla_trace);
 
-        let tla: TlaTraceFileContent = parse_tla_trace_file_contents(&tla_trace).unwrap().1;
+        let tla: TlaTraceFileContent<'_> = parse_tla_trace_file_contents(&tla_trace).unwrap().1;
 
         let mut states: Vec<(usize, &str)> = tla
             .operators

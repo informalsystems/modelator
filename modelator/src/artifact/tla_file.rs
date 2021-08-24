@@ -13,7 +13,7 @@ pub struct TlaFile {
 }
 
 /// TODO:
-fn tla_file_name(path: &PathBuf) -> Option<String> {
+fn tla_file_name(path: &Path) -> Option<String> {
     if path.is_file() {
         path.file_name().map(|file_name| {
             file_name
@@ -101,7 +101,7 @@ impl Artifact for TlaFile {
     fn as_string(&self) -> &str {
         todo!()
     }
-    fn try_write_to_file(&self, path: &Path) -> Result<(), Error> {
+    fn try_write_to_file(&self, _path: &Path) -> Result<(), Error> {
         todo!()
     }
 }
