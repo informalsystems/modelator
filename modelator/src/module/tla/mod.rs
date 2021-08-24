@@ -74,7 +74,7 @@ impl Tla {
 
         // compute tla tests module name: it's safe to unwrap because we have
         // already checked that the tests file is indeed a file
-        let tla_tests_module_name = tla_tests_file.tla_module_name().unwrap();
+        let tla_tests_module_name = tla_tests_file.tla_file_name().unwrap();
 
         // retrieve test names from tla tests file
         let test_names = extract_test_names(&tla_tests_file)?;

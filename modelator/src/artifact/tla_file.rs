@@ -24,7 +24,7 @@ impl TlaFile {
 
     /// Infer TLA module name. We assume that the TLA module name matches the
     /// name of the file.
-    pub(crate) fn tla_module_name(&self) -> Option<String> {
+    pub(crate) fn tla_file_name(&self) -> Option<String> {
         if self.path.is_file() {
             self.path.file_name().map(|file_name| {
                 file_name

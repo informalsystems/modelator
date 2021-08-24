@@ -107,10 +107,10 @@ impl Apalache {
 
         // compute tla module name: it's okay to unwrap as we have already
         // verified that the file exists
-        let tla_module_name = tla_file.tla_module_name().unwrap();
+        let tla_file_name = tla_file.tla_file_name().unwrap();
 
         // compute the output tla file
-        let tla_parsed_file = tla_dir.join(format!("{}Parsed.tla", tla_module_name));
+        let tla_parsed_file = tla_dir.join(format!("{}Parsed.tla", tla_file_name));
 
         // create apalache parse command
         let cmd = parse_cmd(tla_file.path(), &tla_parsed_file, options);
