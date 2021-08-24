@@ -121,7 +121,7 @@ impl TlaMethods {
         let tests = crate::module::Tla::generate_tests(tla_file, tla_config_file)?;
         tracing::debug!("Tla::generate_tests output {:#?}", tests);
 
-        json_generated_test_list(tests)
+        json_list_generated_tests(tests)
     }
 
     fn tla_trace_to_json_trace(tla_trace_file: String) -> Result<JsonValue, Error> {
@@ -195,7 +195,7 @@ impl TlcMethods {
 }
 
 #[allow(clippy::unnecessary_wraps)]
-fn json_generated_test_list(tests: Vec<(TlaFile, TlaConfigFile)>) -> Result<JsonValue, Error> {
+fn json_list_generated_tests(tests: Vec<(TlaFile, TlaConfigFile)>) -> Result<JsonValue, Error> {
     let json_array_entry = |tla_file: TlaFile, tla_config_file: TlaConfigFile| {
         json!({
             "tla_file": format!("{}", tla_file),
