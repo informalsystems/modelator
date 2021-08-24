@@ -1,3 +1,4 @@
+use super::Artifact;
 use crate::Error;
 use std::convert::TryFrom;
 use std::path::{Path, PathBuf};

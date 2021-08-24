@@ -1,3 +1,4 @@
+use super::Artifact;
 use crate::Error;
 use std::str::FromStr;
 
@@ -67,13 +68,6 @@ fn remove_tla_comments(i: &str) -> String {
     s
 }
 
-#[derive(Debug)]
-struct TlaFile<'a> {
-    name: &'a str,
-    extends: Vec<&'a str>,
-    operators: Vec<(&'a str, &'a str)>,
-}
-
 fn tla_identifiers(i: &str) -> IResult<&str, &str> {
     recognize(pair(
         alt((alpha1, tag("_"))),
@@ -81,7 +75,14 @@ fn tla_identifiers(i: &str) -> IResult<&str, &str> {
     ))(i)
 }
 
-fn parse_tla_file(i: &str) -> IResult<&str, TlaFile<'_>> {
+#[derive(Debug)]
+struct TlaTraceFileContent<'a> {
+    name: &'a str,
+    extends: Vec<&'a str>,
+    operators: Vec<(&'a str, &'a str)>,
+}
+
+fn parse_tla_trace_file_contents(i: &str) -> IResult<&str, TlaTraceFileContent<'_>> {
     map(
         terminated(
             tuple((
@@ -118,7 +119,7 @@ fn parse_tla_file(i: &str) -> IResult<&str, TlaFile<'_>> {
             )),
             delimited(multispace0, many1(char('=')), multispace0),
         ),
-        |(name, extends, operators)| TlaFile {
+        |(name, extends, operators)| TlaTraceFileContent {
             name,
             extends,
             operators,
@@ -132,7 +133,7 @@ impl FromStr for TlaTrace {
     fn from_str(tla_trace: &str) -> Result<Self, Self::Err> {
         let tla_trace = remove_tla_comments(tla_trace);
 
-        let tla = parse_tla_file(&tla_trace).unwrap().1;
+        let tla: TlaTraceFileContent = parse_tla_trace_file_contents(&tla_trace).unwrap().1;
 
         let mut states: Vec<(usize, &str)> = tla
             .operators
