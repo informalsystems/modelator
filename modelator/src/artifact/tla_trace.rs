@@ -91,8 +91,8 @@ impl Artifact for TlaTrace {
     fn as_string(&self) -> &str {
         todo!()
     }
-    fn try_write_to_file(&self, _path: &Path) -> Result<(), Error> {
-        todo!()
+    fn try_write_to_file(&self, path: &Path) -> Result<(), Error> {
+        Ok(std::fs::write(&path, format!("{}", self))?)
     }
 }
 

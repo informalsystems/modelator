@@ -1,7 +1,7 @@
 // CLI output.
 pub(crate) mod output;
 
-use crate::artifact::{JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
+use crate::artifact::{Artifact, JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
 use crate::Error;
 use clap::{AppSettings, Clap, Subcommand};
 use serde_json::{json, Value as JsonValue};
@@ -210,8 +210,9 @@ fn json_list_generated_tests(tests: Vec<(TlaFile, TlaConfigFile)>) -> Result<Jso
 }
 
 fn write_tla_trace_to_file(tla_trace: TlaTrace) -> Result<JsonValue, Error> {
-    let path = Path::new("trace.tla").to_path_buf();
-    std::fs::write(&path, format!("{}", tla_trace))?;
+    // TODO: hardcoded!
+    let path = Path::new("trace.tla");
+    tla_trace.try_write_to_file(path)?;
     Ok(json!({
         "tla_trace_file": crate::util::absolute_path(&path),
     }))

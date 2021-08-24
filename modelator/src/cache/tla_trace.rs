@@ -18,6 +18,7 @@ impl TlaTraceCache {
     }
 
     pub(crate) fn insert(&mut self, key: String, tla_trace: &TlaTrace) -> Result<(), Error> {
+        // TODO: this to_string is Display trait's, but maybe we want our own repr.
         let value = tla_trace.to_string();
         self.cache.insert(key, value)
     }
