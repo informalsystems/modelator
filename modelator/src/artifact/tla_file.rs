@@ -10,7 +10,8 @@ pub struct TlaFile {
 }
 
 impl TlaFile {
-    pub(crate) fn new<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
+    // pub(crate) fn new<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
+    fn news<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
         let path = path.as_ref().to_path_buf();
         crate::util::check_file_existence(&path)?;
         Ok(Self { path })
@@ -43,28 +44,28 @@ impl TlaFile {
 impl TryFrom<&str> for TlaFile {
     type Error = crate::Error;
     fn try_from(path: &str) -> Result<Self, Self::Error> {
-        Self::new(path)
+        Self::news(path)
     }
 }
 
 impl TryFrom<String> for TlaFile {
     type Error = crate::Error;
     fn try_from(path: String) -> Result<Self, Self::Error> {
-        Self::new(path)
+        Self::news(path)
     }
 }
 
 impl TryFrom<&Path> for TlaFile {
     type Error = crate::Error;
     fn try_from(path: &Path) -> Result<Self, Self::Error> {
-        Self::new(path)
+        Self::news(path)
     }
 }
 
 impl TryFrom<PathBuf> for TlaFile {
     type Error = crate::Error;
     fn try_from(path: PathBuf) -> Result<Self, Self::Error> {
-        Self::new(path)
+        Self::news(path)
     }
 }
 
