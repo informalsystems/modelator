@@ -4,7 +4,7 @@
 
 ```
 apalache
-    # (suddenly started working)
+    # Will give an error if not using zulu for m1
     parse
         # generated a <filename>Parsed.tla file, this is just a wrapper around Apalaches parse functionality
         # (used to check spec is syntactically correct)
