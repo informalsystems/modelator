@@ -75,19 +75,10 @@ impl std::fmt::Display for TlaFile {
 }
 
 impl Artifact for TlaFile {
-    fn from_string(s: &str) -> Result<Self, Error> {
-        todo!()
-    }
-
-    fn from_file(path: &std::path::Path) -> Result<Self, Error> {
-        todo!()
-    }
-
     fn as_string(&self) -> &str {
         todo!()
     }
-
-    fn to_file(&self, path: &std::path::Path) -> Result<(), Error> {
+    fn try_write_to_file(&self, path: &Path) -> Result<(), Error> {
         todo!()
     }
 }

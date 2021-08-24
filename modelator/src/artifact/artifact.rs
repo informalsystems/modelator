@@ -13,7 +13,7 @@ where
         + TryFrom<PathBuf, Error = crate::Error>,
 {
     fn as_string(&self) -> &str;
-    fn write_to_file(&self, f: &Path) -> Result<(), Error>;
+    fn try_write_to_file(&self, path: &Path) -> Result<(), Error>;
 }
 
 // impl std::fmt::Debug for dyn Artifact {
