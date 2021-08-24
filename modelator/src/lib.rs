@@ -118,10 +118,10 @@ pub fn traces<P: AsRef<Path>>(
         )
         .collect::<Result<Vec<_>, _>>()?;
 
-    // cleanup everything by removing the temporary directory
-    dir.close()?;
     // restore the current directory
     env::set_current_dir(current_dir)?;
+    // cleanup everything by removing the temporary directory
+    dir.close()?;
 
     // convert each tla trace to json
     traces
