@@ -5,7 +5,13 @@ on: [push, pull_request]
 jobs:
   test:
     name: Test Suite
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - windows-latest
+          - ubuntu-latest
+          - macos-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -17,6 +23,11 @@ jobs:
         with:
           command: test
           args: -- --test-threads=1
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
 
   fmt:
     name: Rustfmt

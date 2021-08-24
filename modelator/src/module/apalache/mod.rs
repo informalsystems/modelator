@@ -12,14 +12,14 @@ use std::process::Command;
 pub struct Apalache;
 
 impl Apalache {
-    /// ```ignore
-    /// TODO: ignoring because of https://github.com/informalsystems/modelator/issues/47
+    /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
+    ///
     /// Generate a TLA+ trace given a [TlaFile] and a [TlaConfigFile] produced
     /// by [crate::module::Tla::generate_tests].
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// use modelator::artifact::{TlaFile, TlaConfigFile};
     /// use modelator::module::{Tla, Apalache};
     /// use modelator::Options;
@@ -78,14 +78,14 @@ impl Apalache {
         }
     }
 
-    /// ```ignore
-    /// TODO: ignoring because of https://github.com/informalsystems/modelator/issues/47
+    /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>.
+    ///
     /// Runs Apalache's `parse` command, returning the [TlaFile] produced by
     /// Apalache.
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// use modelator::artifact::TlaFile;
     /// use modelator::module::Apalache;
     /// use modelator::Options;
