@@ -102,12 +102,12 @@ impl Apalache {
         tracing::debug!("Apalache::parse {} {:?}", tla_file, options);
 
         // compute the directory in which the tla file is stored
-        let mut tla_dir = tla_file.path().clone();
+        let mut tla_dir = tla_file.path().to_path_buf();
         assert!(tla_dir.pop());
 
         // compute tla module name: it's okay to unwrap as we have already
         // verified that the file exists
-        let tla_file_name = tla_file.tla_file_name().unwrap();
+        let tla_file_name = tla_file.file_name();
 
         // compute the output tla file
         let tla_parsed_file = tla_dir.join(format!("{}Parsed.tla", tla_file_name));

@@ -1,40 +1,57 @@
 use super::Artifact;
 use crate::Error;
 use std::convert::TryFrom;
+use std::fs;
 use std::path::{Path, PathBuf};
 
 /// `modelator`'s artifact representing a TLA+ file.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TlaFile {
     path: PathBuf,
+    content: String,
+    file_name: String,
+}
+
+/// TODO:
+fn tla_file_name(path: &PathBuf) -> Option<String> {
+    if path.is_file() {
+        path.file_name().map(|file_name| {
+            file_name
+                .to_string_lossy()
+                .trim_end_matches(".tla")
+                .to_owned()
+        })
+    } else {
+        None
+    }
 }
 
 impl TlaFile {
     // pub(crate) fn new<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
-    fn news<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
+    fn new<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
         let path = path.as_ref().to_path_buf();
         crate::util::check_file_existence(&path)?;
-        Ok(Self { path })
+        let content: String = fs::read_to_string(&path)?;
+        let file_name = tla_file_name(&path);
+
+        match file_name {
+            Some(val) => Ok(Self {
+                path,
+                content,
+                file_name: val,
+            }),
+            None => Err(Error::IO(format!("File doesn't exist {}", path.display()))),
+        }
     }
 
     /// Returns the path to the TLA+ file.
-    pub fn path(&self) -> &PathBuf {
+    pub fn path(&self) -> &Path {
         &self.path
     }
 
-    /// Infer TLA module name. We assume that the TLA module name matches the
-    /// name of the file.
-    pub(crate) fn tla_file_name(&self) -> Option<String> {
-        if self.path.is_file() {
-            self.path.file_name().map(|file_name| {
-                file_name
-                    .to_string_lossy()
-                    .trim_end_matches(".tla")
-                    .to_owned()
-            })
-        } else {
-            None
-        }
+    /// Returns the name of the TLA+ file.
+    pub fn file_name(&self) -> &str {
+        &self.file_name
     }
 }
 
@@ -44,28 +61,28 @@ impl TlaFile {
 impl TryFrom<&str> for TlaFile {
     type Error = crate::Error;
     fn try_from(path: &str) -> Result<Self, Self::Error> {
-        Self::news(path)
+        Self::new(path)
     }
 }
 
 impl TryFrom<String> for TlaFile {
     type Error = crate::Error;
     fn try_from(path: String) -> Result<Self, Self::Error> {
-        Self::news(path)
+        Self::new(path)
     }
 }
 
 impl TryFrom<&Path> for TlaFile {
     type Error = crate::Error;
     fn try_from(path: &Path) -> Result<Self, Self::Error> {
-        Self::news(path)
+        Self::new(path)
     }
 }
 
 impl TryFrom<PathBuf> for TlaFile {
     type Error = crate::Error;
     fn try_from(path: PathBuf) -> Result<Self, Self::Error> {
-        Self::news(path)
+        Self::new(path)
     }
 }
 
