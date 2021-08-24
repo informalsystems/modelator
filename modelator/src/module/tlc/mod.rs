@@ -69,6 +69,7 @@ impl Tlc {
                 // occurred
 
                 // save tlc log
+                //TODO: probably better to return the log in memory and write it somewhere else
                 std::fs::write(&options.model_checker_options.log, &stdout)?;
                 tracing::debug!(
                     "TLC log written to {}",
@@ -76,6 +77,8 @@ impl Tlc {
                 );
 
                 // convert tlc output to traces
+                // TODO: make the logic here mirror the better-implemented Apalache module which returns
+                // stdout for post-proccesing
                 let mut traces = output::parse(stdout, &options.model_checker_options)?;
 
                 // check if no trace was found

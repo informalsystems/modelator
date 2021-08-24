@@ -41,6 +41,8 @@ impl Apalache {
         tla_config_file: TlaConfigFile,
         options: &Options,
     ) -> Result<TlaTrace, Error> {
+        // TODO: this method currently just uses the paths of the files so no need for whole artifact objects!
+
         tracing::debug!(
             "Apalache::test {} {} {:?}",
             tla_file,
@@ -105,8 +107,6 @@ impl Apalache {
         let mut tla_dir = tla_file.path().to_path_buf();
         assert!(tla_dir.pop());
 
-        // compute tla module name: it's okay to unwrap as we have already
-        // verified that the file exists
         let tla_file_name = tla_file.file_name();
 
         // compute the output tla file
@@ -141,6 +141,7 @@ fn run_apalache(mut cmd: Command, options: &Options) -> Result<String, Error> {
             // apalache writes all its output to the stdout
 
             // save apalache log
+            //TODO: probably better to return the log in memory and write it somewhere else
             std::fs::write(&options.model_checker_options.log, &stdout)?;
 
             // check if a failure has occurred
