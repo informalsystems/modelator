@@ -1,24 +1,41 @@
 ------------------------------ MODULE TrafficCrossing ------------------------------
 \* This is an extention of the traffic example from https://git.io/JEY80
+\* We have two crossing roads, 0 and 1; with two traffic lights, one for each road.
+\* There can be multiple cars on the roads, each having a specific position.
+\* Position 0 represents the road crossing.
 \* (C) 2021 Andrey Kuprianov
 
 EXTENDS Integers, FiniteSets
 
 CONSTANTS 
+  \* @typeAlias: CAR = [ road: Int, pos: Int ];
+  \* @typeAlias: CARS = Int -> CAR;
+  \* @typeAlias: LIGHT = Str;
+  \* @typeAlias: LIGHTS = Int -> LIGHT;
   \* How many cars are there? 
   \* @type: Int;
   NUM_CARS
 
-\* We have two crossing roads, 0 and 1; with two traffic lights, one for each road.
-\* There can be multiple cars on the roads, each having a specific position.
-\* Position 0 represents the road crossing.
-\* @typeAlias: CAR = [ road: Int, pos: Int ];
-\* The state of a traffic light is simple: it is either red or green.
+VARIABLES
+  \* @type: LIGHTS;
+  lights,
+  \* @type: CARS;
+  cars
 
 Roads == {0, 1}
 Color == {"red", "redyellow", "green", "yellow"}
 Cars == 1..NUM_CARS
 Positions == 1..NUM_CARS
+
+\* Start with one light green, one red, and the cars distributed among the roads
+DefaultInit == 
+  /\ lights = [ road \in Roads |-> IF road = 0 THEN "green" ELSE "red" ]
+  /\ cars \in [ Cars -> [ road: Roads, pos: Positions] ]
+  /\ \A car1, car2 \in Cars:
+       car1 /= car2 => cars[car1] /= cars[car2]
+
+
+\* Auxiliary predicates
 
 NextColor(c) == CASE c = "red" -> "redyellow"
                   [] c = "redyellow" -> "green"
@@ -26,39 +43,44 @@ NextColor(c) == CASE c = "red" -> "redyellow"
                   [] c = "yellow" -> "red"
                   [] OTHER -> "red" \* APALACHE requires OTHER
 
-VARIABLES
-    \* @type: Int -> Str;
-    lights,
-    \* @type: Int -> CAR;
-    cars
-
-vars == << lights, cars >>
-
-CInit ==
-  NUM_CARS = 3
-
-Init == 
-  /\ lights = [ road \in Roads |-> IF road = 0 THEN "green" ELSE "red" ]
-  /\ cars \in [ Cars -> [ road: Roads, pos: Positions] ]
-  /\ \A car1, car2 \in Cars:
-       car1 /= car2 => cars[car1] /= cars[car2]
-
 HasCarAt(road, pos) ==
   \E c \in Cars: 
     /\ cars[c].road = road
     /\ cars[c].pos = pos
 
+CarAtCrossing ==
+  \E c \in Cars : cars[c].pos = 0 
+
+TrafficAllowed ==
+  \E road \in Roads : lights[road] = "green"
+
+
+\* Light actions
+
 StopTraffic ==
-  /\ \E road \in Roads : lights[road] = "green"
+  /\ TrafficAllowed
   /\ lights' = [ road \in Roads |-> NextColor(lights[road]) ]
   /\ UNCHANGED cars
 
 AllowTraffic ==
-  /\ ~\E road \in Roads : lights[road] = "green"
-  /\ ~\E c \in Cars : cars[c].pos = 0 
+  /\ ~TrafficAllowed
   /\ lights' = [ road \in Roads |-> NextColor(lights[road]) ]
   /\ UNCHANGED cars
 
+LightActions == 
+  \/ StopTraffic
+  \/ AllowTraffic
+
+
+\* Car actions
+
+MoveForward ==
+  /\ \E c \in Cars:
+     LET car == cars[c] IN
+       /\ car.pos > 1
+       /\ ~ HasCarAt(car.road, car.pos-1)
+       /\ cars' = [cars EXCEPT ![c] = [@ EXCEPT !.pos = @ - 1 ] ]
+  /\ UNCHANGED lights
 
 CrossStreet ==
   /\ \E c \in Cars:
@@ -68,7 +90,6 @@ CrossStreet ==
        /\ ~ HasCarAt(car.road, car.pos-1)
        /\ cars' = [cars EXCEPT ![c] = [@ EXCEPT !.pos = 0 ] ]
   /\ UNCHANGED lights
-
 
 \* When leaving the crossing the car gets at the end of some road
 LeaveCrossing ==
@@ -82,22 +103,20 @@ LeaveCrossing ==
           /\ cars' = [cars EXCEPT ![c] = [road |-> road, pos |-> pos ] ]
   /\ UNCHANGED lights
 
-
-MoveForward ==
-  /\ \E c \in Cars:
-     LET car == cars[c] IN
-       /\ car.pos > 1
-       /\ ~ HasCarAt(car.road, car.pos-1)
-       /\ cars' = [cars EXCEPT ![c] = [@ EXCEPT !.pos = @ - 1 ] ]
-  /\ UNCHANGED lights
-
-
-Next ==
-  \/ StopTraffic
-  \/ AllowTraffic
-  \/ LeaveCrossing
+CarActions ==
   \/ CrossStreet
+  \/ LeaveCrossing
   \/ MoveForward
+
+
+DefaultNext ==
+  \* The rule is that any car at the crossing when no traffic allowed
+  \* should leave it before the traffic is allowed again
+  IF ~TrafficAllowed /\ CarAtCrossing THEN
+    LeaveCrossing
+  ELSE
+    \/ LightActions
+    \/ CarActions
 
 
 \* Invariants

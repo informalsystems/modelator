@@ -34,7 +34,7 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
     let options = Options::default().model_checker_options(model_checker_options);
 
     // create all tests
-    let tests = vec![traffic_test()];
+    let tests = vec![traffic_test(), traffic_history_test()];
 
     for (tla_tests_file, tla_config_file) in tests {
         for (tla_tests_file, tla_config_file) in
@@ -69,6 +69,12 @@ fn absolute_and_relative_paths(
 
 fn traffic_test() -> (&'static str, &'static str) {
     let tla_tests_file = "TrafficCrossingTest.tla";
-    let tla_config_file = "TrafficCrossing.cfg";
+    let tla_config_file = "TrafficCrossingTest.cfg";
+    (tla_tests_file, tla_config_file)
+}
+
+fn traffic_history_test() -> (&'static str, &'static str) {
+    let tla_tests_file = "TrafficCrossingHistoryTest.tla";
+    let tla_config_file = "TrafficCrossingHistoryTest.cfg";
     (tla_tests_file, tla_config_file)
 }
