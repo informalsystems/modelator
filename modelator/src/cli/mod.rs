@@ -132,7 +132,7 @@ impl TlaMethods {
         let json_trace = crate::module::Tla::tla_trace_to_json_trace(tla_trace)?;
         tracing::debug!("Tla::tla_trace_to_json_trace output {}", json_trace);
 
-        save_json_trace(json_trace)
+        write_json_trace_to_file(json_trace)
     }
 }
 
@@ -155,7 +155,7 @@ impl ApalacheMethods {
         let tla_trace = crate::module::Apalache::test(tla_file, tla_config_file, &options)?;
         tracing::debug!("Apalache::test output {}", tla_trace);
 
-        save_tla_trace(tla_trace)
+        write_tla_trace_to_file(tla_trace)
     }
 
     fn parse(tla_file: String) -> Result<JsonValue, Error> {
@@ -187,7 +187,7 @@ impl TlcMethods {
         let tla_trace = crate::module::Tlc::test(tla_file, tla_config_file, &options)?;
         tracing::debug!("Tlc::test output {}", tla_trace);
 
-        save_tla_trace(tla_trace)
+        write_tla_trace_to_file(tla_trace)
     }
 }
 
@@ -206,7 +206,7 @@ fn generated_tests(tests: Vec<(TlaFile, TlaConfigFile)>) -> Result<JsonValue, Er
     Ok(JsonValue::Array(json_array))
 }
 
-fn save_tla_trace(tla_trace: TlaTrace) -> Result<JsonValue, Error> {
+fn write_tla_trace_to_file(tla_trace: TlaTrace) -> Result<JsonValue, Error> {
     let path = Path::new("trace.tla").to_path_buf();
     std::fs::write(&path, format!("{}", tla_trace))?;
     Ok(json!({
@@ -214,7 +214,7 @@ fn save_tla_trace(tla_trace: TlaTrace) -> Result<JsonValue, Error> {
     }))
 }
 
-fn save_json_trace(json_trace: JsonTrace) -> Result<JsonValue, Error> {
+fn write_json_trace_to_file(json_trace: JsonTrace) -> Result<JsonValue, Error> {
     let path = Path::new("trace.json").to_path_buf();
     std::fs::write(&path, format!("{}", json_trace))?;
     Ok(json!({
