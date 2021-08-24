@@ -1,5 +1,8 @@
 use super::Artifact;
 use crate::Error;
+use std::convert::TryFrom;
+use std::fs;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use nom::{
@@ -31,6 +34,65 @@ impl TlaTrace {
 
     pub(crate) fn is_empty(&self) -> bool {
         self.states.is_empty()
+    }
+}
+
+impl IntoIterator for TlaTrace {
+    type Item = TlaState;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.states.into_iter()
+    }
+}
+
+impl std::fmt::Display for TlaTrace {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for (index, state) in self.states.iter().enumerate() {
+            write!(f, "State{} ==\n{}", index, state)?;
+        }
+        Ok(())
+    }
+}
+
+impl TryFrom<&str> for TlaTrace {
+    type Error = crate::Error;
+    fn try_from(_path: &str) -> Result<Self, Self::Error> {
+        // Self::new(path)
+        todo!();
+    }
+}
+
+impl TryFrom<String> for TlaTrace {
+    type Error = crate::Error;
+    fn try_from(_path: String) -> Result<Self, Self::Error> {
+        // Self::new(path)
+        todo!();
+    }
+}
+
+impl TryFrom<&Path> for TlaTrace {
+    type Error = crate::Error;
+    fn try_from(_path: &Path) -> Result<Self, Self::Error> {
+        // Self::new(path)
+        todo!();
+    }
+}
+
+impl TryFrom<PathBuf> for TlaTrace {
+    type Error = crate::Error;
+    fn try_from(_path: PathBuf) -> Result<Self, Self::Error> {
+        // Self::new(path)
+        todo!();
+    }
+}
+
+impl Artifact for TlaTrace {
+    fn as_string(&self) -> &str {
+        todo!()
+    }
+    fn try_write_to_file(&self, path: &Path) -> Result<(), Error> {
+        Ok(std::fs::write(&path, format!("{}", self))?)
     }
 }
 
@@ -156,23 +218,5 @@ impl FromStr for TlaTrace {
             .into_iter()
             .for_each(|(_, state)| trace.add(state.into()));
         Ok(trace)
-    }
-}
-
-impl IntoIterator for TlaTrace {
-    type Item = TlaState;
-    type IntoIter = std::vec::IntoIter<Self::Item>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.states.into_iter()
-    }
-}
-
-impl std::fmt::Display for TlaTrace {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for (index, state) in self.states.iter().enumerate() {
-            write!(f, "State{} ==\n{}", index, state)?;
-        }
-        Ok(())
     }
 }

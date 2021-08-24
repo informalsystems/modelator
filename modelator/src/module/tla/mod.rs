@@ -150,7 +150,7 @@ fn generate_test(
         test_name,
     );
     // create test config with negated test as an invariant
-    let test_config = generate_test_config(tla_config_file, &negated_test_name)?;
+    let test_config = generate_test_config(tla_config_file.content(), &negated_test_name)?;
 
     // write test module to test module file
     let test_module_file = tla_tests_file_dir.join(format!("{}.tla", test_module_name));
@@ -187,13 +187,12 @@ EXTENDS {}
     )
 }
 
-fn generate_test_config(tla_config_file: &TlaConfigFile, invariant: &str) -> Result<String, Error> {
-    let tla_config = std::fs::read_to_string(tla_config_file.path())?;
+fn generate_test_config(tla_config_file_content: &str, invariant: &str) -> Result<String, Error> {
     Ok(format!(
         r#"
 {}
 INVARIANT {}
 "#,
-        tla_config, invariant
+        tla_config_file_content, invariant
     ))
 }

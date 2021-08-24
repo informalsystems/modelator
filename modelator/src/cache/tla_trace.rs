@@ -18,6 +18,7 @@ impl TlaTraceCache {
     }
 
     pub(crate) fn insert(&mut self, key: String, tla_trace: &TlaTrace) -> Result<(), Error> {
+        // TODO: this to_string is Display trait's, but maybe we want our own repr.
         let value = tla_trace.to_string();
         self.cache.insert(key, value)
     }
@@ -38,7 +39,7 @@ impl TlaTraceCache {
             // compute full path
             .map(|filename| tla_dir.join(filename))
             // also hash the tla config file
-            .chain(std::iter::once(tla_config_file.path().clone()))
+            .chain(std::iter::once(tla_config_file.path().to_path_buf()))
             .map(|path| crate::util::absolute_path(&path))
             // sort files so that the hash is deterministic
             .collect();

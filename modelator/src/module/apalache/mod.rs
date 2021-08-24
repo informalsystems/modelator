@@ -160,13 +160,13 @@ fn run_apalache(mut cmd: Command, options: &Options) -> Result<String, Error> {
     }
 }
 
-fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) -> Command {
+fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file_path: P, options: &Options) -> Command {
     let mut cmd = apalache_cmd_start(&tla_file, options);
     cmd.arg("check")
         // set tla config file
         .arg(format!(
             "--config={}",
-            tla_config_file.as_ref().to_string_lossy()
+            tla_config_file_path.as_ref().to_string_lossy()
         ))
         // set tla file
         .arg(tla_file.as_ref());
