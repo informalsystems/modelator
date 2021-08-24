@@ -59,21 +59,3 @@ impl std::fmt::Display for TlaConfigFile {
         write!(f, "{}", crate::util::absolute_path(&self.path))
     }
 }
-
-impl Artifact for TlaConfigFile {
-    fn from_string(s: &str) -> Result<Self, Error> {
-        todo!()
-    }
-
-    fn from_file(path: &std::path::Path) -> Result<Self, Error> {
-        todo!()
-    }
-
-    fn as_string(&self) -> &str {
-        todo!()
-    }
-
-    fn to_file(&self, path: &std::path::Path) -> Result<(), Error> {
-        todo!()
-    }
-}

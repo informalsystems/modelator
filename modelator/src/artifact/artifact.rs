@@ -1,27 +1,23 @@
 use crate::Error;
+use std::convert::TryFrom;
+use std::path::{Path, PathBuf};
 use std::str;
 
 /// TODO:
-pub trait Artifact: std::fmt::Display {
-    /// TODO:
-    fn from_string(s: &str) -> Result<Self, Error>
-    where
-        Self: Sized;
-
-    /// TODO:
-    fn from_file(path: &std::path::Path) -> Result<Self, Error>
-    where
-        Self: Sized;
-
-    /// TODO:
+pub trait Artifact
+where
+    Self: std::fmt::Display
+        + for<'a> TryFrom<&'a str, Error = crate::Error>
+        + TryFrom<String, Error = crate::Error>
+        + for<'a> TryFrom<&'a Path, Error = crate::Error>
+        + TryFrom<PathBuf, Error = crate::Error>,
+{
     fn as_string(&self) -> &str;
-
-    /// TODO:
-    fn to_file(&self, path: &std::path::Path) -> Result<(), Error>;
+    fn write_to_file(&self, f: &Path) -> Result<(), Error>;
 }
 
-impl std::fmt::Debug for dyn Artifact {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
+// impl std::fmt::Debug for dyn Artifact {
+//     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         todo!()
+//     }
+// }
