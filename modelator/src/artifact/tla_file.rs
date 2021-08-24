@@ -49,6 +49,11 @@ impl TlaFile {
         &self.path
     }
 
+    /// Returns the content of the TLA+ file.
+    pub fn content(&self) -> &str {
+        &self.content
+    }
+
     /// Returns the name of the TLA+ file.
     pub fn file_name(&self) -> &str {
         &self.file_name
