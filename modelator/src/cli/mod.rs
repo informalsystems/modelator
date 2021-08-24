@@ -219,8 +219,9 @@ fn write_tla_trace_to_file(tla_trace: TlaTrace) -> Result<JsonValue, Error> {
 }
 
 fn write_json_trace_to_file(json_trace: JsonTrace) -> Result<JsonValue, Error> {
-    let path = Path::new("trace.json").to_path_buf();
-    std::fs::write(&path, format!("{}", json_trace))?;
+    // TODO: hardcoded!
+    let path = Path::new("trace.json");
+    json_trace.try_write_to_file(path)?;
     Ok(json!({
         "json_trace_file": crate::util::absolute_path(&path),
     }))
