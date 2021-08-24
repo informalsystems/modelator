@@ -29,7 +29,7 @@ impl TlaTraceCache {
         tracing::debug!("TlaTraceKey:key {} {}", tla_file, tla_config_file);
 
         // get all tla files in the same directory
-        let mut tla_dir = tla_file.path().clone();
+        let mut tla_dir = tla_file.path().to_path_buf();
         assert!(tla_dir.pop());
 
         let files_to_hash = crate::util::read_dir(&tla_dir)?

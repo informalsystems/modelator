@@ -1,4 +1,7 @@
+use super::Artifact;
+use crate::Error;
 use serde_json::Value as JsonValue;
+use std::path::Path;
 
 /// `modelator`'s artifact containing a test trace encoded as JSON.
 #[derive(Debug, Clone, PartialEq, Eq)]
