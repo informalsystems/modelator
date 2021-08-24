@@ -101,7 +101,7 @@ impl Artifact for TlaFile {
     fn as_string(&self) -> &str {
         todo!()
     }
-    fn try_write_to_file(&self, path: &Path) -> Result<(), Error> {
+    fn try_write_to_file(&self, _path: &Path) -> Result<(), Error> {
         todo!()
     }
 }

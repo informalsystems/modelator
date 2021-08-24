@@ -12,7 +12,10 @@ where
         + for<'a> TryFrom<&'a Path, Error = crate::Error>
         + TryFrom<PathBuf, Error = crate::Error>,
 {
+    /// Returns a string representation.
     fn as_string(&self) -> &str;
+
+    /// Tries to write the contents to path.
     fn try_write_to_file(&self, path: &Path) -> Result<(), Error>;
 }
 
