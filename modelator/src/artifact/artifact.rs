@@ -1,22 +1,27 @@
 use crate::Error;
-use std::{fmt, path::Path, str};
+use std::str;
 
-pub trait Artifact: fmt::Display {
+/// TODO:
+pub trait Artifact: std::fmt::Display {
+    /// TODO:
     fn from_string(s: &str) -> Result<Self, Error>
     where
         Self: Sized;
 
-    fn from_file(f: &Path) -> Result<Self, Error>
+    /// TODO:
+    fn from_file(path: &std::path::Path) -> Result<Self, Error>
     where
         Self: Sized;
 
+    /// TODO:
     fn as_string(&self) -> &str;
 
-    fn to_file(&self, f: &Path) -> Result<(), Error>;
+    /// TODO:
+    fn to_file(&self, path: &std::path::Path) -> Result<(), Error>;
 }
 
-impl fmt::Debug for dyn Artifact {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl std::fmt::Debug for dyn Artifact {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         todo!()
     }
 }
