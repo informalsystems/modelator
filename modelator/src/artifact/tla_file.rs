@@ -1,3 +1,4 @@
+use super::Artifact;
 use crate::Error;
 use std::convert::TryFrom;
 use std::path::{Path, PathBuf};
@@ -70,5 +71,23 @@ impl TryFrom<PathBuf> for TlaFile {
 impl std::fmt::Display for TlaFile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", crate::util::absolute_path(&self.path))
+    }
+}
+
+impl Artifact for TlaFile {
+    fn from_string(s: &str) -> Result<Self, Error> {
+        todo!()
+    }
+
+    fn from_file(path: &std::path::Path) -> Result<Self, Error> {
+        todo!()
+    }
+
+    fn as_string(&self) -> &str {
+        todo!()
+    }
+
+    fn to_file(&self, path: &std::path::Path) -> Result<(), Error> {
+        todo!()
     }
 }
