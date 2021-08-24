@@ -136,7 +136,7 @@ fn generate_test(
     tla_config_file: &TlaConfigFile,
 ) -> Result<(TlaFile, TlaConfigFile), Error> {
     // TODO: it would be better to separate logic from IO steps
-    // TODO: split into 2 funs and also use artifacts:
+    // split into 2 funs and also use artifacts:
     // instead of writing the files and reading artifacts from them,
     // create the artifacts and write the files
     let test_module_name = format!("{}_{}", tla_tests_file_name, test_name);
