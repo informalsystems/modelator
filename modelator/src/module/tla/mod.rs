@@ -94,7 +94,7 @@ impl Tla {
             .map(|test_name| {
                 generate_test(
                     &tla_tests_file_dir,
-                    &tla_tests_file_name,
+                    tla_tests_file_name,
                     &test_name,
                     &tla_config_file,
                 )

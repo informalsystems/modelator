@@ -13,7 +13,7 @@ pub struct TlaFile {
 }
 
 /// TODO:
-fn tla_file_name(path: &PathBuf) -> Option<String> {
+fn tla_file_name(path: &Path) -> Option<String> {
     if path.is_file() {
         path.file_name().map(|file_name| {
             file_name
