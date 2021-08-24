@@ -1,4 +1,3 @@
-pub(crate) mod artifact;
 pub(crate) mod json_trace;
 pub(crate) mod tla_cfg_file;
 pub(crate) mod tla_file;
@@ -32,7 +31,6 @@ where
 // }
 
 // Re-exports.
-pub use artifact::Artifact;
 pub use json_trace::JsonTrace;
 pub use tla_cfg_file::TlaConfigFile;
 pub use tla_file::TlaFile;
