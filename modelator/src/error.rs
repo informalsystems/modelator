@@ -45,6 +45,7 @@ pub enum Error {
     /// An error that occurs when the output of Apalache returns an error.
     #[error("Apalache failure: {0}")]
     ApalacheFailure(String),
+    ApalacheFailure(String),
 
     /// An error that occurs when the counterexample produced by Apalache is unexpected.
     #[error("Invalid Apalache counterexample: {0}")]

@@ -9,5 +9,6 @@ mod apalache;
 
 // Re-exports.
 pub use apalache::Apalache;
+pub use apalache::ErrorMessage;
 pub use tla::Tla;
 pub use tlc::Tlc;
