@@ -2,6 +2,8 @@ use serde::Serialize;
 use std::fmt::Debug;
 use thiserror::Error;
 
+use crate::module::ApalacheError;
+
 /// Set of possible errors that can occur when running `modelator`.
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Error, Debug, Serialize)]
@@ -44,8 +46,7 @@ pub enum Error {
 
     /// An error that occurs when the output of Apalache returns an error.
     #[error("Apalache failure: {0}")]
-    ApalacheFailure(String),
-    ApalacheFailure(String),
+    ApalacheFailure(ApalacheError),
 
     /// An error that occurs when the counterexample produced by Apalache is unexpected.
     #[error("Invalid Apalache counterexample: {0}")]

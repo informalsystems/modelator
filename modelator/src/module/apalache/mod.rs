@@ -1,3 +1,6 @@
+/// Apalache Error
+pub(crate) mod error;
+
 /// Parsing of Apalache's counterexample file.
 mod counterexample;
 
@@ -6,6 +9,8 @@ use crate::cache::TlaTraceCache;
 use crate::{jar, Error, Options};
 use std::path::Path;
 use std::process::Command;
+
+use error::ApalacheError;
 
 /// `modelator`'s Apalache module.
 #[derive(Debug, Clone, Copy)]
@@ -150,7 +155,7 @@ fn run_apalache(mut cmd: Command, options: &Options) -> Result<String, Error> {
 
             // check if a failure has occurred
             if stdout.contains("EXITCODE: ERROR") {
-                return Err(Error::ApalacheFailure(stdout));
+                return Err(Error::ApalacheFailure(ApalacheError::Stdout(stdout)));
             }
             assert!(
                 stdout.contains("EXITCODE: OK"),
