@@ -76,15 +76,15 @@ use tempfile::tempdir;
 /// # Examples
 ///
 /// ```
-/// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
-/// let tla_config_file = "tests/integration/tla/Numbers.cfg";
+/// let tla_tests_file_path = "tests/integration/tla/NumbersAMaxBMinTest.tla";
+/// let tla_config_file_path = "tests/integration/tla/Numbers.cfg";
 /// let options = modelator::Options::default();
-/// let trace_results = modelator::traces(tla_tests_file, tla_config_file, &options).unwrap();
+/// let trace_results = modelator::traces(tla_tests_file_path, tla_config_file_path, &options).unwrap();
 /// println!("{:?}", trace_results);
 /// ```
 pub fn traces<P: AsRef<Path>>(
-    tla_tests_file: P,
-    tla_config_file: P,
+    tla_tests_file_path: P,
+    tla_config_file_path: P,
     options: &Options,
 ) -> Result<Vec<Result<artifact::JsonTrace, Error>>, Error> {
     // setup modelator
@@ -92,8 +92,8 @@ pub fn traces<P: AsRef<Path>>(
 
     // create a temporary directory, and copy TLA+ files there
     let dir = tempdir()?;
-    let tla_tests_file = util::copy_files_into("tla", tla_tests_file, dir.path())?;
-    let tla_config_file = util::copy_files_into("cfg", tla_config_file, dir.path())?;
+    let tla_tests_file_path = util::copy_files_into("tla", tla_tests_file_path, dir.path())?;
+    let tla_config_file_path = util::copy_files_into("cfg", tla_config_file_path, dir.path())?;
 
     // save the current, and change to the temporary directory
     let current_dir = env::current_dir()?;
@@ -101,8 +101,8 @@ pub fn traces<P: AsRef<Path>>(
 
     // generate tla tests
     use std::convert::TryFrom;
-    let tla_tests_file = artifact::TlaFile::try_from(tla_tests_file)?;
-    let tla_config_file = artifact::TlaConfigFile::try_from(tla_config_file)?;
+    let tla_tests_file = artifact::TlaFile::try_from(tla_tests_file_path)?;
+    let tla_config_file = artifact::TlaConfigFile::try_from(tla_config_file_path)?;
     let tests = module::Tla::generate_tests(tla_tests_file, tla_config_file)?;
 
     #[allow(clippy::needless_collect)]
@@ -206,16 +206,16 @@ pub fn traces<P: AsRef<Path>>(
 ///
 /// // To run your system against a TLA+ test, just point to the corresponding TLA+ files.
 /// fn test() {
-///     let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
-///     let tla_config_file = "tests/integration/tla/Numbers.cfg";
+///     let tla_tests_file_path = "tests/integration/tla/NumbersAMaxBMinTest.tla";
+///     let tla_config_file_path = "tests/integration/tla/Numbers.cfg";
 ///     let options = modelator::Options::default();
 ///     let mut system = NumberSystem::default();
-///     assert!(run_tla_steps(tla_tests_file, tla_config_file, &options, &mut system).is_ok());
+///     assert!(run_tla_steps(tla_tests_file_path, tla_config_file_path, &options, &mut system).is_ok());
 /// }
 /// ```
 pub fn run_tla_steps<P, System, Step>(
-    tla_tests_file: P,
-    tla_config_file: P,
+    tla_tests_file_path: P,
+    tla_config_file_path: P,
     options: &Options,
     system: &mut System,
 ) -> Result<Vec<Result<(), TestError>>, Error>
@@ -224,7 +224,7 @@ where
     System: StepRunner<Step> + Debug + Clone,
     Step: DeserializeOwned + Debug + Clone,
 {
-    let trace_results = traces(tla_tests_file, tla_config_file, options)?;
+    let trace_results = traces(tla_tests_file_path, tla_config_file_path, options)?;
     Ok(trace_results
         .into_iter()
         .map(|trace_result| system.run(trace_result.map_err(TestError::Modelator)?))
@@ -305,8 +305,8 @@ where
 ///
 /// // To run your system against a TLA+ test, just point to the corresponding TLA+ files.
 /// fn main() {
-///     let tla_tests_file = "tests/integration/tla/NumbersAMaxBMaxTest.tla";
-///     let tla_config_file = "tests/integration/tla/Numbers.cfg";
+///     let tla_tests_file_path = "tests/integration/tla/NumbersAMaxBMaxTest.tla";
+///     let tla_config_file_path = "tests/integration/tla/Numbers.cfg";
 ///     let options = modelator::Options::default();
 ///     
 ///     // We create a system under test
@@ -319,7 +319,7 @@ where
 ///         .with_action::<Action>();
 ///
 ///     // run your system against the events produced from TLA+ tests.
-///     let result = run_tla_events(tla_tests_file, tla_config_file, &options, &mut system, &mut runner);
+///     let result = run_tla_events(tla_tests_file_path, tla_config_file_path, &options, &mut system, &mut runner);
 ///     // At each step of a test, the state of your system is being checked
 ///     // against the state that the TLA+ model expects
 ///     assert!(result.is_ok());
@@ -333,8 +333,8 @@ where
 // #[allow(clippy::needless_doctest_main)]
 #[allow(clippy::needless_doctest_main)]
 pub fn run_tla_events<P, System>(
-    tla_tests_file: P,
-    tla_config_file: P,
+    tla_tests_file_path: P,
+    tla_config_file_path: P,
     options: &Options,
     system: &mut System,
     runner: &mut event::EventRunner<System>,
@@ -343,7 +343,7 @@ where
     P: AsRef<Path>,
     System: Debug + Default,
 {
-    let trace_results = traces(tla_tests_file, tla_config_file, options)?;
+    let trace_results = traces(tla_tests_file_path, tla_config_file_path, options)?;
 
     Ok(trace_results
         .into_iter()

@@ -3,6 +3,7 @@ use crate::{Error, ModelCheckerOptions};
 
 use std::collections::HashMap;
 
+// TODO: don't need entire options object
 pub(crate) fn parse(output: String, options: &ModelCheckerOptions) -> Result<Vec<TlaTrace>, Error> {
     let mut parsed_output: HashMap<u8, HashMap<usize, Vec<String>>> = HashMap::new();
 

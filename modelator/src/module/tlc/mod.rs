@@ -69,6 +69,7 @@ impl Tlc {
                 // occurred
 
                 // save tlc log
+                //TODO: probably better to return the log in memory and write it somewhere else
                 std::fs::write(&options.model_checker_options.log, &stdout)?;
                 tracing::debug!(
                     "TLC log written to {}",
@@ -76,6 +77,8 @@ impl Tlc {
                 );
 
                 // convert tlc output to traces
+                // TODO: make the logic here mirror the better-implemented Apalache module which returns
+                // stdout for post-proccesing
                 let mut traces = output::parse(stdout, &options.model_checker_options)?;
 
                 // check if no trace was found
@@ -109,7 +112,7 @@ impl Tlc {
     }
 }
 
-fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) -> Command {
+fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file_path: P, options: &Options) -> Command {
     let tla2tools = jar::Jar::Tla.path(&options.dir);
     let community_modules = jar::Jar::CommunityModules.path(&options.dir);
 
@@ -127,7 +130,7 @@ fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) 
         .arg(tla_file.as_ref())
         // set tla config file
         .arg("-config")
-        .arg(tla_config_file.as_ref())
+        .arg(tla_config_file_path.as_ref())
         // set "-tool" flag, which allows easier parsing of TLC's output
         .arg("-tool")
         // set the number of TLC's workers
