@@ -155,9 +155,12 @@ impl ApalacheMethods {
         use std::convert::TryFrom;
         let tla_file = TlaFile::try_from(tla_file_path)?;
         let tla_config_file = TlaConfigFile::try_from(tla_config_file_path)?;
-        let tla_trace = crate::module::Apalache::test(tla_file, tla_config_file, &options)?;
+        let tla_trace = {
+            let mut ret = crate::module::Apalache::test(&tla_file, &tla_config_file, &options)?;
+            ret.extends_module_name = Some(tla_file.file_name().to_string());
+            ret
+        };
         tracing::debug!("Apalache::test output {}", tla_trace);
-
         write_tla_trace_to_file(tla_trace)
     }
 
@@ -187,9 +190,12 @@ impl TlcMethods {
         use std::convert::TryFrom;
         let tla_file = TlaFile::try_from(tla_file_path)?;
         let tla_config_file = TlaConfigFile::try_from(tla_config_file_path)?;
-        let tla_trace = crate::module::Tlc::test(tla_file, tla_config_file, &options)?;
+        let tla_trace = {
+            let mut ret = crate::module::Tlc::test(&tla_file, &tla_config_file, &options)?;
+            ret.extends_module_name = Some(tla_file.file_name().to_string());
+            ret
+        };
         tracing::debug!("Tlc::test output {}", tla_trace);
-
         write_tla_trace_to_file(tla_trace)
     }
 }

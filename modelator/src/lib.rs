@@ -110,9 +110,9 @@ pub fn traces<P: AsRef<Path>>(
         .into_iter()
         .map(
             |(tla_file, tla_config_file)| match options.model_checker_options.model_checker {
-                ModelChecker::Tlc => module::Tlc::test(tla_file, tla_config_file, options),
+                ModelChecker::Tlc => module::Tlc::test(&tla_file, &tla_config_file, options),
                 ModelChecker::Apalache => {
-                    module::Apalache::test(tla_file, tla_config_file, options)
+                    module::Apalache::test(&tla_file, &tla_config_file, options)
                 }
             },
         )
