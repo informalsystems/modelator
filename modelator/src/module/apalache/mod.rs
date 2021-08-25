@@ -67,9 +67,10 @@ impl Apalache {
         // convert apalache counterexample to a trace
         let counterexample_path = Path::new("counterexample.tla");
         if counterexample_path.is_file() {
-            let counterexample = std::fs::read_to_string(counterexample_path)?;
+            use std::convert::TryFrom;
+            let counterexample: TlaFile = TlaFile::try_from(counterexample_path)?;
             tracing::debug!("Apalache counterexample:\n{}", counterexample);
-            let trace = counterexample::parse(counterexample)?;
+            let trace = counterexample::parse(counterexample.content())?;
 
             // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
             // cache trace and then return it
@@ -163,13 +164,13 @@ fn run_apalache(mut cmd: Command, options: &Options) -> Result<String, Error> {
     }
 }
 
-fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file_path: P, options: &Options) -> Command {
+fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) -> Command {
     let mut cmd = apalache_start_cmd(&tla_file, options);
     cmd.arg("check")
         // set tla config file
         .arg(format!(
             "--config={}",
-            tla_config_file_path.as_ref().to_string_lossy()
+            tla_config_file.as_ref().to_string_lossy()
         ))
         // set tla file
         .arg(tla_file.as_ref());
