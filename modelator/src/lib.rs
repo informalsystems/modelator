@@ -86,7 +86,7 @@ pub fn traces<P: AsRef<Path>>(
     tla_tests_file: P,
     tla_config_file: P,
     options: &Options,
-) -> Result<Vec<artifact::JsonTrace>, Error> {
+) -> Result<Vec<Result<artifact::JsonTrace, Error>>, Error> {
     // setup modelator
     setup(options)?;
 
@@ -105,6 +105,10 @@ pub fn traces<P: AsRef<Path>>(
     let tla_config_file = artifact::TlaConfigFile::try_from(tla_config_file)?;
     let tests = module::Tla::generate_tests(tla_tests_file, tla_config_file)?;
 
+    #[allow(clippy::needless_collect)]
+    // rust iterators are lazy
+    // so we need to collect the traces in memory before deleting the work directory
+
     // run the model checker configured on each tla test
     let traces = tests
         .into_iter()
@@ -116,7 +120,7 @@ pub fn traces<P: AsRef<Path>>(
                 }
             },
         )
-        .collect::<Result<Vec<_>, _>>()?;
+        .collect::<Vec<_>>();
 
     // restore the current directory
     env::set_current_dir(current_dir)?;
@@ -124,10 +128,10 @@ pub fn traces<P: AsRef<Path>>(
     dir.close()?;
 
     // convert each tla trace to json
-    traces
+    Ok(traces
         .into_iter()
-        .map(module::Tla::tla_trace_to_json_trace)
-        .collect()
+        .map(|trace_result| trace_result.and_then(module::Tla::tla_trace_to_json_trace))
+        .collect())
 }
 
 /// This is the most simple interface to run your system under test (SUT)
@@ -214,17 +218,17 @@ pub fn run_tla_steps<P, System, Step>(
     tla_config_file: P,
     options: &Options,
     system: &mut System,
-) -> Result<(), TestError>
+) -> Result<Vec<Result<(), TestError>>, Error>
 where
     P: AsRef<Path>,
     System: StepRunner<Step> + Debug + Clone,
     Step: DeserializeOwned + Debug + Clone,
 {
-    let traces = traces(tla_tests_file, tla_config_file, options).map_err(TestError::Modelator)?;
-    for trace in traces {
-        system.run(trace)?;
-    }
-    Ok(())
+    let traces = traces(tla_tests_file, tla_config_file, options)?;
+    Ok(traces
+        .into_iter()
+        .map(|trace_result| system.run(trace_result.map_err(TestError::Modelator)?))
+        .collect())
 }
 
 /// Run the system under test (SUT) using the abstract events obtained
@@ -334,36 +338,40 @@ pub fn run_tla_events<P, System>(
     options: &Options,
     system: &mut System,
     runner: &mut event::EventRunner<System>,
-) -> Result<(), TestError>
+) -> Result<Vec<Result<(), TestError>>, Error>
 where
     P: AsRef<Path>,
     System: Debug + Default,
 {
-    let traces = traces(tla_tests_file, tla_config_file, options).map_err(TestError::Modelator)?;
-    for trace in traces {
-        let events: EventStream = trace.clone().into();
-        runner
-            .run(system, &mut events.into_iter())
-            .map_err(|op| match op {
-                TestError::UnhandledTest { system, .. } => TestError::UnhandledTest {
-                    test: trace.to_string(),
-                    system,
-                },
-                TestError::FailedTest {
-                    message,
-                    location,
-                    system,
-                    ..
-                } => TestError::FailedTest {
-                    test: trace.to_string(),
-                    message,
-                    location,
-                    system,
-                },
-                other => other,
-            })?;
-    }
-    Ok(())
+    let traces = traces(tla_tests_file, tla_config_file, options)?;
+
+    Ok(traces
+        .into_iter()
+        .map(|trace| {
+            let trace = trace.map_err(TestError::Modelator)?;
+            let events: EventStream = trace.clone().into();
+            runner
+                .run(system, &mut events.into_iter())
+                .map_err(|op| match op {
+                    TestError::UnhandledTest { system, .. } => TestError::UnhandledTest {
+                        test: trace.to_string(),
+                        system,
+                    },
+                    TestError::FailedTest {
+                        message,
+                        location,
+                        system,
+                        ..
+                    } => TestError::FailedTest {
+                        test: trace.to_string(),
+                        message,
+                        location,
+                        system,
+                    },
+                    other => other,
+                })
+        })
+        .collect())
 }
 
 pub(crate) fn setup(options: &Options) -> Result<(), Error> {
