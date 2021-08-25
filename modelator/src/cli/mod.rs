@@ -165,10 +165,10 @@ impl ApalacheMethods {
         let options = crate::Options::default();
         use std::convert::TryFrom;
         let tla_file = TlaFile::try_from(tla_file)?;
-        let tla_file_parsed = crate::module::Apalache::parse(tla_file, &options)?;
-        tracing::debug!("Apalache::parse output {}", tla_file_parsed);
+        let parsed_tla_file = crate::module::Apalache::parse(tla_file, &options)?;
+        tracing::debug!("Apalache::parse output {}", parsed_tla_file);
 
-        parsed_tla_file(tla_file_parsed)
+        json_parsed_tla_file(parsed_tla_file)
     }
 }
 
@@ -228,7 +228,7 @@ fn write_json_trace_to_file(json_trace: JsonTrace) -> Result<JsonValue, Error> {
 }
 
 #[allow(clippy::unnecessary_wraps)]
-fn parsed_tla_file(tla_file_parsed: TlaFile) -> Result<JsonValue, Error> {
+fn json_parsed_tla_file(tla_file_parsed: TlaFile) -> Result<JsonValue, Error> {
     Ok(json!({
         "tla_file": format!("{}", tla_file_parsed),
     }))
