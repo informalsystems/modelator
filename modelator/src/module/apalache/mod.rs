@@ -37,10 +37,12 @@ impl Apalache {
     /// println!("{:?}", tla_trace);
     /// ```
     pub fn test(
-        tla_file: TlaFile,
-        tla_config_file: TlaConfigFile,
+        tla_file: &TlaFile,
+        tla_config_file: &TlaConfigFile,
         options: &Options,
     ) -> Result<TlaTrace, Error> {
+        // TODO: this method currently just uses the paths of the files so no need for whole artifact objects!
+
         tracing::debug!(
             "Apalache::test {} {} {:?}",
             tla_file,
@@ -102,15 +104,13 @@ impl Apalache {
         tracing::debug!("Apalache::parse {} {:?}", tla_file, options);
 
         // compute the directory in which the tla file is stored
-        let mut tla_dir = tla_file.path().clone();
+        let mut tla_dir = tla_file.path().to_path_buf();
         assert!(tla_dir.pop());
 
-        // compute tla module name: it's okay to unwrap as we have already
-        // verified that the file exists
-        let tla_module_name = tla_file.tla_module_name().unwrap();
+        let tla_file_name = tla_file.file_name();
 
         // compute the output tla file
-        let tla_parsed_file = tla_dir.join(format!("{}Parsed.tla", tla_module_name));
+        let tla_parsed_file = tla_dir.join(format!("{}Parsed.tla", tla_file_name));
 
         // create apalache parse command
         let cmd = parse_cmd(tla_file.path(), &tla_parsed_file, options);
@@ -141,6 +141,7 @@ fn run_apalache(mut cmd: Command, options: &Options) -> Result<String, Error> {
             // apalache writes all its output to the stdout
 
             // save apalache log
+            //TODO: probably better to return the log in memory and write it somewhere else
             std::fs::write(&options.model_checker_options.log, &stdout)?;
 
             // check if a failure has occurred
@@ -159,13 +160,13 @@ fn run_apalache(mut cmd: Command, options: &Options) -> Result<String, Error> {
     }
 }
 
-fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) -> Command {
+fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file_path: P, options: &Options) -> Command {
     let mut cmd = apalache_cmd_start(&tla_file, options);
     cmd.arg("check")
         // set tla config file
         .arg(format!(
             "--config={}",
-            tla_config_file.as_ref().to_string_lossy()
+            tla_config_file_path.as_ref().to_string_lossy()
         ))
         // set tla file
         .arg(tla_file.as_ref());

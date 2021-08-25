@@ -1,7 +1,7 @@
 // CLI output.
 pub(crate) mod output;
 
-use crate::artifact::{JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
+use crate::artifact::{Artifact, JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
 use crate::Error;
 use clap::{AppSettings, Clap, Subcommand};
 use serde_json::{json, Value as JsonValue};
@@ -111,14 +111,17 @@ impl TlaMethods {
         }
     }
 
-    fn generate_tests(tla_file: String, tla_config_file: String) -> Result<JsonValue, Error> {
+    fn generate_tests(
+        tla_file_path: String,
+        tla_config_file_path: String,
+    ) -> Result<JsonValue, Error> {
         use std::convert::TryFrom;
-        let tla_file = TlaFile::try_from(tla_file)?;
-        let tla_config_file = TlaConfigFile::try_from(tla_config_file)?;
+        let tla_file = TlaFile::try_from(tla_file_path)?;
+        let tla_config_file = TlaConfigFile::try_from(tla_config_file_path)?;
         let tests = crate::module::Tla::generate_tests(tla_file, tla_config_file)?;
         tracing::debug!("Tla::generate_tests output {:#?}", tests);
 
-        generated_tests(tests)
+        json_list_generated_tests(tests)
     }
 
     fn tla_trace_to_json_trace(tla_trace_file: String) -> Result<JsonValue, Error> {
@@ -132,7 +135,7 @@ impl TlaMethods {
         let json_trace = crate::module::Tla::tla_trace_to_json_trace(tla_trace)?;
         tracing::debug!("Tla::tla_trace_to_json_trace output {}", json_trace);
 
-        save_json_trace(json_trace)
+        write_json_trace_to_file(json_trace)
     }
 }
 
@@ -147,22 +150,18 @@ impl ApalacheMethods {
         }
     }
 
-    fn test(tla_file: String, tla_config_file: String) -> Result<JsonValue, Error> {
+    fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
         let options = crate::Options::default();
         use std::convert::TryFrom;
-        let tla_file = TlaFile::try_from(tla_file)?;
-        let tla_module = tla_file
-            .path()
-            .file_stem()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .to_string();
-        let tla_config_file = TlaConfigFile::try_from(tla_config_file)?;
-        let tla_trace = crate::module::Apalache::test(tla_file, tla_config_file, &options)?;
+        let tla_file = TlaFile::try_from(tla_file_path)?;
+        let tla_config_file = TlaConfigFile::try_from(tla_config_file_path)?;
+        let tla_trace = {
+            let mut ret = crate::module::Apalache::test(&tla_file, &tla_config_file, &options)?;
+            ret.extends_module_name = Some(tla_file.file_name().to_string());
+            ret
+        };
         tracing::debug!("Apalache::test output {}", tla_trace);
-
-        save_tla_trace(&tla_module, tla_trace)
+        write_tla_trace_to_file(tla_trace)
     }
 
     fn parse(tla_file: String) -> Result<JsonValue, Error> {
@@ -186,27 +185,23 @@ impl TlcMethods {
         }
     }
 
-    fn test(tla_file: String, tla_config_file: String) -> Result<JsonValue, Error> {
+    fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
         let options = crate::Options::default();
         use std::convert::TryFrom;
-        let tla_file = TlaFile::try_from(tla_file)?;
-        let tla_module = tla_file
-            .path()
-            .file_stem()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .to_string();
-        let tla_config_file = TlaConfigFile::try_from(tla_config_file)?;
-        let tla_trace = crate::module::Tlc::test(tla_file, tla_config_file, &options)?;
+        let tla_file = TlaFile::try_from(tla_file_path)?;
+        let tla_config_file = TlaConfigFile::try_from(tla_config_file_path)?;
+        let tla_trace = {
+            let mut ret = crate::module::Tlc::test(&tla_file, &tla_config_file, &options)?;
+            ret.extends_module_name = Some(tla_file.file_name().to_string());
+            ret
+        };
         tracing::debug!("Tlc::test output {}", tla_trace);
-
-        save_tla_trace(&tla_module, tla_trace)
+        write_tla_trace_to_file(tla_trace)
     }
 }
 
 #[allow(clippy::unnecessary_wraps)]
-fn generated_tests(tests: Vec<(TlaFile, TlaConfigFile)>) -> Result<JsonValue, Error> {
+fn json_list_generated_tests(tests: Vec<(TlaFile, TlaConfigFile)>) -> Result<JsonValue, Error> {
     let json_array_entry = |tla_file: TlaFile, tla_config_file: TlaConfigFile| {
         json!({
             "tla_file": format!("{}", tla_file),
@@ -220,23 +215,19 @@ fn generated_tests(tests: Vec<(TlaFile, TlaConfigFile)>) -> Result<JsonValue, Er
     Ok(JsonValue::Array(json_array))
 }
 
-fn save_tla_trace(tla_module: &str, tla_trace: TlaTrace) -> Result<JsonValue, Error> {
-    let path = Path::new("trace.tla").to_path_buf();
-    std::fs::write(
-        &path,
-        format!(
-            "---- MODULE trace ----\n\nEXTENDS {}\n\n{}\n====",
-            tla_module, tla_trace
-        ),
-    )?;
+fn write_tla_trace_to_file(tla_trace: TlaTrace) -> Result<JsonValue, Error> {
+    // TODO: hardcoded!
+    let path = Path::new("trace.tla");
+    tla_trace.try_write_to_file(path)?;
     Ok(json!({
         "tla_trace_file": crate::util::absolute_path(&path),
     }))
 }
 
-fn save_json_trace(json_trace: JsonTrace) -> Result<JsonValue, Error> {
-    let path = Path::new("trace.json").to_path_buf();
-    std::fs::write(&path, format!("{}", json_trace))?;
+fn write_json_trace_to_file(json_trace: JsonTrace) -> Result<JsonValue, Error> {
+    // TODO: hardcoded!
+    let path = Path::new("trace.json");
+    json_trace.try_write_to_file(path)?;
     Ok(json!({
         "json_trace_file": crate::util::absolute_path(&path),
     }))
