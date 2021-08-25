@@ -202,6 +202,11 @@ fn apalache_cmd_start<P: AsRef<Path>>(tla_file: P, options: &Options) -> Command
 
     let mut cmd = Command::new("java");
 
+    cmd.env(
+        "JAVA_HOME",
+        "/Library/Java/JavaVirtualMachines/zulu-16.jdk/Contents/Home",
+    );
+
     // compute the directory where the tla file is, so that it can be added as
     // a tla library
     if let Some(tla_file_dir) = tla_file.as_ref().parent() {
