@@ -44,7 +44,7 @@ const APALACHE_STDOUT_ERRORS: [&str; 21] = [
 /// Return the first line containing one of the errors, if any.
 /// The list of errors is not exhaustive.
 fn try_extract_error_reason(apalache_stdout: &str) -> Option<String> {
-    for line in apalache_stdout.split("\n") {
+    for line in apalache_stdout.split('\n') {
         for summary in APALACHE_STDOUT_ERRORS.iter() {
             if line.contains(summary) {
                 return Some(line.to_string());
