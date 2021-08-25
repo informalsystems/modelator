@@ -79,8 +79,8 @@ use tempfile::tempdir;
 /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
 /// let tla_config_file = "tests/integration/tla/Numbers.cfg";
 /// let options = modelator::Options::default();
-/// let traces = modelator::traces(tla_tests_file, tla_config_file, &options).unwrap();
-/// println!("{:?}", traces);
+/// let trace_results = modelator::traces(tla_tests_file, tla_config_file, &options).unwrap();
+/// println!("{:?}", trace_results);
 /// ```
 pub fn traces<P: AsRef<Path>>(
     tla_tests_file: P,
@@ -110,7 +110,7 @@ pub fn traces<P: AsRef<Path>>(
     // so we need to collect the traces in memory before deleting the work directory
 
     // run the model checker configured on each tla test
-    let traces = tests
+    let trace_results = tests
         .into_iter()
         .map(
             |(tla_file, tla_config_file)| match options.model_checker_options.model_checker {
@@ -128,7 +128,7 @@ pub fn traces<P: AsRef<Path>>(
     dir.close()?;
 
     // convert each tla trace to json
-    Ok(traces
+    Ok(trace_results
         .into_iter()
         .map(|trace_result| trace_result.and_then(module::Tla::tla_trace_to_json_trace))
         .collect())
@@ -224,8 +224,8 @@ where
     System: StepRunner<Step> + Debug + Clone,
     Step: DeserializeOwned + Debug + Clone,
 {
-    let traces = traces(tla_tests_file, tla_config_file, options)?;
-    Ok(traces
+    let trace_results = traces(tla_tests_file, tla_config_file, options)?;
+    Ok(trace_results
         .into_iter()
         .map(|trace_result| system.run(trace_result.map_err(TestError::Modelator)?))
         .collect())
@@ -343,12 +343,12 @@ where
     P: AsRef<Path>,
     System: Debug + Default,
 {
-    let traces = traces(tla_tests_file, tla_config_file, options)?;
+    let trace_results = traces(tla_tests_file, tla_config_file, options)?;
 
-    Ok(traces
+    Ok(trace_results
         .into_iter()
-        .map(|trace| {
-            let trace = trace.map_err(TestError::Modelator)?;
+        .map(|trace_result| {
+            let trace = trace_result.map_err(TestError::Modelator)?;
             let events: EventStream = trace.clone().into();
             runner
                 .run(system, &mut events.into_iter())
