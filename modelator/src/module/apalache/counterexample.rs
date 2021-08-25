@@ -1,7 +1,7 @@
 use crate::artifact::tla_trace::{TlaState, TlaTrace};
 use crate::Error;
 
-pub(crate) fn parse(counterexample: String) -> Result<TlaTrace, Error> {
+pub(crate) fn parse(counterexample: &str) -> Result<TlaTrace, Error> {
     let lines = counterexample.lines();
     let mut state_index = 0;
     let mut state = None;
@@ -54,5 +54,7 @@ pub(crate) fn parse(counterexample: String) -> Result<TlaTrace, Error> {
 
     // error if we have reached the end of the file without a line starting
     // with "====="
-    Err(Error::InvalidApalacheCounterexample(counterexample))
+    Err(Error::InvalidApalacheCounterexample(
+        counterexample.to_owned(),
+    ))
 }
