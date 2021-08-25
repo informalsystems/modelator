@@ -37,8 +37,8 @@ impl Apalache {
     /// println!("{:?}", tla_trace);
     /// ```
     pub fn test(
-        tla_file: TlaFile,
-        tla_config_file: TlaConfigFile,
+        tla_file: &TlaFile,
+        tla_config_file: &TlaConfigFile,
         options: &Options,
     ) -> Result<TlaTrace, Error> {
         // TODO: this method currently just uses the paths of the files so no need for whole artifact objects!

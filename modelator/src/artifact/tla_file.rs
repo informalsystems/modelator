@@ -9,6 +9,7 @@ use std::path::{Path, PathBuf};
 pub struct TlaFile {
     path: PathBuf,
     content: String,
+    /// Filename not including .tla suffix
     file_name: String,
 }
 

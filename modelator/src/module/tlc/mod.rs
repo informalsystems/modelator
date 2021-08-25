@@ -36,8 +36,8 @@ impl Tlc {
     /// println!("{:?}", tla_trace);
     /// ```
     pub fn test(
-        tla_file: TlaFile,
-        tla_config_file: TlaConfigFile,
+        tla_file: &TlaFile,
+        tla_config_file: &TlaConfigFile,
         options: &Options,
     ) -> Result<TlaTrace, Error> {
         tracing::debug!("Tlc::test {} {} {:?}", tla_file, tla_config_file, options);
