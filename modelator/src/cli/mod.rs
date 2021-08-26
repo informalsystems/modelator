@@ -116,8 +116,8 @@ impl TlaMethods {
         tla_config_file_path: String,
     ) -> Result<JsonValue, Error> {
         use std::convert::TryFrom;
-        let tla_file = TlaFile::try_from(tla_file_path)?;
-        let tla_config_file = TlaConfigFile::try_from(tla_config_file_path)?;
+        let tla_file = TlaFile::try_read_from_file(tla_file_path)?;
+        let tla_config_file = TlaConfigFile::try_read_from_file(tla_config_file_path)?;
         let tests = crate::module::Tla::generate_tests(tla_file, tla_config_file)?;
         tracing::debug!("Tla::generate_tests output {:#?}", tests);
 
@@ -153,11 +153,11 @@ impl ApalacheMethods {
     fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
         let options = crate::Options::default();
         use std::convert::TryFrom;
-        let tla_file = TlaFile::try_from(tla_file_path)?;
-        let tla_config_file = TlaConfigFile::try_from(tla_config_file_path)?;
+        let tla_file = TlaFile::try_read_from_file(tla_file_path)?;
+        let tla_config_file = TlaConfigFile::try_read_from_file(tla_config_file_path)?;
         let tla_trace = {
             let mut ret = crate::module::Apalache::test(&tla_file, &tla_config_file, &options)?;
-            ret.extends_module_name = Some(tla_file.file_name().to_string());
+            ret.extends_module_name = Some(tla_file.module_name().to_string());
             ret
         };
         tracing::debug!("Apalache::test output {}", tla_trace);
@@ -167,7 +167,7 @@ impl ApalacheMethods {
     fn parse(tla_file: String) -> Result<JsonValue, Error> {
         let options = crate::Options::default();
         use std::convert::TryFrom;
-        let tla_file = TlaFile::try_from(tla_file)?;
+        let tla_file = TlaFile::try_read_from_file(tla_file)?;
         let parsed_tla_file = crate::module::Apalache::parse(tla_file, &options)?;
         tracing::debug!("Apalache::parse output {}", parsed_tla_file);
 
@@ -188,11 +188,11 @@ impl TlcMethods {
     fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
         let options = crate::Options::default();
         use std::convert::TryFrom;
-        let tla_file = TlaFile::try_from(tla_file_path)?;
-        let tla_config_file = TlaConfigFile::try_from(tla_config_file_path)?;
+        let tla_file = TlaFile::try_read_from_file(tla_file_path)?;
+        let tla_config_file = TlaConfigFile::try_read_from_file(tla_config_file_path)?;
         let tla_trace = {
             let mut ret = crate::module::Tlc::test(&tla_file, &tla_config_file, &options)?;
-            ret.extends_module_name = Some(tla_file.file_name().to_string());
+            ret.extends_module_name = Some(tla_file.module_name().to_string());
             ret
         };
         tracing::debug!("Tlc::test output {}", tla_trace);

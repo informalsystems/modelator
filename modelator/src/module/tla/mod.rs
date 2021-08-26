@@ -1,7 +1,7 @@
 /// Conversion from TLA traces to JSON.
 mod json;
 
-use crate::artifact::{JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
+use crate::artifact::{Artifact, JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
 use crate::Error;
 use serde_json::Value as JsonValue;
 use std::path::Path;
@@ -162,8 +162,8 @@ fn generate_test(
 
     // create tla file and tla config file
     use std::convert::TryFrom;
-    let test_module_file = TlaFile::try_from(test_module_file)?;
-    let test_config_file = TlaConfigFile::try_from(test_config_file)?;
+    let test_module_file = TlaFile::try_read_from_file(test_module_file)?;
+    let test_config_file = TlaConfigFile::try_read_from_file(test_config_file)?;
     Ok((test_module_file, test_config_file))
 }
 

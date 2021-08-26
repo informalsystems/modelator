@@ -5,7 +5,7 @@ use error_message::ErrorMessage;
 /// Parsing of Apalache's counterexample file.
 mod counterexample;
 
-use crate::artifact::{TlaConfigFile, TlaFile, TlaTrace};
+use crate::artifact::{Artifact, TlaConfigFile, TlaFile, TlaTrace};
 use crate::cache::TlaTraceCache;
 use crate::module::apalache;
 use crate::{jar, Error, Options};
@@ -73,7 +73,7 @@ impl Apalache {
         let counterexample_path = Path::new("counterexample.tla");
         if counterexample_path.is_file() {
             use std::convert::TryFrom;
-            let counterexample: TlaFile = TlaFile::try_from(counterexample_path)?;
+            let counterexample: TlaFile = TlaFile::try_read_from_file(counterexample_path)?;
             tracing::debug!("Apalache counterexample:\n{}", counterexample);
             let trace = counterexample::parse(counterexample.content())?;
 

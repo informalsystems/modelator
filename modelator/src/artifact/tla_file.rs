@@ -14,6 +14,12 @@ pub struct TlaFile {
     module_name: String,
 }
 
+impl TlaFile {
+    pub fn module_name(&self) -> &str {
+        &self.module_name
+    }
+}
+
 impl Artifact for TlaFile {
     /// Create a new instance from a file content string.
     fn from_string(s: &str) -> Result<Self, Error> {
