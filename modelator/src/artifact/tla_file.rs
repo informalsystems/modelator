@@ -18,6 +18,10 @@ impl TlaFile {
     pub fn module_name(&self) -> &str {
         &self.module_name
     }
+
+    pub fn file_contents_backing(&self) -> &str {
+        &self.file_contents_backing
+    }
 }
 
 impl Artifact for TlaFile {

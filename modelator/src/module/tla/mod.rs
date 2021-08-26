@@ -68,14 +68,10 @@ impl Tla {
     ) -> Result<Vec<(TlaFile, TlaConfigFile)>, Error> {
         tracing::debug!("Tla::generate_tests {} {}", tla_tests_file, tla_config_file);
 
-        // compute the directory in which the tla tests file is stored
-        let mut tla_tests_file_dir = tla_tests_file.path().to_path_buf();
-        assert!(tla_tests_file_dir.pop());
-
-        let tla_tests_file_name = tla_tests_file.file_name();
+        let tla_tests_module_name = tla_tests_file.module_name();
 
         // retrieve test names from tla tests file
-        let test_names = extract_test_names(tla_tests_file.content())?;
+        let test_names = extract_test_names(tla_tests_file.file_contents_backing())?;
 
         tracing::debug!(
             "test names extracted from {}:\n{:?}",
@@ -85,20 +81,13 @@ impl Tla {
 
         // check if no test was found
         if test_names.is_empty() {
-            return Err(Error::NoTestFound(tla_tests_file.path().to_path_buf()));
+            return Err(Error::NoTestFound(tla_tests_file.module_name().to_string()));
         }
 
         // generate a tla test file and config for each test name found
         test_names
             .into_iter()
-            .map(|test_name| {
-                generate_test(
-                    &tla_tests_file_dir,
-                    tla_tests_file_name,
-                    &test_name,
-                    &tla_config_file,
-                )
-            })
+            .map(|test_name| generate_test(tla_tests_module_name, &test_name, &tla_config_file))
             .collect()
     }
 }
@@ -130,7 +119,6 @@ fn extract_test_names(tla_tests_file_content: &str) -> Result<Vec<String>, Error
 }
 
 fn generate_test(
-    tla_tests_file_dir: &Path,
     tla_tests_file_name: &str,
     test_name: &str,
     tla_config_file: &TlaConfigFile,
@@ -151,6 +139,8 @@ fn generate_test(
     );
     // create test config with negated test as an invariant
     let test_config = generate_test_config(tla_config_file.content(), &negated_test_name)?;
+
+    //TODO: make temp dir
 
     // write test module to test module file
     let test_module_file = tla_tests_file_dir.join(format!("{}.tla", test_module_name));

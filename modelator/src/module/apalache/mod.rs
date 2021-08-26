@@ -75,7 +75,7 @@ impl Apalache {
             use std::convert::TryFrom;
             let counterexample: TlaFile = TlaFile::try_read_from_file(counterexample_path)?;
             tracing::debug!("Apalache counterexample:\n{}", counterexample);
-            let trace = counterexample::parse(counterexample.content())?;
+            let trace = counterexample::parse(counterexample.file_contents_backing())?;
 
             // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
             // cache trace and then return it
@@ -116,10 +116,10 @@ impl Apalache {
             ret
         };
 
-        let tla_file_name = tla_file.file_name();
+        let tla_module_name = tla_file.module_name();
 
         // compute the output tla file
-        let tla_parsed_file_full_path = tla_file_dir.join(format!("{}Parsed.tla", tla_file_name));
+        let tla_parsed_file_full_path = tla_file_dir.join(format!("{}Parsed.tla", tla_module_name));
 
         // create apalache parse command
         let cmd = parse_cmd(tla_file.path(), &tla_parsed_file_full_path, options);
@@ -128,8 +128,7 @@ impl Apalache {
         run_apalache(cmd, options)?;
 
         // create tla file
-        use std::convert::TryFrom;
-        let tla_parsed_file = TlaFile::try_from(tla_parsed_file_full_path)?;
+        let tla_parsed_file = TlaFile::try_read_from_file(tla_parsed_file_full_path)?;
         Ok(tla_parsed_file)
     }
 }
