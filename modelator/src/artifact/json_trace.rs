@@ -73,10 +73,10 @@ impl TryFrom<PathBuf> for JsonTrace {
 }
 
 impl Artifact for JsonTrace {
-    fn as_string(&self) -> &str {
+    fn from_string(s: &str) -> Result<Self, Error> {
         todo!()
     }
-    fn try_write_to_file(&self, path: &Path) -> Result<(), Error> {
-        Ok(std::fs::write(&path, format!("{}", self))?)
+    fn as_string(&self) -> &str {
+        todo!()
     }
 }

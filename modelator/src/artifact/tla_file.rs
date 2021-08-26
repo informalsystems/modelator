@@ -16,7 +16,7 @@ pub struct TlaFile {
 
 impl Artifact for TlaFile {
     /// Create a new instance from a file content string.
-    fn new(s: &str) -> Result<Self, Error> {
+    fn from_string(s: &str) -> Result<Self, Error> {
         match module_name(s) {
             Err(_) => Err(Error::MissingTlaFileModuleName(s.to_string())),
             Ok(name) => Ok(TlaFile {

@@ -20,25 +20,29 @@ pub(crate) type TlaState = String;
 /// `modelator`'s artifact containing a test trace encoded as TLA+.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TlaTrace {
+    /// TODO: file_contents backing strings are to be removed
+    file_contents_backing: String,
+
     states: Vec<TlaState>,
     // Name of module that is extended by the trace
     pub(crate) extends_module_name: Option<String>,
 }
 
 impl TlaTrace {
-    pub(crate) fn new() -> Self {
-        Self {
-            states: Vec::new(),
-            extends_module_name: None,
-        }
-    }
-
     pub(crate) fn add(&mut self, state: TlaState) {
         self.states.push(state);
     }
 
     pub(crate) fn is_empty(&self) -> bool {
         self.states.is_empty()
+    }
+
+    pub(crate) fn new() -> TlaTrace {
+        TlaTrace {
+            states: Vec::new(),
+            extends_module_name: None,
+            file_contents_backing: "".to_owned(),
+        }
     }
 }
 
@@ -60,53 +64,27 @@ impl std::fmt::Display for TlaTrace {
     }
 }
 
-impl TryFrom<&str> for TlaTrace {
-    type Error = crate::Error;
-    fn try_from(_path: &str) -> Result<Self, Self::Error> {
-        // Self::new(path)
-        todo!();
-    }
-}
-
-impl TryFrom<String> for TlaTrace {
-    type Error = crate::Error;
-    fn try_from(_path: String) -> Result<Self, Self::Error> {
-        // Self::new(path)
-        todo!();
-    }
-}
-
-impl TryFrom<&Path> for TlaTrace {
-    type Error = crate::Error;
-    fn try_from(_path: &Path) -> Result<Self, Self::Error> {
-        // Self::new(path)
-        todo!();
-    }
-}
-
-impl TryFrom<PathBuf> for TlaTrace {
-    type Error = crate::Error;
-    fn try_from(_path: PathBuf) -> Result<Self, Self::Error> {
-        // Self::new(path)
-        todo!();
-    }
-}
-
 impl Artifact for TlaTrace {
-    fn as_string(&self) -> &str {
-        todo!()
+    fn from_string(s: &str) -> Result<Self, Error> {
+        Ok(TlaTrace {
+            states: Vec::new(),
+            extends_module_name: None,
+            file_contents_backing: "".to_owned(),
+        })
     }
-    fn try_write_to_file(&self, path: &Path) -> Result<(), Error> {
-        match &self.extends_module_name {
-            None => Ok(std::fs::write(&path, format!("{:?}", self.states))?),
+
+    fn as_string(&self) -> &str {
+        self.file_contents_backing = match &self.extends_module_name {
+            None => format!("{:?}", self.states),
             Some(name) => {
-                let content = format!(
+                format!(
                     "---- MODULE trace ----\n\nEXTENDS {}\n\n{:?}\n====",
                     name, self.states
-                );
-                Ok(std::fs::write(&path, content)?)
+                )
             }
         }
+        .to_string();
+        &self.file_contents_backing
     }
 }
 

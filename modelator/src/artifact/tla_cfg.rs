@@ -38,10 +38,18 @@ impl std::fmt::Display for TlaConfigFile {
 }
 
 impl Artifact for TlaConfigFile {
-    fn as_string(&self) -> &str {
-        todo!()
+    /// Create a new instance from a file content string.
+    fn from_string(s: &str) -> Result<Self, Error> {
+        Ok(TlaConfigFile {
+            path: PathBuf::new(),
+            content: s.to_string(),
+        })
     }
-    fn try_write_to_file(&self, _path: &Path) -> Result<(), Error> {
-        todo!()
+
+    /// Returns a string representation.
+
+    fn as_string(&self) -> &str {
+        // TODO: will use explicit data to generate a repr
+        &self.content
     }
 }

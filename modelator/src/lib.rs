@@ -61,6 +61,8 @@ pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Option
 use serde::de::DeserializeOwned;
 pub use step_runner::StepRunner;
 
+use crate::artifact::Artifact;
+
 use std::env;
 use std::fmt::Debug;
 use std::path::Path;
@@ -101,8 +103,8 @@ pub fn traces<P: AsRef<Path>>(
 
     // generate tla tests
     use std::convert::TryFrom;
-    let tla_tests_file = artifact::TlaFile::try_from(tla_tests_file_path)?;
-    let tla_config_file = artifact::TlaConfigFile::try_from(tla_config_file_path)?;
+    let tla_tests_file = artifact::TlaFile::try_read_from_file(tla_tests_file_path)?;
+    let tla_config_file = artifact::TlaConfigFile::try_read_from_file(tla_config_file_path)?;
     let tests = module::Tla::generate_tests(tla_tests_file, tla_config_file)?;
 
     #[allow(clippy::needless_collect)]
