@@ -16,7 +16,7 @@ where
     Self: Sized,
 {
     /// Create a new instance from a file content string.
-    fn new(s: &str) -> Result<Self, Error>;
+    fn from_string(s: &str) -> Result<Self, Error>;
 
     /// Returns a string representation.
     fn as_string(&self) -> &str;
@@ -27,9 +27,9 @@ where
     }
 
     /// Tries to read a file and initialize from the content.
-    fn try_read_from_file<P: AsRef<Path>>(&self, path: P) -> Result<Self, Error> {
+    fn try_read_from_file<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
         let file_content = crate::util::try_read_file_contents(path)?;
-        Ok(Self::new(&file_content)?)
+        Ok(Self::from_string(&file_content)?)
     }
 }
 
