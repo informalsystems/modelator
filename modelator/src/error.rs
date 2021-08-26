@@ -16,6 +16,10 @@ pub enum Error {
     #[error("Invalid unicode: {0:?}")]
     InvalidUnicode(std::ffi::OsString),
 
+    /// An error that occurs when a TLA file does not have a module name. 
+    #[error("Unable to parse module name of: {0}")]
+    MissingTlaFileModuleName(String),
+
     /// An error that occurs when a file is not found.
     #[error("File not found: {0}")]
     FileNotFound(std::path::PathBuf),

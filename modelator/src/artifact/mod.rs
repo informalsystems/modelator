@@ -1,5 +1,5 @@
 pub(crate) mod json_trace;
-pub(crate) mod tla_cfg_file;
+pub(crate) mod tla_cfg;
 pub(crate) mod tla_file;
 pub(crate) mod tla_trace;
 
@@ -8,30 +8,33 @@ use std::convert::TryFrom;
 use std::path::{Path, PathBuf};
 use std::str;
 
-/// TODO:
+/// A wrapper around a file
+/// NOTE: for now this is bare-bones but it will eventually include additional meta-data
+/// which will justify the additional interface.
 pub trait Artifact
 where
-    Self: std::fmt::Display
-        + for<'a> TryFrom<&'a str, Error = crate::Error>
-        + TryFrom<String, Error = crate::Error>
-        + for<'a> TryFrom<&'a Path, Error = crate::Error>
-        + TryFrom<PathBuf, Error = crate::Error>,
+    Self: Sized,
 {
+    /// Create a new instance from a file content string.
+    fn new(s: &str) -> Result<Self, Error>;
+
     /// Returns a string representation.
     fn as_string(&self) -> &str;
 
-    /// Tries to write the contents to path.
-    fn try_write_to_file(&self, path: &Path) -> Result<(), Error>;
-}
+    /// Tries to write the contents to path using the result of as_string.
+    fn try_write_to_file<P: AsRef<Path>>(&self, path: P) -> Result<(), Error> {
+        Ok(std::fs::write(&path, format!("{}", self.as_string()))?)
+    }
 
-// impl std::fmt::Debug for dyn Artifact {
-//     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         todo!()
-//     }
-// }
+    /// Tries to read a file and initialize from the content.
+    fn try_read_from_file<P: AsRef<Path>>(&self, path: P) -> Result<Self, Error> {
+        let file_content = crate::util::try_read_file_contents(path)?;
+        Ok(Self::new(&file_content)?)
+    }
+}
 
 // Re-exports.
 pub use json_trace::JsonTrace;
-pub use tla_cfg_file::TlaConfigFile;
+pub use tla_cfg::TlaConfigFile;
 pub use tla_file::TlaFile;
 pub use tla_trace::TlaTrace;
