@@ -21,11 +21,16 @@ pub(crate) type TlaState = String;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TlaTrace {
     states: Vec<TlaState>,
+    // Name of module that is extended by the trace
+    pub(crate) extends_module_name: Option<String>,
 }
 
 impl TlaTrace {
     pub(crate) fn new() -> Self {
-        Self { states: Vec::new() }
+        Self {
+            states: Vec::new(),
+            extends_module_name: None,
+        }
     }
 
     pub(crate) fn add(&mut self, state: TlaState) {
@@ -92,7 +97,16 @@ impl Artifact for TlaTrace {
         todo!()
     }
     fn try_write_to_file(&self, path: &Path) -> Result<(), Error> {
-        Ok(std::fs::write(&path, format!("{}", self))?)
+        match &self.extends_module_name {
+            None => Ok(std::fs::write(&path, format!("{:?}", self.states))?),
+            Some(name) => {
+                let content = format!(
+                    "---- MODULE trace ----\n\nEXTENDS {}\n\n{:?}\n====",
+                    name, self.states
+                );
+                Ok(std::fs::write(&path, content)?)
+            }
+        }
     }
 }
 

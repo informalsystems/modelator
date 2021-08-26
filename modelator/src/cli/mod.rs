@@ -155,9 +155,12 @@ impl ApalacheMethods {
         use std::convert::TryFrom;
         let tla_file = TlaFile::try_from(tla_file_path)?;
         let tla_config_file = TlaConfigFile::try_from(tla_config_file_path)?;
-        let tla_trace = crate::module::Apalache::test(tla_file, tla_config_file, &options)?;
+        let tla_trace = {
+            let mut ret = crate::module::Apalache::test(&tla_file, &tla_config_file, &options)?;
+            ret.extends_module_name = Some(tla_file.file_name().to_string());
+            ret
+        };
         tracing::debug!("Apalache::test output {}", tla_trace);
-
         write_tla_trace_to_file(tla_trace)
     }
 
@@ -165,10 +168,10 @@ impl ApalacheMethods {
         let options = crate::Options::default();
         use std::convert::TryFrom;
         let tla_file = TlaFile::try_from(tla_file)?;
-        let tla_file_parsed = crate::module::Apalache::parse(tla_file, &options)?;
-        tracing::debug!("Apalache::parse output {}", tla_file_parsed);
+        let parsed_tla_file = crate::module::Apalache::parse(tla_file, &options)?;
+        tracing::debug!("Apalache::parse output {}", parsed_tla_file);
 
-        parsed_tla_file(tla_file_parsed)
+        json_parsed_tla_file(parsed_tla_file)
     }
 }
 
@@ -187,9 +190,12 @@ impl TlcMethods {
         use std::convert::TryFrom;
         let tla_file = TlaFile::try_from(tla_file_path)?;
         let tla_config_file = TlaConfigFile::try_from(tla_config_file_path)?;
-        let tla_trace = crate::module::Tlc::test(tla_file, tla_config_file, &options)?;
+        let tla_trace = {
+            let mut ret = crate::module::Tlc::test(&tla_file, &tla_config_file, &options)?;
+            ret.extends_module_name = Some(tla_file.file_name().to_string());
+            ret
+        };
         tracing::debug!("Tlc::test output {}", tla_trace);
-
         write_tla_trace_to_file(tla_trace)
     }
 }
@@ -228,7 +234,7 @@ fn write_json_trace_to_file(json_trace: JsonTrace) -> Result<JsonValue, Error> {
 }
 
 #[allow(clippy::unnecessary_wraps)]
-fn parsed_tla_file(tla_file_parsed: TlaFile) -> Result<JsonValue, Error> {
+fn json_parsed_tla_file(tla_file_parsed: TlaFile) -> Result<JsonValue, Error> {
     Ok(json!({
         "tla_file": format!("{}", tla_file_parsed),
     }))
