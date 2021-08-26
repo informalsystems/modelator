@@ -1,4 +1,4 @@
-use super::Artifact;
+use super::{Artifact, ArtifactCreator};
 use crate::{Error, ModelCheckerOptions};
 use core::result::Result::Err;
 use std::convert::TryFrom;
@@ -24,7 +24,7 @@ impl TlaFile {
     }
 }
 
-impl Artifact for TlaFile {
+impl ArtifactCreator for TlaFile {
     /// Create a new instance from a file content string.
     fn from_string(s: &str) -> Result<Self, Error> {
         match module_name(s) {
@@ -35,9 +35,10 @@ impl Artifact for TlaFile {
             }),
         }
     }
+}
 
+impl Artifact for TlaFile {
     /// Returns a string representation.
-
     fn as_string(&self) -> &str {
         // TODO: will use explicit data to generate a repr
         &self.file_contents_backing

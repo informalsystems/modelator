@@ -5,7 +5,7 @@ use error_message::ErrorMessage;
 /// Parsing of Apalache's counterexample file.
 mod counterexample;
 
-use crate::artifact::{Artifact, TlaConfigFile, TlaFile, TlaTrace};
+use crate::artifact::{Artifact, ModelCheckingTestArgs, TlaConfigFile, TlaFile, TlaTrace};
 use crate::cache::TlaTraceCache;
 use crate::module::apalache;
 use crate::{jar, Error, Options};
@@ -42,8 +42,7 @@ impl Apalache {
     /// println!("{:?}", tla_trace);
     /// ```
     pub fn test(
-        tla_file: &TlaFile,
-        tla_config_file: &TlaConfigFile,
+        input_artifacts: &ModelCheckingTestArgs,
         options: &Options,
     ) -> Result<TlaTrace, Error> {
         // TODO: this method currently just uses the paths of the files so no need for whole artifact objects!

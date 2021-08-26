@@ -1,5 +1,6 @@
+pub(crate) mod cmds;
 pub(crate) mod json_trace;
-pub(crate) mod tla_cfg;
+pub(crate) mod tla_config_file;
 pub(crate) mod tla_file;
 pub(crate) mod tla_trace;
 
@@ -8,23 +9,12 @@ use std::convert::TryFrom;
 use std::path::{Path, PathBuf};
 use std::str;
 
-/// A wrapper around a file
-/// NOTE: for now this is bare-bones but it will eventually include additional meta-data
-/// which will justify the additional interface.
-pub trait Artifact
+pub trait ArtifactCreator
 where
     Self: Sized,
 {
     /// Create a new instance from a file content string.
     fn from_string(s: &str) -> Result<Self, Error>;
-
-    /// Returns a string representation.
-    fn as_string(&self) -> &str;
-
-    /// Tries to write the contents to path using the result of as_string.
-    fn try_write_to_file<P: AsRef<Path>>(&self, path: P) -> Result<(), Error> {
-        Ok(std::fs::write(&path, format!("{}", self.as_string()))?)
-    }
 
     /// Tries to read a file and initialize from the content.
     fn try_read_from_file<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
@@ -33,8 +23,25 @@ where
     }
 }
 
+/// A wrapper around a file
+/// NOTE: for now this is bare-bones but it will eventually include additional meta-data
+/// which will justify the additional interface.
+pub trait Artifact {
+    /// Returns a string representation.
+    fn as_string(&self) -> &str;
+
+    /// Tries to write the contents to path using the result of as_string.
+    fn try_write_to_file(&self, path: Box<dyn AsRef<Path>>) -> Result<(), Error> {
+        Ok(std::fs::write(
+            path.as_ref(),
+            format!("{}", self.as_string()),
+        )?)
+    }
+}
+
 // Re-exports.
+pub use cmds::ModelCheckingTestArgs;
 pub use json_trace::JsonTrace;
-pub use tla_cfg::TlaConfigFile;
+pub use tla_config_file::TlaConfigFile;
 pub use tla_file::TlaFile;
 pub use tla_trace::TlaTrace;
