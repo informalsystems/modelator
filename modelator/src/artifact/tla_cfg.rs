@@ -31,37 +31,6 @@ impl TlaConfigFile {
     }
 }
 
-// TODO: replace the following `TryFrom` implementations with one with generic
-//       bound `AsRef<Path>` once https://github.com/rust-lang/rust/issues/50133
-//       is fixed
-impl TryFrom<&str> for TlaConfigFile {
-    type Error = crate::Error;
-    fn try_from(path: &str) -> Result<Self, Self::Error> {
-        Self::new(path)
-    }
-}
-
-impl TryFrom<String> for TlaConfigFile {
-    type Error = crate::Error;
-    fn try_from(path: String) -> Result<Self, Self::Error> {
-        Self::new(path)
-    }
-}
-
-impl TryFrom<&Path> for TlaConfigFile {
-    type Error = crate::Error;
-    fn try_from(path: &Path) -> Result<Self, Self::Error> {
-        Self::new(path)
-    }
-}
-
-impl TryFrom<PathBuf> for TlaConfigFile {
-    type Error = crate::Error;
-    fn try_from(path: PathBuf) -> Result<Self, Self::Error> {
-        Self::new(path)
-    }
-}
-
 impl std::fmt::Display for TlaConfigFile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", crate::util::absolute_path(&self.path))
