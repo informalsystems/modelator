@@ -38,7 +38,6 @@ impl ArtifactCreator for TlaFile {
 }
 
 impl Artifact for TlaFile {
-    /// Returns a string representation.
     fn as_string(&self) -> &str {
         // TODO: will use explicit data to generate a repr
         &self.file_contents_backing

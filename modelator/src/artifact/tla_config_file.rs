@@ -1,4 +1,4 @@
-use super::Artifact;
+use super::{Artifact, ArtifactCreator};
 use crate::Error;
 use std::convert::TryFrom;
 use std::fs;
@@ -37,7 +37,7 @@ impl std::fmt::Display for TlaConfigFile {
     }
 }
 
-impl Artifact for TlaConfigFile {
+impl ArtifactCreator for TlaConfigFile {
     /// Create a new instance from a file content string.
     fn from_string(s: &str) -> Result<Self, Error> {
         Ok(TlaConfigFile {
@@ -45,9 +45,10 @@ impl Artifact for TlaConfigFile {
             content: s.to_string(),
         })
     }
+}
 
+impl Artifact for TlaConfigFile {
     /// Returns a string representation.
-
     fn as_string(&self) -> &str {
         // TODO: will use explicit data to generate a repr
         &self.content

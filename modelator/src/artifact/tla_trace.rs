@@ -1,4 +1,4 @@
-use super::Artifact;
+use super::{Artifact, ArtifactCreator};
 use crate::Error;
 use std::convert::TryFrom;
 use std::fs;
@@ -64,7 +64,7 @@ impl std::fmt::Display for TlaTrace {
     }
 }
 
-impl Artifact for TlaTrace {
+impl ArtifactCreator for TlaTrace {
     fn from_string(s: &str) -> Result<Self, Error> {
         Ok(TlaTrace {
             states: Vec::new(),
@@ -72,7 +72,9 @@ impl Artifact for TlaTrace {
             file_contents_backing: "".to_owned(),
         })
     }
+}
 
+impl Artifact for TlaTrace {
     fn as_string(&self) -> &str {
         self.file_contents_backing = match &self.extends_module_name {
             None => format!("{:?}", self.states),

@@ -1,4 +1,4 @@
-use super::Artifact;
+use super::{Artifact, ArtifactCreator};
 use crate::Error;
 use serde_json::Value as JsonValue;
 use std::convert::TryFrom;
@@ -71,11 +71,13 @@ impl TryFrom<PathBuf> for JsonTrace {
         todo!();
     }
 }
-
-impl Artifact for JsonTrace {
+impl ArtifactCreator for JsonTrace {
     fn from_string(s: &str) -> Result<Self, Error> {
         todo!()
     }
+}
+
+impl Artifact for JsonTrace {
     fn as_string(&self) -> &str {
         todo!()
     }
