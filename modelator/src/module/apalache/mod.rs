@@ -5,6 +5,8 @@ use error_message::ErrorMessage;
 /// Parsing of Apalache's counterexample file.
 mod counterexample;
 
+mod model_checking_log;
+
 use crate::artifact::{
     try_write_to_dir, Artifact, ArtifactCreator, ModelCheckingTestArgs, TlaConfigFile, TlaFile,
     TlaTrace,
@@ -15,6 +17,8 @@ use crate::{jar, Error, Options};
 use std::env::temp_dir;
 use std::path::Path;
 use std::process::Command;
+
+use model_checking_log::ModelCheckingLog;
 
 /// `modelator`'s Apalache module.
 #[derive(Debug, Clone, Copy)]
@@ -73,7 +77,7 @@ impl Apalache {
         // Gets Apalache command with tdir as working dir
         let mut cmd = apalache_start_cmd(&tdir, options);
 
-        // create apalache test command
+        // create 'apalache test' command
         let cmd = test_cmd(
             cmd,
             input_artifacts.tla_file.file_name(),
@@ -81,11 +85,9 @@ impl Apalache {
             options,
         );
 
-        // run apalache
-        run_apalache(cmd, options)?;
+        let apalache_stdout = run_apalache(cmd, options)?;
 
-        // convert apalache counterexample to a trace
-        // let counterexample_path = Path::new("counterexample.tla");
+        // Read the  apalache counterexample from disk and parse a trace from it
         let counterexample_path = tdir.into_path().join("counterexample.tla");
         if !counterexample_path.is_file() {
             panic!("[modelator] expected to find Apalache's counterexample.tla file")
@@ -123,31 +125,31 @@ impl Apalache {
     pub fn parse(tla_file: TlaFile, options: &Options) -> Result<TlaFile, Error> {
         tracing::debug!("Apalache::parse {} {:?}", tla_file, options);
 
-        // compute the directory in which the tla file is stored
-        let tla_file_dir = {
-            let mut ret = tla_file.path().to_path_buf();
-            assert!(ret.pop());
-            ret
-        };
+        let tdir = tempfile::tempdir()?;
 
-        let tla_module_name = tla_file.module_name();
+        try_write_to_dir(tdir, std::iter::once(Box::new(&tla_file as &dyn Artifact)))?;
 
-        // compute the output tla file
-        let tla_parsed_file_full_path = tla_file_dir.join(format!("{}Parsed.tla", tla_module_name));
+        // Gets Apalache command with tdir as working dir
+        let mut cmd = apalache_start_cmd(&tdir, options);
+
+        let tla_file_module_name = tla_file.module_name();
+
+        let output_path = format!("{}Parsed.tla", tla_file_module_name);
 
         // create apalache parse command
-        let cmd = parse_cmd(tla_file.path(), &tla_parsed_file_full_path, options);
+        let cmd = parse_cmd(cmd, tla_file.file_name(), output_path, options);
 
         // run apalache
-        run_apalache(cmd, options)?;
+        let apalache_stdout = run_apalache(cmd, options)?;
 
         // create tla file
-        let tla_parsed_file = TlaFile::try_read_from_file(tla_parsed_file_full_path)?;
+        let full_output_path = tdir.into_path().join(output_path);
+        let tla_parsed_file = TlaFile::try_read_from_file(full_output_path)?;
         Ok(tla_parsed_file)
     }
 }
 
-fn run_apalache(mut cmd: Command, options: &Options) -> Result<String, Error> {
+fn run_apalache(mut cmd: Command, options: &Options) -> Result<ModelCheckingLog, Error> {
     // start apalache
     // TODO: add timeout
     let output = cmd.output()?;
@@ -160,12 +162,6 @@ fn run_apalache(mut cmd: Command, options: &Options) -> Result<String, Error> {
 
     match (stdout.is_empty(), stderr.is_empty()) {
         (false, true) => {
-            // apalache writes all its output to the stdout
-
-            // save apalache log
-            //TODO: probably better to return the log in memory and write it somewhere else
-            std::fs::write(&options.model_checker_options.log, &stdout)?;
-
             // check if a failure has occurred
             if stdout.contains("EXITCODE: ERROR") {
                 return Err(Error::ApalacheFailure(apalache::ErrorMessage::new(&stdout)));
@@ -174,7 +170,8 @@ fn run_apalache(mut cmd: Command, options: &Options) -> Result<String, Error> {
                 stdout.contains("EXITCODE: OK"),
                 "[modelator] unexpected Apalache stdout"
             );
-            Ok(stdout)
+
+            Ok(ModelCheckingLog::from_string(&stdout)?)
         }
         _ => {
             panic!("[modelator] unexpected Apalache's stdout/stderr combination")
