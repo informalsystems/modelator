@@ -5,7 +5,7 @@ use error_message::ErrorMessage;
 /// Parsing of Apalache's counterexample file.
 mod counterexample;
 
-mod model_checking_log;
+mod log;
 
 use crate::artifact::{
     try_write_to_dir, Artifact, ArtifactCreator, ModelCheckingTestArgs, TlaConfigFile, TlaFile,
@@ -18,7 +18,7 @@ use std::env::temp_dir;
 use std::path::Path;
 use std::process::Command;
 
-use model_checking_log::ModelCheckingLog;
+use log::ApalacheLog;
 
 /// `modelator`'s Apalache module.
 #[derive(Debug, Clone, Copy)]
@@ -52,7 +52,7 @@ impl Apalache {
     pub fn test(
         input_artifacts: &ModelCheckingTestArgs,
         options: &Options,
-    ) -> Result<TlaTrace, Error> {
+    ) -> Result<(TlaTrace, ApalacheLog), Error> {
         // TODO: this method currently just uses the paths of the files so no need for whole artifact objects!
 
         tracing::debug!(
@@ -85,7 +85,7 @@ impl Apalache {
             options,
         );
 
-        let apalache_stdout = run_apalache(cmd, options)?;
+        let apalache_log = run_apalache(cmd, options)?;
 
         // Read the  apalache counterexample from disk and parse a trace from it
         let counterexample_path = tdir.into_path().join("counterexample.tla");
@@ -99,7 +99,7 @@ impl Apalache {
         // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
         // cache trace and then return it
         //cache.insert(cache_key, &trace)?;
-        Ok(trace)
+        Ok((trace, apalache_log))
     }
 
     /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>.
@@ -122,7 +122,7 @@ impl Apalache {
     /// let mut tla_parsed_file = Apalache::parse(tla_file, &options).unwrap();
     /// println!("{:?}", tla_parsed_file);
     /// ```
-    pub fn parse(tla_file: TlaFile, options: &Options) -> Result<TlaFile, Error> {
+    pub fn parse(tla_file: TlaFile, options: &Options) -> Result<(TlaFile, ApalacheLog), Error> {
         tracing::debug!("Apalache::parse {} {:?}", tla_file, options);
 
         let tdir = tempfile::tempdir()?;
@@ -140,16 +140,16 @@ impl Apalache {
         let cmd = parse_cmd(cmd, tla_file.file_name(), output_path, options);
 
         // run apalache
-        let apalache_stdout = run_apalache(cmd, options)?;
+        let apalache_log = run_apalache(cmd, options)?;
 
         // create tla file
         let full_output_path = tdir.into_path().join(output_path);
         let tla_parsed_file = TlaFile::try_read_from_file(full_output_path)?;
-        Ok(tla_parsed_file)
+        Ok((tla_parsed_file, apalache_log))
     }
 }
 
-fn run_apalache(mut cmd: Command, options: &Options) -> Result<ModelCheckingLog, Error> {
+fn run_apalache(mut cmd: Command, options: &Options) -> Result<ApalacheLog, Error> {
     // start apalache
     // TODO: add timeout
     let output = cmd.output()?;
@@ -171,7 +171,7 @@ fn run_apalache(mut cmd: Command, options: &Options) -> Result<ModelCheckingLog,
                 "[modelator] unexpected Apalache stdout"
             );
 
-            Ok(ModelCheckingLog::from_string(&stdout)?)
+            Ok(ApalacheLog::from_string(&stdout)?)
         }
         _ => {
             panic!("[modelator] unexpected Apalache's stdout/stderr combination")
