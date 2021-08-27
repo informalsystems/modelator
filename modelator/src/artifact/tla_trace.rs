@@ -65,11 +65,36 @@ impl std::fmt::Display for TlaTrace {
 
 impl ArtifactCreator for TlaTrace {
     fn from_string(s: &str) -> Result<Self, Error> {
-        Ok(TlaTrace {
-            states: Vec::new(),
-            extends_module_name: None,
-            file_contents_backing: "".to_owned(),
-        })
+        // Ok(TlaTrace {
+        //     states: Vec::new(),
+        //     extends_module_name: None,
+        //     file_contents_backing: "".to_owned(),
+        // })
+        let tla_trace = remove_tla_comments(s);
+
+        let tla: TlaTraceFileContent<'_> = parse_tla_trace_file_contents(&tla_trace).unwrap().1;
+
+        let mut states: Vec<(usize, &str)> = tla
+            .operators
+            .into_iter()
+            .filter(|(identifier, _)| identifier.starts_with("State"))
+            .map(|(k, state)| (k[5..k.len()].parse().unwrap(), state))
+            .collect();
+
+        states.sort_unstable();
+        states.dedup_by_key(|(k, _)| *k);
+
+        assert_eq!(
+            (states.first().unwrap().0, states.last().unwrap().0 + 1),
+            (0, states.len()),
+            "some consecutive states are missing in .tla trace"
+        );
+
+        let mut trace = TlaTrace::new();
+        states
+            .into_iter()
+            .for_each(|(_, state)| trace.add(state.into()));
+        Ok(trace)
     }
 }
 
@@ -180,36 +205,4 @@ fn parse_tla_trace_file_contents(i: &str) -> IResult<&str, TlaTraceFileContent<'
             operators,
         },
     )(i)
-}
-
-impl FromStr for TlaTrace {
-    type Err = Error;
-
-    fn from_str(tla_trace: &str) -> Result<Self, Self::Err> {
-        let tla_trace = remove_tla_comments(tla_trace);
-
-        let tla: TlaTraceFileContent<'_> = parse_tla_trace_file_contents(&tla_trace).unwrap().1;
-
-        let mut states: Vec<(usize, &str)> = tla
-            .operators
-            .into_iter()
-            .filter(|(identifier, _)| identifier.starts_with("State"))
-            .map(|(k, state)| (k[5..k.len()].parse().unwrap(), state))
-            .collect();
-
-        states.sort_unstable();
-        states.dedup_by_key(|(k, _)| *k);
-
-        assert_eq!(
-            (states.first().unwrap().0, states.last().unwrap().0 + 1),
-            (0, states.len()),
-            "some consecutive states are missing in .tla trace"
-        );
-
-        let mut trace = TlaTrace::new();
-        states
-            .into_iter()
-            .for_each(|(_, state)| trace.add(state.into()));
-        Ok(trace)
-    }
 }
