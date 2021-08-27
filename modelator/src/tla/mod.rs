@@ -17,11 +17,11 @@ impl Tla {
     ///
     /// # Examples
     ///
-    /// ```ignore
     /// TODO: ignoring because of https://github.com/informalsystems/modelator/issues/47
+    /// ```ignore
     /// use modelator::artifact::{TlaFile, TlaConfigFile};
-    /// use modelator::module::{Tla, Tlc};
-    /// use modelator::Options;
+    /// use modelator::{tla::Tla, checker::Tlc};
+    /// use modelator::ModelatorRuntime;
     /// use std::convert::TryFrom;
     ///
     /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
@@ -31,8 +31,8 @@ impl Tla {
     ///
     /// let mut tests = Tla::generate_tests(tla_tests_file, tla_config_file).unwrap();
     /// let (tla_test_file, tla_test_config_file) = tests.pop().unwrap();
-    /// let options = Options::default();
-    /// let tla_trace = Tlc::test(tla_test_file, tla_test_config_file, &options).unwrap();
+    /// let runtime = ModelatorRuntime::default();
+    /// let tla_trace = Tlc::test(&tla_test_file, &tla_test_config_file, &runtime).unwrap();
     /// let json_trace = Tla::tla_trace_to_json_trace(tla_trace).unwrap();
     /// println!("{:?}", json_trace);
     /// ```
@@ -50,11 +50,10 @@ impl Tla {
     ///
     /// # Examples
     ///
-    /// ```ignore
     /// TODO: ignoring because of https://github.com/informalsystems/modelator/issues/47
+    /// ```ignore
     /// use modelator::artifact::{TlaFile, TlaConfigFile};
-    /// use modelator::module::Tla;
-    /// use modelator::Options;
+    /// use modelator::tla::Tla;
     /// use std::convert::TryFrom;
     ///
     /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";

@@ -88,8 +88,8 @@ impl CliOptions {
 impl Modules {
     fn run(self) -> Result<JsonValue, Error> {
         // setup modelator
-        let options = crate::ModelatorRuntime::default();
-        options.setup()?;
+        let runtime = crate::ModelatorRuntime::default();
+        runtime.setup()?;
 
         // run the subcommand
         match self {

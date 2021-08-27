@@ -7,8 +7,8 @@ pub(crate) struct TlaTraceCache {
 }
 
 impl TlaTraceCache {
-    pub(crate) fn new(options: &ModelatorRuntime) -> Result<Self, Error> {
-        let cache = Cache::new(options)?;
+    pub(crate) fn new(runtime: &ModelatorRuntime) -> Result<Self, Error> {
+        let cache = Cache::new(runtime)?;
         Ok(Self { cache })
     }
 

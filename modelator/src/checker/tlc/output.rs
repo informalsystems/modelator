@@ -4,7 +4,7 @@ use crate::{checker::ModelCheckerRuntime, Error};
 use std::collections::HashMap;
 
 // TODO: don't need entire options object
-pub(crate) fn parse(output: String, options: &ModelCheckerRuntime) -> Result<Vec<TlaTrace>, Error> {
+pub(crate) fn parse(output: String, runtime: &ModelCheckerRuntime) -> Result<Vec<TlaTrace>, Error> {
     let mut parsed_output: HashMap<u8, HashMap<usize, Vec<String>>> = HashMap::new();
 
     let mut curr_message_id = None;
@@ -72,7 +72,7 @@ pub(crate) fn parse(output: String, options: &ModelCheckerRuntime) -> Result<Vec
             .map(|(code, message)| {
                 format!(
                     "[{}:{}]: {}",
-                    options.log.to_string_lossy(),
+                    runtime.log.to_string_lossy(),
                     code,
                     &message
                         .iter()
@@ -91,7 +91,7 @@ pub(crate) fn parse(output: String, options: &ModelCheckerRuntime) -> Result<Vec
 
 fn parse_trace<'a>(
     lines: &mut impl Iterator<Item = &'a str>,
-    options: &ModelCheckerRuntime,
+    runtime: &ModelCheckerRuntime,
 ) -> Result<Option<TlaTrace>, Error> {
     let mut state_index = 0;
     let mut state = None;
@@ -99,7 +99,7 @@ fn parse_trace<'a>(
     loop {
         let line = lines
             .next()
-            .ok_or_else(|| Error::InvalidTLCOutput(options.log.clone()))?;
+            .ok_or_else(|| Error::InvalidTLCOutput(runtime.log.clone()))?;
 
         // check if found the start of the next state
         if line.starts_with("@!@!@STARTMSG 2217:4 @!@!@") {

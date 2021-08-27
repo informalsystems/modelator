@@ -23,11 +23,11 @@ impl Tlc {
     ///
     /// # Examples
     ///
-    /// ```ignore
     /// TODO: ignoring because of https://github.com/informalsystems/modelator/issues/47
+    /// ```ignore
     /// use modelator::artifact::{TlaFile, TlaConfigFile};
-    /// use modelator::module::{Tla, Tlc};
-    /// use modelator::Options;
+    /// use modelator::{tla::Tla, checker::Tlc};
+    /// use modelator::ModelatorRuntime;
     /// use std::convert::TryFrom;
     ///
     /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
@@ -37,8 +37,8 @@ impl Tlc {
     ///
     /// let mut tests = Tla::generate_tests(tla_tests_file, tla_config_file).unwrap();
     /// let (tla_test_file, tla_test_config_file) = tests.pop().unwrap();
-    /// let options = Options::default();
-    /// let tla_trace = Tlc::test(tla_test_file, tla_test_config_file, &options).unwrap();
+    /// let runtime = ModelatorRuntime::default();
+    /// let tla_trace = Tlc::test(&tla_test_file, &tla_test_config_file, &runtime).unwrap();
     /// println!("{:?}", tla_trace);
     /// ```
     pub fn test(
@@ -51,7 +51,7 @@ impl Tlc {
 
         // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
         // load cache and check if the result is cached
-        // let mut cache = TlaTraceCache::new(options)?;
+        // let mut cache = TlaTraceCache::new(runtime)?;
         // let cache_key = TlaTraceCache::key(&tla_file, &tla_config_file)?;
         // if let Some(value) = cache.get(&cache_key)? {
         //     return Ok(value);
@@ -121,10 +121,10 @@ fn test_cmd<P: AsRef<Path>>(
     temp_dir: &tempfile::TempDir,
     tla_file: P,
     tla_config_file_path: P,
-    options: &ModelatorRuntime,
+    runtime: &ModelatorRuntime,
 ) -> Command {
-    let tla2tools = jar::Jar::Tla.path(&options.dir);
-    let community_modules = jar::Jar::CommunityModules.path(&options.dir);
+    let tla2tools = jar::Jar::Tla.path(&runtime.dir);
+    let community_modules = jar::Jar::CommunityModules.path(&runtime.dir);
 
     let mut cmd = Command::new("java");
     cmd.current_dir(temp_dir)
@@ -145,15 +145,15 @@ fn test_cmd<P: AsRef<Path>>(
         .arg("-tool")
         // set the number of TLC's workers
         .arg("-workers")
-        .arg(workers(options));
+        .arg(workers(runtime));
 
     // show command being run
     tracing::debug!("{}", crate::util::cmd_show(&cmd));
     cmd
 }
 
-fn workers(options: &ModelatorRuntime) -> String {
-    match options.model_checker_runtime.workers {
+fn workers(runtime: &ModelatorRuntime) -> String {
+    match runtime.model_checker_runtime.workers {
         ModelCheckerWorkers::Auto => "auto".to_string(),
         ModelCheckerWorkers::Count(count) => count.to_string(),
     }

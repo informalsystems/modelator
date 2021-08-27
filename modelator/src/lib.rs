@@ -70,10 +70,10 @@ use std::fmt::Debug;
 use std::path::{Path, PathBuf};
 use tempfile::tempdir;
 
-/// Set of options to configure `modelator`.
+/// Set of options to configure `modelator` runtime.
 #[derive(Clone, Debug)]
 pub struct ModelatorRuntime {
-    /// Model checker options.
+    /// Model checker runtime.
     pub model_checker_runtime: ModelCheckerRuntime,
 
     /// Modelator directory.
@@ -90,7 +90,7 @@ impl Default for ModelatorRuntime {
 }
 
 impl ModelatorRuntime {
-    /// Set TLC options.
+    /// Set TLC runtime.
     pub fn model_checker_runtime(mut self, model_checker_runtime: ModelCheckerRuntime) -> Self {
         self.model_checker_runtime = model_checker_runtime;
         self
@@ -138,8 +138,8 @@ impl ModelatorRuntime {
     /// ```
     /// let tla_tests_file_path = "tests/integration/tla/NumbersAMaxBMinTest.tla";
     /// let tla_config_file_path = "tests/integration/tla/Numbers.cfg";
-    /// let options = modelator::ModelatorRuntime::default();
-    /// let trace_results = options.traces(tla_tests_file_path, tla_config_file_path).unwrap();
+    /// let runtime = modelator::ModelatorRuntime::default();
+    /// let trace_results = runtime.traces(tla_tests_file_path, tla_config_file_path).unwrap();
     /// println!("{:?}", trace_results);
     /// ```
     pub fn traces<P: AsRef<Path>>(
@@ -262,9 +262,9 @@ impl ModelatorRuntime {
     /// fn test() {
     ///     let tla_tests_file_path = "tests/integration/tla/NumbersAMaxBMinTest.tla";
     ///     let tla_config_file_path = "tests/integration/tla/Numbers.cfg";
-    ///     let options = modelator::ModelatorRuntime::default();
+    ///     let runtime = modelator::ModelatorRuntime::default();
     ///     let mut system = NumberSystem::default();
-    ///     assert!(options.run_tla_steps(tla_tests_file_path, tla_config_file_path, &mut system).is_ok());
+    ///     assert!(runtime.run_tla_steps(tla_tests_file_path, tla_config_file_path, &mut system).is_ok());
     /// }
     /// ```
     pub fn run_tla_steps<P, System, Step>(
@@ -361,7 +361,7 @@ impl ModelatorRuntime {
     /// fn main() {
     ///     let tla_tests_file_path = "tests/integration/tla/NumbersAMaxBMaxTest.tla";
     ///     let tla_config_file_path = "tests/integration/tla/Numbers.cfg";
-    ///     let options = modelator::ModelatorRuntime::default();
+    ///     let runtime = modelator::ModelatorRuntime::default();
     ///     
     ///     // We create a system under test
     ///     let mut system = NumberSystem::default();
@@ -373,7 +373,7 @@ impl ModelatorRuntime {
     ///         .with_action::<Action>();
     ///
     ///     // run your system against the events produced from TLA+ tests.
-    ///     let result = options.run_tla_events(tla_tests_file_path, tla_config_file_path, &mut system, &mut runner);
+    ///     let result = runtime.run_tla_events(tla_tests_file_path, tla_config_file_path, &mut system, &mut runner);
     ///     // At each step of a test, the state of your system is being checked
     ///     // against the state that the TLA+ model expects
     ///     assert!(result.is_ok());

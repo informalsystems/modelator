@@ -30,8 +30,8 @@ impl Apalache {
     ///
     /// ```ignore
     /// use modelator::artifact::{TlaFile, TlaConfigFile};
-    /// use modelator::module::{Tla, Apalache};
-    /// use modelator::Options;
+    /// use modelator::{tla::Tla, checker::Apalache};
+    /// use modelator::ModelatorRuntime;
     /// use std::convert::TryFrom;
     ///
     /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
@@ -41,8 +41,8 @@ impl Apalache {
     ///
     /// let mut tests = Tla::generate_tests(tla_tests_file, tla_config_file).unwrap();
     /// let (tla_test_file, tla_test_config_file) = tests.pop().unwrap();
-    /// let options = Options::default();
-    /// let tla_trace = Apalache::test(tla_test_file, tla_test_config_file, &options).unwrap();
+    /// let runtime = ModelatorRuntime::default();
+    /// let tla_trace = Apalache::test(&tla_test_file, &tla_test_config_file, &runtime).unwrap();
     /// println!("{:?}", tla_trace);
     /// ```
     pub fn test(
@@ -60,7 +60,7 @@ impl Apalache {
 
         // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
         // load cache and check if the result is cached
-        // let mut cache = TlaTraceCache::new(options)?;
+        // let mut cache = TlaTraceCache::new(runtime)?;
         // let cache_key = TlaTraceCache::key(&tla_file, &tla_config_file)?;
         // if let Some(value) = cache.get(&cache_key)? {
         //     return Ok(value);
@@ -107,15 +107,15 @@ impl Apalache {
     ///
     /// ```ignore
     /// use modelator::artifact::TlaFile;
-    /// use modelator::module::Apalache;
-    /// use modelator::Options;
+    /// use modelator::checker::Apalache;
+    /// use modelator::ModelatorRuntime;
     /// use std::convert::TryFrom;
     ///
     /// let tla_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
     /// let tla_file = TlaFile::try_from(tla_file).unwrap();
     ///
-    /// let options = Options::default();
-    /// let mut tla_parsed_file = Apalache::parse(tla_file, &options).unwrap();
+    /// let runtime = ModelatorRuntime::default();
+    /// let mut tla_parsed_file = Apalache::parse(tla_file, &runtime).unwrap();
     /// println!("{:?}", tla_parsed_file);
     /// ```
     pub fn parse(
@@ -182,7 +182,7 @@ fn test_cmd<P: AsRef<Path>>(
     mut cmd: Command,
     tla_file_base_name: P,
     tla_config_file_base_name: P,
-    options: &ModelatorRuntime,
+    runtime: &ModelatorRuntime,
 ) -> Command {
     cmd.arg("check")
         .arg(format!(
@@ -193,7 +193,7 @@ fn test_cmd<P: AsRef<Path>>(
 
     tracing::warn!(
         "the following workers option was ignored since apalache is single-threaded: {:?}",
-        options.model_checker_runtime.workers
+        runtime.model_checker_runtime.workers
     );
 
     // show command being run

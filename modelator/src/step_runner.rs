@@ -98,9 +98,9 @@ mod tests {
     fn test_step_runner() {
         let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
         let tla_config_file = "tests/integration/tla/Numbers.cfg";
-        let options = crate::ModelatorRuntime::default();
+        let runtime = crate::ModelatorRuntime::default();
         let mut runner = NumberSystem::default();
-        assert!(options
+        assert!(runtime
             .run_tla_steps(tla_tests_file, tla_config_file, &mut runner)
             .is_ok());
     }
