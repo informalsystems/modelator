@@ -5,7 +5,7 @@ use std::convert::TryFrom;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-//TODO: make this match the rest
+//TODO: make this match the
 
 /// `modelator`'s artifact containing a test trace encoded as JSON.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -42,39 +42,8 @@ impl std::fmt::Display for JsonTrace {
     }
 }
 
-impl TryFrom<&str> for JsonTrace {
-    type Error = crate::Error;
-    fn try_from(_path: &str) -> Result<Self, Self::Error> {
-        // Self::new(path)
-        todo!();
-    }
-}
-
-impl TryFrom<String> for JsonTrace {
-    type Error = crate::Error;
-    fn try_from(_path: String) -> Result<Self, Self::Error> {
-        // Self::new(path)
-        todo!();
-    }
-}
-
-impl TryFrom<&Path> for JsonTrace {
-    type Error = crate::Error;
-    fn try_from(_path: &Path) -> Result<Self, Self::Error> {
-        // Self::new(path)
-        todo!();
-    }
-}
-
-impl TryFrom<PathBuf> for JsonTrace {
-    type Error = crate::Error;
-    fn try_from(_path: PathBuf) -> Result<Self, Self::Error> {
-        // Self::new(path)
-        todo!();
-    }
-}
 impl ArtifactCreator for JsonTrace {
-    fn from_string(s: &str) -> Result<Self, Error> {
+    fn from_string(_s: &str) -> Result<Self, Error> {
         todo!()
     }
 }
