@@ -1,6 +1,5 @@
 use super::{Artifact, ArtifactCreator};
 use crate::Error;
-use std::convert::TryFrom;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;

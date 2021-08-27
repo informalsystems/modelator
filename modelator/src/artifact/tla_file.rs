@@ -1,7 +1,6 @@
 use super::{Artifact, ArtifactCreator};
 use crate::{Error, ModelCheckerOptions};
 use core::result::Result::Err;
-use std::convert::TryFrom;
 use std::fs;
 use std::path::{Path, PathBuf};
 

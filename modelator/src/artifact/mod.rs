@@ -5,7 +5,6 @@ pub(crate) mod tla_file;
 pub(crate) mod tla_trace;
 
 use crate::Error;
-use std::convert::TryFrom;
 use std::path::{Path, PathBuf};
 use std::str;
 

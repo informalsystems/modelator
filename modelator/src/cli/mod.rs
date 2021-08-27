@@ -117,7 +117,6 @@ impl TlaMethods {
         tla_file_path: String,
         tla_config_file_path: String,
     ) -> Result<JsonValue, Error> {
-        use std::convert::TryFrom;
         let tla_file = TlaFile::try_read_from_file(tla_file_path)?;
         let tla_config_file = TlaConfigFile::try_read_from_file(tla_config_file_path)?;
         let tests = crate::module::Tla::generate_tests(tla_file, tla_config_file)?;
@@ -186,7 +185,6 @@ impl TlcMethods {
 
     fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
         let options = crate::Options::default();
-        use std::convert::TryFrom;
         let tla_file = TlaFile::try_read_from_file(tla_file_path)?;
         let tla_config_file = TlaConfigFile::try_read_from_file(tla_config_file_path)?;
         let tla_trace = {

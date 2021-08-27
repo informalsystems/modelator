@@ -151,7 +151,6 @@ fn generate_test(
     std::fs::write(&test_config_file, test_config)?;
 
     // create tla file and tla config file
-    use std::convert::TryFrom;
     let test_module_file = TlaFile::try_read_from_file(test_module_file)?;
     let test_config_file = TlaConfigFile::try_read_from_file(test_config_file)?;
     Ok((test_module_file, test_config_file))
