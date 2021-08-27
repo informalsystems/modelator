@@ -1,7 +1,7 @@
 // CLI output.
 pub(crate) mod output;
 
-use crate::artifact::{Artifact, JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
+use crate::artifact::{Artifact, ArtifactCreator, JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
 use crate::Error;
 use clap::{AppSettings, Clap, Subcommand};
 use serde_json::{json, Value as JsonValue};

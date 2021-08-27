@@ -61,7 +61,7 @@ pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Option
 use serde::de::DeserializeOwned;
 pub use step_runner::StepRunner;
 
-use crate::artifact::Artifact;
+use crate::artifact::{Artifact, ArtifactCreator};
 
 use std::env;
 use std::fmt::Debug;

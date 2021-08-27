@@ -1,7 +1,7 @@
 /// Conversion from TLA traces to JSON.
 mod json;
 
-use crate::artifact::{Artifact, JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
+use crate::artifact::{Artifact, ArtifactCreator, JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
 use crate::Error;
 use serde_json::Value as JsonValue;
 use std::path::Path;

@@ -31,11 +31,8 @@ pub trait Artifact {
     fn as_string(&self) -> &str;
 
     /// Tries to write the contents to path using the result of as_string.
-    fn try_write_to_file(&self, path: Box<dyn AsRef<Path>>) -> Result<(), Error> {
-        Ok(std::fs::write(
-            path.as_ref(),
-            format!("{}", self.as_string()),
-        )?)
+    fn try_write_to_file(&self, path: &Path) -> Result<(), Error> {
+        Ok(std::fs::write(path, format!("{}", self.as_string()))?)
     }
 }
 
