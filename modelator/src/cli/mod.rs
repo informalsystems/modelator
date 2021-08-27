@@ -146,7 +146,7 @@ impl ApalacheMethods {
     fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
         let options = crate::Options::default();
         let input_artifacts =
-            { TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)? };
+            TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)?;
         let res = {
             let mut ret = crate::module::Apalache::test(&input_artifacts, &options)?;
             ret.0.extends_module_name = Some(input_artifacts.tla_file.module_name().to_string());
@@ -178,11 +178,11 @@ impl TlcMethods {
 
     fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
         let options = crate::Options::default();
-        let tla_file = TlaFile::try_read_from_file(tla_file_path)?;
-        let tla_config_file = TlaConfigFile::try_read_from_file(tla_config_file_path)?;
+        let input_artifacts =
+            TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)?;
         let tla_trace = {
-            let mut ret = crate::module::Tlc::test(&tla_file, &tla_config_file, &options)?;
-            ret.extends_module_name = Some(tla_file.module_name().to_string());
+            let mut ret = crate::module::Tlc::test(&input_artifacts, &options)?;
+            ret.extends_module_name = Some(input_artifacts.tla_file.module_name().to_string());
             ret
         };
         tracing::debug!("Tlc::test output {}", tla_trace);

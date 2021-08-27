@@ -1,11 +1,17 @@
+mod log;
 /// Parsing of TLC's output.
 mod output;
 
-use crate::artifact::{TlaConfigFile, TlaFile, TlaTrace};
+use crate::artifact::{
+    tla_file, try_write_to_dir, Artifact, ArtifactCreator, TlaConfigFile, TlaFile, TlaFileSuite,
+    TlaTrace,
+};
 use crate::cache::TlaTraceCache;
 use crate::{jar, Error, ModelCheckerWorkers, Options};
 use std::path::Path;
 use std::process::Command;
+
+use log::TlcLog;
 
 /// `modelator`'s TLC module.
 #[derive(Debug, Clone, Copy)]
@@ -36,10 +42,11 @@ impl Tlc {
     /// println!("{:?}", tla_trace);
     /// ```
     pub fn test(
-        tla_file: &TlaFile,
-        tla_config_file: &TlaConfigFile,
+        tla_file_suite: &TlaFileSuite,
         options: &Options,
-    ) -> Result<TlaTrace, Error> {
+    ) -> Result<(TlaTrace, TlcLog), Error> {
+        let tla_file = &tla_file_suite.tla_file;
+        let tla_config_file = &tla_file_suite.tla_config_file;
         tracing::debug!("Tlc::test {} {} {:?}", tla_file, tla_config_file, options);
 
         // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
@@ -50,8 +57,17 @@ impl Tlc {
         //     return Ok(value);
         // }
 
+        let tdir = tempfile::tempdir()?;
+
+        try_write_to_dir(tdir, tla_file_suite)?;
+
         // create tlc command
-        let mut cmd = test_cmd(tla_file.path(), tla_config_file.path(), options);
+        let mut cmd = test_cmd(
+            &tdir,
+            tla_file.file_name(),
+            tla_config_file.filename(),
+            options,
+        );
 
         // start tlc
         // TODO: add timeout
@@ -65,25 +81,14 @@ impl Tlc {
 
         match (stdout.is_empty(), stderr.is_empty()) {
             (false, true) => {
-                // if stderr is empty, but the stdout is not, then no error has
-                // occurred
+                let tlc_log = TlcLog::from_string(&stdout)?;
 
-                // save tlc log
-                //TODO: probably better to return the log in memory and write it somewhere else
-                std::fs::write(&options.model_checker_options.log, &stdout)?;
-                tracing::debug!(
-                    "TLC log written to {}",
-                    crate::util::absolute_path(&options.model_checker_options.log)
-                );
-
-                // convert tlc output to traces
-                // TODO: make the logic here mirror the better-implemented Apalache module which returns
-                // stdout for post-proccesing
                 let mut traces = output::parse(stdout, &options.model_checker_options)?;
 
                 // check if no trace was found
                 if traces.is_empty() {
                     return Err(Error::NoTestTraceFound(
+                        //TODO: this will have to be changed to reflect new in-memory log
                         options.model_checker_options.log.clone(),
                     ));
                 }
@@ -99,7 +104,7 @@ impl Tlc {
                 // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
                 // cache trace and then return it
                 //cache.insert(cache_key, &trace)?;
-                Ok(trace)
+                Ok((trace, tlc_log))
             }
             (true, false) => {
                 // if stdout is empty, but the stderr is not, return an error
@@ -112,12 +117,17 @@ impl Tlc {
     }
 }
 
-fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file_path: P, options: &Options) -> Command {
+fn test_cmd<P: AsRef<Path>>(
+    temp_dir: &tempfile::TempDir,
+    tla_file: P,
+    tla_config_file_path: P,
+    options: &Options,
+) -> Command {
     let tla2tools = jar::Jar::Tla.path(&options.dir);
     let community_modules = jar::Jar::CommunityModules.path(&options.dir);
 
     let mut cmd = Command::new("java");
-    cmd
+    cmd.current_dir(temp_dir)
         // set classpath
         .arg("-cp")
         .arg(format!(
