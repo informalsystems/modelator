@@ -14,7 +14,7 @@ where
     C: IntoIterator<Item = Box<&'a dyn Artifact>>,
 {
     //NEXT: write files yadayada
-    todo!()
+    Ok(())
 }
 
 pub trait ArtifactCreator

@@ -6,11 +6,13 @@ use error_message::ErrorMessage;
 mod counterexample;
 
 use crate::artifact::{
-    try_write_to_dir, Artifact, ModelCheckingTestArgs, TlaConfigFile, TlaFile, TlaTrace,
+    try_write_to_dir, Artifact, ArtifactCreator, ModelCheckingTestArgs, TlaConfigFile, TlaFile,
+    TlaTrace,
 };
 use crate::cache::TlaTraceCache;
 use crate::module::apalache;
 use crate::{jar, Error, Options};
+use std::env::temp_dir;
 use std::path::Path;
 use std::process::Command;
 
@@ -49,12 +51,10 @@ impl Apalache {
     ) -> Result<TlaTrace, Error> {
         // TODO: this method currently just uses the paths of the files so no need for whole artifact objects!
 
-        try_write_to_dir("dlkafj", input_artifacts);
-
         tracing::debug!(
             "Apalache::test {} {} {:?}",
-            tla_file,
-            tla_config_file,
+            input_artifacts.tla_file,
+            input_artifacts.tla_config_file,
             options
         );
 
@@ -66,27 +66,38 @@ impl Apalache {
         //     return Ok(value);
         // }
 
+        let tdir = tempfile::tempdir()?;
+
+        try_write_to_dir(tdir, input_artifacts)?;
+
+        // Gets Apalache command with tdir as working dir
+        let mut cmd = apalache_start_cmd(&tdir, options);
+
         // create apalache test command
-        let cmd = test_cmd(tla_file.path(), tla_config_file.path(), options);
+        let cmd = test_cmd(
+            cmd,
+            input_artifacts.tla_file.file_name(),
+            input_artifacts.tla_config_file.filename(),
+            options,
+        );
 
         // run apalache
         run_apalache(cmd, options)?;
 
         // convert apalache counterexample to a trace
-        let counterexample_path = Path::new("counterexample.tla");
-        if counterexample_path.is_file() {
-            use std::convert::TryFrom;
-            let counterexample: TlaFile = TlaFile::try_read_from_file(counterexample_path)?;
-            tracing::debug!("Apalache counterexample:\n{}", counterexample);
-            let trace = counterexample::parse(counterexample.file_contents_backing())?;
-
-            // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
-            // cache trace and then return it
-            //cache.insert(cache_key, &trace)?;
-            Ok(trace)
-        } else {
+        // let counterexample_path = Path::new("counterexample.tla");
+        let counterexample_path = tdir.into_path().join("counterexample.tla");
+        if !counterexample_path.is_file() {
             panic!("[modelator] expected to find Apalache's counterexample.tla file")
         }
+        let counterexample: TlaFile = TlaFile::try_read_from_file(counterexample_path)?;
+        tracing::debug!("Apalache counterexample:\n{}", counterexample);
+        let trace = counterexample::parse(counterexample.file_contents_backing())?;
+
+        // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
+        // cache trace and then return it
+        //cache.insert(cache_key, &trace)?;
+        Ok(trace)
     }
 
     /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>.
@@ -171,16 +182,18 @@ fn run_apalache(mut cmd: Command, options: &Options) -> Result<String, Error> {
     }
 }
 
-fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) -> Command {
-    let mut cmd = apalache_start_cmd(&tla_file, options);
+fn test_cmd<P: AsRef<Path>>(
+    cmd: Command,
+    tla_file_base_name: P,
+    tla_config_file_base_name: P,
+    options: &Options,
+) -> Command {
     cmd.arg("check")
-        // set tla config file
         .arg(format!(
             "--config={}",
-            tla_config_file.as_ref().to_string_lossy()
+            tla_config_file_base_name.as_ref().to_string_lossy()
         ))
-        // set tla file
-        .arg(tla_file.as_ref());
+        .arg(tla_file_base_name.as_ref());
 
     tracing::warn!(
         "the following workers option was ignored since apalache is single-threaded: {:?}",
@@ -192,36 +205,34 @@ fn test_cmd<P: AsRef<Path>>(tla_file: P, tla_config_file: P, options: &Options) 
     cmd
 }
 
-fn parse_cmd<P: AsRef<Path>>(tla_file: P, output_file: P, options: &Options) -> Command {
-    let mut cmd = apalache_start_cmd(&tla_file, options);
+fn parse_cmd<P: AsRef<Path>>(
+    cmd: Command,
+    tla_file_base_name: P,
+    output_file_base_name: P,
+    options: &Options,
+) -> Command {
     cmd.arg("parse")
-        // set tla output file
         .arg(format!(
             "--output={}",
-            output_file.as_ref().to_string_lossy()
+            output_file_base_name.as_ref().to_string_lossy()
         ))
-        // set tla file
-        .arg(tla_file.as_ref());
+        .arg(tla_file_base_name.as_ref());
 
     // show command being run
     tracing::debug!("{}", crate::util::cmd_show(&cmd));
     cmd
 }
 
-fn apalache_start_cmd<P: AsRef<Path>>(tla_file: P, options: &Options) -> Command {
+/// Creates an Apalache start command providing temp_dir as a library directory and the Apalache jar
+fn apalache_start_cmd(temp_dir: &tempfile::TempDir, options: &Options) -> Command {
     let apalache = jar::Jar::Apalache.path(&options.dir);
 
     let mut cmd = Command::new("java");
-
-    // compute the directory where the tla file is, so that it can be added as
-    // a tla library
-    if let Some(tla_file_dir) = tla_file.as_ref().parent() {
-        cmd
-            // set tla library
-            .arg(format!("-DTLA-Library={}", tla_file_dir.to_string_lossy()));
-    }
-    cmd
-        // set jar
+    cmd.current_dir(temp_dir)
+        .arg(format!(
+            "-DTLA-Library={}",
+            temp_dir.path().to_string_lossy()
+        ))
         .arg("-jar")
         .arg(format!("{}", apalache.as_path().to_string_lossy()));
     cmd

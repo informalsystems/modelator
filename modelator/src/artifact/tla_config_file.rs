@@ -20,6 +20,7 @@ impl TlaConfigFile {
         Ok(Self { path, content })
     }
 
+    /// Returns a base filename <>.cfg
     pub fn filename(&self) -> String {
         // TODO:  this with value derived from internal repr
         let res = self.path.as_path().file_name();

@@ -19,6 +19,7 @@ impl TlaFile {
         &self.module_name
     }
 
+    /// Returns a base filename {module_name}.tla
     pub fn file_name(&self) -> String {
         format!("{}.tla", &self.module_name)
     }
