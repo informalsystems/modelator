@@ -17,7 +17,7 @@ impl Tla {
     ///
     /// # Examples
     ///
-    /// TODO: ignoring because of https://github.com/informalsystems/modelator/issues/47
+    /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
     /// ```ignore
     /// use modelator::artifact::{TlaFile, TlaConfigFile};
     /// use modelator::{tla::Tla, checker::Tlc};
@@ -50,7 +50,7 @@ impl Tla {
     ///
     /// # Examples
     ///
-    /// TODO: ignoring because of https://github.com/informalsystems/modelator/issues/47
+    /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
     /// ```ignore
     /// use modelator::artifact::{TlaFile, TlaConfigFile};
     /// use modelator::tla::Tla;

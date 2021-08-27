@@ -24,7 +24,7 @@ impl Apalache {
     /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
     ///
     /// Generate a TLA+ trace given a [TlaFile] and a [TlaConfigFile] produced
-    /// by [crate::module::Tla::generate_tests].
+    /// by [crate::tla::Tla::generate_tests].
     ///
     /// # Examples
     ///

@@ -19,11 +19,11 @@ pub struct Tlc;
 
 impl Tlc {
     /// Generate a TLA+ trace given a [TlaFile] and a [TlaConfigFile] produced
-    /// by [crate::module::Tla::generate_tests].
+    /// by [crate::tla::Tla::generate_tests].
     ///
     /// # Examples
     ///
-    /// TODO: ignoring because of https://github.com/informalsystems/modelator/issues/47
+    /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
     /// ```ignore
     /// use modelator::artifact::{TlaFile, TlaConfigFile};
     /// use modelator::{tla::Tla, checker::Tlc};
