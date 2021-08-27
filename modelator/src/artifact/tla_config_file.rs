@@ -20,6 +20,15 @@ impl TlaConfigFile {
         Ok(Self { path, content })
     }
 
+    pub fn filename(&self) -> String {
+        // TODO:  this with value derived from internal repr
+        let res = self.path.as_path().file_name();
+        if res.is_none() {
+            panic!("TODO: tla config file should not fail to provide filename")
+        }
+        return res.unwrap().to_str().unwrap().to_owned();
+    }
+
     /// Returns the path to the TLA+ config file.
     pub fn path(&self) -> &PathBuf {
         &self.path

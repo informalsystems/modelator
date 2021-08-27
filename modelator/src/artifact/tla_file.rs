@@ -19,6 +19,10 @@ impl TlaFile {
         &self.module_name
     }
 
+    pub fn file_name(&self) -> String {
+        format!("{}.tla", &self.module_name)
+    }
+
     pub fn file_contents_backing(&self) -> &str {
         &self.file_contents_backing
     }

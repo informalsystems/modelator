@@ -8,8 +8,6 @@ pub struct ModelCheckingTestArgs {
     dependency_tla_files: Vec<TlaFile>,
 }
 
-//NEXT: Should implement some kind of iterator or collection access for model checking test args
-// ALso need to go back over existing artifacts and split them off into ArtifactCreator impl
 impl<'a> IntoIterator for &'a ModelCheckingTestArgs {
     type Item = Box<&'a dyn Artifact>;
     type IntoIter = std::vec::IntoIter<Self::Item>;

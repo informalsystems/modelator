@@ -17,14 +17,6 @@ where
     todo!()
 }
 
-pub fn try_write_to_dir2<'a, P: AsRef<Path>>(
-    dir: P,
-    iter: &std::vec::IntoIter<Box<&'a dyn Artifact>>,
-) -> Result<(), Error> {
-    //NEXT: write files yadayada
-    todo!()
-}
-
 pub trait ArtifactCreator
 where
     Self: Sized,
