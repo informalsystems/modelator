@@ -9,12 +9,12 @@ use crate::Error;
 use std::path::{Path, PathBuf};
 use std::str;
 
-pub fn try_write_to_dir<'a, P: AsRef<Path>, C>(dir: P, collection: C) -> Result<(), Error>
+pub fn try_write_to_dir<'a, P: AsRef<Path>, C>(_dir: P, _collection: C) -> Result<(), Error>
 where
     C: IntoIterator<Item = Box<&'a dyn Artifact>>,
 {
-    //NEXT: write files yadayada
-    Ok(())
+    //TODO:
+    todo!();
 }
 
 pub trait ArtifactCreator
