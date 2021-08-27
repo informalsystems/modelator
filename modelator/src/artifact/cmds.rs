@@ -17,7 +17,7 @@ fn gather_dependencies<P: AsRef<std::path::Path>>(tla_file: P) -> Result<Vec<Tla
 
 impl TlaFileSuite {
     // Gather all model checking resources from a main .tla and .cfg file
-    pub fn from_tla_path<P: AsRef<std::path::Path>>(
+    pub fn from_tla_and_config_paths<P: AsRef<std::path::Path>>(
         tla_file_path: P,
         config_file_path: P,
     ) -> Result<TlaFileSuite, Error> {
