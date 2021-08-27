@@ -49,7 +49,7 @@ impl ArtifactCreator for JsonTrace {
 }
 
 impl Artifact for JsonTrace {
-    fn as_string(&self) -> &str {
+    fn as_string(&self) -> String {
         todo!()
     }
 }

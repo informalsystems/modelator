@@ -56,7 +56,7 @@ impl Tlc {
 
         let tdir = tempfile::tempdir()?;
 
-        try_write_to_dir(tdir, tla_file_suite)?;
+        try_write_to_dir(&tdir, tla_file_suite)?;
 
         // create tlc command
         let mut cmd = test_cmd(

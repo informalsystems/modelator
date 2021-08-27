@@ -133,7 +133,7 @@ pub fn traces<P: AsRef<Path>>(
             let test_file_suite = {
                 let collected = {
                     let mut dependencies = file_suite.dependency_tla_files.clone();
-                    dependencies.push(file_suite.tla_file);
+                    dependencies.push(file_suite.tla_file.clone());
                     dependencies
                 };
                 TlaFileSuite {

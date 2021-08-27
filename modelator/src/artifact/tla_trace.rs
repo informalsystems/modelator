@@ -99,8 +99,8 @@ impl ArtifactCreator for TlaTrace {
 }
 
 impl Artifact for TlaTrace {
-    fn as_string(&self) -> &str {
-        self.file_contents_backing = match &self.extends_module_name {
+    fn as_string(&self) -> String {
+        match &self.extends_module_name {
             None => format!("{:?}", self.states),
             Some(name) => {
                 format!(
@@ -109,8 +109,7 @@ impl Artifact for TlaTrace {
                 )
             }
         }
-        .to_string();
-        &self.file_contents_backing
+        .to_string()
     }
 }
 

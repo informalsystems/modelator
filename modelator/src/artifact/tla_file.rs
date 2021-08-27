@@ -42,9 +42,9 @@ impl ArtifactCreator for TlaFile {
 }
 
 impl Artifact for TlaFile {
-    fn as_string(&self) -> &str {
+    fn as_string(&self) -> String {
         // TODO: will use explicit data to generate a repr
-        &self.file_contents_backing
+        self.file_contents_backing.clone()
     }
 }
 

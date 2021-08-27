@@ -68,10 +68,10 @@ impl Apalache {
 
         let tdir = tempfile::tempdir()?;
 
-        try_write_to_dir(tdir, input_artifacts)?;
+        try_write_to_dir(&tdir, input_artifacts)?;
 
         // Gets Apalache command with tdir as working dir
-        let mut cmd = apalache_start_cmd(&tdir, options);
+        let cmd = apalache_start_cmd(&tdir, options);
 
         // create 'apalache test' command
         let cmd = test_cmd(
@@ -81,7 +81,7 @@ impl Apalache {
             options,
         );
 
-        let apalache_log = run_apalache(cmd, options)?;
+        let apalache_log = run_apalache(cmd)?;
 
         // Read the  apalache counterexample from disk and parse a trace from it
         let counterexample_path = tdir.into_path().join("counterexample.tla");
@@ -126,20 +126,20 @@ impl Apalache {
 
         let tdir = tempfile::tempdir()?;
 
-        try_write_to_dir(tdir, std::iter::once(Box::new(&tla_file as &dyn Artifact)))?;
+        try_write_to_dir(&tdir, std::iter::once(Box::new(&tla_file as &dyn Artifact)))?;
 
         // Gets Apalache command with tdir as working dir
-        let mut cmd = apalache_start_cmd(&tdir, options);
+        let cmd = apalache_start_cmd(&tdir, options);
 
         let tla_file_module_name = tla_file.module_name();
 
         let output_path = format!("{}Parsed.tla", tla_file_module_name);
 
         // create apalache parse command
-        let cmd = parse_cmd(cmd, tla_file.file_name(), output_path, options);
+        let cmd = parse_cmd(cmd, &tla_file.file_name(), &output_path);
 
         // run apalache
-        let apalache_log = run_apalache(cmd, options)?;
+        let apalache_log = run_apalache(cmd)?;
 
         // create tla file
         let full_output_path = tdir.into_path().join(output_path);
@@ -148,7 +148,7 @@ impl Apalache {
     }
 }
 
-fn run_apalache(mut cmd: Command, options: &Options) -> Result<ModelCheckerStdout, Error> {
+fn run_apalache(mut cmd: Command) -> Result<ModelCheckerStdout, Error> {
     // start apalache
     // TODO: add timeout
     let output = cmd.output()?;
@@ -179,7 +179,7 @@ fn run_apalache(mut cmd: Command, options: &Options) -> Result<ModelCheckerStdou
 }
 
 fn test_cmd<P: AsRef<Path>>(
-    cmd: Command,
+    mut cmd: Command,
     tla_file_base_name: P,
     tla_config_file_base_name: P,
     options: &Options,
@@ -202,10 +202,9 @@ fn test_cmd<P: AsRef<Path>>(
 }
 
 fn parse_cmd<P: AsRef<Path>>(
-    cmd: Command,
-    tla_file_base_name: P,
-    output_file_base_name: P,
-    options: &Options,
+    mut cmd: Command,
+    tla_file_base_name: &P,
+    output_file_base_name: &P,
 ) -> Command {
     cmd.arg("parse")
         .arg(format!(

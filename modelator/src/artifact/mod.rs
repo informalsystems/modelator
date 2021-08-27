@@ -36,7 +36,7 @@ where
 /// which will justify the additional interface.
 pub trait Artifact {
     /// Returns a string representation.
-    fn as_string(&self) -> &str;
+    fn as_string(&self) -> String;
 
     /// Tries to write the contents to path using the result of as_string.
     fn try_write_to_file(&self, path: &Path) -> Result<(), Error> {

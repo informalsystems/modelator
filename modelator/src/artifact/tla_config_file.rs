@@ -58,8 +58,8 @@ impl ArtifactCreator for TlaConfigFile {
 
 impl Artifact for TlaConfigFile {
     /// Returns a string representation.
-    fn as_string(&self) -> &str {
+    fn as_string(&self) -> String {
         // TODO: will use explicit data to generate a repr
-        &self.content
+        self.content.clone()
     }
 }
