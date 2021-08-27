@@ -182,8 +182,9 @@ impl TlcMethods {
             TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)?;
         let tla_trace = {
             let mut ret = crate::module::Tlc::test(&input_artifacts, &options)?;
-            ret.extends_module_name = Some(input_artifacts.tla_file.module_name().to_string());
-            ret
+            ret.0.extends_module_name = Some(input_artifacts.tla_file.module_name().to_string());
+            //TODO: do something with log
+            ret.0
         };
         tracing::debug!("Tlc::test output {}", tla_trace);
         write_tla_trace_to_file(tla_trace)
