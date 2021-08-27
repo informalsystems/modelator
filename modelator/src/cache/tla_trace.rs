@@ -13,8 +13,13 @@ impl TlaTraceCache {
     }
 
     #[allow(clippy::ptr_arg)]
-    pub(crate) fn get(&self, key: &String) -> Result<Option<TlaTrace>, Error> {
+    pub(crate) fn get(&self, _key: &String) -> Result<Option<TlaTrace>, Error> {
+        todo!()
+        /*
+        TODO: This is disabled as it is using the old system of implicit pathing and must be reworked a bit.
+        It it not the highest priority for 0.3.0
         self.cache.get(key)?.map(|value| value.parse()).transpose()
+        */
     }
 
     pub(crate) fn insert(&mut self, key: String, tla_trace: &TlaTrace) -> Result<(), Error> {
