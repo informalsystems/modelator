@@ -14,6 +14,7 @@ pub struct TlaFile {
 }
 
 impl TlaFile {
+    /// Returns the module name of the TLA file
     pub fn module_name(&self) -> &str {
         &self.module_name
     }
@@ -23,6 +24,8 @@ impl TlaFile {
         format!("{}.tla", &self.module_name)
     }
 
+    /// Returns raw file contents (string value that it was initialized with)
+    /// NOTE: will likely change as our internal repr improves
     pub fn file_contents_backing(&self) -> &str {
         &self.file_contents_backing
     }

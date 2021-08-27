@@ -3,11 +3,14 @@ use super::tla_file::TlaFile;
 use super::{Artifact, ArtifactCreator};
 use crate::Error;
 
-// An in-memory representation of all the resources needed to perform model checking
-// Includes the main .tla and .cfg files as well as depended on (via EXTENDS) .tla files.
+/// An in-memory representation of all the resources needed to perform model checking
+/// Includes the main .tla and .cfg files as well as depended on (via EXTENDS) .tla files.
 pub struct TlaFileSuite {
+    /// The tla file being used as a target for a model checker command
     pub tla_file: TlaFile,
+    /// The config file being used for a model checker command
     pub tla_config_file: TlaConfigFile,
+    /// Depended-on TLA files (via transitive closure of EXTENDS)
     pub dependency_tla_files: Vec<TlaFile>,
 }
 
@@ -16,7 +19,7 @@ fn gather_dependencies<P: AsRef<std::path::Path>>(_tla_file: P) -> Result<Vec<Tl
 }
 
 impl TlaFileSuite {
-    // Gather all model checking resources from a main .tla and .cfg file
+    /// Gather all model checking resources from a main .tla and .cfg file
     pub fn from_tla_and_config_paths<P: AsRef<std::path::Path>>(
         tla_file_path: P,
         config_file_path: P,

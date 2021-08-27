@@ -1,6 +1,8 @@
 use super::{Artifact, ArtifactCreator};
 use crate::Error;
 
+/// Ultra-basic wrapper around stdout of model checker execution
+/// NOTE: This is a stand in and will be changed soon.
 pub struct ModelCheckerStdout {
     backing_str: String,
 }

@@ -1,14 +1,15 @@
-pub(crate) mod cmds;
 pub(crate) mod json_trace;
 pub(crate) mod model_checker_stdout;
 pub(crate) mod tla_config_file;
 pub(crate) mod tla_file;
+pub(crate) mod tla_file_suite;
 pub(crate) mod tla_trace;
 
 use crate::Error;
 use std::path::{Path, PathBuf};
 use std::str;
 
+/// Try to write each artifact in any object implementing into_iter for Artifacts to the given directory
 pub fn try_write_to_dir<'a, P: AsRef<Path>, C>(_dir: P, _collection: C) -> Result<(), Error>
 where
     C: IntoIterator<Item = Box<&'a dyn Artifact>>,
@@ -17,6 +18,9 @@ where
     todo!();
 }
 
+/// A sister trait for Artifacts for static constructor methods
+/// NOTE: static methods and polymorphic methods prevent trait-object instantiation
+/// so this approach allows dynamic use of Artifacts
 pub trait ArtifactCreator
 where
     Self: Sized,
@@ -45,9 +49,9 @@ pub trait Artifact {
 }
 
 // Re-exports.
-pub use cmds::TlaFileSuite;
 pub use json_trace::JsonTrace;
 pub use model_checker_stdout::ModelCheckerStdout;
 pub use tla_config_file::TlaConfigFile;
 pub use tla_file::TlaFile;
+pub use tla_file_suite::TlaFileSuite;
 pub use tla_trace::TlaTrace;
