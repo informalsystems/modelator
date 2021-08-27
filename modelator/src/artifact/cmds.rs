@@ -10,17 +10,17 @@ pub struct ModelCheckingTestArgs {
 
 //NEXT: Should implement some kind of iterator or collection access for model checking test args
 // ALso need to go back over existing artifacts and split them off into ArtifactCreator impl
-impl IntoIterator for ModelCheckingTestArgs {
-    type Item = Box<dyn Artifact>;
+impl<'a> IntoIterator for &'a ModelCheckingTestArgs {
+    type Item = Box<&'a dyn Artifact>;
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let mut ret: Vec<Box<dyn Artifact>> = Vec::new();
+        let mut ret: Vec<Self::Item> = Vec::new();
         for f in self.dependency_tla_files.clone() {
-            ret.push(Box::new(f));
+            ret.push(Box::new(&f));
         }
-        ret.push(Box::new(self.tla_target_file.clone()));
-        ret.push(Box::new(self.tla_config_file.clone()));
-        ret
+        ret.push(Box::new(&self.tla_target_file));
+        ret.push(Box::new(&self.tla_config_file));
+        ret.into_iter()
     }
 }
