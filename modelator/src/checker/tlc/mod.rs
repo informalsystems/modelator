@@ -6,7 +6,7 @@ use crate::artifact::{
     TlaFile, TlaFileSuite, TlaTrace,
 };
 use crate::cache::TlaTraceCache;
-use crate::{checker::ModelCheckerWorkers, jar, Error, Options};
+use crate::{checker::ModelCheckerWorkers, jar, Error, CheckerBuilder};
 use std::path::Path;
 use std::process::Command;
 
@@ -40,7 +40,7 @@ impl Tlc {
     /// ```
     pub fn test(
         tla_file_suite: &TlaFileSuite,
-        options: &Options,
+        options: &CheckerBuilder,
     ) -> Result<(TlaTrace, ModelCheckerStdout), Error> {
         let tla_file = &tla_file_suite.tla_file;
         let tla_config_file = &tla_file_suite.tla_config_file;
@@ -118,7 +118,7 @@ fn test_cmd<P: AsRef<Path>>(
     temp_dir: &tempfile::TempDir,
     tla_file: P,
     tla_config_file_path: P,
-    options: &Options,
+    options: &CheckerBuilder,
 ) -> Command {
     let tla2tools = jar::Jar::Tla.path(&options.dir);
     let community_modules = jar::Jar::CommunityModules.path(&options.dir);
@@ -149,7 +149,7 @@ fn test_cmd<P: AsRef<Path>>(
     cmd
 }
 
-fn workers(options: &Options) -> String {
+fn workers(options: &CheckerBuilder) -> String {
     match options.model_checker_options.workers {
         ModelCheckerWorkers::Auto => "auto".to_string(),
         ModelCheckerWorkers::Count(count) => count.to_string(),

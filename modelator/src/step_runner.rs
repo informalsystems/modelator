@@ -98,7 +98,7 @@ mod tests {
     fn test_step_runner() {
         let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
         let tla_config_file = "tests/integration/tla/Numbers.cfg";
-        let options = crate::Options::default();
+        let options = crate::CheckerBuilder::default();
         let mut runner = NumberSystem::default();
         assert!(
             crate::run_tla_steps(tla_tests_file, tla_config_file, &options, &mut runner).is_ok()

@@ -4,7 +4,7 @@ mod tla_trace;
 // Re-exports;
 pub(crate) use tla_trace::TlaTraceCache;
 
-use crate::{Error, Options};
+use crate::{Error, CheckerBuilder};
 use std::collections::HashSet;
 use std::path::PathBuf;
 
@@ -14,7 +14,7 @@ pub(crate) struct Cache {
 }
 
 impl Cache {
-    pub(crate) fn new(options: &Options) -> Result<Self, Error> {
+    pub(crate) fn new(options: &CheckerBuilder) -> Result<Self, Error> {
         // create cache dir (if it doesn't exist)
         let cache_dir = options.dir.join("cache");
         std::fs::create_dir_all(&cache_dir)?;
@@ -72,7 +72,7 @@ mod tests {
     #[test]
     fn cache_works() {
         let modelator_dir = "cache_works";
-        let options = Options::default().dir(modelator_dir);
+        let options = CheckerBuilder::default().dir(modelator_dir);
 
         // create cache
         let mut cache = Cache::new(&options).unwrap();

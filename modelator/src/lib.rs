@@ -54,7 +54,7 @@ pub mod test_util;
 
 use artifact::model_checker_stdout::ModelCheckerStdout;
 use artifact::TlaFileSuite;
-use checker::{Options, ModelChecker};
+use checker::{CheckerBuilder, ModelChecker};
 /// Re-exports.
 pub use cli::{output::CliOutput, output::CliStatus, CliOptions};
 pub use datachef::Recipe;
@@ -70,7 +70,7 @@ use std::fmt::Debug;
 use std::path::Path;
 use tempfile::tempdir;
 
-pub(crate) fn setup(options: &Options) -> Result<(), Error> {
+pub(crate) fn setup(options: &CheckerBuilder) -> Result<(), Error> {
     // init tracing subscriber (in case it's not already)
     if let Err(e) = tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
@@ -113,7 +113,7 @@ pub(crate) fn setup(options: &Options) -> Result<(), Error> {
 pub fn traces<P: AsRef<Path>>(
     tla_tests_file_path: P,
     tla_config_file_path: P,
-    options: &Options,
+    options: &CheckerBuilder,
 ) -> Result<Vec<Result<artifact::JsonTrace, Error>>, Error> {
     // setup modelator
     setup(options)?;
@@ -238,7 +238,7 @@ pub fn traces<P: AsRef<Path>>(
 pub fn run_tla_steps<P, System, Step>(
     tla_tests_file_path: P,
     tla_config_file_path: P,
-    options: &Options,
+    options: &CheckerBuilder,
     system: &mut System,
 ) -> Result<Vec<Result<(), TestError>>, Error>
 where
@@ -357,7 +357,7 @@ where
 pub fn run_tla_events<P, System>(
     tla_tests_file_path: P,
     tla_config_file_path: P,
-    options: &Options,
+    options: &CheckerBuilder,
     system: &mut System,
     runner: &mut event::EventRunner<System>,
 ) -> Result<Vec<Result<(), TestError>>, Error>

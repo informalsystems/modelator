@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 /// Set of options to configure `modelator`.
 #[derive(Clone, Debug)]
-pub struct Options {
+pub struct CheckerBuilder {
     /// Model checker options.
     pub model_checker_options: ModelCheckerOptions,
 
@@ -11,7 +11,7 @@ pub struct Options {
     pub dir: PathBuf,
 }
 
-impl Options {
+impl CheckerBuilder {
     /// Set TLC options.
     pub fn model_checker_options(mut self, model_checker_options: ModelCheckerOptions) -> Self {
         self.model_checker_options = model_checker_options;
@@ -25,7 +25,7 @@ impl Options {
     }
 }
 
-impl Default for Options {
+impl Default for CheckerBuilder {
     fn default() -> Self {
         Self {
             model_checker_options: ModelCheckerOptions::default(),
