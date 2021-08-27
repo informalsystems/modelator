@@ -1,6 +1,3 @@
-// TLA+ module.
-mod tla;
-
 // TLC module.
 mod tlc;
 
@@ -9,5 +6,4 @@ pub(crate) mod apalache;
 
 // Re-exports.
 pub use apalache::{error_message::ErrorMessage, Apalache};
-pub use tla::Tla;
 pub use tlc::Tlc;

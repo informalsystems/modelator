@@ -10,7 +10,7 @@ use crate::artifact::{
     TlaFile, TlaFileSuite, TlaTrace,
 };
 use crate::cache::TlaTraceCache;
-use crate::module::apalache;
+use crate::checker::apalache;
 use crate::{jar, Error, Options};
 use std::env::temp_dir;
 use std::path::Path;

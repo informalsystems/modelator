@@ -119,14 +119,14 @@ impl TlaMethods {
     ) -> Result<JsonValue, Error> {
         let file_suite =
             TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)?;
-        let tests = crate::module::Tla::generate_tests(&file_suite)?;
+        let tests = crate::tla::Tla::generate_tests(&file_suite)?;
         tracing::debug!("Tla::generate_tests output {:#?}", tests);
         json_list_generated_tests(tests)
     }
 
     fn tla_trace_to_json_trace(tla_trace_file: String) -> Result<JsonValue, Error> {
         let tla_trace = TlaTrace::try_read_from_file(tla_trace_file)?;
-        let json_trace = crate::module::Tla::tla_trace_to_json_trace(tla_trace)?;
+        let json_trace = crate::tla::Tla::tla_trace_to_json_trace(tla_trace)?;
         tracing::debug!("Tla::tla_trace_to_json_trace output {}", json_trace);
         write_json_trace_to_file(json_trace)
     }
@@ -148,7 +148,7 @@ impl ApalacheMethods {
         let input_artifacts =
             TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)?;
         let res = {
-            let mut ret = crate::module::Apalache::test(&input_artifacts, &options)?;
+            let mut ret = crate::checker::Apalache::test(&input_artifacts, &options)?;
             ret.0.extends_module_name = Some(input_artifacts.tla_file.module_name().to_string());
             ret
         };
@@ -159,7 +159,7 @@ impl ApalacheMethods {
     fn parse(tla_file: String) -> Result<JsonValue, Error> {
         let options = crate::Options::default();
         let tla_file = TlaFile::try_read_from_file(tla_file)?;
-        let res = crate::module::Apalache::parse(tla_file, &options)?;
+        let res = crate::checker::Apalache::parse(tla_file, &options)?;
         tracing::debug!("Apalache::parse output {}", res.0);
 
         json_parsed_tla_file(res.0)
@@ -181,7 +181,7 @@ impl TlcMethods {
         let input_artifacts =
             TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)?;
         let tla_trace = {
-            let mut ret = crate::module::Tlc::test(&input_artifacts, &options)?;
+            let mut ret = crate::checker::Tlc::test(&input_artifacts, &options)?;
             ret.0.extends_module_name = Some(input_artifacts.tla_file.module_name().to_string());
             //TODO: do something with log
             ret.0

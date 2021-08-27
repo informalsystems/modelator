@@ -2,7 +2,7 @@ use serde::Serialize;
 use std::fmt::Debug;
 use thiserror::Error;
 
-use crate::module::{apalache, ErrorMessage};
+use crate::checker::{apalache, ErrorMessage};
 
 /// Set of possible errors that can occur when running `modelator`.
 #[allow(clippy::upper_case_acronyms)]

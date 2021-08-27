@@ -19,8 +19,8 @@ mod error;
 /// List of artifacts.
 pub mod artifact;
 
-/// List of modules.
-pub mod module;
+/// List of checkers.
+pub mod checker;
 
 /// Caching of model-checker outputs.
 mod cache;
@@ -48,6 +48,9 @@ pub mod event;
 
 /// A runner for steps obtained from Json traces
 pub mod step_runner;
+
+/// TLA+ module.
+pub mod tla;
 
 /// Testing utilities
 pub mod test_util;
@@ -120,7 +123,7 @@ pub fn traces<P: AsRef<Path>>(
 
     let file_suite =
         TlaFileSuite::from_tla_and_config_paths(tla_tests_file_path, tla_config_file_path)?;
-    let tests = module::Tla::generate_tests(&file_suite)?;
+    let tests = tla::Tla::generate_tests(&file_suite)?;
 
     #[allow(clippy::needless_collect)]
     // rust iterators are lazy
@@ -143,8 +146,8 @@ pub fn traces<P: AsRef<Path>>(
                 }
             };
             match options.model_checker_options.model_checker {
-                ModelChecker::Tlc => module::Tlc::test(&test_file_suite, options),
-                ModelChecker::Apalache => module::Apalache::test(&test_file_suite, options),
+                ModelChecker::Tlc => checker::Tlc::test(&test_file_suite, options),
+                ModelChecker::Apalache => checker::Apalache::test(&test_file_suite, options),
             }
         })
         .collect::<Vec<_>>();
@@ -152,7 +155,7 @@ pub fn traces<P: AsRef<Path>>(
     // convert each tla trace to json
     Ok(trace_results
         .into_iter()
-        .map(|res| res.and_then(|it| module::Tla::tla_trace_to_json_trace(it.0)))
+        .map(|res| res.and_then(|it| tla::Tla::tla_trace_to_json_trace(it.0)))
         .collect())
 }
 
