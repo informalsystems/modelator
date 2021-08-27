@@ -52,6 +52,7 @@ pub mod step_runner;
 /// Testing utilities
 pub mod test_util;
 
+use artifact::model_checker_stdout::ModelCheckerStdout;
 use artifact::TlaFileSuite;
 /// Re-exports.
 pub use cli::{output::CliOutput, output::CliStatus, CliOptions};
@@ -142,8 +143,8 @@ pub fn traces<P: AsRef<Path>>(
                 }
             };
             match options.model_checker_options.model_checker {
-                ModelChecker::Tlc => module::Tlc::test(&test_file_suite, options)?.0,
-                ModelChecker::Apalache => module::Apalache::test(&test_file_suite, options)?.0,
+                ModelChecker::Tlc => module::Tlc::test(&test_file_suite, options),
+                ModelChecker::Apalache => module::Apalache::test(&test_file_suite, options),
             }
         })
         .collect::<Vec<_>>();
@@ -151,7 +152,7 @@ pub fn traces<P: AsRef<Path>>(
     // convert each tla trace to json
     Ok(trace_results
         .into_iter()
-        .map(|trace_result| trace_result.and_then(module::Tla::tla_trace_to_json_trace))
+        .map(|res| res.and_then(|it| module::Tla::tla_trace_to_json_trace(it.0)))
         .collect())
 }
 

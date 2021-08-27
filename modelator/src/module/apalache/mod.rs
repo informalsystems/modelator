@@ -5,10 +5,9 @@ use error_message::ErrorMessage;
 /// Parsing of Apalache's counterexample file.
 mod counterexample;
 
-mod log;
-
 use crate::artifact::{
-    try_write_to_dir, Artifact, ArtifactCreator, TlaConfigFile, TlaFile, TlaFileSuite, TlaTrace,
+    try_write_to_dir, Artifact, ArtifactCreator, ModelCheckerStdout, TlaConfigFile, TlaFile,
+    TlaFileSuite, TlaTrace,
 };
 use crate::cache::TlaTraceCache;
 use crate::module::apalache;
@@ -16,8 +15,6 @@ use crate::{jar, Error, Options};
 use std::env::temp_dir;
 use std::path::Path;
 use std::process::Command;
-
-use log::ApalacheLog;
 
 /// `modelator`'s Apalache module.
 #[derive(Debug, Clone, Copy)]
@@ -51,7 +48,7 @@ impl Apalache {
     pub fn test(
         input_artifacts: &TlaFileSuite,
         options: &Options,
-    ) -> Result<(TlaTrace, ApalacheLog), Error> {
+    ) -> Result<(TlaTrace, ModelCheckerStdout), Error> {
         // TODO: this method currently just uses the paths of the files so no need for whole artifact objects!
 
         tracing::debug!(
@@ -121,7 +118,10 @@ impl Apalache {
     /// let mut tla_parsed_file = Apalache::parse(tla_file, &options).unwrap();
     /// println!("{:?}", tla_parsed_file);
     /// ```
-    pub fn parse(tla_file: TlaFile, options: &Options) -> Result<(TlaFile, ApalacheLog), Error> {
+    pub fn parse(
+        tla_file: TlaFile,
+        options: &Options,
+    ) -> Result<(TlaFile, ModelCheckerStdout), Error> {
         tracing::debug!("Apalache::parse {} {:?}", tla_file, options);
 
         let tdir = tempfile::tempdir()?;
@@ -148,7 +148,7 @@ impl Apalache {
     }
 }
 
-fn run_apalache(mut cmd: Command, options: &Options) -> Result<ApalacheLog, Error> {
+fn run_apalache(mut cmd: Command, options: &Options) -> Result<ModelCheckerStdout, Error> {
     // start apalache
     // TODO: add timeout
     let output = cmd.output()?;
@@ -170,7 +170,7 @@ fn run_apalache(mut cmd: Command, options: &Options) -> Result<ApalacheLog, Erro
                 "[modelator] unexpected Apalache stdout"
             );
 
-            Ok(ApalacheLog::from_string(&stdout)?)
+            Ok(ModelCheckerStdout::from_string(&stdout)?)
         }
         _ => {
             panic!("[modelator] unexpected Apalache's stdout/stderr combination")

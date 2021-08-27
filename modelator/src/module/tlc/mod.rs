@@ -1,17 +1,14 @@
-mod log;
 /// Parsing of TLC's output.
 mod output;
 
 use crate::artifact::{
-    tla_file, try_write_to_dir, Artifact, ArtifactCreator, TlaConfigFile, TlaFile, TlaFileSuite,
-    TlaTrace,
+    tla_file, try_write_to_dir, Artifact, ArtifactCreator, ModelCheckerStdout, TlaConfigFile,
+    TlaFile, TlaFileSuite, TlaTrace,
 };
 use crate::cache::TlaTraceCache;
 use crate::{jar, Error, ModelCheckerWorkers, Options};
 use std::path::Path;
 use std::process::Command;
-
-use log::TlcLog;
 
 /// `modelator`'s TLC module.
 #[derive(Debug, Clone, Copy)]
@@ -44,7 +41,7 @@ impl Tlc {
     pub fn test(
         tla_file_suite: &TlaFileSuite,
         options: &Options,
-    ) -> Result<(TlaTrace, TlcLog), Error> {
+    ) -> Result<(TlaTrace, ModelCheckerStdout), Error> {
         let tla_file = &tla_file_suite.tla_file;
         let tla_config_file = &tla_file_suite.tla_config_file;
         tracing::debug!("Tlc::test {} {} {:?}", tla_file, tla_config_file, options);
@@ -81,7 +78,7 @@ impl Tlc {
 
         match (stdout.is_empty(), stderr.is_empty()) {
             (false, true) => {
-                let tlc_log = TlcLog::from_string(&stdout)?;
+                let tlc_log = ModelCheckerStdout::from_string(&stdout)?;
 
                 let mut traces = output::parse(stdout, &options.model_checker_options)?;
 

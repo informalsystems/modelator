@@ -1,5 +1,6 @@
 pub(crate) mod cmds;
 pub(crate) mod json_trace;
+pub(crate) mod model_checker_stdout;
 pub(crate) mod tla_config_file;
 pub(crate) mod tla_file;
 pub(crate) mod tla_trace;
@@ -46,6 +47,7 @@ pub trait Artifact {
 // Re-exports.
 pub use cmds::TlaFileSuite;
 pub use json_trace::JsonTrace;
+pub use model_checker_stdout::ModelCheckerStdout;
 pub use tla_config_file::TlaConfigFile;
 pub use tla_file::TlaFile;
 pub use tla_trace::TlaTrace;
