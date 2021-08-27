@@ -8,8 +8,7 @@ mod counterexample;
 mod log;
 
 use crate::artifact::{
-    try_write_to_dir, Artifact, ArtifactCreator, ModelCheckingTestArgs, TlaConfigFile, TlaFile,
-    TlaTrace,
+    try_write_to_dir, Artifact, ArtifactCreator, TlaConfigFile, TlaFile, TlaFileSuite, TlaTrace,
 };
 use crate::cache::TlaTraceCache;
 use crate::module::apalache;
@@ -50,7 +49,7 @@ impl Apalache {
     /// println!("{:?}", tla_trace);
     /// ```
     pub fn test(
-        input_artifacts: &ModelCheckingTestArgs,
+        input_artifacts: &TlaFileSuite,
         options: &Options,
     ) -> Result<(TlaTrace, ApalacheLog), Error> {
         // TODO: this method currently just uses the paths of the files so no need for whole artifact objects!

@@ -45,7 +45,7 @@ pub trait Artifact {
 }
 
 // Re-exports.
-pub use cmds::ModelCheckingTestArgs;
+pub use cmds::TlaFileSuite;
 pub use json_trace::JsonTrace;
 pub use tla_config_file::TlaConfigFile;
 pub use tla_file::TlaFile;

@@ -2,7 +2,7 @@
 pub(crate) mod output;
 
 use crate::artifact::{
-    Artifact, ArtifactCreator, JsonTrace, ModelCheckingTestArgs, TlaConfigFile, TlaFile, TlaTrace,
+    Artifact, ArtifactCreator, JsonTrace, TlaConfigFile, TlaFile, TlaFileSuite, TlaTrace,
 };
 use crate::Error;
 use clap::{AppSettings, Clap, Subcommand};
@@ -154,8 +154,7 @@ impl ApalacheMethods {
 
     fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
         let options = crate::Options::default();
-        let input_artifacts =
-            { ModelCheckingTestArgs::from_tla_path(tla_file_path, tla_config_file_path)? };
+        let input_artifacts = { TlaFileSuite::from_tla_path(tla_file_path, tla_config_file_path)? };
         let res = {
             let mut ret = crate::module::Apalache::test(&input_artifacts, &options)?;
             ret.0.extends_module_name = Some(input_artifacts.tla_file.module_name().to_string());
