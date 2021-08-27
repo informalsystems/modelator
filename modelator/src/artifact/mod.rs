@@ -9,6 +9,22 @@ use std::convert::TryFrom;
 use std::path::{Path, PathBuf};
 use std::str;
 
+pub fn try_write_to_dir<'a, P: AsRef<Path>, C>(dir: P, collection: C) -> Result<(), Error>
+where
+    C: IntoIterator<Item = Box<&'a dyn Artifact>>,
+{
+    //NEXT: write files yadayada
+    todo!()
+}
+
+pub fn try_write_to_dir2<'a, P: AsRef<Path>>(
+    dir: P,
+    iter: &std::vec::IntoIter<Box<&'a dyn Artifact>>,
+) -> Result<(), Error> {
+    //NEXT: write files yadayada
+    todo!()
+}
+
 pub trait ArtifactCreator
 where
     Self: Sized,
