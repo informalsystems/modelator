@@ -31,7 +31,7 @@ where
     /// Tries to read a file and initialize from the content.
     fn try_read_from_file<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
         let file_content = crate::util::try_read_file_contents(path)?;
-        Ok(Self::from_string(&file_content)?)
+        Self::from_string(&file_content)
     }
 }
 
@@ -44,7 +44,7 @@ pub trait Artifact {
 
     /// Tries to write the contents to path using the result of as_string.
     fn try_write_to_file(&self, path: &Path) -> Result<(), Error> {
-        Ok(std::fs::write(path, format!("{}", self.as_string()))?)
+        Ok(std::fs::write(path, self.as_string())?)
     }
 }
 

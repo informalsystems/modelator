@@ -109,7 +109,6 @@ impl Artifact for TlaTrace {
                 )
             }
         }
-        .to_string()
     }
 }
 

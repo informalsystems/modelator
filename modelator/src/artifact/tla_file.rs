@@ -38,7 +38,7 @@ impl ArtifactCreator for TlaFile {
             Err(_) => Err(Error::MissingTlaFileModuleName(s.to_string())),
             Ok(name) => Ok(TlaFile {
                 file_contents_backing: s.to_string(),
-                module_name: name.to_string(),
+                module_name: name,
             }),
         }
     }

@@ -30,6 +30,6 @@ impl ArtifactCreator for ModelCheckerStdout {
 
 impl Artifact for ModelCheckerStdout {
     fn as_string(&self) -> String {
-        return self.backing_str.clone();
+        self.backing_str.clone()
     }
 }
