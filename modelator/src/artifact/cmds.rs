@@ -11,7 +11,7 @@ pub struct TlaFileSuite {
     pub dependency_tla_files: Vec<TlaFile>,
 }
 
-fn gather_dependencies<P: AsRef<std::path::Path>>(tla_file: P) -> Result<Vec<TlaFile>, Error> {
+fn gather_dependencies<P: AsRef<std::path::Path>>(_tla_file: P) -> Result<Vec<TlaFile>, Error> {
     todo!();
 }
 
@@ -21,7 +21,7 @@ impl TlaFileSuite {
         tla_file_path: P,
         config_file_path: P,
     ) -> Result<TlaFileSuite, Error> {
-        let tla_file = TlaFile::try_read_from_file(tla_file_path)?;
+        let tla_file = TlaFile::try_read_from_file(&tla_file_path)?;
         let tla_config_file = TlaConfigFile::try_read_from_file(config_file_path)?;
         let dependencies = gather_dependencies(tla_file_path)?;
         Ok(TlaFileSuite {
@@ -38,8 +38,8 @@ impl<'a> IntoIterator for &'a TlaFileSuite {
 
     fn into_iter(self) -> Self::IntoIter {
         let mut ret: Vec<Self::Item> = Vec::new();
-        for f in self.dependency_tla_files.clone() {
-            ret.push(Box::new(&f));
+        for f in &self.dependency_tla_files {
+            ret.push(Box::new(f));
         }
         ret.push(Box::new(&self.tla_file));
         ret.push(Box::new(&self.tla_config_file));
