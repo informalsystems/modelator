@@ -1,5 +1,5 @@
 use super::{Artifact, ArtifactCreator, ArtifactSaver};
-use crate::{Error, checker::ModelatorRuntime};
+use crate::{Error, ModelatorRuntime};
 use core::result::Result::Err;
 use std::fs;
 use std::path::{Path, PathBuf};

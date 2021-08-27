@@ -1,39 +1,6 @@
 use std::env;
 use std::path::{Path, PathBuf};
 
-/// Set of options to configure `modelator`.
-#[derive(Clone, Debug)]
-pub struct ModelatorRuntime {
-    /// Model checker options.
-    pub model_checker_runtime: ModelCheckerRuntime,
-
-    /// Modelator directory.
-    pub dir: PathBuf,
-}
-
-impl ModelatorRuntime {
-    /// Set TLC options.
-    pub fn model_checker_runtime(mut self, model_checker_runtime: ModelCheckerRuntime) -> Self {
-        self.model_checker_runtime = model_checker_runtime;
-        self
-    }
-
-    /// Set modelator directory.
-    pub fn dir(mut self, dir: impl AsRef<Path>) -> Self {
-        self.dir = dir.as_ref().to_path_buf();
-        self
-    }
-}
-
-impl Default for ModelatorRuntime {
-    fn default() -> Self {
-        Self {
-            model_checker_runtime: ModelCheckerRuntime::default(),
-            dir: env::current_dir().unwrap().join(".modelator"), //Path::new(".modelator").to_path_buf(),
-        }
-    }
-}
-
 /// Set of options to select the model checker to be used and configure them.
 #[derive(Clone, Debug)]
 pub struct ModelCheckerRuntime {

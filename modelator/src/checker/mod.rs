@@ -9,5 +9,5 @@ mod model_checker;
 
 // Re-exports.
 pub use apalache::{error::ApalacheError, Apalache};
-pub use model_checker::{ModelChecker, ModelCheckerRuntime, ModelCheckerWorkers, ModelatorRuntime};
+pub use model_checker::{ModelChecker, ModelCheckerRuntime, ModelCheckerWorkers};
 pub use tlc::Tlc;

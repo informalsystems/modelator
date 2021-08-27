@@ -3,8 +3,11 @@
 
 use modelator::artifact::JsonTrace;
 use modelator::test_util::NumberSystem;
+use modelator::{
+    checker::{ModelChecker, ModelCheckerRuntime},
+    CliOptions, CliStatus, Error, ModelatorRuntime,
+};
 use modelator::{ActionHandler, EventRunner, EventStream, StateHandler};
-use modelator::{CliOptions, CliStatus, Error, checker::{ModelChecker, ModelCheckerRuntime, ModelatorRuntime}};
 use once_cell::sync::Lazy;
 use serde::Deserialize;
 use serde_json::Value as JsonValue;
@@ -152,7 +155,7 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
                 .with_action::<Action>();
 
             // generate traces using Rust API
-            let mut traces = modelator::traces(&tla_tests_file, &tla_config_file, &options)?;
+            let mut traces = options.traces(&tla_tests_file, &tla_config_file)?;
             // extract single trace
             assert_eq!(traces.len(), 1, "a single trace should have been generated");
             let trace = traces.pop().unwrap()?;

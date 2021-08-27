@@ -11,7 +11,7 @@ use crate::artifact::{
 };
 use crate::cache::TlaTraceCache;
 use crate::checker::apalache;
-use crate::{jar, Error, checker::ModelatorRuntime};
+use crate::{jar, Error, ModelatorRuntime};
 use std::env::temp_dir;
 use std::path::Path;
 use std::process::Command;

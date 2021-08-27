@@ -100,8 +100,8 @@ mod tests {
         let tla_config_file = "tests/integration/tla/Numbers.cfg";
         let options = crate::ModelatorRuntime::default();
         let mut runner = NumberSystem::default();
-        assert!(
-            crate::run_tla_steps(tla_tests_file, tla_config_file, &options, &mut runner).is_ok()
-        );
+        assert!(options
+            .run_tla_steps(tla_tests_file, tla_config_file, &mut runner)
+            .is_ok());
     }
 }

@@ -7,8 +7,8 @@ use crate::artifact::{
 };
 use crate::cache::TlaTraceCache;
 use crate::{
-    checker::{ModelCheckerWorkers, ModelatorRuntime},
-    jar, Error,
+    checker::{ModelCheckerRuntime, ModelCheckerWorkers},
+    jar, Error, ModelatorRuntime,
 };
 use std::path::Path;
 use std::process::Command;
