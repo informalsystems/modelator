@@ -6,7 +6,7 @@ use crate::artifact::{
     TlaFile, TlaFileSuite, TlaTrace,
 };
 use crate::cache::TlaTraceCache;
-use crate::{jar, Error, ModelCheckerWorkers, Options};
+use crate::{checker::ModelCheckerWorkers, jar, Error, Options};
 use std::path::Path;
 use std::process::Command;
 

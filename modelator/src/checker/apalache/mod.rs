@@ -1,6 +1,6 @@
 /// Apalache Error
-pub(crate) mod error_message;
-use error_message::ErrorMessage;
+pub(crate) mod error;
+use error::ApalacheError;
 
 /// Parsing of Apalache's counterexample file.
 mod counterexample;
@@ -163,7 +163,7 @@ fn run_apalache(mut cmd: Command) -> Result<ModelCheckerStdout, Error> {
         (false, true) => {
             // check if a failure has occurred
             if stdout.contains("EXITCODE: ERROR") {
-                return Err(Error::ApalacheFailure(apalache::ErrorMessage::new(&stdout)));
+                return Err(Error::ApalacheFailure(ApalacheError::new(&stdout)));
             }
             assert!(
                 stdout.contains("EXITCODE: OK"),

@@ -2,8 +2,12 @@
 mod tlc;
 
 // Apalache module.
-pub(crate) mod apalache;
+mod apalache;
+
+/// Modelator's options.
+mod options;
 
 // Re-exports.
-pub use apalache::{error_message::ErrorMessage, Apalache};
+pub use apalache::{error::ApalacheError, Apalache};
+pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Options};
 pub use tlc::Tlc;

@@ -10,9 +10,6 @@
 // It makes sense to allow those when the development is active
 #![allow(unused_imports, dead_code)]
 
-/// Modelator's options.
-mod options;
-
 /// Modelator's error type.
 mod error;
 
@@ -57,12 +54,12 @@ pub mod test_util;
 
 use artifact::model_checker_stdout::ModelCheckerStdout;
 use artifact::TlaFileSuite;
+use checker::{Options, ModelChecker};
 /// Re-exports.
 pub use cli::{output::CliOutput, output::CliStatus, CliOptions};
 pub use datachef::Recipe;
 pub use error::{Error, TestError};
 pub use event::{ActionHandler, Event, EventRunner, EventStream, StateHandler};
-pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Options};
 use serde::de::DeserializeOwned;
 pub use step_runner::StepRunner;
 

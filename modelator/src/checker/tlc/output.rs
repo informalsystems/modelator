@@ -1,5 +1,5 @@
 use crate::artifact::tla_trace::{TlaState, TlaTrace};
-use crate::{Error, ModelCheckerOptions};
+use crate::{checker::ModelCheckerOptions, Error};
 
 use std::collections::HashMap;
 

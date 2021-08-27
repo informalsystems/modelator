@@ -4,7 +4,7 @@
 use modelator::artifact::JsonTrace;
 use modelator::test_util::NumberSystem;
 use modelator::{ActionHandler, EventRunner, EventStream, StateHandler};
-use modelator::{CliOptions, CliStatus, Error, ModelChecker, ModelCheckerOptions, Options};
+use modelator::{CliOptions, CliStatus, Error, checker::{ModelChecker, ModelCheckerOptions, Options}};
 use once_cell::sync::Lazy;
 use serde::Deserialize;
 use serde_json::Value as JsonValue;
