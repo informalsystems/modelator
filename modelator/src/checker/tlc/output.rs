@@ -1,10 +1,10 @@
 use crate::artifact::tla_trace::{TlaState, TlaTrace};
-use crate::{checker::ModelCheckerOptions, Error};
+use crate::{checker::ModelCheckerRuntime, Error};
 
 use std::collections::HashMap;
 
 // TODO: don't need entire options object
-pub(crate) fn parse(output: String, options: &ModelCheckerOptions) -> Result<Vec<TlaTrace>, Error> {
+pub(crate) fn parse(output: String, options: &ModelCheckerRuntime) -> Result<Vec<TlaTrace>, Error> {
     let mut parsed_output: HashMap<u8, HashMap<usize, Vec<String>>> = HashMap::new();
 
     let mut curr_message_id = None;
@@ -91,7 +91,7 @@ pub(crate) fn parse(output: String, options: &ModelCheckerOptions) -> Result<Vec
 
 fn parse_trace<'a>(
     lines: &mut impl Iterator<Item = &'a str>,
-    options: &ModelCheckerOptions,
+    options: &ModelCheckerRuntime,
 ) -> Result<Option<TlaTrace>, Error> {
     let mut state_index = 0;
     let mut state = None;

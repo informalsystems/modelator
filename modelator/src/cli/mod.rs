@@ -88,7 +88,7 @@ impl CliOptions {
 impl Modules {
     fn run(self) -> Result<JsonValue, Error> {
         // setup modelator
-        let options = crate::CheckerBuilder::default();
+        let options = crate::checker::ModelatorRuntime::default();
         crate::setup(&options)?;
 
         // run the subcommand
@@ -144,7 +144,7 @@ impl ApalacheMethods {
     }
 
     fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
-        let options = crate::CheckerBuilder::default();
+        let options = crate::ModelatorRuntime::default();
         let input_artifacts =
             TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)?;
         let res = {
@@ -157,7 +157,7 @@ impl ApalacheMethods {
     }
 
     fn parse(tla_file: String) -> Result<JsonValue, Error> {
-        let options = crate::CheckerBuilder::default();
+        let options = crate::ModelatorRuntime::default();
         let tla_file = TlaFile::try_read_from_file(tla_file)?;
         let res = crate::checker::Apalache::parse(tla_file, &options)?;
         tracing::debug!("Apalache::parse output {}", res.0);
@@ -177,7 +177,7 @@ impl TlcMethods {
     }
 
     fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
-        let options = crate::CheckerBuilder::default();
+        let options = crate::ModelatorRuntime::default();
         let input_artifacts =
             TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)?;
         let tla_trace = {

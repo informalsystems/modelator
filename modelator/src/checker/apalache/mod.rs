@@ -11,7 +11,7 @@ use crate::artifact::{
 };
 use crate::cache::TlaTraceCache;
 use crate::checker::apalache;
-use crate::{jar, Error, CheckerBuilder};
+use crate::{jar, Error, checker::ModelatorRuntime};
 use std::env::temp_dir;
 use std::path::Path;
 use std::process::Command;
@@ -47,7 +47,7 @@ impl Apalache {
     /// ```
     pub fn test(
         input_artifacts: &TlaFileSuite,
-        options: &CheckerBuilder,
+        options: &ModelatorRuntime,
     ) -> Result<(TlaTrace, ModelCheckerStdout), Error> {
         // TODO: this method currently just uses the paths of the files so no need for whole artifact objects!
 
@@ -120,7 +120,7 @@ impl Apalache {
     /// ```
     pub fn parse(
         tla_file: TlaFile,
-        options: &CheckerBuilder,
+        options: &ModelatorRuntime,
     ) -> Result<(TlaFile, ModelCheckerStdout), Error> {
         tracing::debug!("Apalache::parse {} {:?}", tla_file, options);
 
@@ -182,7 +182,7 @@ fn test_cmd<P: AsRef<Path>>(
     mut cmd: Command,
     tla_file_base_name: P,
     tla_config_file_base_name: P,
-    options: &CheckerBuilder,
+    options: &ModelatorRuntime,
 ) -> Command {
     cmd.arg("check")
         .arg(format!(
@@ -193,7 +193,7 @@ fn test_cmd<P: AsRef<Path>>(
 
     tracing::warn!(
         "the following workers option was ignored since apalache is single-threaded: {:?}",
-        options.model_checker_options.workers
+        options.model_checker_runtime.workers
     );
 
     // show command being run
@@ -219,7 +219,7 @@ fn parse_cmd<P: AsRef<Path>>(
 }
 
 /// Creates an Apalache start command providing temp_dir as a library directory and the Apalache jar
-fn apalache_start_cmd(temp_dir: &tempfile::TempDir, options: &CheckerBuilder) -> Command {
+fn apalache_start_cmd(temp_dir: &tempfile::TempDir, options: &ModelatorRuntime) -> Command {
     let apalache = jar::Jar::Apalache.path(&options.dir);
 
     let mut cmd = Command::new("java");

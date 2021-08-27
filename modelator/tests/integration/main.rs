@@ -4,7 +4,7 @@
 use modelator::artifact::JsonTrace;
 use modelator::test_util::NumberSystem;
 use modelator::{ActionHandler, EventRunner, EventStream, StateHandler};
-use modelator::{CliOptions, CliStatus, Error, checker::{ModelChecker, ModelCheckerOptions, CheckerBuilder}};
+use modelator::{CliOptions, CliStatus, Error, checker::{ModelChecker, ModelCheckerRuntime, ModelatorRuntime}};
 use once_cell::sync::Lazy;
 use serde::Deserialize;
 use serde_json::Value as JsonValue;
@@ -131,8 +131,8 @@ fn apalache() {
 
 fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
     // create modelator options
-    let model_checker_options = ModelCheckerOptions::default().model_checker(model_checker);
-    let options = CheckerBuilder::default().model_checker_options(model_checker_options);
+    let model_checker_runtime = ModelCheckerRuntime::default().model_checker(model_checker);
+    let options = ModelatorRuntime::default().model_checker_runtime(model_checker_runtime);
 
     // create all tests
     let tests = vec![
@@ -189,7 +189,7 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
 fn cli_traces<P: AsRef<Path>>(
     tla_tests_file: P,
     tla_config_file: P,
-    options: &CheckerBuilder,
+    options: &ModelatorRuntime,
 ) -> Result<Vec<JsonTrace>, Error> {
     use clap::Clap;
     // run CLI to generate tests
@@ -221,7 +221,7 @@ fn cli_traces<P: AsRef<Path>>(
         .clone()
         .into_iter()
         .map(|(tla_file, tla_config_file)| {
-            let module = match options.model_checker_options.model_checker {
+            let module = match options.model_checker_runtime.model_checker {
                 ModelChecker::Tlc => "tlc",
                 ModelChecker::Apalache => "apalache",
             };

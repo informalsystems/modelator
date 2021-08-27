@@ -6,7 +6,10 @@ use crate::artifact::{
     TlaFile, TlaFileSuite, TlaTrace,
 };
 use crate::cache::TlaTraceCache;
-use crate::{checker::ModelCheckerWorkers, jar, Error, CheckerBuilder};
+use crate::{
+    checker::{ModelCheckerWorkers, ModelatorRuntime},
+    jar, Error,
+};
 use std::path::Path;
 use std::process::Command;
 
@@ -40,7 +43,7 @@ impl Tlc {
     /// ```
     pub fn test(
         tla_file_suite: &TlaFileSuite,
-        options: &CheckerBuilder,
+        options: &ModelatorRuntime,
     ) -> Result<(TlaTrace, ModelCheckerStdout), Error> {
         let tla_file = &tla_file_suite.tla_file;
         let tla_config_file = &tla_file_suite.tla_config_file;
@@ -80,13 +83,13 @@ impl Tlc {
             (false, true) => {
                 let tlc_log = ModelCheckerStdout::from_string(&stdout)?;
 
-                let mut traces = output::parse(stdout, &options.model_checker_options)?;
+                let mut traces = output::parse(stdout, &options.model_checker_runtime)?;
 
                 // check if no trace was found
                 if traces.is_empty() {
                     return Err(Error::NoTestTraceFound(
                         //TODO: this will have to be changed to reflect new in-memory log
-                        options.model_checker_options.log.clone(),
+                        options.model_checker_runtime.log.clone(),
                     ));
                 }
 
@@ -118,7 +121,7 @@ fn test_cmd<P: AsRef<Path>>(
     temp_dir: &tempfile::TempDir,
     tla_file: P,
     tla_config_file_path: P,
-    options: &CheckerBuilder,
+    options: &ModelatorRuntime,
 ) -> Command {
     let tla2tools = jar::Jar::Tla.path(&options.dir);
     let community_modules = jar::Jar::CommunityModules.path(&options.dir);
@@ -149,8 +152,8 @@ fn test_cmd<P: AsRef<Path>>(
     cmd
 }
 
-fn workers(options: &CheckerBuilder) -> String {
-    match options.model_checker_options.workers {
+fn workers(options: &ModelatorRuntime) -> String {
+    match options.model_checker_runtime.workers {
         ModelCheckerWorkers::Auto => "auto".to_string(),
         ModelCheckerWorkers::Count(count) => count.to_string(),
     }

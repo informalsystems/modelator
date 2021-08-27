@@ -3,18 +3,18 @@ use std::path::{Path, PathBuf};
 
 /// Set of options to configure `modelator`.
 #[derive(Clone, Debug)]
-pub struct CheckerBuilder {
+pub struct ModelatorRuntime {
     /// Model checker options.
-    pub model_checker_options: ModelCheckerOptions,
+    pub model_checker_runtime: ModelCheckerRuntime,
 
     /// Modelator directory.
     pub dir: PathBuf,
 }
 
-impl CheckerBuilder {
+impl ModelatorRuntime {
     /// Set TLC options.
-    pub fn model_checker_options(mut self, model_checker_options: ModelCheckerOptions) -> Self {
-        self.model_checker_options = model_checker_options;
+    pub fn model_checker_runtime(mut self, model_checker_runtime: ModelCheckerRuntime) -> Self {
+        self.model_checker_runtime = model_checker_runtime;
         self
     }
 
@@ -25,10 +25,10 @@ impl CheckerBuilder {
     }
 }
 
-impl Default for CheckerBuilder {
+impl Default for ModelatorRuntime {
     fn default() -> Self {
         Self {
-            model_checker_options: ModelCheckerOptions::default(),
+            model_checker_runtime: ModelCheckerRuntime::default(),
             dir: env::current_dir().unwrap().join(".modelator"), //Path::new(".modelator").to_path_buf(),
         }
     }
@@ -36,7 +36,7 @@ impl Default for CheckerBuilder {
 
 /// Set of options to select the model checker to be used and configure them.
 #[derive(Clone, Debug)]
-pub struct ModelCheckerOptions {
+pub struct ModelCheckerRuntime {
     /// Which model checker to use.
     pub model_checker: ModelChecker,
 
@@ -49,7 +49,7 @@ pub struct ModelCheckerOptions {
     pub log: PathBuf,
 }
 
-impl ModelCheckerOptions {
+impl ModelCheckerRuntime {
     /// Set the model checker.
     pub fn model_checker(mut self, model_checker: ModelChecker) -> Self {
         self.model_checker = model_checker;
@@ -69,7 +69,7 @@ impl ModelCheckerOptions {
     }
 }
 
-impl Default for ModelCheckerOptions {
+impl Default for ModelCheckerRuntime {
     fn default() -> Self {
         Self {
             model_checker: ModelChecker::Apalache,
