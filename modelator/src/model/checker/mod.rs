@@ -1,3 +1,13 @@
+// TLC module.
+mod tlc;
+
+// Apalache module.
+mod apalache;
+
+// Re-exports.
+pub use apalache::{error::ApalacheError, Apalache};
+pub use tlc::Tlc;
+
 use std::env;
 use std::path::{Path, PathBuf};
 

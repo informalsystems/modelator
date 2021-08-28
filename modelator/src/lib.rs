@@ -16,8 +16,8 @@ mod error;
 /// List of artifacts.
 pub mod artifact;
 
-/// List of checkers.
-pub mod checker;
+/// Model checkers and languages.
+pub mod model;
 
 /// Caching of model-checker outputs.
 mod cache;
@@ -46,15 +46,13 @@ pub mod event;
 /// A runner for steps obtained from Json traces
 pub mod step_runner;
 
-/// TLA+ module.
-pub mod tla;
-
 /// Testing utilities
 pub mod test_util;
 
 use artifact::model_checker_stdout::ModelCheckerStdout;
 use artifact::TlaFileSuite;
-use checker::{ModelChecker, ModelCheckerRuntime};
+use model::checker::{ModelChecker, ModelCheckerRuntime, Tlc, Apalache};
+use model::language::Tla;
 /// Re-exports.
 pub use cli::{output::CliOutput, output::CliStatus, CliOptions};
 pub use datachef::Recipe;
@@ -152,7 +150,7 @@ impl ModelatorRuntime {
 
         let file_suite =
             TlaFileSuite::from_tla_and_config_paths(tla_tests_file_path, tla_config_file_path)?;
-        let tests = tla::Tla::generate_tests(&file_suite)?;
+        let tests = Tla::generate_tests(&file_suite)?;
 
         #[allow(clippy::needless_collect)]
         // rust iterators are lazy
@@ -175,8 +173,8 @@ impl ModelatorRuntime {
                     }
                 };
                 match self.model_checker_runtime.model_checker {
-                    ModelChecker::Tlc => checker::Tlc::test(&test_file_suite, self),
-                    ModelChecker::Apalache => checker::Apalache::test(&test_file_suite, self),
+                    ModelChecker::Tlc => Tlc::test(&test_file_suite, self),
+                    ModelChecker::Apalache => Apalache::test(&test_file_suite, self),
                 }
             })
             .collect::<Vec<_>>();
@@ -184,7 +182,7 @@ impl ModelatorRuntime {
         // convert each tla trace to json
         Ok(trace_results
             .into_iter()
-            .map(|res| res.and_then(|it| tla::Tla::tla_trace_to_json_trace(it.0)))
+            .map(|res| res.and_then(|it| Tla::tla_trace_to_json_trace(it.0)))
             .collect())
     }
 

@@ -4,7 +4,7 @@
 use modelator::artifact::JsonTrace;
 use modelator::test_util::NumberSystem;
 use modelator::{
-    checker::{ModelChecker, ModelCheckerRuntime},
+    model::checker::{ModelChecker, ModelCheckerRuntime},
     CliOptions, CliStatus, Error, ModelatorRuntime,
 };
 use modelator::{ActionHandler, EventRunner, EventStream, StateHandler};

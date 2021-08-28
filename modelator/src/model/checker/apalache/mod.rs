@@ -10,7 +10,7 @@ use crate::artifact::{
     TlaFile, TlaFileSuite, TlaTrace,
 };
 use crate::cache::TlaTraceCache;
-use crate::checker::apalache;
+use crate::model::checker::apalache;
 use crate::{jar, Error, ModelatorRuntime};
 use std::env::temp_dir;
 use std::path::Path;
@@ -24,13 +24,13 @@ impl Apalache {
     /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
     ///
     /// Generate a TLA+ trace given a [TlaFile] and a [TlaConfigFile] produced
-    /// by [crate::tla::Tla::generate_tests].
+    /// by [crate::model::language::Tla::generate_tests].
     ///
     /// # Examples
     ///
     /// ```ignore
     /// use modelator::artifact::{TlaFile, TlaConfigFile};
-    /// use modelator::{tla::Tla, checker::Apalache};
+    /// use modelator::model::{language::Tla, checker::Apalache};
     /// use modelator::ModelatorRuntime;
     /// use std::convert::TryFrom;
     ///

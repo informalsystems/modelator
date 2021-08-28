@@ -13,11 +13,11 @@ use std::path::Path;
 pub struct Tla;
 
 impl Tla {
+    /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
+    ///
     /// Convert a [TlaTrace] into a [JsonTrace].
     ///
     /// # Examples
-    ///
-    /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
     /// ```ignore
     /// use modelator::artifact::{TlaFile, TlaConfigFile};
     /// use modelator::{tla::Tla, checker::Tlc};
@@ -45,12 +45,12 @@ impl Tla {
         Ok(states.into())
     }
 
+    /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
+    ///
     /// Generate TLA+ test and config files given a [TlaFile] containing TLA+
     /// test assertions and a [TlaConfigFile].
     ///
     /// # Examples
-    ///
-    /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
     /// ```ignore
     /// use modelator::artifact::{TlaFile, TlaConfigFile};
     /// use modelator::tla::Tla;

@@ -6,10 +6,7 @@ use crate::artifact::{
     TlaFile, TlaFileSuite, TlaTrace,
 };
 use crate::cache::TlaTraceCache;
-use crate::{
-    checker::{ModelCheckerRuntime, ModelCheckerWorkers},
-    jar, Error, ModelatorRuntime,
-};
+use crate::{jar, Error, ModelatorRuntime, model::checker::ModelCheckerWorkers};
 use std::path::Path;
 use std::process::Command;
 
@@ -18,15 +15,15 @@ use std::process::Command;
 pub struct Tlc;
 
 impl Tlc {
+    /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
+    ///
     /// Generate a TLA+ trace given a [TlaFile] and a [TlaConfigFile] produced
-    /// by [crate::tla::Tla::generate_tests].
+    /// by [crate::model::language::Tla::generate_tests].
     ///
     /// # Examples
-    ///
-    /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
     /// ```ignore
     /// use modelator::artifact::{TlaFile, TlaConfigFile};
-    /// use modelator::{tla::Tla, checker::Tlc};
+    /// use modelator::model::{language::Tla, checker::Tlc};
     /// use modelator::ModelatorRuntime;
     /// use std::convert::TryFrom;
     ///
