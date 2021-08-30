@@ -148,7 +148,11 @@ fn generate_test(
     let test_config = generate_test_config(tla_config_file.content(), &negated_test_name);
 
     let test_module_file = TlaFile::from_string(&test_module)?;
-    let test_config_file = TlaConfigFile::from_string(&test_config)?;
+    let mut test_config_file = TlaConfigFile::from_string(&test_config)?;
+    test_config_file.set_path(std::path::Path::new(&format!(
+        "{}_{}.cfg",
+        tla_tests_file_name, test_name
+    )));
 
     Ok((test_module_file, test_config_file))
 }

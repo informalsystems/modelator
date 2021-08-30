@@ -1,4 +1,4 @@
-use super::{Artifact, ArtifactCreator};
+use super::{Artifact, ArtifactCreator, ArtifactSaver};
 use crate::Error;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -38,6 +38,11 @@ impl TlaConfigFile {
     pub fn content(&self) -> &str {
         &self.content
     }
+
+    /// Set path
+    pub fn set_path(&mut self, path: &Path) {
+        self.path = path.into()
+    }
 }
 
 impl std::fmt::Display for TlaConfigFile {
@@ -61,5 +66,11 @@ impl Artifact for TlaConfigFile {
     fn as_string(&self) -> String {
         // TODO: will use explicit data to generate a repr
         self.content.clone()
+    }
+}
+
+impl ArtifactSaver for TlaConfigFile {
+    fn filename(&self) -> String {
+        self.filename()
     }
 }

@@ -6,8 +6,8 @@ use error_message::ErrorMessage;
 mod counterexample;
 
 use crate::artifact::{
-    try_write_to_dir, Artifact, ArtifactCreator, ModelCheckerStdout, TlaConfigFile, TlaFile,
-    TlaFileSuite, TlaTrace,
+    try_write_to_dir, Artifact, ArtifactCreator, ArtifactSaver, ModelCheckerStdout, TlaConfigFile,
+    TlaFile, TlaFileSuite, TlaTrace,
 };
 use crate::cache::TlaTraceCache;
 use crate::module::apalache;
@@ -126,7 +126,7 @@ impl Apalache {
 
         let tdir = tempfile::tempdir()?;
 
-        try_write_to_dir(&tdir, std::iter::once(Box::new(&tla_file as &dyn Artifact)))?;
+        try_write_to_dir(&tdir, vec![Box::new(&tla_file as &dyn ArtifactSaver)])?;
 
         // Gets Apalache command with tdir as working dir
         let cmd = apalache_start_cmd(&tdir, options);

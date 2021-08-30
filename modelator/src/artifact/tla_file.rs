@@ -1,4 +1,4 @@
-use super::{Artifact, ArtifactCreator};
+use super::{Artifact, ArtifactCreator, ArtifactSaver};
 use crate::{Error, ModelCheckerOptions};
 use core::result::Result::Err;
 use std::fs;
@@ -48,6 +48,12 @@ impl Artifact for TlaFile {
     fn as_string(&self) -> String {
         // TODO: will use explicit data to generate a repr
         self.file_contents_backing.clone()
+    }
+}
+
+impl ArtifactSaver for TlaFile {
+    fn filename(&self) -> String {
+        format!("{}.tla", self.module_name())
     }
 }
 

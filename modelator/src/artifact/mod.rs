@@ -10,12 +10,14 @@ use std::path::{Path, PathBuf};
 use std::str;
 
 /// Try to write each artifact in any object implementing into_iter for Artifacts to the given directory
-pub fn try_write_to_dir<'a, P: AsRef<Path>, C>(_dir: P, _collection: C) -> Result<(), Error>
+pub fn try_write_to_dir<'a, P: AsRef<Path>, C>(dir: P, collection: C) -> Result<(), Error>
 where
-    C: IntoIterator<Item = Box<&'a dyn Artifact>>,
+    C: IntoIterator<Item = Box<&'a dyn ArtifactSaver>>,
 {
-    //TODO:
-    todo!();
+    for artifact in collection {
+        artifact.try_save_to_dir(dir.as_ref())?
+    }
+    Ok(())
 }
 
 /// A sister trait for Artifacts for static constructor methods
@@ -45,6 +47,21 @@ pub trait Artifact {
     /// Tries to write the contents to path using the result of as_string.
     fn try_write_to_file(&self, path: &Path) -> Result<(), Error> {
         Ok(std::fs::write(path, self.as_string())?)
+    }
+}
+
+/// An artifact which is a file
+/// It can be saved in a directory, as it has its own filename
+pub trait ArtifactSaver: Artifact {
+    /// Returns filename
+    fn filename(&self) -> String;
+
+    /// Tries to save the contents to directory using the file name
+    fn try_save_to_dir(&self, path: &Path) -> Result<(), Error> {
+        Ok(std::fs::write(
+            path.join(self.filename()),
+            self.as_string(),
+        )?)
     }
 }
 
