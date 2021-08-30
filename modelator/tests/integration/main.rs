@@ -155,7 +155,7 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
             let mut traces = modelator::traces(&tla_tests_file, &tla_config_file, &options)?;
             // extract single trace
             assert_eq!(traces.len(), 1, "a single trace should have been generated");
-            let trace = traces.pop().unwrap();
+            let trace = traces.pop().unwrap()?;
 
             let result = runner.run(&mut system, &mut EventStream::from(trace).into_iter());
             assert!(result.is_ok());

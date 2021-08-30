@@ -147,7 +147,7 @@ fn check_checksums<P: AsRef<Path>>(modelator_dir: P) -> Result<bool, Error> {
 
 fn check_java_version() -> Result<(), Error> {
     let mut cmd = Command::new("java");
-    cmd.arg("-XshowSettings:all").arg("--version");
+    cmd.arg("-XshowSettings:all").arg("-version");
     // show command being run
     tracing::debug!("{}", crate::util::cmd_show(&cmd));
 
@@ -175,6 +175,9 @@ fn check_java_version() -> Result<(), Error> {
             );
             let version_number: usize = version_parts[1]
                 .trim()
+                .split('.')
+                .last()
+                .unwrap()
                 .parse()
                 .expect("[modelator] unexpected 'java.specification.version' format");
 

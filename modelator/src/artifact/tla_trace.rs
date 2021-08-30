@@ -1,4 +1,8 @@
+use super::Artifact;
 use crate::Error;
+use std::convert::TryFrom;
+use std::fs;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use nom::{
@@ -17,11 +21,16 @@ pub(crate) type TlaState = String;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TlaTrace {
     states: Vec<TlaState>,
+    // Name of module that is extended by the trace
+    pub(crate) extends_module_name: Option<String>,
 }
 
 impl TlaTrace {
     pub(crate) fn new() -> Self {
-        Self { states: Vec::new() }
+        Self {
+            states: Vec::new(),
+            extends_module_name: None,
+        }
     }
 
     pub(crate) fn add(&mut self, state: TlaState) {
@@ -30,6 +39,74 @@ impl TlaTrace {
 
     pub(crate) fn is_empty(&self) -> bool {
         self.states.is_empty()
+    }
+}
+
+impl IntoIterator for TlaTrace {
+    type Item = TlaState;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.states.into_iter()
+    }
+}
+
+impl std::fmt::Display for TlaTrace {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for (index, state) in self.states.iter().enumerate() {
+            write!(f, "State{} ==\n{}", index, state)?;
+        }
+        Ok(())
+    }
+}
+
+impl TryFrom<&str> for TlaTrace {
+    type Error = crate::Error;
+    fn try_from(_path: &str) -> Result<Self, Self::Error> {
+        // Self::new(path)
+        todo!();
+    }
+}
+
+impl TryFrom<String> for TlaTrace {
+    type Error = crate::Error;
+    fn try_from(_path: String) -> Result<Self, Self::Error> {
+        // Self::new(path)
+        todo!();
+    }
+}
+
+impl TryFrom<&Path> for TlaTrace {
+    type Error = crate::Error;
+    fn try_from(_path: &Path) -> Result<Self, Self::Error> {
+        // Self::new(path)
+        todo!();
+    }
+}
+
+impl TryFrom<PathBuf> for TlaTrace {
+    type Error = crate::Error;
+    fn try_from(_path: PathBuf) -> Result<Self, Self::Error> {
+        // Self::new(path)
+        todo!();
+    }
+}
+
+impl Artifact for TlaTrace {
+    fn as_string(&self) -> &str {
+        todo!()
+    }
+    fn try_write_to_file(&self, path: &Path) -> Result<(), Error> {
+        match &self.extends_module_name {
+            None => Ok(std::fs::write(&path, format!("{:?}", self.states))?),
+            Some(name) => {
+                let content = format!(
+                    "---- MODULE trace ----\n\nEXTENDS {}\n\n{:?}\n====",
+                    name, self.states
+                );
+                Ok(std::fs::write(&path, content)?)
+            }
+        }
     }
 }
 
@@ -67,13 +144,6 @@ fn remove_tla_comments(i: &str) -> String {
     s
 }
 
-#[derive(Debug)]
-struct TlaFile<'a> {
-    name: &'a str,
-    extends: Vec<&'a str>,
-    operators: Vec<(&'a str, &'a str)>,
-}
-
 fn tla_identifiers(i: &str) -> IResult<&str, &str> {
     recognize(pair(
         alt((alpha1, tag("_"))),
@@ -81,7 +151,14 @@ fn tla_identifiers(i: &str) -> IResult<&str, &str> {
     ))(i)
 }
 
-fn parse_tla_file(i: &str) -> IResult<&str, TlaFile<'_>> {
+#[derive(Debug)]
+struct TlaTraceFileContent<'a> {
+    name: &'a str,
+    extends: Vec<&'a str>,
+    operators: Vec<(&'a str, &'a str)>,
+}
+
+fn parse_tla_trace_file_contents(i: &str) -> IResult<&str, TlaTraceFileContent<'_>> {
     map(
         terminated(
             tuple((
@@ -118,7 +195,7 @@ fn parse_tla_file(i: &str) -> IResult<&str, TlaFile<'_>> {
             )),
             delimited(multispace0, many1(char('=')), multispace0),
         ),
-        |(name, extends, operators)| TlaFile {
+        |(name, extends, operators)| TlaTraceFileContent {
             name,
             extends,
             operators,
@@ -132,7 +209,7 @@ impl FromStr for TlaTrace {
     fn from_str(tla_trace: &str) -> Result<Self, Self::Err> {
         let tla_trace = remove_tla_comments(tla_trace);
 
-        let tla = parse_tla_file(&tla_trace).unwrap().1;
+        let tla: TlaTraceFileContent<'_> = parse_tla_trace_file_contents(&tla_trace).unwrap().1;
 
         let mut states: Vec<(usize, &str)> = tla
             .operators
@@ -155,23 +232,5 @@ impl FromStr for TlaTrace {
             .into_iter()
             .for_each(|(_, state)| trace.add(state.into()));
         Ok(trace)
-    }
-}
-
-impl IntoIterator for TlaTrace {
-    type Item = TlaState;
-    type IntoIter = std::vec::IntoIter<Self::Item>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.states.into_iter()
-    }
-}
-
-impl std::fmt::Display for TlaTrace {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for (index, state) in self.states.iter().enumerate() {
-            write!(f, "State{} ==\n{}", index, state)?;
-        }
-        Ok(())
     }
 }

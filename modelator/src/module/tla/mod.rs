@@ -69,15 +69,19 @@ impl Tla {
         tracing::debug!("Tla::generate_tests {} {}", tla_tests_file, tla_config_file);
 
         // compute the directory in which the tla tests file is stored
-        let mut tla_tests_dir = tla_tests_file.path().clone();
-        assert!(tla_tests_dir.pop());
+        let mut tla_tests_file_dir = tla_tests_file.path().to_path_buf();
+        assert!(tla_tests_file_dir.pop());
 
-        // compute tla tests module name: it's safe to unwrap because we have
-        // already checked that the tests file is indeed a file
-        let tla_tests_module_name = tla_tests_file.tla_module_name().unwrap();
+        let tla_tests_file_name = tla_tests_file.file_name();
 
         // retrieve test names from tla tests file
-        let test_names = extract_test_names(&tla_tests_file)?;
+        let test_names = extract_test_names(tla_tests_file.content())?;
+
+        tracing::debug!(
+            "test names extracted from {}:\n{:?}",
+            tla_tests_file,
+            test_names
+        );
 
         // check if no test was found
         if test_names.is_empty() {
@@ -89,8 +93,8 @@ impl Tla {
             .into_iter()
             .map(|test_name| {
                 generate_test(
-                    &tla_tests_dir,
-                    &tla_tests_module_name,
+                    &tla_tests_file_dir,
+                    tla_tests_file_name,
                     &test_name,
                     &tla_config_file,
                 )
@@ -99,9 +103,9 @@ impl Tla {
     }
 }
 
-fn extract_test_names(tla_test_file: &TlaFile) -> Result<Vec<String>, Error> {
-    let content = std::fs::read_to_string(tla_test_file.path())?;
-    let test_names = content
+fn extract_test_names(tla_tests_file_content: &str) -> Result<Vec<String>, Error> {
+    //TODO: Error is never returned here so why type it
+    let test_names = tla_tests_file_content
         .lines()
         .filter_map(|line| {
             // take the first element in the split
@@ -121,39 +125,39 @@ fn extract_test_names(tla_test_file: &TlaFile) -> Result<Vec<String>, Error> {
             }
         })
         .collect();
-    tracing::debug!(
-        "test names extracted from {}:\n{:?}",
-        tla_test_file,
-        test_names
-    );
+
     Ok(test_names)
 }
 
 fn generate_test(
-    tla_tests_dir: &Path,
-    tla_tests_module_name: &str,
+    tla_tests_file_dir: &Path,
+    tla_tests_file_name: &str,
     test_name: &str,
     tla_config_file: &TlaConfigFile,
 ) -> Result<(TlaFile, TlaConfigFile), Error> {
-    let test_module_name = format!("{}_{}", tla_tests_module_name, test_name);
-    let invariant = format!("{}Neg", test_name);
+    // TODO: it would be better to separate logic from IO steps
+    // split into 2 funs and also use artifacts:
+    // instead of writing the files and reading artifacts from them,
+    // create the artifacts and write the files
+    let test_module_name = format!("{}_{}", tla_tests_file_name, test_name);
+    let negated_test_name = format!("{}Neg", test_name);
 
     // create tla module where the test is negated
-    let test_module = genereate_test_module(
-        tla_tests_module_name,
-        test_name,
+    let test_module = generate_test_module(
         &test_module_name,
-        &invariant,
+        tla_tests_file_name,
+        &negated_test_name,
+        test_name,
     );
     // create test config with negated test as an invariant
-    let test_config = generate_test_config(tla_config_file, &invariant)?;
+    let test_config = generate_test_config(tla_config_file.content(), &negated_test_name)?;
 
     // write test module to test module file
-    let test_module_file = tla_tests_dir.join(format!("{}.tla", test_module_name));
+    let test_module_file = tla_tests_file_dir.join(format!("{}.tla", test_module_name));
     std::fs::write(&test_module_file, test_module)?;
 
     // write test config to test config file
-    let test_config_file = tla_tests_dir.join(format!("{}.cfg", test_module_name));
+    let test_config_file = tla_tests_file_dir.join(format!("{}.cfg", test_module_name));
     std::fs::write(&test_config_file, test_config)?;
 
     // create tla file and tla config file
@@ -163,11 +167,11 @@ fn generate_test(
     Ok((test_module_file, test_config_file))
 }
 
-fn genereate_test_module(
-    tla_tests_module_name: &str,
+fn generate_test_module(
+    module_name: &str,
+    file_to_extend: &str,
+    negated_test_name: &str,
     test_name: &str,
-    test_module_name: &str,
-    invariant: &str,
 ) -> String {
     format!(
         r#"
@@ -179,17 +183,16 @@ EXTENDS {}
 
 ===============================
 "#,
-        test_module_name, tla_tests_module_name, invariant, test_name
+        module_name, file_to_extend, negated_test_name, test_name
     )
 }
 
-fn generate_test_config(tla_config_file: &TlaConfigFile, invariant: &str) -> Result<String, Error> {
-    let tla_config = std::fs::read_to_string(tla_config_file.path())?;
+fn generate_test_config(tla_config_file_content: &str, invariant: &str) -> Result<String, Error> {
     Ok(format!(
         r#"
 {}
 INVARIANT {}
 "#,
-        tla_config, invariant
+        tla_config_file_content, invariant
     ))
 }
