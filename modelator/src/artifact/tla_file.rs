@@ -61,6 +61,7 @@ impl std::fmt::Display for TlaFile {
     }
 }
 
+#[derive(Debug, PartialEq, Eq)]
 struct ModuleNameParseError;
 
 fn module_name(file_content: &str) -> Result<String, ModuleNameParseError> {
@@ -71,7 +72,7 @@ fn module_name(file_content: &str) -> Result<String, ModuleNameParseError> {
             if segments.len() != 4 {
                 return Err(ModuleNameParseError);
             }
-            return Ok(segments[3].to_string());
+            return Ok(segments[2].to_string());
         } else if !line.trim().is_empty() {
             // Line not whitespace but also does not contain module name
             // -> invalid TLA file.
@@ -88,9 +89,6 @@ mod tests {
     #[test]
     fn test_module_parse() {
         let s = "\n---------- MODULE moduleName ----------\n42";
-        match module_name(s) {
-            Ok(m) => assert_eq!(m, "moduleName"),
-            _ => assert!(false),
-        };
+        assert_eq!(module_name(s), Ok("moduleName".into()));
     }
 }
