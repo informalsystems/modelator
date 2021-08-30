@@ -1,108 +1,100 @@
-use super::Artifact;
-use crate::Error;
-use std::convert::TryFrom;
+use super::{Artifact, ArtifactCreator, ArtifactSaver};
+use crate::{Error, ModelCheckerOptions};
+use core::result::Result::Err;
 use std::fs;
 use std::path::{Path, PathBuf};
 
 /// `modelator`'s artifact representing a TLA+ file.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TlaFile {
-    path: PathBuf,
-    content: String,
-    /// Filename not including .tla suffix
-    file_name: String,
-}
-
-/// TODO:
-fn tla_file_name(path: &Path) -> Option<String> {
-    if path.is_file() {
-        path.file_name().map(|file_name| {
-            file_name
-                .to_string_lossy()
-                .trim_end_matches(".tla")
-                .to_owned()
-        })
-    } else {
-        None
-    }
+    /// TODO: file_contents backing strings are to be removed
+    file_contents_backing: String,
+    /// Module name
+    module_name: String,
 }
 
 impl TlaFile {
-    // pub(crate) fn new<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
-    fn new<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
-        let path = path.as_ref().to_path_buf();
-        crate::util::check_file_existence(&path)?;
-        let content: String = fs::read_to_string(&path)?;
-        let file_name = tla_file_name(&path);
+    /// Returns the module name of the TLA file
+    pub fn module_name(&self) -> &str {
+        &self.module_name
+    }
 
-        match file_name {
-            Some(val) => Ok(Self {
-                path,
-                content,
-                file_name: val,
+    /// Returns a base filename {module_name}.tla
+    pub fn file_name(&self) -> String {
+        format!("{}.tla", &self.module_name)
+    }
+
+    /// Returns raw file contents (string value that it was initialized with)
+    /// NOTE: will likely change as our internal repr improves
+    pub fn file_contents_backing(&self) -> &str {
+        &self.file_contents_backing
+    }
+}
+
+impl ArtifactCreator for TlaFile {
+    /// Create a new instance from a file content string.
+    fn from_string(s: &str) -> Result<Self, Error> {
+        match module_name(s) {
+            Err(_) => Err(Error::MissingTlaFileModuleName(s.to_string())),
+            Ok(name) => Ok(TlaFile {
+                file_contents_backing: s.to_string(),
+                module_name: name,
             }),
-            None => Err(Error::IO(format!("File doesn't exist {}", path.display()))),
         }
     }
+}
 
-    /// Returns the path to the TLA+ file.
-    pub fn path(&self) -> &Path {
-        &self.path
-    }
-
-    /// Returns the content of the TLA+ file.
-    pub fn content(&self) -> &str {
-        &self.content
-    }
-
-    /// Returns the name of the TLA+ file.
-    pub fn file_name(&self) -> &str {
-        &self.file_name
+impl Artifact for TlaFile {
+    fn as_string(&self) -> String {
+        // TODO: will use explicit data to generate a repr
+        self.file_contents_backing.clone()
     }
 }
 
-// TODO: replace the following `TryFrom` implementations with one with generic
-//       bound `AsRef<Path>` once https://github.com/rust-lang/rust/issues/50133
-//       is fixed
-impl TryFrom<&str> for TlaFile {
-    type Error = crate::Error;
-    fn try_from(path: &str) -> Result<Self, Self::Error> {
-        Self::new(path)
-    }
-}
-
-impl TryFrom<String> for TlaFile {
-    type Error = crate::Error;
-    fn try_from(path: String) -> Result<Self, Self::Error> {
-        Self::new(path)
-    }
-}
-
-impl TryFrom<&Path> for TlaFile {
-    type Error = crate::Error;
-    fn try_from(path: &Path) -> Result<Self, Self::Error> {
-        Self::new(path)
-    }
-}
-
-impl TryFrom<PathBuf> for TlaFile {
-    type Error = crate::Error;
-    fn try_from(path: PathBuf) -> Result<Self, Self::Error> {
-        Self::new(path)
+impl ArtifactSaver for TlaFile {
+    fn filename(&self) -> String {
+        format!("{}.tla", self.module_name())
     }
 }
 
 impl std::fmt::Display for TlaFile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", crate::util::absolute_path(&self.path))
+        write!(
+            f,
+            "{}",
+            crate::util::absolute_path(&self.file_contents_backing)
+        )
     }
 }
 
-impl Artifact for TlaFile {
-    fn as_string(&self) -> &str {
-        todo!()
+#[derive(Debug, PartialEq, Eq)]
+struct ModuleNameParseError;
+
+fn module_name(file_content: &str) -> Result<String, ModuleNameParseError> {
+    let substr = "MODULE";
+    for line in file_content.split('\n').into_iter() {
+        if line.contains(substr) {
+            let segments = line.split_whitespace().collect::<Vec<&str>>();
+            if segments.len() != 4 {
+                return Err(ModuleNameParseError);
+            }
+            return Ok(segments[2].to_string());
+        } else if !line.trim().is_empty() {
+            // Line not whitespace but also does not contain module name
+            // -> invalid TLA file.
+            return Err(ModuleNameParseError);
+        }
     }
-    fn try_write_to_file(&self, _path: &Path) -> Result<(), Error> {
-        todo!()
+    Err(ModuleNameParseError)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_module_parse() {
+        let s = "\n---------- MODULE moduleName ----------\n42";
+        assert_eq!(module_name(s), Ok("moduleName".into()));
     }
 }

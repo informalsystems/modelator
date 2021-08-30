@@ -1,6 +1,6 @@
 use crate::Error;
 use std::collections::HashSet;
-use std::fs::copy;
+use std::fs::{copy, read_to_string};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -13,6 +13,12 @@ pub(crate) fn cmd_show(cmd: &Command) -> String {
     let cmd = cmd.trim_start_matches("Command { std:");
     let cmd = cmd.trim_end_matches(", kill_on_drop: false }");
     cmd.to_owned()
+}
+
+pub(crate) fn try_read_file_contents<P: AsRef<Path>>(path: P) -> Result<String, Error> {
+    let path = path.as_ref().to_path_buf();
+    crate::util::check_file_existence(&path)?;
+    Ok(read_to_string(&path)?)
 }
 
 pub(crate) fn check_file_existence<P: AsRef<Path>>(path: P) -> Result<(), Error> {

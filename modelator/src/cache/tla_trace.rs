@@ -13,8 +13,13 @@ impl TlaTraceCache {
     }
 
     #[allow(clippy::ptr_arg)]
-    pub(crate) fn get(&self, key: &String) -> Result<Option<TlaTrace>, Error> {
+    pub(crate) fn get(&self, _key: &String) -> Result<Option<TlaTrace>, Error> {
+        todo!()
+        /*
+        TODO: This is disabled as it is using the old system of implicit pathing and must be reworked a bit.
+        It it not the highest priority for 0.3.0
         self.cache.get(key)?.map(|value| value.parse()).transpose()
+        */
     }
 
     pub(crate) fn insert(&mut self, key: String, tla_trace: &TlaTrace) -> Result<(), Error> {
@@ -24,9 +29,15 @@ impl TlaTraceCache {
     }
 
     pub(crate) fn key(
-        tla_file: &TlaFile,
-        tla_config_file: &TlaConfigFile,
+        _tla_file: &TlaFile,
+        _tla_config_file: &TlaConfigFile,
     ) -> Result<String, Error> {
+        todo!();
+        /*
+        TODO: This is disabled as it is using the old system of implicit pathing and must be reworked a bit.
+        It it not the highest priority for 0.3.0
+
+
         tracing::debug!("TlaTraceKey:key {} {}", tla_file, tla_config_file);
 
         // get all tla files in the same directory
@@ -57,5 +68,8 @@ impl TlaTraceCache {
         let hash = crate::util::digest::encode(digest);
         tracing::debug!("computed hash: {}", hash);
         Ok(hash)
+
+
+        */
     }
 }

@@ -52,6 +52,8 @@ pub mod step_runner;
 /// Testing utilities
 pub mod test_util;
 
+use artifact::model_checker_stdout::ModelCheckerStdout;
+use artifact::TlaFileSuite;
 /// Re-exports.
 pub use cli::{output::CliOutput, output::CliStatus, CliOptions};
 pub use datachef::Recipe;
@@ -61,10 +63,36 @@ pub use options::{ModelChecker, ModelCheckerOptions, ModelCheckerWorkers, Option
 use serde::de::DeserializeOwned;
 pub use step_runner::StepRunner;
 
+use crate::artifact::{Artifact, ArtifactCreator};
+
 use std::env;
 use std::fmt::Debug;
 use std::path::Path;
 use tempfile::tempdir;
+
+pub(crate) fn setup(options: &Options) -> Result<(), Error> {
+    // init tracing subscriber (in case it's not already)
+    if let Err(e) = tracing_subscriber::fmt()
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .try_init()
+    {
+        tracing::trace!(
+            "modelator attempted to init the tracing_subscriber: {:?}",
+            e
+        );
+    }
+
+    // create modelator dir (if it doens't already exist)
+    if !options.dir.as_path().is_dir() {
+        std::fs::create_dir_all(&options.dir)?;
+    }
+
+    // download missing jars
+    jar::download_jars(&options.dir)?;
+    tracing::trace!("modelator setup completed");
+
+    Ok(())
+}
 
 /// Given a [crate::artifact::TlaFile] with TLA+ test assertions,
 /// as well as a [crate::artifact::TlaConfigFile] with TLA+ configuration,
@@ -90,20 +118,9 @@ pub fn traces<P: AsRef<Path>>(
     // setup modelator
     setup(options)?;
 
-    // create a temporary directory, and copy TLA+ files there
-    let dir = tempdir()?;
-    let tla_tests_file_path = util::copy_files_into("tla", tla_tests_file_path, dir.path())?;
-    let tla_config_file_path = util::copy_files_into("cfg", tla_config_file_path, dir.path())?;
-
-    // save the current, and change to the temporary directory
-    let current_dir = env::current_dir()?;
-    env::set_current_dir(dir.path())?;
-
-    // generate tla tests
-    use std::convert::TryFrom;
-    let tla_tests_file = artifact::TlaFile::try_from(tla_tests_file_path)?;
-    let tla_config_file = artifact::TlaConfigFile::try_from(tla_config_file_path)?;
-    let tests = module::Tla::generate_tests(tla_tests_file, tla_config_file)?;
+    let file_suite =
+        TlaFileSuite::from_tla_and_config_paths(tla_tests_file_path, tla_config_file_path)?;
+    let tests = module::Tla::generate_tests(&file_suite)?;
 
     #[allow(clippy::needless_collect)]
     // rust iterators are lazy
@@ -112,25 +129,30 @@ pub fn traces<P: AsRef<Path>>(
     // run the model checker configured on each tla test
     let trace_results = tests
         .into_iter()
-        .map(
-            |(tla_file, tla_config_file)| match options.model_checker_options.model_checker {
-                ModelChecker::Tlc => module::Tlc::test(&tla_file, &tla_config_file, options),
-                ModelChecker::Apalache => {
-                    module::Apalache::test(&tla_file, &tla_config_file, options)
+        .map(|(tla_file, tla_config_file)| {
+            let test_file_suite = {
+                let collected = {
+                    let mut dependencies = file_suite.dependency_tla_files.clone();
+                    dependencies.push(file_suite.tla_file.clone());
+                    dependencies
+                };
+                TlaFileSuite {
+                    tla_file,
+                    tla_config_file,
+                    dependency_tla_files: collected,
                 }
-            },
-        )
+            };
+            match options.model_checker_options.model_checker {
+                ModelChecker::Tlc => module::Tlc::test(&test_file_suite, options),
+                ModelChecker::Apalache => module::Apalache::test(&test_file_suite, options),
+            }
+        })
         .collect::<Vec<_>>();
-
-    // restore the current directory
-    env::set_current_dir(current_dir)?;
-    // cleanup everything by removing the temporary directory
-    dir.close()?;
 
     // convert each tla trace to json
     Ok(trace_results
         .into_iter()
-        .map(|trace_result| trace_result.and_then(module::Tla::tla_trace_to_json_trace))
+        .map(|res| res.and_then(|it| module::Tla::tla_trace_to_json_trace(it.0)))
         .collect())
 }
 
@@ -372,28 +394,4 @@ where
                 })
         })
         .collect())
-}
-
-pub(crate) fn setup(options: &Options) -> Result<(), Error> {
-    // init tracing subscriber (in case it's not already)
-    if let Err(e) = tracing_subscriber::fmt()
-        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
-        .try_init()
-    {
-        tracing::trace!(
-            "modelator attempted to init the tracing_subscriber: {:?}",
-            e
-        );
-    }
-
-    // create modelator dir (if it doens't already exist)
-    if !options.dir.as_path().is_dir() {
-        std::fs::create_dir_all(&options.dir)?;
-    }
-
-    // download missing jars
-    jar::download_jars(&options.dir)?;
-    tracing::trace!("modelator setup completed");
-
-    Ok(())
 }

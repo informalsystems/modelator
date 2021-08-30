@@ -1,7 +1,9 @@
 // CLI output.
 pub(crate) mod output;
 
-use crate::artifact::{Artifact, JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
+use crate::artifact::{
+    Artifact, ArtifactCreator, JsonTrace, TlaConfigFile, TlaFile, TlaFileSuite, TlaTrace,
+};
 use crate::Error;
 use clap::{AppSettings, Clap, Subcommand};
 use serde_json::{json, Value as JsonValue};
@@ -115,26 +117,17 @@ impl TlaMethods {
         tla_file_path: String,
         tla_config_file_path: String,
     ) -> Result<JsonValue, Error> {
-        use std::convert::TryFrom;
-        let tla_file = TlaFile::try_from(tla_file_path)?;
-        let tla_config_file = TlaConfigFile::try_from(tla_config_file_path)?;
-        let tests = crate::module::Tla::generate_tests(tla_file, tla_config_file)?;
+        let file_suite =
+            TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)?;
+        let tests = crate::module::Tla::generate_tests(&file_suite)?;
         tracing::debug!("Tla::generate_tests output {:#?}", tests);
-
         json_list_generated_tests(tests)
     }
 
     fn tla_trace_to_json_trace(tla_trace_file: String) -> Result<JsonValue, Error> {
-        // parse tla trace
-        let tla_trace_file = Path::new(&tla_trace_file);
-        if !tla_trace_file.is_file() {
-            return Err(Error::FileNotFound(tla_trace_file.to_path_buf()));
-        }
-        let tla_trace = std::fs::read_to_string(&tla_trace_file)?.parse()?;
-
+        let tla_trace = TlaTrace::try_read_from_file(tla_trace_file)?;
         let json_trace = crate::module::Tla::tla_trace_to_json_trace(tla_trace)?;
         tracing::debug!("Tla::tla_trace_to_json_trace output {}", json_trace);
-
         write_json_trace_to_file(json_trace)
     }
 }
@@ -152,26 +145,24 @@ impl ApalacheMethods {
 
     fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
         let options = crate::Options::default();
-        use std::convert::TryFrom;
-        let tla_file = TlaFile::try_from(tla_file_path)?;
-        let tla_config_file = TlaConfigFile::try_from(tla_config_file_path)?;
-        let tla_trace = {
-            let mut ret = crate::module::Apalache::test(&tla_file, &tla_config_file, &options)?;
-            ret.extends_module_name = Some(tla_file.file_name().to_string());
+        let input_artifacts =
+            TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)?;
+        let res = {
+            let mut ret = crate::module::Apalache::test(&input_artifacts, &options)?;
+            ret.0.extends_module_name = Some(input_artifacts.tla_file.module_name().to_string());
             ret
         };
-        tracing::debug!("Apalache::test output {}", tla_trace);
-        write_tla_trace_to_file(tla_trace)
+        tracing::debug!("Apalache::test output {}", res.0);
+        write_tla_trace_to_file(res.0)
     }
 
     fn parse(tla_file: String) -> Result<JsonValue, Error> {
         let options = crate::Options::default();
-        use std::convert::TryFrom;
-        let tla_file = TlaFile::try_from(tla_file)?;
-        let parsed_tla_file = crate::module::Apalache::parse(tla_file, &options)?;
-        tracing::debug!("Apalache::parse output {}", parsed_tla_file);
+        let tla_file = TlaFile::try_read_from_file(tla_file)?;
+        let res = crate::module::Apalache::parse(tla_file, &options)?;
+        tracing::debug!("Apalache::parse output {}", res.0);
 
-        json_parsed_tla_file(parsed_tla_file)
+        json_parsed_tla_file(res.0)
     }
 }
 
@@ -187,13 +178,13 @@ impl TlcMethods {
 
     fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
         let options = crate::Options::default();
-        use std::convert::TryFrom;
-        let tla_file = TlaFile::try_from(tla_file_path)?;
-        let tla_config_file = TlaConfigFile::try_from(tla_config_file_path)?;
+        let input_artifacts =
+            TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)?;
         let tla_trace = {
-            let mut ret = crate::module::Tlc::test(&tla_file, &tla_config_file, &options)?;
-            ret.extends_module_name = Some(tla_file.file_name().to_string());
-            ret
+            let mut ret = crate::module::Tlc::test(&input_artifacts, &options)?;
+            ret.0.extends_module_name = Some(input_artifacts.tla_file.module_name().to_string());
+            //TODO: do something with log
+            ret.0
         };
         tracing::debug!("Tlc::test output {}", tla_trace);
         write_tla_trace_to_file(tla_trace)

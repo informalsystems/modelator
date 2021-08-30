@@ -1,7 +1,9 @@
 /// Conversion from TLA traces to JSON.
 mod json;
 
-use crate::artifact::{JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
+use crate::artifact::{
+    Artifact, ArtifactCreator, JsonTrace, TlaConfigFile, TlaFile, TlaFileSuite, TlaTrace,
+};
 use crate::Error;
 use serde_json::Value as JsonValue;
 use std::path::Path;
@@ -63,29 +65,28 @@ impl Tla {
     /// println!("{:?}", tests);
     /// ```
     pub fn generate_tests(
-        tla_tests_file: TlaFile,
-        tla_config_file: TlaConfigFile,
+        tla_file_suite: &TlaFileSuite,
     ) -> Result<Vec<(TlaFile, TlaConfigFile)>, Error> {
-        tracing::debug!("Tla::generate_tests {} {}", tla_tests_file, tla_config_file);
+        tracing::debug!(
+            "Tla::generate_tests {} {}",
+            tla_file_suite.tla_file,
+            tla_file_suite.tla_config_file
+        );
 
-        // compute the directory in which the tla tests file is stored
-        let mut tla_tests_file_dir = tla_tests_file.path().to_path_buf();
-        assert!(tla_tests_file_dir.pop());
-
-        let tla_tests_file_name = tla_tests_file.file_name();
+        let tla_tests_module_name = tla_file_suite.tla_file.module_name();
 
         // retrieve test names from tla tests file
-        let test_names = extract_test_names(tla_tests_file.content())?;
+        let test_names = extract_test_names(tla_file_suite.tla_file.file_contents_backing())?;
 
         tracing::debug!(
             "test names extracted from {}:\n{:?}",
-            tla_tests_file,
+            tla_file_suite.tla_file,
             test_names
         );
 
         // check if no test was found
         if test_names.is_empty() {
-            return Err(Error::NoTestFound(tla_tests_file.path().to_path_buf()));
+            return Err(Error::NoTestFound(tla_tests_module_name.to_string()));
         }
 
         // generate a tla test file and config for each test name found
@@ -93,10 +94,9 @@ impl Tla {
             .into_iter()
             .map(|test_name| {
                 generate_test(
-                    &tla_tests_file_dir,
-                    tla_tests_file_name,
+                    tla_tests_module_name,
                     &test_name,
-                    &tla_config_file,
+                    &tla_file_suite.tla_config_file,
                 )
             })
             .collect()
@@ -130,15 +130,10 @@ fn extract_test_names(tla_tests_file_content: &str) -> Result<Vec<String>, Error
 }
 
 fn generate_test(
-    tla_tests_file_dir: &Path,
     tla_tests_file_name: &str,
     test_name: &str,
     tla_config_file: &TlaConfigFile,
 ) -> Result<(TlaFile, TlaConfigFile), Error> {
-    // TODO: it would be better to separate logic from IO steps
-    // split into 2 funs and also use artifacts:
-    // instead of writing the files and reading artifacts from them,
-    // create the artifacts and write the files
     let test_module_name = format!("{}_{}", tla_tests_file_name, test_name);
     let negated_test_name = format!("{}Neg", test_name);
 
@@ -150,20 +145,15 @@ fn generate_test(
         test_name,
     );
     // create test config with negated test as an invariant
-    let test_config = generate_test_config(tla_config_file.content(), &negated_test_name)?;
+    let test_config = generate_test_config(tla_config_file.content(), &negated_test_name);
 
-    // write test module to test module file
-    let test_module_file = tla_tests_file_dir.join(format!("{}.tla", test_module_name));
-    std::fs::write(&test_module_file, test_module)?;
+    let test_module_file = TlaFile::from_string(&test_module)?;
+    let mut test_config_file = TlaConfigFile::from_string(&test_config)?;
+    test_config_file.set_path(std::path::Path::new(&format!(
+        "{}_{}.cfg",
+        tla_tests_file_name, test_name
+    )));
 
-    // write test config to test config file
-    let test_config_file = tla_tests_file_dir.join(format!("{}.cfg", test_module_name));
-    std::fs::write(&test_config_file, test_config)?;
-
-    // create tla file and tla config file
-    use std::convert::TryFrom;
-    let test_module_file = TlaFile::try_from(test_module_file)?;
-    let test_config_file = TlaConfigFile::try_from(test_config_file)?;
     Ok((test_module_file, test_config_file))
 }
 
@@ -187,12 +177,12 @@ EXTENDS {}
     )
 }
 
-fn generate_test_config(tla_config_file_content: &str, invariant: &str) -> Result<String, Error> {
-    Ok(format!(
+fn generate_test_config(tla_config_file_content: &str, invariant: &str) -> String {
+    format!(
         r#"
 {}
 INVARIANT {}
 "#,
         tla_config_file_content, invariant
-    ))
+    )
 }
