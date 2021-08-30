@@ -22,20 +22,19 @@ impl Tlc {
     ///
     /// # Examples
     /// ```ignore
-    /// use modelator::artifact::{TlaFile, TlaConfigFile};
+    /// use modelator::artifact::TlaFileSuite;
     /// use modelator::model::{language::Tla, checker::Tlc};
     /// use modelator::ModelatorRuntime;
     /// use std::convert::TryFrom;
     ///
     /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
     /// let tla_config_file = "tests/integration/tla/Numbers.cfg";
-    /// let tla_tests_file = TlaFile::try_from(tla_tests_file).unwrap();
-    /// let tla_config_file = TlaConfigFile::try_from(tla_config_file).unwrap();
+    /// let tla_suite = TlaFileSuite::from_tla_and_config_paths(tla_tests_file, tla_config_file).unwrap();
     ///
-    /// let mut tests = Tla::generate_tests(tla_tests_file, tla_config_file).unwrap();
-    /// let (tla_test_file, tla_test_config_file) = tests.pop().unwrap();
+    /// let mut tests = Tla::generate_tests(&tla_suite).unwrap();
+    /// let test_tla_suite = tests.pop().unwrap();
     /// let runtime = ModelatorRuntime::default();
-    /// let tla_trace = Tlc::test(&tla_test_file, &tla_test_config_file, &runtime).unwrap();
+    /// let (tla_trace, _) = Tlc::test(&test_tla_suite, &runtime).unwrap();
     /// println!("{:?}", tla_trace);
     /// ```
     pub fn test(

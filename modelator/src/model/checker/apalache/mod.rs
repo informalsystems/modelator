@@ -29,20 +29,19 @@ impl Apalache {
     /// # Examples
     ///
     /// ```ignore
-    /// use modelator::artifact::{TlaFile, TlaConfigFile};
+    /// use modelator::artifact::TlaFileSuite;
     /// use modelator::model::{language::Tla, checker::Apalache};
     /// use modelator::ModelatorRuntime;
     /// use std::convert::TryFrom;
     ///
     /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
     /// let tla_config_file = "tests/integration/tla/Numbers.cfg";
-    /// let tla_tests_file = TlaFile::try_from(tla_tests_file).unwrap();
-    /// let tla_config_file = TlaConfigFile::try_from(tla_config_file).unwrap();
+    /// let tla_suite = TlaFileSuite::from_tla_and_config_paths(tla_tests_file, tla_config_file).unwrap();
     ///
-    /// let mut tests = Tla::generate_tests(tla_tests_file, tla_config_file).unwrap();
-    /// let (tla_test_file, tla_test_config_file) = tests.pop().unwrap();
+    /// let mut tests = Tla::generate_tests(&tla_suite).unwrap();
+    /// let test_tla_suite = tests.pop().unwrap();
     /// let runtime = ModelatorRuntime::default();
-    /// let tla_trace = Apalache::test(&tla_test_file, &tla_test_config_file, &runtime).unwrap();
+    /// let (tla_trace, _) = Apalache::test(&test_tla_suite, &runtime).unwrap();
     /// println!("{:?}", tla_trace);
     /// ```
     pub fn test(
@@ -106,37 +105,37 @@ impl Apalache {
     /// # Examples
     ///
     /// ```ignore
-    /// use modelator::artifact::TlaFile;
-    /// use modelator::checker::Apalache;
+    /// use modelator::artifact::TlaFileSuite;
+    /// use modelator::model::checker::Apalache;
     /// use modelator::ModelatorRuntime;
     /// use std::convert::TryFrom;
     ///
     /// let tla_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
-    /// let tla_file = TlaFile::try_from(tla_file).unwrap();
+    /// let tla_file_suite = TlaFileSuite::from_tla_path(tla_file).unwrap();
     ///
     /// let runtime = ModelatorRuntime::default();
-    /// let mut tla_parsed_file = Apalache::parse(tla_file, &runtime).unwrap();
+    /// let (tla_parsed_file, _) = Apalache::parse(&tla_file_suite, &runtime).unwrap();
     /// println!("{:?}", tla_parsed_file);
     /// ```
     pub fn parse(
-        tla_file: TlaFile,
+        tla_file_suite: &TlaFileSuite,
         options: &ModelatorRuntime,
     ) -> Result<(TlaFile, ModelCheckerStdout), Error> {
-        tracing::debug!("Apalache::parse {} {:?}", tla_file, options);
+        // tracing::debug!("Apalache::parse {} {:?}", tla_file, options);
 
         let tdir = tempfile::tempdir()?;
 
-        try_write_to_dir(&tdir, vec![Box::new(&tla_file as &dyn ArtifactSaver)])?;
+        try_write_to_dir(&tdir, tla_file_suite)?;
 
         // Gets Apalache command with tdir as working dir
         let cmd = apalache_start_cmd(&tdir, options);
 
-        let tla_file_module_name = tla_file.module_name();
+        let tla_file_module_name = tla_file_suite.tla_file.module_name();
 
         let output_path = format!("{}Parsed.tla", tla_file_module_name);
 
         // create apalache parse command
-        let cmd = parse_cmd(cmd, &tla_file.file_name(), &output_path);
+        let cmd = parse_cmd(cmd, &tla_file_suite.tla_file.file_name(), &output_path);
 
         // run apalache
         let apalache_log = run_apalache(cmd)?;

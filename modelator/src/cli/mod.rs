@@ -158,8 +158,8 @@ impl ApalacheMethods {
 
     fn parse(tla_file: String) -> Result<JsonValue, Error> {
         let options = crate::ModelatorRuntime::default();
-        let tla_file = TlaFile::try_read_from_file(tla_file)?;
-        let res = crate::model::checker::Apalache::parse(tla_file, &options)?;
+        let tla_file = TlaFileSuite::from_tla_path(tla_file)?;
+        let res = crate::model::checker::Apalache::parse(&tla_file, &options)?;
         tracing::debug!("Apalache::parse output {}", res.0);
 
         json_parsed_tla_file(res.0)
@@ -192,16 +192,15 @@ impl TlcMethods {
 }
 
 #[allow(clippy::unnecessary_wraps)]
-fn json_list_generated_tests(tests: Vec<(TlaFile, TlaConfigFile)>) -> Result<JsonValue, Error> {
-    let json_array_entry = |tla_file: TlaFile, tla_config_file: TlaConfigFile| {
-        json!({
-            "tla_file": format!("{}", tla_file),
-            "tla_config_file": format!("{}", tla_config_file),
-        })
-    };
+fn json_list_generated_tests(tests: Vec<TlaFileSuite>) -> Result<JsonValue, Error> {
     let json_array = tests
         .into_iter()
-        .map(|(tla_file, tla_config_file)| json_array_entry(tla_file, tla_config_file))
+        .map(|suite| {
+            json!({
+                "tla_file": format!("{}", suite.tla_file),
+                "tla_config_file": format!("{}", suite.tla_config_file),
+            })
+        })
         .collect();
     Ok(JsonValue::Array(json_array))
 }

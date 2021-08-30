@@ -2,7 +2,7 @@
 mod json;
 
 use crate::artifact::{
-    Artifact, ArtifactCreator, JsonTrace, TlaConfigFile, TlaFile, TlaFileSuite, TlaTrace,
+    tla_file, Artifact, ArtifactCreator, JsonTrace, TlaConfigFile, TlaFile, TlaFileSuite, TlaTrace,
 };
 use crate::Error;
 use serde_json::Value as JsonValue;
@@ -19,20 +19,19 @@ impl Tla {
     ///
     /// # Examples
     /// ```ignore
-    /// use modelator::artifact::{TlaFile, TlaConfigFile};
-    /// use modelator::{tla::Tla, checker::Tlc};
+    /// use modelator::artifact::TlaFileSuite;
+    /// use modelator::model::{language::Tla, checker::Tlc};
     /// use modelator::ModelatorRuntime;
     /// use std::convert::TryFrom;
     ///
     /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
     /// let tla_config_file = "tests/integration/tla/Numbers.cfg";
-    /// let tla_tests_file = TlaFile::try_from(tla_tests_file).unwrap();
-    /// let tla_config_file = TlaConfigFile::try_from(tla_config_file).unwrap();
+    /// let tla_suite = TlaFileSuite::from_tla_and_config_paths(tla_tests_file, tla_config_file).unwrap();
     ///
-    /// let mut tests = Tla::generate_tests(tla_tests_file, tla_config_file).unwrap();
-    /// let (tla_test_file, tla_test_config_file) = tests.pop().unwrap();
+    /// let mut tests = Tla::generate_tests(&tla_suite).unwrap();
+    /// let test_tla_suite = tests.pop().unwrap();
     /// let runtime = ModelatorRuntime::default();
-    /// let tla_trace = Tlc::test(&tla_test_file, &tla_test_config_file, &runtime).unwrap();
+    /// let (tla_trace, _) = Tlc::test(&test_tla_suite, &runtime).unwrap();
     /// let json_trace = Tla::tla_trace_to_json_trace(tla_trace).unwrap();
     /// println!("{:?}", json_trace);
     /// ```
@@ -52,20 +51,17 @@ impl Tla {
     ///
     /// # Examples
     /// ```ignore
-    /// use modelator::artifact::{TlaFile, TlaConfigFile};
-    /// use modelator::tla::Tla;
+    /// use modelator::artifact::TlaFileSuite;
+    /// use modelator::model::language::Tla;
     /// use std::convert::TryFrom;
     ///
     /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
     /// let tla_config_file = "tests/integration/tla/Numbers.cfg";
-    /// let tla_tests_file = TlaFile::try_from(tla_tests_file).unwrap();
-    /// let tla_config_file = TlaConfigFile::try_from(tla_config_file).unwrap();
-    /// let mut tests = Tla::generate_tests(tla_tests_file, tla_config_file).unwrap();
+    /// let tla_suite = TlaFileSuite::from_tla_and_config_paths(tla_tests_file, tla_config_file).unwrap();
+    /// let mut tests = Tla::generate_tests(&tla_suite).unwrap();
     /// println!("{:?}", tests);
     /// ```
-    pub fn generate_tests(
-        tla_file_suite: &TlaFileSuite,
-    ) -> Result<Vec<(TlaFile, TlaConfigFile)>, Error> {
+    pub fn generate_tests(tla_file_suite: &TlaFileSuite) -> Result<Vec<TlaFileSuite>, Error> {
         tracing::debug!(
             "Tla::generate_tests {} {}",
             tla_file_suite.tla_file,
@@ -91,13 +87,7 @@ impl Tla {
         // generate a tla test file and config for each test name found
         test_names
             .into_iter()
-            .map(|test_name| {
-                generate_test(
-                    tla_tests_module_name,
-                    &test_name,
-                    &tla_file_suite.tla_config_file,
-                )
-            })
+            .map(|test_name| generate_test(&test_name, tla_file_suite))
             .collect()
     }
 }
@@ -128,11 +118,8 @@ fn extract_test_names(tla_tests_file_content: &str) -> Result<Vec<String>, Error
     Ok(test_names)
 }
 
-fn generate_test(
-    tla_tests_file_name: &str,
-    test_name: &str,
-    tla_config_file: &TlaConfigFile,
-) -> Result<(TlaFile, TlaConfigFile), Error> {
+fn generate_test(test_name: &str, tla_file_suite: &TlaFileSuite) -> Result<TlaFileSuite, Error> {
+    let tla_tests_file_name = tla_file_suite.tla_file.module_name();
     let test_module_name = format!("{}_{}", tla_tests_file_name, test_name);
     let negated_test_name = format!("{}Neg", test_name);
 
@@ -144,7 +131,8 @@ fn generate_test(
         test_name,
     );
     // create test config with negated test as an invariant
-    let test_config = generate_test_config(tla_config_file.content(), &negated_test_name);
+    let test_config =
+        generate_test_config(tla_file_suite.tla_config_file.content(), &negated_test_name);
 
     let test_module_file = TlaFile::from_string(&test_module)?;
     let mut test_config_file = TlaConfigFile::from_string(&test_config)?;
@@ -153,7 +141,17 @@ fn generate_test(
         tla_tests_file_name, test_name
     )));
 
-    Ok((test_module_file, test_config_file))
+    let collected = {
+        let mut dependencies = tla_file_suite.dependency_tla_files.clone();
+        dependencies.push(tla_file_suite.tla_file.clone());
+        dependencies
+    };
+
+    Ok(TlaFileSuite {
+        tla_file: test_module_file,
+        tla_config_file: test_config_file,
+        dependency_tla_files: collected,
+    })
 }
 
 fn generate_test_module(

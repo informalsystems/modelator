@@ -159,24 +159,12 @@ impl ModelatorRuntime {
         // run the model checker configured on each tla test
         let trace_results = tests
             .into_iter()
-            .map(|(tla_file, tla_config_file)| {
-                let test_file_suite = {
-                    let collected = {
-                        let mut dependencies = file_suite.dependency_tla_files.clone();
-                        dependencies.push(file_suite.tla_file.clone());
-                        dependencies
-                    };
-                    TlaFileSuite {
-                        tla_file,
-                        tla_config_file,
-                        dependency_tla_files: collected,
-                    }
-                };
-                match self.model_checker_runtime.model_checker {
+            .map(
+                |test_file_suite| match self.model_checker_runtime.model_checker {
                     ModelChecker::Tlc => Tlc::test(&test_file_suite, self),
                     ModelChecker::Apalache => Apalache::test(&test_file_suite, self),
-                }
-            })
+                },
+            )
             .collect::<Vec<_>>();
 
         // convert each tla trace to json
