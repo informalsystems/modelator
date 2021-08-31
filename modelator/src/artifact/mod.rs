@@ -15,7 +15,7 @@ where
     C: IntoIterator<Item = Box<&'a dyn ArtifactSaver>>,
 {
     for artifact in collection {
-        artifact.try_save_to_dir(dir.as_ref())?
+        artifact.try_write_to_dir(dir.as_ref())?;
     }
     Ok(())
 }
@@ -57,11 +57,10 @@ pub trait ArtifactSaver: Artifact {
     fn filename(&self) -> String;
 
     /// Tries to save the contents to directory using the file name
-    fn try_save_to_dir(&self, path: &Path) -> Result<(), Error> {
-        Ok(std::fs::write(
-            path.join(self.filename()),
-            self.as_string(),
-        )?)
+    fn try_write_to_dir(&self, path: &Path) -> Result<PathBuf, Error> {
+        let full_path = path.join(self.filename());
+        std::fs::write(&full_path, self.as_string())?;
+        Ok(full_path)
     }
 }
 

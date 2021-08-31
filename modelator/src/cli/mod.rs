@@ -1,8 +1,11 @@
+use std::env;
+use std::path::PathBuf;
 // CLI output.
 pub(crate) mod output;
 
 use crate::artifact::{
-    Artifact, ArtifactCreator, JsonTrace, TlaConfigFile, TlaFile, TlaFileSuite, TlaTrace,
+    Artifact, ArtifactCreator, ArtifactSaver, JsonTrace, TlaConfigFile, TlaFile, TlaFileSuite,
+    TlaTrace,
 };
 use crate::Error;
 use clap::{AppSettings, Clap, Subcommand};
@@ -121,7 +124,21 @@ impl TlaMethods {
             TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)?;
         let tests = crate::model::language::Tla::generate_tests(&file_suite)?;
         tracing::debug!("Tla::generate_tests output {:#?}", tests);
-        json_list_generated_tests(tests)
+
+        let dir = env::current_dir()?;
+
+        // Write the results, collect path names
+        let written_files = {
+            let mut ret = Vec::<(PathBuf, PathBuf)>::new();
+            for tla_test_suite in tests {
+                let tla_file_full_path = tla_test_suite.tla_file.try_write_to_dir(&dir)?;
+                let cfg_file_full_path = tla_test_suite.tla_config_file.try_write_to_dir(&dir)?;
+                ret.push((tla_file_full_path, cfg_file_full_path));
+            }
+            ret
+        };
+
+        json_list_generated_tests(written_files)
     }
 
     fn tla_trace_to_json_trace(tla_trace_file: String) -> Result<JsonValue, Error> {
@@ -192,13 +209,13 @@ impl TlcMethods {
 }
 
 #[allow(clippy::unnecessary_wraps)]
-fn json_list_generated_tests(tests: Vec<TlaFileSuite>) -> Result<JsonValue, Error> {
-    let json_array = tests
+fn json_list_generated_tests(test_files: Vec<(PathBuf, PathBuf)>) -> Result<JsonValue, Error> {
+    let json_array = test_files
         .into_iter()
-        .map(|suite| {
+        .map(|(tla, cfg)| {
             json!({
-                "tla_file": format!("{}", suite.tla_file),
-                "tla_config_file": format!("{}", suite.tla_config_file),
+                "tla_file": format!("{}", tla.into_os_string().into_string().unwrap()),
+                "tla_config_file": format!("{}", cfg.into_os_string().into_string().unwrap()),
             })
         })
         .collect();
