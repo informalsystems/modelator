@@ -1,7 +1,7 @@
 [package]
 name = "modelator"
 description = "A framework and tools for model-based testing."
-version = "0.2.1"
+version = "0.3.0"
 edition = "2018"
 license    = "Apache-2.0"
 readme     = "README.md"
@@ -10,7 +10,8 @@ repository = "https://github.com/informalsystems/modelator"
 authors = [
     "Vitor Enes <vitorenesduarte@gmail.com>", 
     "Andrey Kuprianov <andrey@informal.systems>",
-    "Ranadeep Biswas <ranadeep@informal.systems>"
+    "Ranadeep Biswas <ranadeep@informal.systems>",
+    "Daniel Tisdall <daniel@informal.systems>"
 ]
 
 [dependencies]
