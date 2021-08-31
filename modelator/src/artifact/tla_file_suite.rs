@@ -90,7 +90,11 @@ impl TlaFileSuite {
         config_file_path: P,
     ) -> Result<Self, Error> {
         let tla_file = TlaFile::try_read_from_file(&tla_file_path)?;
-        let tla_config_file = TlaConfigFile::try_read_from_file(config_file_path)?;
+        let mut tla_config_file = TlaConfigFile::try_read_from_file(config_file_path)?;
+        tla_config_file.set_path(std::path::Path::new(&format!(
+            "{}.cfg",
+            tla_file.module_name()
+        )));
         let dependency_tla_files = gather_dependencies(tla_file_path)?;
         Ok(TlaFileSuite {
             tla_file,
