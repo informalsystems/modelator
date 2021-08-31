@@ -50,6 +50,7 @@ impl ArtifactCreator for JsonTrace {
 
 impl Artifact for JsonTrace {
     fn as_string(&self) -> String {
-        todo!()
+        serde_json::to_string_pretty(&self.states)
+            .expect("should not fail as it [serde_json::Value] is serializable")
     }
 }
