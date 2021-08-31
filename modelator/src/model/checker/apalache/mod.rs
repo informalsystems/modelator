@@ -46,7 +46,7 @@ impl Apalache {
     /// ```
     pub fn test(
         input_artifacts: &TlaFileSuite,
-        options: &ModelatorRuntime,
+        runtime: &ModelatorRuntime,
     ) -> Result<(TlaTrace, ModelCheckerStdout), Error> {
         // TODO: this method currently just uses the paths of the files so no need for whole artifact objects!
 
@@ -54,7 +54,7 @@ impl Apalache {
             "Apalache::test {} {} {:?}",
             input_artifacts.tla_file,
             input_artifacts.tla_config_file,
-            options
+            runtime
         );
 
         // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
@@ -70,14 +70,14 @@ impl Apalache {
         try_write_to_dir(&tdir, input_artifacts)?;
 
         // Gets Apalache command with tdir as working dir
-        let cmd = apalache_start_cmd(&tdir, options);
+        let cmd = apalache_start_cmd(&tdir, runtime);
 
         // create 'apalache test' command
         let cmd = test_cmd(
             cmd,
             input_artifacts.tla_file.file_name(),
             input_artifacts.tla_config_file.filename(),
-            options,
+            runtime,
         );
 
         let apalache_log = run_apalache(cmd)?;
@@ -119,16 +119,16 @@ impl Apalache {
     /// ```
     pub fn parse(
         tla_file_suite: &TlaFileSuite,
-        options: &ModelatorRuntime,
+        runtime: &ModelatorRuntime,
     ) -> Result<(TlaFile, ModelCheckerStdout), Error> {
-        // tracing::debug!("Apalache::parse {} {:?}", tla_file, options);
+        // tracing::debug!("Apalache::parse {} {:?}", tla_file, runtime);
 
         let tdir = tempfile::tempdir()?;
 
         try_write_to_dir(&tdir, tla_file_suite)?;
 
         // Gets Apalache command with tdir as working dir
-        let cmd = apalache_start_cmd(&tdir, options);
+        let cmd = apalache_start_cmd(&tdir, runtime);
 
         let tla_file_module_name = tla_file_suite.tla_file.module_name();
 
@@ -218,8 +218,8 @@ fn parse_cmd<P: AsRef<Path>>(
 }
 
 /// Creates an Apalache start command providing temp_dir as a library directory and the Apalache jar
-fn apalache_start_cmd(temp_dir: &tempfile::TempDir, options: &ModelatorRuntime) -> Command {
-    let apalache = jar::Jar::Apalache.path(&options.dir);
+fn apalache_start_cmd(temp_dir: &tempfile::TempDir, runtime: &ModelatorRuntime) -> Command {
+    let apalache = jar::Jar::Apalache.path(&runtime.dir);
 
     let mut cmd = Command::new("java");
     cmd.current_dir(temp_dir)

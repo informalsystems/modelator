@@ -39,11 +39,11 @@ impl Tlc {
     /// ```
     pub fn test(
         tla_file_suite: &TlaFileSuite,
-        options: &ModelatorRuntime,
+        runtime: &ModelatorRuntime,
     ) -> Result<(TlaTrace, ModelCheckerStdout), Error> {
         let tla_file = &tla_file_suite.tla_file;
         let tla_config_file = &tla_file_suite.tla_config_file;
-        tracing::debug!("Tlc::test {} {} {:?}", tla_file, tla_config_file, options);
+        tracing::debug!("Tlc::test {} {} {:?}", tla_file, tla_config_file, runtime);
 
         // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
         // load cache and check if the result is cached
@@ -62,7 +62,7 @@ impl Tlc {
             &tdir,
             tla_file.file_name(),
             tla_config_file.filename(),
-            options,
+            runtime,
         );
 
         // start tlc
@@ -79,13 +79,13 @@ impl Tlc {
             (false, true) => {
                 let tlc_log = ModelCheckerStdout::from_string(&stdout)?;
 
-                let mut traces = output::parse(stdout, &options.model_checker_runtime)?;
+                let mut traces = output::parse(stdout, &runtime.model_checker_runtime)?;
 
                 // check if no trace was found
                 if traces.is_empty() {
                     return Err(Error::NoTestTraceFound(
                         //TODO: this will have to be changed to reflect new in-memory log
-                        options.model_checker_runtime.log.clone(),
+                        runtime.model_checker_runtime.log.clone(),
                     ));
                 }
 

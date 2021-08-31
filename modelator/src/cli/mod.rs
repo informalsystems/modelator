@@ -162,11 +162,11 @@ impl ApalacheMethods {
     }
 
     fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
-        let options = crate::ModelatorRuntime::default();
+        let runtime = crate::ModelatorRuntime::default();
         let input_artifacts =
             TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)?;
         let res = {
-            let mut ret = crate::model::checker::Apalache::test(&input_artifacts, &options)?;
+            let mut ret = crate::model::checker::Apalache::test(&input_artifacts, &runtime)?;
             ret.0.extends_module_name = Some(input_artifacts.tla_file.module_name().to_string());
             ret
         };
@@ -175,9 +175,9 @@ impl ApalacheMethods {
     }
 
     fn parse(tla_file: String) -> Result<JsonValue, Error> {
-        let options = crate::ModelatorRuntime::default();
+        let runtime = crate::ModelatorRuntime::default();
         let tla_file = TlaFileSuite::from_tla_path(tla_file)?;
-        let res = crate::model::checker::Apalache::parse(&tla_file, &options)?;
+        let res = crate::model::checker::Apalache::parse(&tla_file, &runtime)?;
         tracing::debug!("Apalache::parse output {}", res.0);
         write_parsed_tla_file_to_file(res.0)
     }
@@ -194,11 +194,11 @@ impl TlcMethods {
     }
 
     fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
-        let options = crate::ModelatorRuntime::default();
+        let runtime = crate::ModelatorRuntime::default();
         let input_artifacts =
             TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)?;
         let tla_trace = {
-            let mut ret = crate::model::checker::Tlc::test(&input_artifacts, &options)?;
+            let mut ret = crate::model::checker::Tlc::test(&input_artifacts, &runtime)?;
             ret.0.extends_module_name = Some(input_artifacts.tla_file.module_name().to_string());
             //TODO: do something with log
             ret.0
