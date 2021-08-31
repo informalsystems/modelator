@@ -1,7 +1,7 @@
 const MAX_NUMBER: u64 = 6;
 /// Example system under test (SUT).
 /// Allows to modify the two variables, a and b,
-/// if they do not exceed the MAX_NUMBER.
+/// if they do not exceed the `MAX_NUMBER`.
 /// Maintains also the sum and product of the variables.
 #[allow(missing_docs)]
 #[derive(Debug, Clone, Copy, PartialEq)]

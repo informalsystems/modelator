@@ -179,7 +179,7 @@ impl Recipe {
     }
 
     /// Add named conversion from From into To.
-    /// Use [make_as()](Recipe::make_as) to apply the conversion.
+    /// Use [`make_as()`](Recipe::make_as) to apply the conversion.
     pub fn add_as<From, To>(&mut self, name: &str, converter: fn(&Self, From) -> To)
     where
         From: Sized + Any,
@@ -190,14 +190,14 @@ impl Recipe {
     }
 
     /// Put default value for type T.
-    /// Use [take()](Recipe::take) to retrieve the default.
+    /// Use [`take()`](Recipe::take) to retrieve the default.
     pub fn put<T: Sized + Any>(&mut self, default: fn(&Self) -> T) {
         let type_id = TypeId::of::<T>();
         self.defaults.insert(type_id, Box::new(default));
     }
 
     /// Put named default value for type T.
-    /// Use [take_as()](Recipe::take_as) to retrieve the default.
+    /// Use [`take_as()`](Recipe::take_as) to retrieve the default.
     pub fn put_as<T: Sized + Any>(&mut self, name: &str, f: fn(&Self) -> T) {
         let type_id = TypeId::of::<T>();
         self.named_defaults

@@ -385,7 +385,7 @@ mod tests {
         })
     }
 
-    /// The tests that follow are translated from some of the tests in https://github.com/japgolly/tla2json
+    /// The tests that follow are translated from some of the tests in <https://github.com/japgolly/tla2json>
     const fn state1() -> &'static str {
         r#"
             /\ browsers = (b1 :> << >>)

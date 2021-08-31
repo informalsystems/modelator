@@ -82,7 +82,7 @@ enum TlcMethods {
 }
 
 impl CliOptions {
-    /// Function that runs `modelator` given the parameters in the [CliOptions].
+    /// Function that runs `modelator` given the parameters in the [`CliOptions`].
     pub fn run(self) -> output::CliOutput {
         let result = self.subcommand.run();
         output::CliOutput::with_result(result)
