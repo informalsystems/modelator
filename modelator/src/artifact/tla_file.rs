@@ -59,11 +59,7 @@ impl ArtifactSaver for TlaFile {
 
 impl std::fmt::Display for TlaFile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            crate::util::absolute_path(&self.file_contents_backing)
-        )
+        write!(f, "{}", &self.file_contents_backing)
     }
 }
 
