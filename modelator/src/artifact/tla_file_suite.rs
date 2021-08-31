@@ -6,6 +6,7 @@ use super::tla_file::TlaFile;
 use super::{Artifact, ArtifactCreator, ArtifactSaver};
 use crate::Error;
 
+// https://github.com/tlaplus/tlaplus/tree/master/tlatools/org.lamport.tlatools/src/tla2sany/StandardModules
 const STANDARD_MODULES: [&str; 12] = [
     "Bags",
     "FiniteSets",
