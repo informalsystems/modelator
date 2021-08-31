@@ -1,14 +1,14 @@
 use super::Cache;
 use crate::artifact::{TlaConfigFile, TlaFile, TlaTrace};
-use crate::{Error, Options};
+use crate::{Error, ModelatorRuntime};
 
 pub(crate) struct TlaTraceCache {
     cache: Cache,
 }
 
 impl TlaTraceCache {
-    pub(crate) fn new(options: &Options) -> Result<Self, Error> {
-        let cache = Cache::new(options)?;
+    pub(crate) fn new(runtime: &ModelatorRuntime) -> Result<Self, Error> {
+        let cache = Cache::new(runtime)?;
         Ok(Self { cache })
     }
 

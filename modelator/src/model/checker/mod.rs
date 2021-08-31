@@ -1,42 +1,19 @@
+// TLC module.
+mod tlc;
+
+// Apalache module.
+mod apalache;
+
+// Re-exports.
+pub use apalache::{error::ApalacheError, Apalache};
+pub use tlc::Tlc;
+
 use std::env;
 use std::path::{Path, PathBuf};
 
-/// Set of options to configure `modelator`.
-#[derive(Clone, Debug)]
-pub struct Options {
-    /// Model checker options.
-    pub model_checker_options: ModelCheckerOptions,
-
-    /// Modelator directory.
-    pub dir: PathBuf,
-}
-
-impl Options {
-    /// Set TLC options.
-    pub fn model_checker_options(mut self, model_checker_options: ModelCheckerOptions) -> Self {
-        self.model_checker_options = model_checker_options;
-        self
-    }
-
-    /// Set modelator directory.
-    pub fn dir(mut self, dir: impl AsRef<Path>) -> Self {
-        self.dir = dir.as_ref().to_path_buf();
-        self
-    }
-}
-
-impl Default for Options {
-    fn default() -> Self {
-        Self {
-            model_checker_options: ModelCheckerOptions::default(),
-            dir: env::current_dir().unwrap().join(".modelator"), //Path::new(".modelator").to_path_buf(),
-        }
-    }
-}
-
 /// Set of options to select the model checker to be used and configure them.
 #[derive(Clone, Debug)]
-pub struct ModelCheckerOptions {
+pub struct ModelCheckerRuntime {
     /// Which model checker to use.
     pub model_checker: ModelChecker,
 
@@ -49,7 +26,7 @@ pub struct ModelCheckerOptions {
     pub log: PathBuf,
 }
 
-impl ModelCheckerOptions {
+impl ModelCheckerRuntime {
     /// Set the model checker.
     pub fn model_checker(mut self, model_checker: ModelChecker) -> Self {
         self.model_checker = model_checker;
@@ -69,7 +46,7 @@ impl ModelCheckerOptions {
     }
 }
 
-impl Default for ModelCheckerOptions {
+impl Default for ModelCheckerRuntime {
     fn default() -> Self {
         Self {
             model_checker: ModelChecker::Apalache,

@@ -6,12 +6,12 @@ use std::fmt;
 /// explaining that no error match was found.
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Serialize, PartialEq)]
-pub struct ErrorMessage {
+pub struct ApalacheError {
     summary: String,
     stdout: String,
 }
 
-impl fmt::Display for ErrorMessage {
+impl fmt::Display for ApalacheError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", serde_json::to_string_pretty(&self).unwrap())
     }
@@ -54,15 +54,15 @@ fn try_extract_error_reason(apalache_stdout: &str) -> Option<String> {
     None
 }
 
-impl ErrorMessage {
-    pub(crate) fn new(apalache_stdout: &str) -> ErrorMessage {
+impl ApalacheError {
+    pub(crate) fn new(apalache_stdout: &str) -> ApalacheError {
         let summary = match try_extract_error_reason(apalache_stdout) {
             Some(line) => line,
             None => {
                 "(Modelator) unable to parse reason for error from Apalache output.".to_string()
             }
         };
-        ErrorMessage {
+        ApalacheError {
             summary,
             stdout: apalache_stdout.to_string(),
         }
@@ -76,10 +76,10 @@ mod tests {
     #[test]
     fn test_errors() {
         let s = "0\n0error when rewriting to SMT0\n0";
-        let compare = ErrorMessage {
+        let compare = ApalacheError {
             summary: "0error when rewriting to SMT0".to_string(),
             stdout: s.to_string(),
         };
-        assert_eq!(ErrorMessage::new(s), compare);
+        assert_eq!(ApalacheError::new(s), compare);
     }
 }

@@ -4,7 +4,7 @@ mod tla_trace;
 // Re-exports;
 pub(crate) use tla_trace::TlaTraceCache;
 
-use crate::{Error, Options};
+use crate::{Error, ModelatorRuntime};
 use std::collections::HashSet;
 use std::path::PathBuf;
 
@@ -14,9 +14,9 @@ pub(crate) struct Cache {
 }
 
 impl Cache {
-    pub(crate) fn new(options: &Options) -> Result<Self, Error> {
+    pub(crate) fn new(runtime: &ModelatorRuntime) -> Result<Self, Error> {
         // create cache dir (if it doesn't exist)
-        let cache_dir = options.dir.join("cache");
+        let cache_dir = runtime.dir.join("cache");
         std::fs::create_dir_all(&cache_dir)?;
 
         // read files the cache directory
@@ -72,10 +72,10 @@ mod tests {
     #[test]
     fn cache_works() {
         let modelator_dir = "cache_works";
-        let options = Options::default().dir(modelator_dir);
+        let runtime = ModelatorRuntime::default().dir(modelator_dir);
 
         // create cache
-        let mut cache = Cache::new(&options).unwrap();
+        let mut cache = Cache::new(&runtime).unwrap();
 
         let key_a = "A".to_string();
         let value_a = "some value for A".to_string();
@@ -93,7 +93,7 @@ mod tests {
         assert!(cache.get(&key_b).unwrap().is_none());
 
         // start a new cache a check that it reads the cached keys from disk
-        let cache = Cache::new(&options).unwrap();
+        let cache = Cache::new(&runtime).unwrap();
         assert_eq!(cache.get(&key_a).unwrap(), Some(value_a));
         assert!(cache.get(&key_b).unwrap().is_none());
 

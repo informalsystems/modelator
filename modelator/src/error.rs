@@ -2,7 +2,7 @@ use serde::Serialize;
 use std::fmt::Debug;
 use thiserror::Error;
 
-use crate::module::{apalache, ErrorMessage};
+use crate::model::checker::ApalacheError;
 
 /// Set of possible errors that can occur when running `modelator`.
 #[allow(clippy::upper_case_acronyms)]
@@ -50,7 +50,7 @@ pub enum Error {
 
     /// An error that occurs when the output of Apalache returns an error.
     #[error("Apalache failure: {0}")]
-    ApalacheFailure(apalache::error_message::ErrorMessage),
+    ApalacheFailure(ApalacheError),
 
     /// An error that occurs when the counterexample produced by Apalache is unexpected.
     #[error("Invalid Apalache counterexample: {0}")]
@@ -67,6 +67,10 @@ pub enum Error {
     /// An error that occurs when parsing a JSON value.
     #[error("JSON parse error: {0}")]
     JsonParseError(String),
+
+    /// An error for unrecognized checker name.
+    #[error("Unrecognized checker: {0}")]
+    UnrecognizedChecker(String),
 }
 
 impl From<std::io::Error> for Error {

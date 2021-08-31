@@ -1,5 +1,5 @@
 use super::{Artifact, ArtifactCreator, ArtifactSaver};
-use crate::{Error, ModelCheckerOptions};
+use crate::{Error, ModelatorRuntime};
 use core::result::Result::Err;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -59,11 +59,7 @@ impl ArtifactSaver for TlaFile {
 
 impl std::fmt::Display for TlaFile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            crate::util::absolute_path(&self.file_contents_backing)
-        )
+        write!(f, "{}", &self.file_contents_backing)
     }
 }
 

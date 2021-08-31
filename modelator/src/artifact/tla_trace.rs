@@ -101,11 +101,11 @@ impl ArtifactCreator for TlaTrace {
 impl Artifact for TlaTrace {
     fn as_string(&self) -> String {
         match &self.extends_module_name {
-            None => format!("{:?}", self.states),
+            None => format!("{}", self),
             Some(name) => {
                 format!(
-                    "---- MODULE trace ----\n\nEXTENDS {}\n\n{:?}\n====",
-                    name, self.states
+                    "---- MODULE trace ----\n\nEXTENDS {}\n\n{}\n====",
+                    name, self
                 )
             }
         }
@@ -176,7 +176,7 @@ fn parse_tla_trace_file_contents(i: &str) -> IResult<&str, TlaTraceFileContent<'
                     ),
                     multispace1,
                 ),
-                terminated(
+                opt(terminated(
                     preceded(
                         tag_no_case("EXTENDS "),
                         separated_list1(
@@ -185,7 +185,7 @@ fn parse_tla_trace_file_contents(i: &str) -> IResult<&str, TlaTraceFileContent<'
                         ),
                     ),
                     multispace1,
-                ),
+                )),
                 separated_list1(
                     multispace1,
                     separated_pair(
@@ -199,7 +199,7 @@ fn parse_tla_trace_file_contents(i: &str) -> IResult<&str, TlaTraceFileContent<'
         ),
         |(name, extends, operators)| TlaTraceFileContent {
             name,
-            extends,
+            extends: extends.unwrap_or_default(),
             operators,
         },
     )(i)

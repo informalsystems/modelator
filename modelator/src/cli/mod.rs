@@ -1,8 +1,12 @@
+use std::env;
+use std::fmt::write;
+use std::path::PathBuf;
 // CLI output.
 pub(crate) mod output;
 
 use crate::artifact::{
-    Artifact, ArtifactCreator, JsonTrace, TlaConfigFile, TlaFile, TlaFileSuite, TlaTrace,
+    Artifact, ArtifactCreator, ArtifactSaver, JsonTrace, TlaConfigFile, TlaFile, TlaFileSuite,
+    TlaTrace,
 };
 use crate::Error;
 use clap::{AppSettings, Clap, Subcommand};
@@ -88,8 +92,8 @@ impl CliOptions {
 impl Modules {
     fn run(self) -> Result<JsonValue, Error> {
         // setup modelator
-        let options = crate::Options::default();
-        crate::setup(&options)?;
+        let runtime = crate::ModelatorRuntime::default();
+        runtime.setup()?;
 
         // run the subcommand
         match self {
@@ -119,14 +123,28 @@ impl TlaMethods {
     ) -> Result<JsonValue, Error> {
         let file_suite =
             TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)?;
-        let tests = crate::module::Tla::generate_tests(&file_suite)?;
+        let tests = crate::model::language::Tla::generate_tests(&file_suite)?;
         tracing::debug!("Tla::generate_tests output {:#?}", tests);
-        json_list_generated_tests(tests)
+
+        let dir = env::current_dir()?;
+
+        // Write the results, collect path names
+        let written_files = {
+            let mut ret = Vec::<(PathBuf, PathBuf)>::new();
+            for tla_test_suite in tests {
+                let tla_file_full_path = tla_test_suite.tla_file.try_write_to_dir(&dir)?;
+                let cfg_file_full_path = tla_test_suite.tla_config_file.try_write_to_dir(&dir)?;
+                ret.push((tla_file_full_path, cfg_file_full_path));
+            }
+            ret
+        };
+
+        json_list_generated_tests(written_files)
     }
 
     fn tla_trace_to_json_trace(tla_trace_file: String) -> Result<JsonValue, Error> {
         let tla_trace = TlaTrace::try_read_from_file(tla_trace_file)?;
-        let json_trace = crate::module::Tla::tla_trace_to_json_trace(tla_trace)?;
+        let json_trace = crate::model::language::Tla::tla_trace_to_json_trace(tla_trace)?;
         tracing::debug!("Tla::tla_trace_to_json_trace output {}", json_trace);
         write_json_trace_to_file(json_trace)
     }
@@ -144,11 +162,11 @@ impl ApalacheMethods {
     }
 
     fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
-        let options = crate::Options::default();
+        let runtime = crate::ModelatorRuntime::default();
         let input_artifacts =
             TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)?;
         let res = {
-            let mut ret = crate::module::Apalache::test(&input_artifacts, &options)?;
+            let mut ret = crate::model::checker::Apalache::test(&input_artifacts, &runtime)?;
             ret.0.extends_module_name = Some(input_artifacts.tla_file.module_name().to_string());
             ret
         };
@@ -157,12 +175,11 @@ impl ApalacheMethods {
     }
 
     fn parse(tla_file: String) -> Result<JsonValue, Error> {
-        let options = crate::Options::default();
-        let tla_file = TlaFile::try_read_from_file(tla_file)?;
-        let res = crate::module::Apalache::parse(tla_file, &options)?;
+        let runtime = crate::ModelatorRuntime::default();
+        let tla_file = TlaFileSuite::from_tla_path(tla_file)?;
+        let res = crate::model::checker::Apalache::parse(&tla_file, &runtime)?;
         tracing::debug!("Apalache::parse output {}", res.0);
-
-        json_parsed_tla_file(res.0)
+        write_parsed_tla_file_to_file(res.0)
     }
 }
 
@@ -177,11 +194,11 @@ impl TlcMethods {
     }
 
     fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
-        let options = crate::Options::default();
+        let runtime = crate::ModelatorRuntime::default();
         let input_artifacts =
             TlaFileSuite::from_tla_and_config_paths(tla_file_path, tla_config_file_path)?;
         let tla_trace = {
-            let mut ret = crate::module::Tlc::test(&input_artifacts, &options)?;
+            let mut ret = crate::model::checker::Tlc::test(&input_artifacts, &runtime)?;
             ret.0.extends_module_name = Some(input_artifacts.tla_file.module_name().to_string());
             //TODO: do something with log
             ret.0
@@ -192,18 +209,29 @@ impl TlcMethods {
 }
 
 #[allow(clippy::unnecessary_wraps)]
-fn json_list_generated_tests(tests: Vec<(TlaFile, TlaConfigFile)>) -> Result<JsonValue, Error> {
-    let json_array_entry = |tla_file: TlaFile, tla_config_file: TlaConfigFile| {
-        json!({
-            "tla_file": format!("{}", tla_file),
-            "tla_config_file": format!("{}", tla_config_file),
-        })
-    };
-    let json_array = tests
+fn json_list_generated_tests(test_files: Vec<(PathBuf, PathBuf)>) -> Result<JsonValue, Error> {
+    let json_array = test_files
         .into_iter()
-        .map(|(tla_file, tla_config_file)| json_array_entry(tla_file, tla_config_file))
+        .map(|(tla, cfg)| {
+            json!({
+                "tla_file": tla.into_os_string().into_string().unwrap(),
+                "tla_config_file": cfg.into_os_string().into_string().unwrap()
+            })
+        })
         .collect();
     Ok(JsonValue::Array(json_array))
+}
+
+#[allow(clippy::unnecessary_wraps)]
+fn write_parsed_tla_file_to_file(tla_file: TlaFile) -> Result<JsonValue, Error> {
+    // The parsed file is a TLA+ module with the same module name as the passed input module.
+    // Therefore we provide another name for the output.
+    let name = format!("{}Parsed.tla", tla_file.module_name());
+    let path = Path::new(&name);
+    tla_file.try_write_to_file(path)?;
+    Ok(json!({
+        "tla_file": crate::util::absolute_path(path),
+    }))
 }
 
 fn write_tla_trace_to_file(tla_trace: TlaTrace) -> Result<JsonValue, Error> {
@@ -221,12 +249,5 @@ fn write_json_trace_to_file(json_trace: JsonTrace) -> Result<JsonValue, Error> {
     json_trace.try_write_to_file(path)?;
     Ok(json!({
         "json_trace_file": crate::util::absolute_path(&path),
-    }))
-}
-
-#[allow(clippy::unnecessary_wraps)]
-fn json_parsed_tla_file(tla_file_parsed: TlaFile) -> Result<JsonValue, Error> {
-    Ok(json!({
-        "tla_file": format!("{}", tla_file_parsed),
     }))
 }

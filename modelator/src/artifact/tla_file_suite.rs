@@ -6,8 +6,23 @@ use super::tla_file::TlaFile;
 use super::{Artifact, ArtifactCreator, ArtifactSaver};
 use crate::Error;
 
-const STANDARD_MODULES: [&str; 3] = ["Integers", "Sequences", "FiniteSequences"];
+// https://github.com/tlaplus/tlaplus/tree/master/tlatools/org.lamport.tlatools/src/tla2sany/StandardModules
+const STANDARD_MODULES: [&str; 12] = [
+    "Bags",
+    "FiniteSets",
+    "Integers",
+    "Json",
+    "Naturals",
+    "Randomization",
+    "Reals",
+    "RealTime",
+    "Sequences",
+    "TLC",
+    "TLCExt",
+    "Toolbox",
+];
 
+/// TODO: split module and cfg into two parts and contain the main module and extended modules in module struct
 /// An in-memory representation of all the resources needed to perform model checking
 /// Includes the main .tla and .cfg files as well as depended on (via EXTENDS) .tla files.
 #[derive(Debug)]
@@ -73,14 +88,30 @@ impl TlaFileSuite {
     pub fn from_tla_and_config_paths<P: AsRef<std::path::Path>>(
         tla_file_path: P,
         config_file_path: P,
-    ) -> Result<TlaFileSuite, Error> {
+    ) -> Result<Self, Error> {
         let tla_file = TlaFile::try_read_from_file(&tla_file_path)?;
-        let tla_config_file = TlaConfigFile::try_read_from_file(config_file_path)?;
-        let dependencies = gather_dependencies(tla_file_path)?;
+        let mut tla_config_file = TlaConfigFile::try_read_from_file(config_file_path)?;
+        tla_config_file.set_path(std::path::Path::new(&format!(
+            "{}.cfg",
+            tla_file.module_name()
+        )));
+        let dependency_tla_files = gather_dependencies(tla_file_path)?;
         Ok(TlaFileSuite {
             tla_file,
             tla_config_file,
-            dependency_tla_files: dependencies,
+            dependency_tla_files,
+        })
+    }
+
+    /// Gather all resources from a main .tla without .cfg file
+    pub fn from_tla_path<P: AsRef<std::path::Path>>(tla_file_path: P) -> Result<Self, Error> {
+        let tla_file = TlaFile::try_read_from_file(&tla_file_path)?;
+        let tla_config_file = TlaConfigFile::from_string("")?;
+        let dependency_tla_files = gather_dependencies(tla_file_path)?;
+        Ok(TlaFileSuite {
+            tla_file,
+            tla_config_file,
+            dependency_tla_files,
         })
     }
 }
@@ -95,7 +126,9 @@ impl<'a> IntoIterator for &'a TlaFileSuite {
             ret.push(Box::new(f));
         }
         ret.push(Box::new(&self.tla_file));
-        ret.push(Box::new(&self.tla_config_file));
+        if !self.tla_config_file.content().is_empty() {
+            ret.push(Box::new(&self.tla_config_file));
+        }
         ret.into_iter()
     }
 }
