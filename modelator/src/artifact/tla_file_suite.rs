@@ -6,7 +6,20 @@ use super::tla_file::TlaFile;
 use super::{Artifact, ArtifactCreator, ArtifactSaver};
 use crate::Error;
 
-const STANDARD_MODULES: [&str; 3] = ["Integers", "Sequences", "FiniteSequences"];
+const STANDARD_MODULES: [&str; 12] = [
+    "Bags",
+    "FiniteSets",
+    "Integers",
+    "Json",
+    "Naturals",
+    "Randomization",
+    "Reals",
+    "RealTime",
+    "Sequences",
+    "TLC",
+    "TLCExt",
+    "Toolbox",
+];
 
 /// TODO: split module and cfg into two parts and contain the main module and extended modules in module struct
 /// An in-memory representation of all the resources needed to perform model checking
