@@ -408,7 +408,7 @@ impl ModelatorRuntime {
                             location,
                             system,
                         },
-                        other => other,
+                        TestError::Modelator(_) => op,
                     })
             })
             .collect())

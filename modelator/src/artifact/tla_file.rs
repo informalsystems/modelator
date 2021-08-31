@@ -19,7 +19,7 @@ impl TlaFile {
         &self.module_name
     }
 
-    /// Returns a base filename {module_name}.tla
+    /// Returns a base filename `{module_name}.tla`
     pub fn file_name(&self) -> String {
         format!("{}.tla", &self.module_name)
     }
@@ -68,7 +68,7 @@ struct ModuleNameParseError;
 
 fn module_name(file_content: &str) -> Result<String, ModuleNameParseError> {
     let substr = "MODULE";
-    for line in file_content.split('\n').into_iter() {
+    for line in file_content.split('\n') {
         if line.contains(substr) {
             let segments = line.split_whitespace().collect::<Vec<&str>>();
             if segments.len() != 4 {

@@ -146,7 +146,7 @@ impl TlaMethods {
         let tla_trace = TlaTrace::try_read_from_file(tla_trace_file)?;
         let json_trace = crate::model::language::Tla::tla_trace_to_json_trace(tla_trace)?;
         tracing::debug!("Tla::tla_trace_to_json_trace output {}", json_trace);
-        write_json_trace_to_file(json_trace)
+        write_json_trace_to_file(&json_trace)
     }
 }
 
@@ -171,7 +171,7 @@ impl ApalacheMethods {
             ret
         };
         tracing::debug!("Apalache::test output {}", res.0);
-        write_tla_trace_to_file(res.0)
+        write_tla_trace_to_file(&res.0)
     }
 
     fn parse(tla_file: String) -> Result<JsonValue, Error> {
@@ -179,7 +179,7 @@ impl ApalacheMethods {
         let tla_file = TlaFileSuite::from_tla_path(tla_file)?;
         let res = crate::model::checker::Apalache::parse(&tla_file, &runtime)?;
         tracing::debug!("Apalache::parse output {}", res.0);
-        write_parsed_tla_file_to_file(res.0)
+        write_parsed_tla_file_to_file(&res.0)
     }
 }
 
@@ -204,7 +204,7 @@ impl TlcMethods {
             ret.0
         };
         tracing::debug!("Tlc::test output {}", tla_trace);
-        write_tla_trace_to_file(tla_trace)
+        write_tla_trace_to_file(&tla_trace)
     }
 }
 
@@ -223,7 +223,7 @@ fn json_list_generated_tests(test_files: Vec<(PathBuf, PathBuf)>) -> Result<Json
 }
 
 #[allow(clippy::unnecessary_wraps)]
-fn write_parsed_tla_file_to_file(tla_file: TlaFile) -> Result<JsonValue, Error> {
+fn write_parsed_tla_file_to_file(tla_file: &TlaFile) -> Result<JsonValue, Error> {
     // The parsed file is a TLA+ module with the same module name as the passed input module.
     // Therefore we provide another name for the output.
     let name = format!("{}Parsed.tla", tla_file.module_name());
@@ -234,7 +234,7 @@ fn write_parsed_tla_file_to_file(tla_file: TlaFile) -> Result<JsonValue, Error> 
     }))
 }
 
-fn write_tla_trace_to_file(tla_trace: TlaTrace) -> Result<JsonValue, Error> {
+fn write_tla_trace_to_file(tla_trace: &TlaTrace) -> Result<JsonValue, Error> {
     // TODO: hardcoded!
     let path = Path::new("trace.tla");
     tla_trace.try_write_to_file(path)?;
@@ -243,7 +243,7 @@ fn write_tla_trace_to_file(tla_trace: TlaTrace) -> Result<JsonValue, Error> {
     }))
 }
 
-fn write_json_trace_to_file(json_trace: JsonTrace) -> Result<JsonValue, Error> {
+fn write_json_trace_to_file(json_trace: &JsonTrace) -> Result<JsonValue, Error> {
     // TODO: hardcoded!
     let path = Path::new("trace.json");
     json_trace.try_write_to_file(path)?;

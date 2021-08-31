@@ -5,7 +5,7 @@ use crate::Error;
 use std::collections::HashMap;
 
 // TODO: don't need entire options object
-pub(crate) fn parse(output: String, runtime: &ModelCheckerRuntime) -> Result<Vec<TlaTrace>, Error> {
+pub(crate) fn parse(output: &str, runtime: &ModelCheckerRuntime) -> Result<Vec<TlaTrace>, Error> {
     let mut parsed_output: HashMap<u8, HashMap<usize, Vec<String>>> = HashMap::new();
 
     let mut curr_message_id = None;
@@ -48,7 +48,7 @@ pub(crate) fn parse(output: String, runtime: &ModelCheckerRuntime) -> Result<Vec
             if line.starts_with("1: <Initial predicate>") {
                 // start of new trace
                 if let Some(t) = trace.take() {
-                    traces.push(t)
+                    traces.push(t);
                 }
                 trace = Some(TlaTrace::new());
             }
@@ -58,7 +58,7 @@ pub(crate) fn parse(output: String, runtime: &ModelCheckerRuntime) -> Result<Vec
         }
         // last trace
         if let Some(t) = trace.take() {
-            traces.push(t)
+            traces.push(t);
         }
         Ok(traces)
     } else if let Some(errors) = parsed_output.get(&1) {

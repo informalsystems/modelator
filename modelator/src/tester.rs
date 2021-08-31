@@ -178,7 +178,7 @@ where
         Box::new(move |info| {
             let mut result = result.lock().unwrap();
             let message = match info.payload().downcast_ref::<&'static str>() {
-                Some(s) => s.to_string(),
+                Some(&s) => s.to_string(),
                 None => match info.payload().downcast_ref::<String>() {
                     Some(s) => s.clone(),
                     None => "Unknown error".to_string(),

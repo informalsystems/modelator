@@ -24,7 +24,7 @@ impl TlaConfigFile {
         // TODO:  this with value derived from internal repr
         let res = self.path.as_path().file_name();
         if res.is_none() {
-            panic!("TODO: tla config file should not fail to provide filename")
+            panic!("TODO: tla config file should not fail to provide filename");
         }
         return res.unwrap().to_str().unwrap().to_owned();
     }
@@ -41,7 +41,7 @@ impl TlaConfigFile {
 
     /// Set path
     pub fn set_path(&mut self, path: &Path) {
-        self.path = path.into()
+        self.path = path.into();
     }
 }
 

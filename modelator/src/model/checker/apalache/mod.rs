@@ -85,7 +85,7 @@ impl Apalache {
         // Read the  apalache counterexample from disk and parse a trace from it
         let counterexample_path = tdir.into_path().join("counterexample.tla");
         if !counterexample_path.is_file() {
-            panic!("[modelator] expected to find Apalache's counterexample.tla file")
+            panic!("[modelator] expected to find Apalache's counterexample.tla file");
         }
         let counterexample: TlaFile = TlaFile::try_read_from_file(counterexample_path)?;
         tracing::debug!("Apalache counterexample:\n{}", counterexample);

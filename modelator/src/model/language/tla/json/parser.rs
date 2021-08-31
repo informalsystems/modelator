@@ -154,7 +154,7 @@ fn parse_function(i: &str) -> IResult<&str, JsonValue> {
             JsonValue::Object(
                 values
                     .into_iter()
-                    .map(|value| {
+                    .flat_map(|value| {
                         value
                             .as_object()
                             .unwrap()
@@ -162,7 +162,6 @@ fn parse_function(i: &str) -> IResult<&str, JsonValue> {
                             .map(|(k, v)| (k.clone(), v.clone()))
                             .collect::<Vec<_>>()
                     })
-                    .flatten()
                     .collect(),
             )
         },
