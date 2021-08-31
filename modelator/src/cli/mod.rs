@@ -1,4 +1,5 @@
 use std::env;
+use std::fmt::write;
 use std::path::PathBuf;
 // CLI output.
 pub(crate) mod output;
@@ -179,7 +180,12 @@ impl ApalacheMethods {
         let res = crate::model::checker::Apalache::parse(&tla_file, &options)?;
         tracing::debug!("Apalache::parse output {}", res.0);
 
-        json_parsed_tla_file(res.0)
+        let dir = env::current_dir()?;
+        // The parsed file is a TLA+ module with the same module name as the passed input module.
+        // Therefore we provide another name for the output.
+        let write_path = Path::join(&dir, format!("{}Parsed.tla", res.0.module_name()));
+        res.0.try_write_to_file(&write_path)?;
+        json_parsed_tla_file(write_path)
     }
 }
 
@@ -222,6 +228,13 @@ fn json_list_generated_tests(test_files: Vec<(PathBuf, PathBuf)>) -> Result<Json
     Ok(JsonValue::Array(json_array))
 }
 
+#[allow(clippy::unnecessary_wraps)]
+fn json_parsed_tla_file(tla_file_parsed: PathBuf) -> Result<JsonValue, Error> {
+    Ok(json!({
+        "tla_file": format!("{}", tla_file_parsed.into_os_string().into_string().unwrap()),
+    }))
+}
+
 fn write_tla_trace_to_file(tla_trace: TlaTrace) -> Result<JsonValue, Error> {
     // TODO: hardcoded!
     let path = Path::new("trace.tla");
@@ -237,12 +250,5 @@ fn write_json_trace_to_file(json_trace: JsonTrace) -> Result<JsonValue, Error> {
     json_trace.try_write_to_file(path)?;
     Ok(json!({
         "json_trace_file": crate::util::absolute_path(&path),
-    }))
-}
-
-#[allow(clippy::unnecessary_wraps)]
-fn json_parsed_tla_file(tla_file_parsed: TlaFile) -> Result<JsonValue, Error> {
-    Ok(json!({
-        "tla_file": format!("{}", tla_file_parsed),
     }))
 }
