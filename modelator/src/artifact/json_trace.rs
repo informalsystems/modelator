@@ -42,12 +42,6 @@ impl std::fmt::Display for JsonTrace {
     }
 }
 
-impl ArtifactCreator for JsonTrace {
-    fn from_string(_s: &str) -> Result<Self, Error> {
-        todo!()
-    }
-}
-
 impl Artifact for JsonTrace {
     fn as_string(&self) -> String {
         serde_json::to_string_pretty(&self.states)
