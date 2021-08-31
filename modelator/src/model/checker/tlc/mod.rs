@@ -122,15 +122,24 @@ fn test_cmd<P: AsRef<Path>>(
     let tla2tools = jar::Jar::Tla.path(&runtime.dir);
     let community_modules = jar::Jar::CommunityModules.path(&runtime.dir);
 
+    let path_seperator_char = match std::path::MAIN_SEPARATOR {
+        '/' => ":",
+        '\\' => ";",
+        // use unreachable_unchecked
+        _ => unreachable!("should not be reachable"),
+    };
+
     let mut cmd = Command::new("java");
     cmd.current_dir(temp_dir)
         // set classpath
         .arg("-cp")
-        .arg(format!(
-            "{}:{}",
-            tla2tools.as_path().to_string_lossy(),
-            community_modules.as_path().to_string_lossy(),
-        ))
+        .arg(
+            [
+                tla2tools.as_path().to_string_lossy(),
+                community_modules.as_path().to_string_lossy(),
+            ]
+            .join(path_seperator_char),
+        )
         // set tla file
         .arg("tlc2.TLC")
         .arg(tla_file.as_ref())
