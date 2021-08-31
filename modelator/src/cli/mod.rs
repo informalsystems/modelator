@@ -214,8 +214,8 @@ fn json_list_generated_tests(test_files: Vec<(PathBuf, PathBuf)>) -> Result<Json
         .into_iter()
         .map(|(tla, cfg)| {
             json!({
-                "tla_file": format!("{}", tla.into_os_string().into_string().unwrap()),
-                "tla_config_file": format!("{}", cfg.into_os_string().into_string().unwrap()),
+                "tla_file": tla.into_os_string().into_string().unwrap(),
+                "tla_config_file": cfg.into_os_string().into_string().unwrap()
             })
         })
         .collect();
@@ -228,9 +228,9 @@ fn write_parsed_tla_file_to_file(tla_file: TlaFile) -> Result<JsonValue, Error> 
     // Therefore we provide another name for the output.
     let name = format!("{}Parsed.tla", tla_file.module_name());
     let path = Path::new(&name);
-    tla_file.try_write_to_file(&path)?;
+    tla_file.try_write_to_file(path)?;
     Ok(json!({
-        "tla_file": format!("{}", crate::util::absolute_path(&path)),
+        "tla_file": crate::util::absolute_path(path),
     }))
 }
 
