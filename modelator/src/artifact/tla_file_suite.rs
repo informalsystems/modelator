@@ -96,7 +96,7 @@ impl TlaFileSuite {
             tla_file.module_name()
         )));
         let dependency_tla_files = gather_dependencies(tla_file_path)?;
-        Ok(TlaFileSuite {
+        Ok(Self {
             tla_file,
             tla_config_file,
             dependency_tla_files,
@@ -108,7 +108,7 @@ impl TlaFileSuite {
         let tla_file = TlaFile::try_read_from_file(&tla_file_path)?;
         let tla_config_file = TlaConfigFile::from_string("")?;
         let dependency_tla_files = gather_dependencies(tla_file_path)?;
-        Ok(TlaFileSuite {
+        Ok(Self {
             tla_file,
             tla_config_file,
             dependency_tla_files,

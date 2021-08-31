@@ -55,14 +55,14 @@ fn try_extract_error_reason(apalache_stdout: &str) -> Option<String> {
 }
 
 impl ApalacheError {
-    pub(crate) fn new(apalache_stdout: &str) -> ApalacheError {
+    pub(crate) fn new(apalache_stdout: &str) -> Self {
         let summary = match try_extract_error_reason(apalache_stdout) {
             Some(line) => line,
             None => {
                 "(Modelator) unable to parse reason for error from Apalache output.".to_string()
             }
         };
-        ApalacheError {
+        Self {
             summary,
             stdout: apalache_stdout.to_string(),
         }

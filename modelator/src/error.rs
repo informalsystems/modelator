@@ -75,19 +75,19 @@ pub enum Error {
 
 impl From<std::io::Error> for Error {
     fn from(err: std::io::Error) -> Self {
-        Error::IO(err.to_string())
+        Self::IO(err.to_string())
     }
 }
 
 impl From<ureq::Error> for Error {
     fn from(err: ureq::Error) -> Self {
-        Error::Ureq(err.to_string())
+        Self::Ureq(err.to_string())
     }
 }
 
 impl From<nom::Err<nom::error::Error<&str>>> for Error {
     fn from(err: nom::Err<nom::error::Error<&str>>) -> Self {
-        Error::Nom(err.to_string())
+        Self::Nom(err.to_string())
     }
 }
 

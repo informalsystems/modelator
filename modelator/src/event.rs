@@ -60,14 +60,14 @@ pub struct EventStream {
 
 impl Default for EventStream {
     fn default() -> Self {
-        EventStream::new()
+        Self::new()
     }
 }
 
 impl EventStream {
     /// Create a new event stream.
-    pub fn new() -> EventStream {
-        EventStream { events: vec![] }
+    pub const fn new() -> Self {
+        Self { events: vec![] }
     }
 
     /// Add an initial abstract state to the event stream.
@@ -201,7 +201,7 @@ impl IntoIterator for EventStream {
 
 impl From<JsonTrace> for EventStream {
     fn from(trace: JsonTrace) -> Self {
-        let mut events = EventStream::new();
+        let mut events = Self::new();
         for (index, value) in trace.into_iter().enumerate() {
             if index == 0 {
                 events.add_init(value);
@@ -236,14 +236,14 @@ pub struct EventRunner<System: Debug> {
 
 impl<System: Debug> Default for EventRunner<System> {
     fn default() -> Self {
-        EventRunner::new()
+        Self::new()
     }
 }
 
 impl<System: Debug> EventRunner<System> {
     /// Create a new runner for the given `System`.
     pub fn new() -> Self {
-        EventRunner {
+        Self {
             inits: SystemTester::new(),
             actions: SystemTester::new(),
             checks: SystemTester::new(),

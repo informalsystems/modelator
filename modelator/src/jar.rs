@@ -26,7 +26,7 @@ impl Jar {
         modelator_dir.as_ref().join(self.file_name())
     }
 
-    fn file_name(&self) -> &str {
+    const fn file_name(&self) -> &str {
         match self {
             Self::Tla => TLA_JAR,
             Self::CommunityModules => COMMUNITY_MODULES_JAR,

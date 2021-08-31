@@ -30,7 +30,7 @@ impl TlaConfigFile {
     }
 
     /// Returns the path to the TLA+ config file.
-    pub fn path(&self) -> &PathBuf {
+    pub const fn path(&self) -> &PathBuf {
         &self.path
     }
 
@@ -54,7 +54,7 @@ impl std::fmt::Display for TlaConfigFile {
 impl ArtifactCreator for TlaConfigFile {
     /// Create a new instance from a file content string.
     fn from_string(s: &str) -> Result<Self, Error> {
-        Ok(TlaConfigFile {
+        Ok(Self {
             path: PathBuf::new(),
             content: s.to_string(),
         })

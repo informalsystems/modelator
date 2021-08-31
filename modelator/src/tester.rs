@@ -36,14 +36,14 @@ pub struct SimpleTester {
 
 impl Default for SimpleTester {
     fn default() -> Self {
-        SimpleTester::new()
+        Self::new()
     }
 }
 
 impl SimpleTester {
     /// Create a new tester.
-    pub fn new() -> SimpleTester {
-        SimpleTester { tests: vec![] }
+    pub fn new() -> Self {
+        Self { tests: vec![] }
     }
 
     /// Add a test function to the tester.
@@ -107,14 +107,14 @@ pub struct SystemTester<State> {
 
 impl<'a, State> Default for SystemTester<State> {
     fn default() -> Self {
-        SystemTester::new()
+        Self::new()
     }
 }
 
 impl<State> SystemTester<State> {
     /// Create a new tester.
-    pub fn new() -> SystemTester<State> {
-        SystemTester { tests: vec![] }
+    pub fn new() -> Self {
+        Self { tests: vec![] }
     }
 
     /// Add a test function to the tester.

@@ -150,7 +150,7 @@ pub struct Recipe {
 
 impl Default for Recipe {
     fn default() -> Self {
-        Recipe::new()
+        Self::new()
     }
 }
 

@@ -36,8 +36,8 @@ impl TlaTrace {
         self.states.is_empty()
     }
 
-    pub(crate) fn new() -> TlaTrace {
-        TlaTrace {
+    pub(crate) fn new() -> Self {
+        Self {
             states: Vec::new(),
             extends_module_name: None,
             file_contents_backing: "".to_owned(),
@@ -90,7 +90,7 @@ impl ArtifactCreator for TlaTrace {
             "some consecutive states are missing in .tla trace"
         );
 
-        let mut trace = TlaTrace::new();
+        let mut trace = Self::new();
         states
             .into_iter()
             .for_each(|(_, state)| trace.add(state.into()));

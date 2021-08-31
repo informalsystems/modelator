@@ -14,7 +14,7 @@ pub struct NumberSystem {
 
 impl Default for NumberSystem {
     fn default() -> Self {
-        NumberSystem {
+        Self {
             a: 0,
             b: 0,
             sum: 0,
