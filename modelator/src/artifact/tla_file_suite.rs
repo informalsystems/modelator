@@ -47,12 +47,7 @@ fn find_dependencies(tla_module_path: impl AsRef<std::path::Path>) -> Result<Vec
     Ok(content
         .lines()
         .filter(|line| line.starts_with("EXTENDS"))
-        .map(|line| {
-            line.trim_start_matches("EXTENDS")
-                .split(',')
-                .map(|module_name| module_name.trim())
-        })
-        .flatten()
+        .flat_map(|line| line.trim_start_matches("EXTENDS").split(',').map(str::trim))
         .filter(|module_name| !STANDARD_MODULES.contains(module_name))
         .map(|module_name| current_directory.join(format!("{}.tla", module_name)))
         .collect())
@@ -96,7 +91,7 @@ impl TlaFileSuite {
             tla_file.module_name()
         )));
         let dependency_tla_files = gather_dependencies(tla_file_path)?;
-        Ok(TlaFileSuite {
+        Ok(Self {
             tla_file,
             tla_config_file,
             dependency_tla_files,
@@ -108,7 +103,7 @@ impl TlaFileSuite {
         let tla_file = TlaFile::try_read_from_file(&tla_file_path)?;
         let tla_config_file = TlaConfigFile::from_string("")?;
         let dependency_tla_files = gather_dependencies(tla_file_path)?;
-        Ok(TlaFileSuite {
+        Ok(Self {
             tla_file,
             tla_config_file,
             dependency_tla_files,

@@ -8,8 +8,8 @@ pub struct ModelCheckerStdout {
 }
 
 impl ModelCheckerStdout {
-    fn new(s: &str) -> ModelCheckerStdout {
-        ModelCheckerStdout {
+    fn new(s: &str) -> Self {
+        Self {
             backing_str: s.to_string(),
         }
     }
@@ -24,7 +24,7 @@ impl std::fmt::Display for ModelCheckerStdout {
 
 impl ArtifactCreator for ModelCheckerStdout {
     fn from_string(s: &str) -> Result<Self, Error> {
-        Ok(ModelCheckerStdout::new(s))
+        Ok(Self::new(s))
     }
 }
 

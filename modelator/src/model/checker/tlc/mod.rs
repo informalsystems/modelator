@@ -17,8 +17,8 @@ pub struct Tlc;
 impl Tlc {
     /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
     ///
-    /// Generate a TLA+ trace given a [TlaFile] and a [TlaConfigFile] produced
-    /// by [crate::model::language::Tla::generate_tests].
+    /// Generate a TLA+ trace given a [`TlaFile`] and a [`TlaConfigFile`] produced
+    /// by [`crate::model::language::Tla::generate_tests`].
     ///
     /// # Examples
     /// ```ignore
@@ -79,7 +79,7 @@ impl Tlc {
             (false, true) => {
                 let tlc_log = ModelCheckerStdout::from_string(&stdout)?;
 
-                let mut traces = output::parse(stdout, &runtime.model_checker_runtime)?;
+                let mut traces = output::parse(&stdout, &runtime.model_checker_runtime)?;
 
                 // check if no trace was found
                 if traces.is_empty() {

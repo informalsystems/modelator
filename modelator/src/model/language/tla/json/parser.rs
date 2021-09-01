@@ -154,7 +154,7 @@ fn parse_function(i: &str) -> IResult<&str, JsonValue> {
             JsonValue::Object(
                 values
                     .into_iter()
-                    .map(|value| {
+                    .flat_map(|value| {
                         value
                             .as_object()
                             .unwrap()
@@ -162,7 +162,6 @@ fn parse_function(i: &str) -> IResult<&str, JsonValue> {
                             .map(|(k, v)| (k.clone(), v.clone()))
                             .collect::<Vec<_>>()
                     })
-                    .flatten()
                     .collect(),
             )
         },
@@ -280,13 +279,13 @@ mod tests {
         }
     }
 
-    fn booleans_and_numbers_state_without_first_logical_and() -> &'static str {
+    const fn booleans_and_numbers_state_without_first_logical_and() -> &'static str {
         r#"
             empty_set = {} /\ set = {1, 2, 3} /\ pos_number = 1 /\ neg_number = -1 /\ bool = TRUE
         "#
     }
 
-    fn booleans_and_numbers_state() -> &'static str {
+    const fn booleans_and_numbers_state() -> &'static str {
         r#"
             /\ empty_set = {}
             /\ set = {1, 2, 3}
@@ -306,7 +305,7 @@ mod tests {
         })
     }
 
-    fn sets_state() -> &'static str {
+    const fn sets_state() -> &'static str {
         r#"
             /\ empty_set = {}
             /\ set = {1, 2, 3}
@@ -326,7 +325,7 @@ mod tests {
         })
     }
 
-    fn sequences_state() -> &'static str {
+    const fn sequences_state() -> &'static str {
         r#"
             /\ empty_seq = <<>>
             /\ seq = <<1, 2, 3>>
@@ -346,7 +345,7 @@ mod tests {
         })
     }
 
-    fn records_state() -> &'static str {
+    const fn records_state() -> &'static str {
         r#"
             /\ record = (t1 :> "-" @@ t2 :> "-")
             /\ mix = (set :> {-1, -2, 3} @@ number :> 99)
@@ -366,7 +365,7 @@ mod tests {
         })
     }
 
-    fn functions_state() -> &'static str {
+    const fn functions_state() -> &'static str {
         r#"
             /\ function = [t1 |-> "-", t2 |-> "-"]
             /\ mix = [set |-> {-1, -2, 3}, number |-> 99]
@@ -386,8 +385,8 @@ mod tests {
         })
     }
 
-    /// The tests that follow are translated from some of the tests in https://github.com/japgolly/tla2json
-    fn state1() -> &'static str {
+    /// The tests that follow are translated from some of the tests in <https://github.com/japgolly/tla2json>
+    const fn state1() -> &'static str {
         r#"
             /\ browsers = (b1 :> << >>)
             /\ network = <<>>
@@ -423,7 +422,7 @@ mod tests {
         })
     }
 
-    fn state2() -> &'static str {
+    const fn state2() -> &'static str {
         r#"
 /\ tabs = ( t1 :> [status |-> "-"] @@
   t2 :>
@@ -477,7 +476,7 @@ mod tests {
         })
     }
 
-    fn state3() -> &'static str {
+    const fn state3() -> &'static str {
         r#"
 /\ tabs = ( t1 :>
       [ drafts |-> {},
@@ -555,7 +554,7 @@ mod tests {
         })
     }
 
-    fn state4() -> &'static str {
+    const fn state4() -> &'static str {
         r#"
 /\ tabs = ( t1 :> [drafts |-> {}, worker |-> w2, status |-> "loading", awaiting |-> {}] @@
   t2 :> [worker |-> w1, status |-> "clean"] )
@@ -579,7 +578,7 @@ mod tests {
         })
     }
 
-    fn state5() -> &'static str {
+    const fn state5() -> &'static str {
         r#"
 /\ network = << [ drafts |-> {},
      type |-> "sync:T->W",

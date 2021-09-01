@@ -15,7 +15,7 @@ pub struct Tla;
 impl Tla {
     /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
     ///
-    /// Convert a [TlaTrace] into a [JsonTrace].
+    /// Convert a [`TlaTrace`] into a [`JsonTrace`].
     ///
     /// # Examples
     /// ```ignore
@@ -46,8 +46,8 @@ impl Tla {
 
     /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
     ///
-    /// Generate TLA+ test and config files given a [TlaFile] containing TLA+
-    /// test assertions and a [TlaConfigFile].
+    /// Generate TLA+ test and config files given a [`TlaFile`] containing TLA+
+    /// test assertions and a [`TlaConfigFile`].
     ///
     /// # Examples
     /// ```ignore
@@ -71,7 +71,7 @@ impl Tla {
         let tla_tests_module_name = tla_file_suite.tla_file.module_name();
 
         // retrieve test names from tla tests file
-        let test_names = extract_test_names(tla_file_suite.tla_file.file_contents_backing())?;
+        let test_names = extract_test_names(tla_file_suite.tla_file.file_contents_backing());
 
         tracing::debug!(
             "test names extracted from {}:\n{:?}",
@@ -92,9 +92,8 @@ impl Tla {
     }
 }
 
-fn extract_test_names(tla_tests_file_content: &str) -> Result<Vec<String>, Error> {
-    //TODO: Error is never returned here so why type it
-    let test_names = tla_tests_file_content
+fn extract_test_names(tla_tests_file_content: &str) -> Vec<String> {
+    tla_tests_file_content
         .lines()
         .filter_map(|line| {
             // take the first element in the split
@@ -113,9 +112,7 @@ fn extract_test_names(tla_tests_file_content: &str) -> Result<Vec<String>, Error
                 None
             }
         })
-        .collect();
-
-    Ok(test_names)
+        .collect()
 }
 
 fn generate_test(test_name: &str, tla_file_suite: &TlaFileSuite) -> Result<TlaFileSuite, Error> {

@@ -19,7 +19,7 @@ impl TlaFile {
         &self.module_name
     }
 
-    /// Returns a base filename {module_name}.tla
+    /// Returns a base filename `{module_name}.tla`
     pub fn file_name(&self) -> String {
         format!("{}.tla", &self.module_name)
     }
@@ -36,7 +36,7 @@ impl ArtifactCreator for TlaFile {
     fn from_string(s: &str) -> Result<Self, Error> {
         match module_name(s) {
             Err(_) => Err(Error::MissingTlaFileModuleName(s.to_string())),
-            Ok(name) => Ok(TlaFile {
+            Ok(name) => Ok(Self {
                 file_contents_backing: s.to_string(),
                 module_name: name,
             }),
@@ -68,7 +68,7 @@ struct ModuleNameParseError;
 
 fn module_name(file_content: &str) -> Result<String, ModuleNameParseError> {
     let substr = "MODULE";
-    for line in file_content.split('\n').into_iter() {
+    for line in file_content.split('\n') {
         if line.contains(substr) {
             let segments = line.split_whitespace().collect::<Vec<&str>>();
             if segments.len() != 4 {

@@ -24,13 +24,13 @@ impl TlaConfigFile {
         // TODO:  this with value derived from internal repr
         let res = self.path.as_path().file_name();
         if res.is_none() {
-            panic!("TODO: tla config file should not fail to provide filename")
+            panic!("TODO: tla config file should not fail to provide filename");
         }
         return res.unwrap().to_str().unwrap().to_owned();
     }
 
     /// Returns the path to the TLA+ config file.
-    pub fn path(&self) -> &PathBuf {
+    pub const fn path(&self) -> &PathBuf {
         &self.path
     }
 
@@ -41,7 +41,7 @@ impl TlaConfigFile {
 
     /// Set path
     pub fn set_path(&mut self, path: &Path) {
-        self.path = path.into()
+        self.path = path.into();
     }
 }
 
@@ -54,7 +54,7 @@ impl std::fmt::Display for TlaConfigFile {
 impl ArtifactCreator for TlaConfigFile {
     /// Create a new instance from a file content string.
     fn from_string(s: &str) -> Result<Self, Error> {
-        Ok(TlaConfigFile {
+        Ok(Self {
             path: PathBuf::new(),
             content: s.to_string(),
         })

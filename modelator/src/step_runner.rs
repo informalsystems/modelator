@@ -4,7 +4,7 @@ use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 
 /// A `StepRunner` drives a SUT by executing a series of steps
-/// (see [crate::ModelatorRuntime::run_tla_steps]).
+/// (see [`crate::ModelatorRuntime::run_tla_steps`]).
 pub trait StepRunner<Step: DeserializeOwned + Debug + Clone> {
     /// Executes the first step against  the runner.
     fn initial_step(&mut self, step: Step) -> Result<(), String>;

@@ -28,13 +28,13 @@ pub struct ModelCheckerRuntime {
 
 impl ModelCheckerRuntime {
     /// Set the model checker.
-    pub fn model_checker(mut self, model_checker: ModelChecker) -> Self {
+    pub const fn model_checker(mut self, model_checker: ModelChecker) -> Self {
         self.model_checker = model_checker;
         self
     }
 
     /// Set number of model checker workers.
-    pub fn workers(mut self, workers: ModelCheckerWorkers) -> Self {
+    pub const fn workers(mut self, workers: ModelCheckerWorkers) -> Self {
         self.workers = workers;
         self
     }

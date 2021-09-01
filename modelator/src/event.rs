@@ -60,18 +60,18 @@ pub struct EventStream {
 
 impl Default for EventStream {
     fn default() -> Self {
-        EventStream::new()
+        Self::new()
     }
 }
 
 impl EventStream {
     /// Create a new event stream.
-    pub fn new() -> EventStream {
-        EventStream { events: vec![] }
+    pub const fn new() -> Self {
+        Self { events: vec![] }
     }
 
     /// Add an initial abstract state to the event stream.
-    /// [StateHandler::init] should handle this event and
+    /// [`StateHandler::init`] should handle this event and
     /// initialize the concrete system state from it.
     /// Modifies the caller.
     pub fn add_init<T>(&mut self, state: T)
@@ -82,7 +82,7 @@ impl EventStream {
     }
 
     /// Add an initial abstract state to the event stream.
-    /// [StateHandler::init] should handle this event and
+    /// [`StateHandler::init`] should handle this event and
     /// initialize the concrete system state from it.
     /// Produces the modified version of the caller,
     /// allowing to chain the events.
@@ -95,7 +95,7 @@ impl EventStream {
     }
 
     /// Add an abstract action to the event stream.
-    /// [ActionHandler::handle] should handle the action and
+    /// [`ActionHandler::handle`] should handle the action and
     /// modify the concrete system state accordingly.
     /// Modifies the caller.
     pub fn add_action<T>(&mut self, action: T)
@@ -106,7 +106,7 @@ impl EventStream {
     }
 
     /// Add an abstract action to the event stream.
-    /// [ActionHandler::handle] should handle the action and
+    /// [`ActionHandler::handle`] should handle the action and
     /// modify the concrete system state accordingly.
     /// Produces the modified version of the caller,
     /// allowing to chain the events.
@@ -119,7 +119,7 @@ impl EventStream {
     }
 
     /// Add the check for the previous action outcome to the event stream.
-    /// [ActionHandler::handle] to which the previous actions was dispatched,
+    /// [`ActionHandler::handle`] to which the previous actions was dispatched,
     /// should produce exactly this outcome.
     /// Modifies the caller.
     pub fn add_expect<T>(&mut self, outcome: T)
@@ -132,7 +132,7 @@ impl EventStream {
     }
 
     /// Add the check for the previous action outcome to the event stream.
-    /// [ActionHandler::handle] to which the previous actions was dispatched,
+    /// [`ActionHandler::handle`] to which the previous actions was dispatched,
     /// should produce exactly this outcome.
     /// Produces the modified version of the caller,
     /// allowing to chain the events.
@@ -145,7 +145,7 @@ impl EventStream {
     }
 
     /// Add the assertion about the abstract system state to the event stream.
-    /// The check is executed against the state returned by [StateHandler::read].
+    /// The check is executed against the state returned by [`StateHandler::read`].
     /// Modifies the caller.
     pub fn add_check<T>(&mut self, assertion: fn(T))
     where
@@ -155,7 +155,7 @@ impl EventStream {
     }
 
     /// Add the assertion about the abstract system state to the event stream.
-    /// The check is executed against the state returned by [StateHandler::read].
+    /// The check is executed against the state returned by [`StateHandler::read`].
     /// Produces the modified version of the caller,
     /// allowing to chain the events.
     pub fn check<T>(mut self, assertion: fn(T)) -> Self
@@ -167,7 +167,7 @@ impl EventStream {
     }
 
     /// Add the expectation about the abstract system state to the event stream.
-    /// The abstract state returned by [StateHandler::read] should exactly match.
+    /// The abstract state returned by [`StateHandler::read`] should exactly match.
     /// Modifies the caller.
     pub fn add_equal<T>(&mut self, state: T)
     where
@@ -177,7 +177,7 @@ impl EventStream {
     }
 
     /// Add the expectation about the abstract system state to the event stream.
-    /// The abstract state returned by [StateHandler::read] should exactly match.
+    /// The abstract state returned by [`StateHandler::read`] should exactly match.
     /// Modifies the caller.
     /// Produces the modified version of the caller,
     /// allowing to chain the events.
@@ -201,7 +201,7 @@ impl IntoIterator for EventStream {
 
 impl From<JsonTrace> for EventStream {
     fn from(trace: JsonTrace) -> Self {
-        let mut events = EventStream::new();
+        let mut events = Self::new();
         for (index, value) in trace.into_iter().enumerate() {
             if index == 0 {
                 events.add_init(value);
@@ -236,14 +236,14 @@ pub struct EventRunner<System: Debug> {
 
 impl<System: Debug> Default for EventRunner<System> {
     fn default() -> Self {
-        EventRunner::new()
+        Self::new()
     }
 }
 
 impl<System: Debug> EventRunner<System> {
     /// Create a new runner for the given `System`.
     pub fn new() -> Self {
-        EventRunner {
+        Self {
             inits: SystemTester::new(),
             actions: SystemTester::new(),
             checks: SystemTester::new(),

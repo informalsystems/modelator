@@ -9,7 +9,7 @@ use crate::Error;
 use std::path::{Path, PathBuf};
 use std::str;
 
-/// Try to write each artifact in any object implementing into_iter for Artifacts to the given directory
+/// Try to write each artifact in any object implementing `into_iter` for Artifacts to the given directory
 pub fn try_write_to_dir<'a, P: AsRef<Path>, C>(dir: P, collection: C) -> Result<(), Error>
 where
     C: IntoIterator<Item = Box<&'a dyn ArtifactSaver>>,
@@ -44,7 +44,7 @@ pub trait Artifact {
     /// Returns a string representation.
     fn as_string(&self) -> String;
 
-    /// Tries to write the contents to path using the result of as_string.
+    /// Tries to write the contents to path using the result of `as_string`.
     fn try_write_to_file(&self, path: &Path) -> Result<(), Error> {
         Ok(std::fs::write(path, self.as_string())?)
     }

@@ -23,8 +23,8 @@ pub struct Apalache;
 impl Apalache {
     /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
     ///
-    /// Generate a TLA+ trace given a [TlaFile] and a [TlaConfigFile] produced
-    /// by [crate::model::language::Tla::generate_tests].
+    /// Generate a TLA+ trace given a [`TlaFile`] and a [`TlaConfigFile`] produced
+    /// by [`crate::model::language::Tla::generate_tests`].
     ///
     /// # Examples
     ///
@@ -85,7 +85,7 @@ impl Apalache {
         // Read the  apalache counterexample from disk and parse a trace from it
         let counterexample_path = tdir.into_path().join("counterexample.tla");
         if !counterexample_path.is_file() {
-            panic!("[modelator] expected to find Apalache's counterexample.tla file")
+            panic!("[modelator] expected to find Apalache's counterexample.tla file");
         }
         let counterexample: TlaFile = TlaFile::try_read_from_file(counterexample_path)?;
         tracing::debug!("Apalache counterexample:\n{}", counterexample);
@@ -99,7 +99,7 @@ impl Apalache {
 
     /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>.
     ///
-    /// Runs Apalache's `parse` command, returning the [TlaFile] produced by
+    /// Runs Apalache's `parse` command, returning the [`TlaFile`] produced by
     /// Apalache.
     ///
     /// # Examples
@@ -217,7 +217,7 @@ fn parse_cmd<P: AsRef<Path>>(
     cmd
 }
 
-/// Creates an Apalache start command providing temp_dir as a library directory and the Apalache jar
+/// Creates an Apalache start command providing `temp_dir` as a library directory and the Apalache jar
 fn apalache_start_cmd(temp_dir: &tempfile::TempDir, runtime: &ModelatorRuntime) -> Command {
     let apalache = jar::Jar::Apalache.path(&runtime.dir);
 
