@@ -26,6 +26,7 @@ jobs:
       - name: Setup tmate session
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 3
         with:
           limit-access-to-actor: true
 
