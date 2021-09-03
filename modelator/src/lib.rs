@@ -66,6 +66,8 @@ use crate::artifact::{Artifact, ArtifactCreator};
 use std::env;
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
+
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use tempfile::tempdir;
 
 /// Set of options to configure `modelator` runtime.
@@ -158,7 +160,7 @@ impl ModelatorRuntime {
 
         // run the model checker configured on each tla test
         let trace_results = tests
-            .into_iter()
+            .into_par_iter()
             .map(
                 |test_file_suite| match self.model_checker_runtime.model_checker {
                     ModelChecker::Tlc => Tlc::test(&test_file_suite, self),
