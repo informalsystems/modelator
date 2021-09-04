@@ -62,7 +62,7 @@ pub struct TraceCli {
     #[clap(short, long, default_value = "@all")]
     test: String,
     /// Checker name
-    #[clap(short, long, default_value = "apalache")]
+    #[clap(short, long, possible_values = &["apalache", "tlc"], default_value = "apalache")]
     model_checker: ModelChecker,
     /// test name
     #[clap(short, long, default_value = "json")]
