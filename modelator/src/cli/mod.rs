@@ -10,7 +10,7 @@ use crate::artifact::{Artifact, JsonTrace, TlaFile, TlaFileSuite, TlaTrace};
 use crate::model::checker::ModelChecker;
 use crate::Error;
 use clap::{crate_authors, crate_description, crate_license, crate_name, crate_version};
-use clap::{AppSettings, ArgSettings, Clap, Subcommand, ValueHint, ArgEnum};
+use clap::{AppSettings, ArgEnum, ArgSettings, Clap, Subcommand, ValueHint};
 use serde_json::{json, Value as JsonValue};
 use std::path::Path;
 
