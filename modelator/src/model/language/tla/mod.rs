@@ -71,7 +71,7 @@ impl Tla {
         let tla_tests_module_name = tla_file_suite.tla_file.module_name();
 
         // retrieve test names from tla tests file
-        let test_names = extract_test_names(tla_file_suite.tla_file.file_contents_backing());
+        let test_names = Self::extract_test_names(tla_file_suite);
 
         tracing::debug!(
             "test names extracted from {}:\n{:?}",
@@ -87,68 +87,75 @@ impl Tla {
         // generate a tla test file and config for each test name found
         test_names
             .into_iter()
-            .map(|test_name| generate_test(&test_name, tla_file_suite))
+            .map(|test_name| Self::generate_test(&test_name, tla_file_suite))
             .collect()
     }
-}
 
-fn extract_test_names(tla_tests_file_content: &str) -> Vec<String> {
-    tla_tests_file_content
-        .lines()
-        .filter_map(|line| {
-            // take the first element in the split
-            line.trim().split("==").next()
+    /// Generate test names from a tla file
+    pub fn extract_test_names(tla_file_suite: &TlaFileSuite) -> Vec<String> {
+        tla_file_suite
+            .tla_file
+            .file_contents_backing()
+            .lines()
+            .filter_map(|line| {
+                // take the first element in the split
+                line.trim().split("==").next()
+            })
+            .filter_map(|name| {
+                let name = name.trim();
+                // consider this as a test name if:
+                // - it starts/ends Test
+                // - it's not commented out
+                let is_test = name.starts_with("Test") || name.ends_with("Test");
+                let is_commented_out = name.starts_with("\\*") || name.starts_with("(*");
+                if is_test && !is_commented_out {
+                    Some(name.to_string())
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
+    /// Generate test tla file and config for a testname
+    pub fn generate_test(
+        test_name: &str,
+        tla_file_suite: &TlaFileSuite,
+    ) -> Result<TlaFileSuite, Error> {
+        let tla_tests_file_name = tla_file_suite.tla_file.module_name();
+        let test_module_name = format!("{}_{}", tla_tests_file_name, test_name);
+        let negated_test_name = format!("{}Neg", test_name);
+
+        // create tla module where the test is negated
+        let test_module = generate_test_module(
+            &test_module_name,
+            tla_tests_file_name,
+            &negated_test_name,
+            test_name,
+        );
+        // create test config with negated test as an invariant
+        let test_config =
+            generate_test_config(tla_file_suite.tla_config_file.content(), &negated_test_name);
+
+        let test_module_file = TlaFile::from_string(&test_module)?;
+        let mut test_config_file = TlaConfigFile::from_string(&test_config)?;
+        test_config_file.set_path(std::path::Path::new(&format!(
+            "{}_{}.cfg",
+            tla_tests_file_name, test_name
+        )));
+
+        let collected = {
+            let mut dependencies = tla_file_suite.dependency_tla_files.clone();
+            dependencies.push(tla_file_suite.tla_file.clone());
+            dependencies
+        };
+
+        Ok(TlaFileSuite {
+            tla_file: test_module_file,
+            tla_config_file: test_config_file,
+            dependency_tla_files: collected,
         })
-        .filter_map(|name| {
-            let name = name.trim();
-            // consider this as a test name if:
-            // - it starts/ends Test
-            // - it's not commented out
-            let is_test = name.starts_with("Test") || name.ends_with("Test");
-            let is_commented_out = name.starts_with("\\*") || name.starts_with("(*");
-            if is_test && !is_commented_out {
-                Some(name.to_string())
-            } else {
-                None
-            }
-        })
-        .collect()
-}
-
-fn generate_test(test_name: &str, tla_file_suite: &TlaFileSuite) -> Result<TlaFileSuite, Error> {
-    let tla_tests_file_name = tla_file_suite.tla_file.module_name();
-    let test_module_name = format!("{}_{}", tla_tests_file_name, test_name);
-    let negated_test_name = format!("{}Neg", test_name);
-
-    // create tla module where the test is negated
-    let test_module = generate_test_module(
-        &test_module_name,
-        tla_tests_file_name,
-        &negated_test_name,
-        test_name,
-    );
-    // create test config with negated test as an invariant
-    let test_config =
-        generate_test_config(tla_file_suite.tla_config_file.content(), &negated_test_name);
-
-    let test_module_file = TlaFile::from_string(&test_module)?;
-    let mut test_config_file = TlaConfigFile::from_string(&test_config)?;
-    test_config_file.set_path(std::path::Path::new(&format!(
-        "{}_{}.cfg",
-        tla_tests_file_name, test_name
-    )));
-
-    let collected = {
-        let mut dependencies = tla_file_suite.dependency_tla_files.clone();
-        dependencies.push(tla_file_suite.tla_file.clone());
-        dependencies
-    };
-
-    Ok(TlaFileSuite {
-        tla_file: test_module_file,
-        tla_config_file: test_config_file,
-        dependency_tla_files: collected,
-    })
+    }
 }
 
 fn generate_test_module(

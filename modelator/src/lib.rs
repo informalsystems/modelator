@@ -26,7 +26,7 @@ mod cache;
 mod jar;
 
 /// Command-line interface.
-mod cli;
+pub mod cli;
 
 /// Datastructure converter.
 /// Allows to define conversion rules to make (cook)
@@ -52,7 +52,6 @@ pub mod test_util;
 use artifact::model_checker_stdout::ModelCheckerStdout;
 use artifact::TlaFileSuite;
 /// Re-exports.
-pub use cli::{output::CliOutput, output::CliStatus, CliOptions};
 pub use datachef::Recipe;
 pub use error::{Error, TestError};
 pub use event::{ActionHandler, Event, EventRunner, EventStream, StateHandler};
@@ -66,6 +65,7 @@ use crate::artifact::{Artifact, ArtifactCreator};
 use std::env;
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
+
 use tempfile::tempdir;
 
 /// Set of options to configure `modelator` runtime.

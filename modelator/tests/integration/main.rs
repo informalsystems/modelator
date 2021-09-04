@@ -2,10 +2,11 @@
 // https://matklad.github.io/2021/02/27/delete-cargo-integration-tests.html
 
 use modelator::artifact::JsonTrace;
+use modelator::cli::{App, CliStatus};
 use modelator::test_util::NumberSystem;
 use modelator::{
     model::checker::{ModelChecker, ModelCheckerRuntime},
-    CliOptions, CliStatus, Error, ModelatorRuntime,
+    Error, ModelatorRuntime,
 };
 use modelator::{ActionHandler, EventRunner, EventStream, StateHandler};
 use once_cell::sync::Lazy;
@@ -185,6 +186,7 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
     Ok(())
 }
 
+// TODO: remove because deprecated in current CLI
 #[allow(dead_code)]
 fn cli_traces<P: AsRef<Path>>(
     tla_tests_file: P,
@@ -193,7 +195,7 @@ fn cli_traces<P: AsRef<Path>>(
 ) -> Result<Vec<JsonTrace>, Error> {
     use clap::Clap;
     // run CLI to generate tests
-    let cli_output = CliOptions::parse_from(&[
+    let cli_output = App::parse_from(&[
         "modelator",
         "tla",
         "generate-tests",
@@ -225,7 +227,7 @@ fn cli_traces<P: AsRef<Path>>(
                 ModelChecker::Tlc => "tlc",
                 ModelChecker::Apalache => "apalache",
             };
-            CliOptions::parse_from(&["modelator", module, "test", tla_file, tla_config_file]).run()
+            App::parse_from(&["modelator", module, "test", tla_file, tla_config_file]).run()
         })
         .map(|cli_output| {
             assert_eq!(cli_output.status, CliStatus::Success);
@@ -251,7 +253,7 @@ fn cli_traces<P: AsRef<Path>>(
     let traces = traces
         .into_iter()
         .map(|tla_trace_file| {
-            CliOptions::parse_from(&[
+            App::parse_from(&[
                 "modelator",
                 "tla",
                 "tla-trace-to-json-trace",
