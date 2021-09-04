@@ -152,7 +152,7 @@ impl Module {
 /// A struct that generates a CLI for `modelator` using [`clap`].
 #[derive(Clap, Debug)]
 #[clap(name = crate_name!(), author, about, version)]
-#[clap(setting = AppSettings::ColoredHelp)]
+#[clap(setting = AppSettings::ColoredHelp, setting = AppSettings::InferSubcommands)]
 pub struct App {
     #[clap(subcommand)]
     module: Module,
