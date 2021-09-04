@@ -10,7 +10,7 @@ use crate::artifact::{Artifact, JsonTrace, TlaFile, TlaFileSuite, TlaTrace};
 use crate::model::checker::ModelChecker;
 use crate::Error;
 use clap::{crate_authors, crate_description, crate_license, crate_name, crate_version};
-use clap::{AppSettings, ArgSettings, Clap, Subcommand, ValueHint};
+use clap::{AppSettings, ArgSettings, Clap, Subcommand, ValueHint, ArgEnum};
 use serde_json::{json, Value as JsonValue};
 use std::path::Path;
 
@@ -65,7 +65,7 @@ pub struct TraceCli {
     #[clap(short, long, possible_values = &["apalache", "tlc"], default_value = "apalache")]
     model_checker: ModelChecker,
     /// test name
-    #[clap(short, long, default_value = "json")]
+    #[clap(short, long, arg_enum, default_value = "json")]
     format: OutputFormat,
     /// TLA+ file with test cases.
     #[clap(parse(from_os_str), value_hint = ValueHint::FilePath)]
@@ -164,21 +164,10 @@ impl App {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, ArgEnum)]
 enum OutputFormat {
     Tla,
     Json,
-}
-
-impl FromStr for OutputFormat {
-    type Err = crate::Error;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.to_ascii_lowercase().as_str() {
-            "tla" => Ok(Self::Tla),
-            "json" => Ok(Self::Json),
-            other => Err(Self::Err::UnsupportedOutputFormat(other.into())),
-        }
-    }
 }
 
 fn allow_test_name(test_name: &str, pattern: &str) -> bool {
