@@ -61,10 +61,11 @@ pub struct TraceCli {
     /// test name
     #[clap(short, long, default_value = "@all")]
     test: String,
+    /// TODO: derive ArgEnum for ModelChecker enum
     /// Checker name
     #[clap(short, long, possible_values = &["apalache", "tlc"], default_value = "apalache")]
     model_checker: ModelChecker,
-    /// test name
+    /// output format
     #[clap(short, long, arg_enum, default_value = "json")]
     format: OutputFormat,
     /// TLA+ file with test cases.
@@ -151,8 +152,14 @@ impl Module {
 
 /// A struct that generates a CLI for `modelator` using [`clap`].
 #[derive(Clap, Debug)]
-#[clap(name = crate_name!(), author, about, version)]
-#[clap(setting = AppSettings::ColoredHelp, setting = AppSettings::InferSubcommands)]
+#[clap(
+    name = crate_name!(),
+    author,
+    about,
+    version,
+    setting = AppSettings::ColoredHelp,
+    setting = AppSettings::InferSubcommands
+)]
 pub struct App {
     #[clap(subcommand)]
     module: Module,
