@@ -1,6 +1,6 @@
 /// Apalache Error
-pub(crate) mod error;
-use error::ApalacheError;
+pub(crate) mod cmd_output;
+use cmd_output::{ApalacheError, CmdOutput};
 
 /// Parsing of Apalache's counterexample file.
 mod counterexample;
@@ -80,13 +80,21 @@ impl Apalache {
             runtime,
         );
 
-        let apalache_log = run_apalache(cmd)?;
+        let apalache_output = run_apalache(cmd)?;
+
+        let counterexample_paths = apalache_output.parse_counterexample_filenames()?;
+
+        if counterexample_paths.len() != 1 || counterexample_paths[0] != "counterexample1.tla" {
+            panic!("[modelator] expect a counterexample file called counterexample.tla")
+        }
 
         // Read the  apalache counterexample from disk and parse a trace from it
-        let counterexample_path = tdir.into_path().join("counterexample.tla");
+        let counterexample_path = tdir.into_path().join(&counterexample_paths[0]);
+
         if !counterexample_path.is_file() {
-            panic!("[modelator] expected to find Apalache's counterexample.tla file");
+            panic!("[modelator] expected to find Apalache's counterexample1.tla file");
         }
+
         let counterexample: TlaFile = TlaFile::try_read_from_file(counterexample_path)?;
         tracing::debug!("Apalache counterexample:\n{}", counterexample);
         let trace = counterexample::parse(counterexample.file_contents_backing())?;
@@ -94,7 +102,10 @@ impl Apalache {
         // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
         // cache trace and then return it
         //cache.insert(cache_key, &trace)?;
-        Ok((trace, apalache_log))
+        Ok((
+            trace,
+            ModelCheckerStdout::from_string(&apalache_output.stdout)?,
+        ))
     }
 
     /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>.
@@ -138,17 +149,24 @@ impl Apalache {
         let cmd = parse_cmd(cmd, &tla_file_suite.tla_file.file_name(), &output_path);
 
         // run apalache
-        let apalache_log = run_apalache(cmd)?;
+        let apalache_output = run_apalache(cmd)?;
+
+        match apalache_output.non_counterexample_error() {
+            None => {}
+            Some(err) => return Err(Error::ApalacheFailure(err)),
+        }
 
         // create tla file
         let full_output_path = tdir.into_path().join(output_path);
         let tla_parsed_file = TlaFile::try_read_from_file(full_output_path)?;
-        Ok((tla_parsed_file, apalache_log))
+        Ok((
+            tla_parsed_file,
+            ModelCheckerStdout::from_string(&apalache_output.stdout)?,
+        ))
     }
 }
 
-fn run_apalache(mut cmd: Command) -> Result<ModelCheckerStdout, Error> {
-    // start apalache
+fn run_apalache(mut cmd: Command) -> Result<CmdOutput, Error> {
     // TODO: add timeout
     let output = cmd.output()?;
 
@@ -158,23 +176,7 @@ fn run_apalache(mut cmd: Command) -> Result<ModelCheckerStdout, Error> {
     tracing::debug!("Apalache stdout:\n{}", stdout);
     tracing::debug!("Apalache stderr:\n{}", stderr);
 
-    match (stdout.is_empty(), stderr.is_empty()) {
-        (false, true) => {
-            // check if a failure has occurred
-            if stdout.contains("EXITCODE: ERROR") {
-                return Err(Error::ApalacheFailure(ApalacheError::new(&stdout)));
-            }
-            assert!(
-                stdout.contains("EXITCODE: OK"),
-                "[modelator] unexpected Apalache stdout"
-            );
-
-            Ok(ModelCheckerStdout::from_string(&stdout)?)
-        }
-        _ => {
-            panic!("[modelator] unexpected Apalache's stdout/stderr combination")
-        }
-    }
+    Ok(CmdOutput { stdout, stderr })
 }
 
 fn test_cmd<P: AsRef<Path>>(
@@ -222,6 +224,7 @@ fn apalache_start_cmd(temp_dir: &tempfile::TempDir, runtime: &ModelatorRuntime) 
     let apalache = jar::Jar::Apalache.path(&runtime.dir);
 
     let mut cmd = Command::new("java");
+
     cmd.current_dir(temp_dir)
         .arg(format!(
             "-DTLA-Library={}",
