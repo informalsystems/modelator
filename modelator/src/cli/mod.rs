@@ -224,10 +224,8 @@ fn json_list_generated_tests(test_files: Vec<(PathBuf, PathBuf)>) -> Result<Json
 
 #[allow(clippy::unnecessary_wraps)]
 fn write_parsed_tla_file_to_file(tla_file: &TlaFile) -> Result<JsonValue, Error> {
-    // The parsed file is a TLA+ module with the same module name as the passed input module.
-    // Therefore we provide another name for the output.
-    let name = format!("{}Parsed.tla", tla_file.module_name());
-    let path = Path::new(&name);
+    // Apalache changes the module name in the output file so we use it directly here.
+    let path = Path::new(tla_file.module_name());
     tla_file.try_write_to_file(path)?;
     Ok(json!({
         "tla_file": crate::util::absolute_path(path),
