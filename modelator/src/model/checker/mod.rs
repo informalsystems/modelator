@@ -5,7 +5,7 @@ mod tlc;
 mod apalache;
 
 // Re-exports.
-pub use apalache::{error::ApalacheError, Apalache};
+pub use apalache::{cmd_output::ApalacheError, Apalache};
 pub use tlc::Tlc;
 
 use std::env;
