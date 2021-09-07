@@ -71,6 +71,10 @@ pub enum Error {
     /// An error for unrecognized checker name.
     #[error("Unrecognized checker: {0}")]
     UnrecognizedChecker(String),
+
+    /// An error for unsupported output format.
+    #[error("Unsupported output format: {0}")]
+    UnsupportedOutputFormat(String),
 }
 
 impl From<std::io::Error> for Error {

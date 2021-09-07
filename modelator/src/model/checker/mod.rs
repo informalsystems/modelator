@@ -10,6 +10,7 @@ pub use tlc::Tlc;
 
 use std::env;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 /// Set of options to select the model checker to be used and configure them.
 #[derive(Clone, Debug)]
@@ -65,6 +66,17 @@ pub enum ModelChecker {
     /// Option representing the [Apalache](http://github.com/informalsystems/apalache)
     /// mode checker.
     Apalache,
+}
+
+impl FromStr for ModelChecker {
+    type Err = crate::Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_ascii_lowercase().as_str() {
+            "apalache" => Ok(Self::Apalache),
+            "tlc" => Ok(Self::Tlc),
+            other => Err(Self::Err::UnrecognizedChecker(other.into())),
+        }
+    }
 }
 
 /// Configuration option to select the number of model checker workers.
