@@ -46,7 +46,7 @@ impl Jar {
 
     fn link(&self) -> String {
         format!(
-            "https://github.com/informalsystems/modelator/raw/main/jars/{}",
+            "https://github.com/informalsystems/modelator/raw/apalache-upgrade-v0.15.13/jars/{}",
             self.file_name()
         )
     }
