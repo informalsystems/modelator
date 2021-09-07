@@ -2,10 +2,21 @@
 EXTENDS Integers
 -----------------------------------------------------------------------------
 
-CONSTANT MaxNumber
+CONSTANT 
+\* @type: Int;
+    MaxNumber
 
-VARIABLE a, b, action, actionOutcome
+VARIABLE 
+\* @type: Int;
+    a,
+\* @type: Int;
+    b,
+\* @type: Str;
+    action,
+\* @type: Str;
+    actionOutcome
 
+    
 Init ==
     /\ a = 0
     /\ b = 0
