@@ -1,6 +1,6 @@
 /// Apalache Error
 pub(crate) mod cmd_output;
-use cmd_output::{parse_counterexample_filenames, ApalacheError, CmdOutput};
+use cmd_output::{ApalacheError, CmdOutput};
 
 /// Parsing of Apalache's counterexample file.
 mod counterexample;
@@ -82,14 +82,9 @@ impl Apalache {
 
         let apalache_output = run_apalache(cmd)?;
 
-        match apalache_output.non_counterexample_error() {
-            None => {}
-            Some(err) => return Err(Error::ApalacheFailure(err)),
-        }
-
         let counterexample_paths = apalache_output.parse_counterexample_filenames()?;
 
-        if counterexample_paths.len() != 1 || counterexample_paths[0] != "counterexample.tla" {
+        if counterexample_paths.len() != 1 || counterexample_paths[0] != "counterexample1.tla" {
             panic!("[modelator] expect a counterexample file called counterexample.tla")
         }
 
@@ -97,7 +92,7 @@ impl Apalache {
         let counterexample_path = tdir.into_path().join(&counterexample_paths[0]);
 
         if !counterexample_path.is_file() {
-            panic!("[modelator] expected to find Apalache's counterexample.tla file");
+            panic!("[modelator] expected to find Apalache's counterexample1.tla file");
         }
 
         let counterexample: TlaFile = TlaFile::try_read_from_file(counterexample_path)?;
@@ -229,6 +224,7 @@ fn apalache_start_cmd(temp_dir: &tempfile::TempDir, runtime: &ModelatorRuntime) 
     let apalache = jar::Jar::Apalache.path(&runtime.dir);
 
     let mut cmd = Command::new("java");
+
     cmd.current_dir(temp_dir)
         .arg(format!(
             "-DTLA-Library={}",
