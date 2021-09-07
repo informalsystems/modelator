@@ -10,9 +10,9 @@ const MIN_JAVA_VERSION: usize = 8;
 
 pub(crate) const TLA_JAR: &str = "tla2tools-v1.8.0.jar";
 pub(crate) const COMMUNITY_MODULES_JAR: &str = "CommunityModules-202103092123.jar";
-pub(crate) const APALACHE_JAR: &str = "apalache-v0.11.0.jar";
+pub(crate) const APALACHE_JAR: &str = "apalache-pkg-0.15.13-full.jar";
 pub(crate) const JARS_CHECKSUM: &str =
-    "55b7131eff44ef1c27bb8733a5b117ab9a327a3d41bdab26bce56dd193dc1f13";
+    "d99b5645fbf6986bfbe50895f2b02d9268f3595a171f2bfffc989979d8f2c8bf";
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub(crate) enum Jar {
@@ -95,7 +95,7 @@ pub(crate) fn download_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Erro
 
         // if we have downloaded the jar(s) for the first time, check that the
         // checksums match
-        if !check_checksums(&modelator_dir)? {
+        if !checksums_correct(&modelator_dir)? {
             eprintln!("[modelator] Checksum of downloaded jars does not match the expected. Will try again!");
 
             // delete modelator dir and create it again
@@ -133,7 +133,7 @@ fn list_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<HashSet<String>, Error>
     Ok(jars)
 }
 
-fn check_checksums<P: AsRef<Path>>(modelator_dir: P) -> Result<bool, Error> {
+fn checksums_correct<P: AsRef<Path>>(modelator_dir: P) -> Result<bool, Error> {
     let files_to_hash = list_jars(&modelator_dir)?
         .into_iter()
         .map(|filename| modelator_dir.as_ref().to_path_buf().join(filename))
