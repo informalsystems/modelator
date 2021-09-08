@@ -40,7 +40,7 @@ impl Tla {
     /// let json_trace = Tla::tla_trace_to_json_trace(tla_trace).unwrap();
     /// println!("{:?}", json_trace);
     /// ```
-    pub fn tla_trace_to_json_trace(tla_trace: TlaTrace) -> Result<JsonTrace, Error> {
+    pub fn tla_trace_to_json_trace(tla_trace: &TlaTrace) -> Result<JsonTrace, Error> {
         tracing::debug!("Tla::tla_trace_to_json_trace:\n{}", tla_trace);
         let states: Vec<JsonValue> = tla_trace
             .into_iter()
@@ -92,9 +92,11 @@ impl Tla {
         // generate a tla test file and config for each test name found
         test_names
             .into_iter()
-            .map(|test_name| TlaTest {
-                name: test_name,
-                file_suite: Self::generate_test(&test_name, tla_file_suite),
+            .map(|test_name| {
+                Ok(TlaTest {
+                    name: test_name.clone(),
+                    file_suite: Self::generate_test(&test_name, tla_file_suite)?,
+                })
             })
             .collect()
     }

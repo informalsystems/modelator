@@ -106,10 +106,10 @@ impl TraceCli {
                     }
                 }
                 .0;
-                traces.iter().map(|test| {
+                for test in traces.iter_mut() {
                     test.extends_module_name =
                         Some(input_artifacts.tla_file.module_name().to_string());
-                });
+                }
                 traces
             };
 
@@ -119,7 +119,7 @@ impl TraceCli {
                 .map(|trace| match self.format {
                     OutputFormat::Json => {
                         let json_trace =
-                            crate::model::language::Tla::tla_trace_to_json_trace(*trace)?;
+                            crate::model::language::Tla::tla_trace_to_json_trace(trace)?;
                         tracing::debug!("Tla::tla_trace_to_json_trace output {}", json_trace);
                         write_json_trace_to_file(
                             input_artifacts.tla_file.module_name(),

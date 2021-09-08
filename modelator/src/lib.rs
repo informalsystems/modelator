@@ -180,7 +180,7 @@ impl ModelatorRuntime {
         #[allow(clippy::needless_collect)]
         // rust iterators are lazy
         // so we need to collect the traces in memory before deleting the work directory
-        let trace_results = tests
+        let trace_results = (&tests)
             .into_par_iter()
             .map(|test| match self.model_checker_runtime.model_checker {
                 ModelChecker::Tlc => Tlc::test(&test.file_suite, self),
@@ -188,18 +188,14 @@ impl ModelatorRuntime {
             })
             .collect::<Vec<_>>();
 
-        for (i, trace_result) in trace_results.iter().enumerate() {
-            let test_name = tests[i].name;
-            let inner = match trace_result {
-                Ok((trace_vec, _)) => {
-                    let json: Vec<Result<artifact::JsonTrace, Error>> = trace_vec
-                        .iter()
-                        .map(|it| Tla::tla_trace_to_json_trace(*it))
-                        .collect();
-                    Ok(json)
-                }
-                Err(e) => Err(e),
-            };
+        for (i, trace_result) in trace_results.into_iter().enumerate() {
+            let test_name = tests[i].name.clone();
+            let (traces, _) = trace_result?;
+            let jsons: Result<Vec<artifact::JsonTrace>, Error> = traces
+                .into_iter()
+                .map(|it| Tla::tla_trace_to_json_trace(&it))
+                .collect();
+            res.insert(test_name, jsons);
         }
 
         Ok(res)
@@ -289,17 +285,27 @@ impl ModelatorRuntime {
         tla_tests_file_path: P,
         tla_config_file_path: P,
         system: &mut System,
-    ) -> Result<Vec<Result<(), TestError>>, Error>
+    ) -> Result<TestReport, Error>
     where
         P: AsRef<Path>,
         System: StepRunner<Step> + Debug + Clone,
         Step: DeserializeOwned + Debug + Clone,
     {
-        let trace_results = self.traces(tla_tests_file_path, tla_config_file_path)?;
-        Ok(trace_results
-            .into_iter()
-            .map(|trace_result| system.run(trace_result.map_err(TestError::Modelator)?))
-            .collect())
+        Ok(TestReport {
+            test_name_to_trace_execution_result: {
+                let mut ret = BTreeMap::new();
+
+                let traces_for_tests = self.traces(tla_tests_file_path, tla_config_file_path)?;
+
+                for (test_name, traces) in traces_for_tests {
+                    let traces = traces?;
+                    let results: Vec<Result<(), TestError>> =
+                        traces.into_iter().map(|it| system.run(it)).collect();
+                    ret.insert(test_name, results);
+                }
+                ret
+            },
+        })
     }
 
     /// Run the system under test (SUT) using the abstract events obtained
@@ -409,39 +415,51 @@ impl ModelatorRuntime {
         tla_config_file_path: P,
         system: &mut System,
         runner: &mut event::EventRunner<System>,
-    ) -> Result<Vec<Result<(), TestError>>, Error>
+    ) -> Result<TestReport, Error>
     where
         P: AsRef<Path>,
         System: Debug + Default,
     {
-        let trace_results = self.traces(tla_tests_file_path, tla_config_file_path)?;
+        Ok(TestReport {
+            test_name_to_trace_execution_result: {
+                let mut ret = BTreeMap::new();
 
-        Ok(trace_results
-            .into_iter()
-            .map(|trace_result| {
-                let trace = trace_result.map_err(TestError::Modelator)?;
-                let events: EventStream = trace.clone().into();
-                runner
-                    .run(system, &mut events.into_iter())
-                    .map_err(|op| match op {
-                        TestError::UnhandledTest { system, .. } => TestError::UnhandledTest {
-                            test: trace.to_string(),
-                            system,
-                        },
-                        TestError::FailedTest {
-                            message,
-                            location,
-                            system,
-                            ..
-                        } => TestError::FailedTest {
-                            test: trace.to_string(),
-                            message,
-                            location,
-                            system,
-                        },
-                        TestError::Modelator(_) => op,
-                    })
-            })
-            .collect())
+                let traces_for_tests = self.traces(tla_tests_file_path, tla_config_file_path)?;
+
+                for (test_name, traces) in traces_for_tests {
+                    let traces = traces?;
+                    let results: Vec<Result<(), TestError>> = traces
+                        .iter()
+                        .map(|trace| {
+                            let events: EventStream = trace.clone().into();
+                            runner
+                                .run(system, &mut events.into_iter())
+                                .map_err(|op| match op {
+                                    TestError::UnhandledTest { system, .. } => {
+                                        TestError::UnhandledTest {
+                                            test: trace.to_string(),
+                                            system,
+                                        }
+                                    }
+                                    TestError::FailedTest {
+                                        message,
+                                        location,
+                                        system,
+                                        ..
+                                    } => TestError::FailedTest {
+                                        test: trace.to_string(),
+                                        message,
+                                        location,
+                                        system,
+                                    },
+                                    TestError::Modelator(_) => op,
+                                })
+                        })
+                        .collect();
+                    ret.insert(test_name, results);
+                }
+                ret
+            },
+        })
     }
 }
