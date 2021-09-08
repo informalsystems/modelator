@@ -40,7 +40,7 @@ impl Tlc {
     pub fn test(
         tla_file_suite: &TlaFileSuite,
         runtime: &ModelatorRuntime,
-    ) -> Result<(TlaTrace, ModelCheckerStdout), Error> {
+    ) -> Result<(Vec<TlaTrace>, ModelCheckerStdout), Error> {
         let tla_file = &tla_file_suite.tla_file;
         let tla_config_file = &tla_file_suite.tla_config_file;
         tracing::debug!("Tlc::test {} {} {:?}", tla_file, tla_config_file, runtime);
