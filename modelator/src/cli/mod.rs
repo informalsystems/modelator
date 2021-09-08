@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::env;
 use std::fmt::write;
 use std::path::PathBuf;
@@ -82,33 +83,43 @@ impl TraceCli {
 
         let file_suite =
             TlaFileSuite::from_tla_and_config_paths(&self.tla_module, &self.tla_config)?;
-        let test_names = crate::model::language::Tla::extract_test_names(&file_suite);
 
-        let resp = test_names
+        let test_names = crate::model::language::Tla::extract_test_names(&file_suite)
             .into_iter()
-            .filter(|test_name| allow_test_name(test_name, &self.test))
-            .map(|test_name| {
-                let input_artifacts =
-                    crate::model::language::Tla::generate_test(&test_name, &file_suite)?;
-                let res = {
-                    let mut ret = match self.model_checker {
-                        ModelChecker::Apalache => {
-                            crate::model::checker::Apalache::test(&input_artifacts, &runtime)?
-                        }
-                        ModelChecker::Tlc => {
-                            crate::model::checker::Tlc::test(&input_artifacts, &runtime)?
-                        }
-                    };
-                    ret.0.extends_module_name =
-                        Some(input_artifacts.tla_file.module_name().to_string());
-                    ret
-                };
-                tracing::debug!("Apalache::test output {}", res.0);
+            .filter(|test_name| allow_test_name(test_name, &self.test));
 
-                match self.format {
+        let mut res: BTreeMap<String, Result<Vec<JsonValue>, Error>> = BTreeMap::new();
+
+        for test_name in test_names {
+            // Create the intermediary file suite to run a single test
+            let input_artifacts =
+                crate::model::language::Tla::generate_test(&test_name, &file_suite)?;
+
+            // Model check the test and collect traces
+            let traces = {
+                let mut traces = match self.model_checker {
+                    ModelChecker::Apalache => {
+                        crate::model::checker::Apalache::test(&input_artifacts, &runtime)?
+                    }
+                    ModelChecker::Tlc => {
+                        crate::model::checker::Tlc::test(&input_artifacts, &runtime)?
+                    }
+                }
+                .0;
+                traces.iter().map(|test| {
+                    test.extends_module_name =
+                        Some(input_artifacts.tla_file.module_name().to_string());
+                });
+                traces
+            };
+
+            // Convert each trace to json
+            let trace_write_results: Result<Vec<JsonValue>, Error> = traces
+                .iter()
+                .map(|trace| match self.format {
                     OutputFormat::Json => {
                         let json_trace =
-                            crate::model::language::Tla::tla_trace_to_json_trace(res.0)?;
+                            crate::model::language::Tla::tla_trace_to_json_trace(*trace)?;
                         tracing::debug!("Tla::tla_trace_to_json_trace output {}", json_trace);
                         write_json_trace_to_file(
                             input_artifacts.tla_file.module_name(),
@@ -116,13 +127,15 @@ impl TraceCli {
                         )
                     }
                     OutputFormat::Tla => {
-                        write_tla_trace_to_file(input_artifacts.tla_file.module_name(), &res.0)
+                        write_tla_trace_to_file(input_artifacts.tla_file.module_name(), &trace)
                     }
-                }
-            })
-            .collect::<Result<Vec<JsonValue>, _>>()?;
+                })
+                .collect();
 
-        Ok(json!(resp))
+            res.insert(test_name, trace_write_results);
+        }
+
+        Ok(json!(res))
     }
 }
 

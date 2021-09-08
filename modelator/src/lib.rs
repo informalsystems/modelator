@@ -62,6 +62,7 @@ pub use step_runner::StepRunner;
 
 use crate::artifact::{Artifact, ArtifactCreator};
 
+use std::collections::BTreeMap;
 use std::env;
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
@@ -145,34 +146,45 @@ impl ModelatorRuntime {
         &self,
         tla_tests_file_path: P,
         tla_config_file_path: P,
-    ) -> Result<Vec<Result<artifact::JsonTrace, Error>>, Error> {
+    ) -> Result<BTreeMap<String, Result<Vec<artifact::JsonTrace>, Error>>, Error> {
+        // Each test maps to a result containing the vec of all it's traces.
+
+        let mut res: BTreeMap<String, Result<Vec<artifact::JsonTrace>, Error>> = BTreeMap::new();
+
         // setup modelator
         self.setup()?;
 
         let file_suite =
             TlaFileSuite::from_tla_and_config_paths(tla_tests_file_path, tla_config_file_path)?;
+
         let tests = Tla::generate_tests(&file_suite)?;
 
         #[allow(clippy::needless_collect)]
         // rust iterators are lazy
         // so we need to collect the traces in memory before deleting the work directory
-
-        // run the model checker configured on each tla test
         let trace_results = tests
             .into_par_iter()
-            .map(
-                |test_file_suite| match self.model_checker_runtime.model_checker {
-                    ModelChecker::Tlc => Tlc::test(&test_file_suite, self),
-                    ModelChecker::Apalache => Apalache::test(&test_file_suite, self),
-                },
-            )
+            .map(|test| match self.model_checker_runtime.model_checker {
+                ModelChecker::Tlc => Tlc::test(&test.file_suite, self),
+                ModelChecker::Apalache => Apalache::test(&test.file_suite, self),
+            })
             .collect::<Vec<_>>();
 
-        // convert each tla trace to json
-        Ok(trace_results
-            .into_iter()
-            .map(|res| res.and_then(|it| Tla::tla_trace_to_json_trace(it.0)))
-            .collect())
+        for (i, trace_result) in trace_results.iter().enumerate() {
+            let test_name = tests[i].name;
+            let inner = match trace_result {
+                Ok((trace_vec, _)) => {
+                    let json: Vec<Result<artifact::JsonTrace, Error>> = trace_vec
+                        .iter()
+                        .map(|it| Tla::tla_trace_to_json_trace(*it))
+                        .collect();
+                    Ok(json)
+                }
+                Err(e) => Err(e),
+            };
+        }
+
+        Ok(res)
     }
 
     /// This is the most simple interface to run your system under test (SUT)
