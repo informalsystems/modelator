@@ -40,7 +40,7 @@ impl Tla {
     /// let json_trace = Tla::tla_trace_to_json_trace(tla_trace).unwrap();
     /// println!("{:?}", json_trace);
     /// ```
-    pub fn tla_trace_to_json_trace(tla_trace: &TlaTrace) -> Result<JsonTrace, Error> {
+    pub fn tla_trace_to_json_trace(tla_trace: TlaTrace) -> Result<JsonTrace, Error> {
         tracing::debug!("Tla::tla_trace_to_json_trace:\n{}", tla_trace);
         let states: Vec<JsonValue> = tla_trace
             .into_iter()

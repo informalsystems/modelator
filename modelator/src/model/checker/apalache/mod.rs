@@ -100,7 +100,7 @@ impl Apalache {
             .iter()
             .map(|counterexample_path_base| {
                 // Read the  apalache counterexample from disk and parse a trace from it
-                let counterexample_path = tdir.into_path().join(&counterexample_path_base);
+                let counterexample_path = tdir.path().join(&counterexample_path_base);
 
                 if !counterexample_path.is_file() {
                     panic!("[modelator] expected to find Apalache's counterexample1.tla file");
@@ -108,9 +108,7 @@ impl Apalache {
 
                 let counterexample: TlaFile = TlaFile::try_read_from_file(counterexample_path)?;
                 tracing::debug!("Apalache counterexample:\n{}", counterexample);
-                Ok::<TlaTrace, Error>(counterexample::parse(
-                    counterexample.file_contents_backing(),
-                )?)
+                counterexample::parse(counterexample.file_contents_backing())
             })
             .filter_map(Result::ok)
             .collect();

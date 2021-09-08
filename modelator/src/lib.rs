@@ -70,11 +70,13 @@ use std::path::{Path, PathBuf};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use tempfile::tempdir;
 
-struct TestReport {
+/// Wraps the data from running test(s), allowing more convenient access to the results.
+pub struct TestReport {
     test_name_to_trace_execution_result: BTreeMap<String, Vec<Result<(), TestError>>>,
 }
 
 impl TestReport {
+    /// Returns true iff no test failed
     pub fn is_ok(&self) -> bool {
         !self
             .test_name_to_trace_execution_result
@@ -83,6 +85,7 @@ impl TestReport {
             .any(Result::is_err)
     }
 
+    /// Get the vector of results from running counterexample(s) for a single test
     pub fn result_of_test(&self, name: &str) -> Option<&Vec<Result<(), TestError>>> {
         self.test_name_to_trace_execution_result.get(name)
     }
@@ -193,7 +196,7 @@ impl ModelatorRuntime {
             let (traces, _) = trace_result?;
             let jsons: Result<Vec<artifact::JsonTrace>, Error> = traces
                 .into_iter()
-                .map(|it| Tla::tla_trace_to_json_trace(&it))
+                .map(Tla::tla_trace_to_json_trace)
                 .collect();
             res.insert(test_name, jsons);
         }

@@ -115,7 +115,7 @@ impl TraceCli {
 
             // Convert each trace to json
             let trace_write_results: Result<Vec<JsonValue>, Error> = traces
-                .iter()
+                .into_iter()
                 .map(|trace| match self.format {
                     OutputFormat::Json => {
                         let json_trace =
