@@ -4,7 +4,7 @@ use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 
 /// A `StepRunner` drives a SUT by executing a series of steps
-/// (see [crate::run_tla_steps]).
+/// (see [`crate::ModelatorRuntime::run_tla_steps`]).
 pub trait StepRunner<Step: DeserializeOwned + Debug + Clone> {
     /// Executes the first step against  the runner.
     fn initial_step(&mut self, step: Step) -> Result<(), String>;
@@ -98,10 +98,10 @@ mod tests {
     fn test_step_runner() {
         let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
         let tla_config_file = "tests/integration/tla/Numbers.cfg";
-        let options = crate::Options::default();
+        let runtime = crate::ModelatorRuntime::default();
         let mut runner = NumberSystem::default();
-        assert!(
-            crate::run_tla_steps(tla_tests_file, tla_config_file, &options, &mut runner).is_ok()
-        );
+        assert!(runtime
+            .run_tla_steps(tla_tests_file, tla_config_file, &mut runner)
+            .is_ok());
     }
 }

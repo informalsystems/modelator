@@ -28,7 +28,7 @@ pub enum TestResult {
 /// and produces a test result
 type SimpleTest = Box<dyn FnMut(&dyn Any) -> TestResult>;
 
-/// SimpleTester represents a collection of simple test functions,
+/// `SimpleTester` represents a collection of simple test functions,
 /// where each function can handle a specific kind of input.
 pub struct SimpleTester {
     tests: Vec<SimpleTest>,
@@ -36,14 +36,14 @@ pub struct SimpleTester {
 
 impl Default for SimpleTester {
     fn default() -> Self {
-        SimpleTester::new()
+        Self::new()
     }
 }
 
 impl SimpleTester {
     /// Create a new tester.
-    pub fn new() -> SimpleTester {
-        SimpleTester { tests: vec![] }
+    pub fn new() -> Self {
+        Self { tests: vec![] }
     }
 
     /// Add a test function to the tester.
@@ -95,11 +95,11 @@ impl SimpleTester {
     }
 }
 
-/// A SystemTest is a test function that accepts some system,
+/// A `SystemTest` is a test function that accepts some system,
 /// which stores modifiable state, and the input.
 type SystemTest<State> = Box<dyn FnMut(&mut State, &dyn Any) -> TestResult>;
 
-/// SystemTester is similar to [SimpleTester], but allows to
+/// `SystemTester` is similar to [`SimpleTester`], but allows to
 /// supply test functions that accept also modifiable system state.
 pub struct SystemTester<State> {
     tests: Vec<SystemTest<State>>,
@@ -107,14 +107,14 @@ pub struct SystemTester<State> {
 
 impl<'a, State> Default for SystemTester<State> {
     fn default() -> Self {
-        SystemTester::new()
+        Self::new()
     }
 }
 
 impl<State> SystemTester<State> {
     /// Create a new tester.
-    pub fn new() -> SystemTester<State> {
-        SystemTester { tests: vec![] }
+    pub fn new() -> Self {
+        Self { tests: vec![] }
     }
 
     /// Add a test function to the tester.
@@ -178,7 +178,7 @@ where
         Box::new(move |info| {
             let mut result = result.lock().unwrap();
             let message = match info.payload().downcast_ref::<&'static str>() {
-                Some(s) => s.to_string(),
+                Some(&s) => s.to_string(),
                 None => match info.payload().downcast_ref::<String>() {
                     Some(s) => s.clone(),
                     None => "Unknown error".to_string(),

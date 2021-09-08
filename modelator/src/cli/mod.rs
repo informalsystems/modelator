@@ -1,241 +1,229 @@
+use std::env;
+use std::fmt::write;
+use std::path::PathBuf;
+use std::str::FromStr;
 // CLI output.
 pub(crate) mod output;
 
-use crate::artifact::{Artifact, JsonTrace, TlaConfigFile, TlaFile, TlaTrace};
+#[warn(dead_code, unused)]
+use crate::artifact::{Artifact, JsonTrace, TlaFile, TlaFileSuite, TlaTrace};
+use crate::model::checker::ModelChecker;
 use crate::Error;
-use clap::{AppSettings, Clap, Subcommand};
+use clap::{crate_authors, crate_description, crate_license, crate_name, crate_version};
+use clap::{AppSettings, ArgEnum, ArgSettings, Clap, Subcommand, ValueHint};
 use serde_json::{json, Value as JsonValue};
 use std::path::Path;
 
+/// Re-exports.
+pub use output::{CliOutput, CliStatus};
+
+/// Parse TLA+ files with Apalache.
+#[derive(Debug, Clap)]
+#[clap(setting = AppSettings::ColoredHelp)]
+pub struct ParseCli {
+    /// TLA+ file with test cases.
+    #[clap(parse(from_os_str), value_hint = ValueHint::FilePath)]
+    tla_module: PathBuf,
+}
+
+impl ParseCli {
+    fn run(&self) -> Result<JsonValue, Error> {
+        let runtime = crate::ModelatorRuntime::default();
+        let tla_file = TlaFileSuite::from_tla_path(&self.tla_module)?;
+        let res = crate::model::checker::Apalache::parse(&tla_file, &runtime)?;
+        tracing::debug!("Apalache::parse output {}", res.0);
+        write_parsed_tla_file_to_file(&res.0)
+    }
+}
+
+/// Parse TLA+ files with Apalache.
+#[derive(Debug, Clap)]
+#[clap(setting = AppSettings::ColoredHelp)]
+pub struct TestListCli {
+    /// TLA+ file with test cases.
+    #[clap(parse(from_os_str), value_hint = ValueHint::FilePath)]
+    tla_module: PathBuf,
+}
+
+impl TestListCli {
+    fn run(&self) -> Result<JsonValue, Error> {
+        let tla_file = TlaFileSuite::from_tla_path(&self.tla_module)?;
+        let tests = crate::model::language::Tla::extract_test_names(&tla_file);
+        tracing::debug!("Tla::extract_test_names output {:?}", &tests);
+        Ok(json!(tests))
+    }
+}
+
+/// Test models with Apalache/TLC
+#[derive(Debug, Clap)]
+#[clap(setting = AppSettings::ColoredHelp)]
+pub struct TraceCli {
+    /// test name
+    #[clap(short, long, default_value = "@all")]
+    test: String,
+    /// TODO: derive ArgEnum for ModelChecker enum
+    /// Checker name
+    #[clap(short, long, possible_values = &["apalache", "tlc"], default_value = "apalache")]
+    model_checker: ModelChecker,
+    /// output format
+    #[clap(short, long, arg_enum, default_value = "json")]
+    format: OutputFormat,
+    /// TLA+ file with test cases.
+    #[clap(parse(from_os_str), value_hint = ValueHint::FilePath)]
+    tla_module: PathBuf,
+    /// TLA+ config file with CONSTANTS, INIT and NEXT.
+    #[clap(parse(from_os_str), value_hint = ValueHint::FilePath)]
+    tla_config: PathBuf,
+}
+
+impl TraceCli {
+    fn run(&self) -> Result<JsonValue, Error> {
+        let runtime = crate::ModelatorRuntime::default();
+
+        let file_suite =
+            TlaFileSuite::from_tla_and_config_paths(&self.tla_module, &self.tla_config)?;
+        let test_names = crate::model::language::Tla::extract_test_names(&file_suite);
+
+        let resp = test_names
+            .into_iter()
+            .filter(|test_name| allow_test_name(test_name, &self.test))
+            .map(|test_name| {
+                let input_artifacts =
+                    crate::model::language::Tla::generate_test(&test_name, &file_suite)?;
+                let res = {
+                    let mut ret = match self.model_checker {
+                        ModelChecker::Apalache => {
+                            crate::model::checker::Apalache::test(&input_artifacts, &runtime)?
+                        }
+                        ModelChecker::Tlc => {
+                            crate::model::checker::Tlc::test(&input_artifacts, &runtime)?
+                        }
+                    };
+                    ret.0.extends_module_name =
+                        Some(input_artifacts.tla_file.module_name().to_string());
+                    ret
+                };
+                tracing::debug!("Apalache::test output {}", res.0);
+
+                match self.format {
+                    OutputFormat::Json => {
+                        let json_trace =
+                            crate::model::language::Tla::tla_trace_to_json_trace(res.0)?;
+                        tracing::debug!("Tla::tla_trace_to_json_trace output {}", json_trace);
+                        write_json_trace_to_file(
+                            input_artifacts.tla_file.module_name(),
+                            &json_trace,
+                        )
+                    }
+                    OutputFormat::Tla => {
+                        write_tla_trace_to_file(input_artifacts.tla_file.module_name(), &res.0)
+                    }
+                }
+            })
+            .collect::<Result<Vec<JsonValue>, _>>()?;
+
+        Ok(json!(resp))
+    }
+}
+
+#[derive(Clap, Debug)]
+enum Module {
+    /// Parse TLA+ files.
+    Parse(ParseCli),
+    /// Extract test names from tla file
+    List(TestListCli),
+    /// Generate TLA+ traces using model checker.
+    Trace(TraceCli),
+}
+
+impl Module {
+    fn run(&self) -> Result<JsonValue, Error> {
+        // setup modelator
+        let runtime = crate::ModelatorRuntime::default();
+        runtime.setup()?;
+
+        match self {
+            Self::Parse(parse_cli) => parse_cli.run(),
+            Self::List(testlist_cli) => testlist_cli.run(),
+            Self::Trace(trace_cli) => trace_cli.run(),
+        }
+    }
+}
+
 /// A struct that generates a CLI for `modelator` using [`clap`].
 #[derive(Clap, Debug)]
-#[clap(name = "modelator")]
-#[clap(setting = AppSettings::DisableHelpSubcommand)]
-pub struct CliOptions {
+#[clap(
+    name = crate_name!(),
+    author,
+    about,
+    version,
+    setting = AppSettings::ColoredHelp,
+    setting = AppSettings::InferSubcommands
+)]
+pub struct App {
     #[clap(subcommand)]
-    subcommand: Modules,
+    module: Module,
 }
-
-#[derive(Debug, Subcommand)]
-enum Modules {
-    /// Generate TLA+ test cases and parse TLA+ traces.
-    #[clap(subcommand)]
-    Tla(TlaMethods),
-    /// Generate TLA+ traces using Apalache.
-    #[clap(subcommand)]
-    Apalache(ApalacheMethods),
-    /// Generate TLA+ traces using TLC.
-    #[clap(subcommand)]
-    Tlc(TlcMethods),
-}
-
-#[derive(Debug, Subcommand)]
-#[clap(setting = AppSettings::DisableHelpSubcommand)]
-enum TlaMethods {
-    /// Generate TLA+ tests.
-    GenerateTests {
-        /// TLA+ file with test cases.
-        tla_file: String,
-        /// TLA+ config file with CONSTANTS, INIT and NEXT.
-        tla_config_file: String,
-    },
-    /// Convert a TLA+ trace to a JSON trace.
-    TlaTraceToJsonTrace {
-        /// File with a TLA+ trace produced by the Apalache or TLC modules.
-        tla_trace_file: String,
-    },
-}
-
-#[derive(Debug, Subcommand)]
-#[clap(setting = AppSettings::DisableHelpSubcommand)]
-enum ApalacheMethods {
-    /// Generate TLA+ trace from a TLA+ test.
-    Test {
-        /// TLA+ file generated by the generate-test method in the TLA module.
-        tla_file: String,
-        /// TLA+ config file generated by the generate-test method in the TLA module.
-        tla_config_file: String,
-    },
-    /// Parse a TLA+ file.
-    Parse {
-        /// TLA+ file to be parsed.
-        tla_file: String,
-    },
-}
-
-#[derive(Debug, Subcommand)]
-#[clap(setting = AppSettings::DisableHelpSubcommand)]
-enum TlcMethods {
-    /// Generate TLA+ trace from a TLA+ test.
-    Test {
-        /// TLA+ file generated by the generate-test method in the TLA module.
-        tla_file: String,
-        /// TLA+ config file generated by the generate-test method in the TLA module.
-        tla_config_file: String,
-    },
-}
-
-impl CliOptions {
-    /// Function that runs `modelator` given the parameters in the [CliOptions].
-    pub fn run(self) -> output::CliOutput {
-        let result = self.subcommand.run();
-        output::CliOutput::with_result(result)
+impl App {
+    /// The top cli arg handler
+    pub fn run(&self) -> CliOutput {
+        CliOutput::with_result(self.module.run())
     }
 }
 
-impl Modules {
-    fn run(self) -> Result<JsonValue, Error> {
-        // setup modelator
-        let options = crate::Options::default();
-        crate::setup(&options)?;
+#[derive(Debug, ArgEnum)]
+enum OutputFormat {
+    Tla,
+    Json,
+}
 
-        // run the subcommand
-        match self {
-            Self::Tla(options) => options.run(),
-            Self::Apalache(options) => options.run(),
-            Self::Tlc(options) => options.run(),
-        }
+fn allow_test_name(test_name: &str, pattern: &str) -> bool {
+    if pattern.to_ascii_lowercase() == "@all" {
+        true
+    } else {
+        // TODO: add regex pattern
+        test_name == pattern
     }
 }
 
-impl TlaMethods {
-    fn run(self) -> Result<JsonValue, Error> {
-        match self {
-            Self::GenerateTests {
-                tla_file,
-                tla_config_file,
-            } => Self::generate_tests(tla_file, tla_config_file),
-            Self::TlaTraceToJsonTrace { tla_trace_file } => {
-                Self::tla_trace_to_json_trace(tla_trace_file)
-            }
-        }
-    }
-
-    fn generate_tests(
-        tla_file_path: String,
-        tla_config_file_path: String,
-    ) -> Result<JsonValue, Error> {
-        use std::convert::TryFrom;
-        let tla_file = TlaFile::try_from(tla_file_path)?;
-        let tla_config_file = TlaConfigFile::try_from(tla_config_file_path)?;
-        let tests = crate::module::Tla::generate_tests(tla_file, tla_config_file)?;
-        tracing::debug!("Tla::generate_tests output {:#?}", tests);
-
-        json_list_generated_tests(tests)
-    }
-
-    fn tla_trace_to_json_trace(tla_trace_file: String) -> Result<JsonValue, Error> {
-        // parse tla trace
-        let tla_trace_file = Path::new(&tla_trace_file);
-        if !tla_trace_file.is_file() {
-            return Err(Error::FileNotFound(tla_trace_file.to_path_buf()));
-        }
-        let tla_trace = std::fs::read_to_string(&tla_trace_file)?.parse()?;
-
-        let json_trace = crate::module::Tla::tla_trace_to_json_trace(tla_trace)?;
-        tracing::debug!("Tla::tla_trace_to_json_trace output {}", json_trace);
-
-        write_json_trace_to_file(json_trace)
-    }
-}
-
-impl ApalacheMethods {
-    fn run(self) -> Result<JsonValue, Error> {
-        match self {
-            Self::Test {
-                tla_file,
-                tla_config_file,
-            } => Self::test(tla_file, tla_config_file),
-            Self::Parse { tla_file } => Self::parse(tla_file),
-        }
-    }
-
-    fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
-        let options = crate::Options::default();
-        use std::convert::TryFrom;
-        let tla_file = TlaFile::try_from(tla_file_path)?;
-        let tla_config_file = TlaConfigFile::try_from(tla_config_file_path)?;
-        let tla_trace = {
-            let mut ret = crate::module::Apalache::test(&tla_file, &tla_config_file, &options)?;
-            ret.extends_module_name = Some(tla_file.file_name().to_string());
-            ret
-        };
-        tracing::debug!("Apalache::test output {}", tla_trace);
-        write_tla_trace_to_file(tla_trace)
-    }
-
-    fn parse(tla_file: String) -> Result<JsonValue, Error> {
-        let options = crate::Options::default();
-        use std::convert::TryFrom;
-        let tla_file = TlaFile::try_from(tla_file)?;
-        let parsed_tla_file = crate::module::Apalache::parse(tla_file, &options)?;
-        tracing::debug!("Apalache::parse output {}", parsed_tla_file);
-
-        json_parsed_tla_file(parsed_tla_file)
-    }
-}
-
-impl TlcMethods {
-    fn run(self) -> Result<JsonValue, Error> {
-        match self {
-            Self::Test {
-                tla_file,
-                tla_config_file,
-            } => Self::test(tla_file, tla_config_file),
-        }
-    }
-
-    fn test(tla_file_path: String, tla_config_file_path: String) -> Result<JsonValue, Error> {
-        let options = crate::Options::default();
-        use std::convert::TryFrom;
-        let tla_file = TlaFile::try_from(tla_file_path)?;
-        let tla_config_file = TlaConfigFile::try_from(tla_config_file_path)?;
-        let tla_trace = {
-            let mut ret = crate::module::Tlc::test(&tla_file, &tla_config_file, &options)?;
-            ret.extends_module_name = Some(tla_file.file_name().to_string());
-            ret
-        };
-        tracing::debug!("Tlc::test output {}", tla_trace);
-        write_tla_trace_to_file(tla_trace)
-    }
-}
-
-#[allow(clippy::unnecessary_wraps)]
-fn json_list_generated_tests(tests: Vec<(TlaFile, TlaConfigFile)>) -> Result<JsonValue, Error> {
-    let json_array_entry = |tla_file: TlaFile, tla_config_file: TlaConfigFile| {
-        json!({
-            "tla_file": format!("{}", tla_file),
-            "tla_config_file": format!("{}", tla_config_file),
-        })
-    };
-    let json_array = tests
+fn json_list_generated_tests(test_files: Vec<(PathBuf, PathBuf)>) -> Result<JsonValue, Error> {
+    let json_array = test_files
         .into_iter()
-        .map(|(tla_file, tla_config_file)| json_array_entry(tla_file, tla_config_file))
+        .map(|(tla, cfg)| {
+            json!({
+                "tla_file": tla.into_os_string().into_string().unwrap(),
+                "tla_config_file": cfg.into_os_string().into_string().unwrap()
+            })
+        })
         .collect();
     Ok(JsonValue::Array(json_array))
 }
 
-fn write_tla_trace_to_file(tla_trace: TlaTrace) -> Result<JsonValue, Error> {
+fn write_parsed_tla_file_to_file(tla_file: &TlaFile) -> Result<JsonValue, Error> {
+    // Apalache changes the module name in the output file so we use it directly here.
+    let path = Path::new(tla_file.module_name());
+    tla_file.try_write_to_file(path)?;
+    Ok(json!({
+        "tla_file": crate::util::absolute_path(path),
+    }))
+}
+
+fn write_tla_trace_to_file(test_name: &str, tla_trace: &TlaTrace) -> Result<JsonValue, Error> {
     // TODO: hardcoded!
-    let path = Path::new("trace.tla");
+    let file_name = format!("trace_{}.tla", test_name);
+    let path = Path::new(&file_name);
     tla_trace.try_write_to_file(path)?;
     Ok(json!({
         "tla_trace_file": crate::util::absolute_path(&path),
     }))
 }
 
-fn write_json_trace_to_file(json_trace: JsonTrace) -> Result<JsonValue, Error> {
+fn write_json_trace_to_file(test_name: &str, json_trace: &JsonTrace) -> Result<JsonValue, Error> {
     // TODO: hardcoded!
-    let path = Path::new("trace.json");
+    let file_name = format!("trace_{}.json", test_name);
+    let path = Path::new(&file_name);
     json_trace.try_write_to_file(path)?;
     Ok(json!({
         "json_trace_file": crate::util::absolute_path(&path),
-    }))
-}
-
-#[allow(clippy::unnecessary_wraps)]
-fn json_parsed_tla_file(tla_file_parsed: TlaFile) -> Result<JsonValue, Error> {
-    Ok(json!({
-        "tla_file": format!("{}", tla_file_parsed),
     }))
 }

@@ -5,7 +5,7 @@ use serde::Serialize;
 use serde_json::Value as JsonValue;
 
 /// Struct representing the output of `modelator` CLI.
-/// See [super::CliOptions].
+/// See [`super::CliOptions`].
 #[derive(Serialize, Debug)]
 pub struct CliOutput {
     /// The return status
@@ -33,7 +33,7 @@ impl CliOutput {
     }
 
     /// Function that exits the program with a proper error code given the
-    /// the [CliOutput].
+    /// the [`CliOutput`].
     pub fn exit(self) {
         let pretty = match serde_json::to_string_pretty(&self) {
             Ok(pretty) => pretty,

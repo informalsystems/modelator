@@ -1,6 +1,5 @@
-use super::Artifact;
+use super::{Artifact, ArtifactCreator};
 use crate::Error;
-use std::convert::TryFrom;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
@@ -20,25 +19,29 @@ pub(crate) type TlaState = String;
 /// `modelator`'s artifact containing a test trace encoded as TLA+.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TlaTrace {
+    /// TODO: file_contents backing strings are to be removed
+    file_contents_backing: String,
+
     states: Vec<TlaState>,
     // Name of module that is extended by the trace
     pub(crate) extends_module_name: Option<String>,
 }
 
 impl TlaTrace {
-    pub(crate) fn new() -> Self {
-        Self {
-            states: Vec::new(),
-            extends_module_name: None,
-        }
-    }
-
     pub(crate) fn add(&mut self, state: TlaState) {
         self.states.push(state);
     }
 
     pub(crate) fn is_empty(&self) -> bool {
         self.states.is_empty()
+    }
+
+    pub(crate) fn new() -> Self {
+        Self {
+            states: Vec::new(),
+            extends_module_name: None,
+            file_contents_backing: "".to_owned(),
+        }
     }
 }
 
@@ -60,51 +63,50 @@ impl std::fmt::Display for TlaTrace {
     }
 }
 
-impl TryFrom<&str> for TlaTrace {
-    type Error = crate::Error;
-    fn try_from(_path: &str) -> Result<Self, Self::Error> {
-        // Self::new(path)
-        todo!();
-    }
-}
+impl ArtifactCreator for TlaTrace {
+    fn from_string(s: &str) -> Result<Self, Error> {
+        // Ok(TlaTrace {
+        //     states: Vec::new(),
+        //     extends_module_name: None,
+        //     file_contents_backing: "".to_owned(),
+        // })
+        let tla_trace = remove_tla_comments(s);
 
-impl TryFrom<String> for TlaTrace {
-    type Error = crate::Error;
-    fn try_from(_path: String) -> Result<Self, Self::Error> {
-        // Self::new(path)
-        todo!();
-    }
-}
+        let tla: TlaTraceFileContent<'_> = parse_tla_trace_file_contents(&tla_trace).unwrap().1;
 
-impl TryFrom<&Path> for TlaTrace {
-    type Error = crate::Error;
-    fn try_from(_path: &Path) -> Result<Self, Self::Error> {
-        // Self::new(path)
-        todo!();
-    }
-}
+        let mut states: Vec<(usize, &str)> = tla
+            .operators
+            .into_iter()
+            .filter(|(identifier, _)| identifier.starts_with("State"))
+            .map(|(k, state)| (k[5..k.len()].parse().unwrap(), state))
+            .collect();
 
-impl TryFrom<PathBuf> for TlaTrace {
-    type Error = crate::Error;
-    fn try_from(_path: PathBuf) -> Result<Self, Self::Error> {
-        // Self::new(path)
-        todo!();
+        states.sort_unstable();
+        states.dedup_by_key(|(k, _)| *k);
+
+        assert_eq!(
+            (states.first().unwrap().0, states.last().unwrap().0 + 1),
+            (0, states.len()),
+            "some consecutive states are missing in .tla trace"
+        );
+
+        let mut trace = Self::new();
+        states
+            .into_iter()
+            .for_each(|(_, state)| trace.add(state.into()));
+        Ok(trace)
     }
 }
 
 impl Artifact for TlaTrace {
-    fn as_string(&self) -> &str {
-        todo!()
-    }
-    fn try_write_to_file(&self, path: &Path) -> Result<(), Error> {
+    fn as_string(&self) -> String {
         match &self.extends_module_name {
-            None => Ok(std::fs::write(&path, format!("{:?}", self.states))?),
+            None => format!("{}", self),
             Some(name) => {
-                let content = format!(
-                    "---- MODULE trace ----\n\nEXTENDS {}\n\n{:?}\n====",
-                    name, self.states
-                );
-                Ok(std::fs::write(&path, content)?)
+                format!(
+                    "---- MODULE trace ----\n\nEXTENDS {}\n\n{}\n====",
+                    name, self
+                )
             }
         }
     }
@@ -174,7 +176,7 @@ fn parse_tla_trace_file_contents(i: &str) -> IResult<&str, TlaTraceFileContent<'
                     ),
                     multispace1,
                 ),
-                terminated(
+                opt(terminated(
                     preceded(
                         tag_no_case("EXTENDS "),
                         separated_list1(
@@ -183,7 +185,7 @@ fn parse_tla_trace_file_contents(i: &str) -> IResult<&str, TlaTraceFileContent<'
                         ),
                     ),
                     multispace1,
-                ),
+                )),
                 separated_list1(
                     multispace1,
                     separated_pair(
@@ -197,40 +199,8 @@ fn parse_tla_trace_file_contents(i: &str) -> IResult<&str, TlaTraceFileContent<'
         ),
         |(name, extends, operators)| TlaTraceFileContent {
             name,
-            extends,
+            extends: extends.unwrap_or_default(),
             operators,
         },
     )(i)
-}
-
-impl FromStr for TlaTrace {
-    type Err = Error;
-
-    fn from_str(tla_trace: &str) -> Result<Self, Self::Err> {
-        let tla_trace = remove_tla_comments(tla_trace);
-
-        let tla: TlaTraceFileContent<'_> = parse_tla_trace_file_contents(&tla_trace).unwrap().1;
-
-        let mut states: Vec<(usize, &str)> = tla
-            .operators
-            .into_iter()
-            .filter(|(identifier, _)| identifier.starts_with("State"))
-            .map(|(k, state)| (k[5..k.len()].parse().unwrap(), state))
-            .collect();
-
-        states.sort_unstable();
-        states.dedup_by_key(|(k, _)| *k);
-
-        assert_eq!(
-            (states.first().unwrap().0, states.last().unwrap().0 + 1),
-            (0, states.len()),
-            "some consecutive states are missing in .tla trace"
-        );
-
-        let mut trace = TlaTrace::new();
-        states
-            .into_iter()
-            .for_each(|(_, state)| trace.add(state.into()));
-        Ok(trace)
-    }
 }

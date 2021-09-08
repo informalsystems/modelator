@@ -1,9 +1,11 @@
-use super::Artifact;
+use super::{Artifact, ArtifactCreator};
 use crate::Error;
 use serde_json::Value as JsonValue;
 use std::convert::TryFrom;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
+
+//TODO: make this match the
 
 /// `modelator`'s artifact containing a test trace encoded as JSON.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -40,43 +42,9 @@ impl std::fmt::Display for JsonTrace {
     }
 }
 
-impl TryFrom<&str> for JsonTrace {
-    type Error = crate::Error;
-    fn try_from(_path: &str) -> Result<Self, Self::Error> {
-        // Self::new(path)
-        todo!();
-    }
-}
-
-impl TryFrom<String> for JsonTrace {
-    type Error = crate::Error;
-    fn try_from(_path: String) -> Result<Self, Self::Error> {
-        // Self::new(path)
-        todo!();
-    }
-}
-
-impl TryFrom<&Path> for JsonTrace {
-    type Error = crate::Error;
-    fn try_from(_path: &Path) -> Result<Self, Self::Error> {
-        // Self::new(path)
-        todo!();
-    }
-}
-
-impl TryFrom<PathBuf> for JsonTrace {
-    type Error = crate::Error;
-    fn try_from(_path: PathBuf) -> Result<Self, Self::Error> {
-        // Self::new(path)
-        todo!();
-    }
-}
-
 impl Artifact for JsonTrace {
-    fn as_string(&self) -> &str {
-        todo!()
-    }
-    fn try_write_to_file(&self, path: &Path) -> Result<(), Error> {
-        Ok(std::fs::write(&path, format!("{}", self))?)
+    fn as_string(&self) -> String {
+        serde_json::to_string_pretty(&self.states)
+            .expect("should not fail as it [serde_json::Value] is serializable")
     }
 }

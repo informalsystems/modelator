@@ -2,7 +2,7 @@ use serde::Serialize;
 use std::fmt::Debug;
 use thiserror::Error;
 
-use crate::module::{apalache, ErrorMessage};
+use crate::model::checker::ApalacheError;
 
 /// Set of possible errors that can occur when running `modelator`.
 #[allow(clippy::upper_case_acronyms)]
@@ -15,6 +15,10 @@ pub enum Error {
     /// An error that occurs when invalid unicode is encountered.
     #[error("Invalid unicode: {0:?}")]
     InvalidUnicode(std::ffi::OsString),
+
+    /// An error that occurs when a TLA file does not have a module name.
+    #[error("Unable to parse module name of: {0}")]
+    MissingTlaFileModuleName(String),
 
     /// An error that occurs when a file is not found.
     #[error("File not found: {0}")]
@@ -30,7 +34,7 @@ pub enum Error {
 
     /// An error that occurs when a TLA+ file representing a set of tests contains no test.
     #[error("No test found in {0}")]
-    NoTestFound(std::path::PathBuf),
+    NoTestFound(String),
 
     /// An error that occurs when the model checker isn't able to generate a test trace.
     #[error("No trace found in {0}")]
@@ -46,7 +50,7 @@ pub enum Error {
 
     /// An error that occurs when the output of Apalache returns an error.
     #[error("Apalache failure: {0}")]
-    ApalacheFailure(apalache::error_message::ErrorMessage),
+    ApalacheFailure(ApalacheError),
 
     /// An error that occurs when the counterexample produced by Apalache is unexpected.
     #[error("Invalid Apalache counterexample: {0}")]
@@ -63,23 +67,31 @@ pub enum Error {
     /// An error that occurs when parsing a JSON value.
     #[error("JSON parse error: {0}")]
     JsonParseError(String),
+
+    /// An error for unrecognized checker name.
+    #[error("Unrecognized checker: {0}")]
+    UnrecognizedChecker(String),
+
+    /// An error for unsupported output format.
+    #[error("Unsupported output format: {0}")]
+    UnsupportedOutputFormat(String),
 }
 
 impl From<std::io::Error> for Error {
     fn from(err: std::io::Error) -> Self {
-        Error::IO(err.to_string())
+        Self::IO(err.to_string())
     }
 }
 
 impl From<ureq::Error> for Error {
     fn from(err: ureq::Error) -> Self {
-        Error::Ureq(err.to_string())
+        Self::Ureq(err.to_string())
     }
 }
 
 impl From<nom::Err<nom::error::Error<&str>>> for Error {
     fn from(err: nom::Err<nom::error::Error<&str>>) -> Self {
-        Error::Nom(err.to_string())
+        Self::Nom(err.to_string())
     }
 }
 

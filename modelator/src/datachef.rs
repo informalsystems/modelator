@@ -150,7 +150,7 @@ pub struct Recipe {
 
 impl Default for Recipe {
     fn default() -> Self {
-        Recipe::new()
+        Self::new()
     }
 }
 
@@ -179,7 +179,7 @@ impl Recipe {
     }
 
     /// Add named conversion from From into To.
-    /// Use [make_as()](Recipe::make_as) to apply the conversion.
+    /// Use [`make_as()`](Recipe::make_as) to apply the conversion.
     pub fn add_as<From, To>(&mut self, name: &str, converter: fn(&Self, From) -> To)
     where
         From: Sized + Any,
@@ -190,14 +190,14 @@ impl Recipe {
     }
 
     /// Put default value for type T.
-    /// Use [take()](Recipe::take) to retrieve the default.
+    /// Use [`take()`](Recipe::take) to retrieve the default.
     pub fn put<T: Sized + Any>(&mut self, default: fn(&Self) -> T) {
         let type_id = TypeId::of::<T>();
         self.defaults.insert(type_id, Box::new(default));
     }
 
     /// Put named default value for type T.
-    /// Use [take_as()](Recipe::take_as) to retrieve the default.
+    /// Use [`take_as()`](Recipe::take_as) to retrieve the default.
     pub fn put_as<T: Sized + Any>(&mut self, name: &str, f: fn(&Self) -> T) {
         let type_id = TypeId::of::<T>();
         self.named_defaults
@@ -343,7 +343,7 @@ mod tests {
         let mut r = Recipe::new();
         r.put(|_| Phone {
             area_code: 123,
-            _number: 456789,
+            _number: 456_789,
         });
         r.put(|_| Address {
             postal_code: 10179,
@@ -374,9 +374,9 @@ mod tests {
         });
 
         let test_phone = |r: &Recipe| {
-            assert!(check_record(r.make((123u32, 1234567u32))));
-            assert!(!check_record(r.make((1u32, 1234567u32))));
-            assert!(!check_record(r.make((1234u32, 1234567u32))));
+            assert!(check_record(r.make((123_u32, 1_234_567_u32))));
+            assert!(!check_record(r.make((1_u32, 1_234_567_u32))));
+            assert!(!check_record(r.make((1234_u32, 1_234_567_u32))));
         };
         test_phone(&r);
         r.add(|r, phone: (u32, u32)| Record {
@@ -419,8 +419,8 @@ mod tests {
     #[test]
     fn test() {
         let mut r = Recipe::new();
-        r.put_as("height", |_| 1u64);
-        r.put_as("id", |_| 0u64);
+        r.put_as("height", |_| 1_u64);
+        r.put_as("id", |_| 0_u64);
         r.put(|r| Provider {
             name: "default_provider".to_string(),
             id: r.take_as("id"),
