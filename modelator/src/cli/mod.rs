@@ -116,18 +116,18 @@ impl TraceCli {
             // Convert each trace to json
             let trace_write_results: Result<Vec<JsonValue>, Error> = traces
                 .into_iter()
-                .map(|trace| match self.format {
-                    OutputFormat::Json => {
-                        let json_trace =
-                            crate::model::language::Tla::tla_trace_to_json_trace(trace)?;
-                        tracing::debug!("Tla::tla_trace_to_json_trace output {}", json_trace);
-                        write_json_trace_to_file(
-                            input_artifacts.tla_file.module_name(),
-                            &json_trace,
-                        )
-                    }
-                    OutputFormat::Tla => {
-                        write_tla_trace_to_file(input_artifacts.tla_file.module_name(), &trace)
+                .enumerate()
+                .map(|(i, trace)| {
+                    let write_file_name =
+                        format!("{}{}", input_artifacts.tla_file.module_name(), i);
+                    match self.format {
+                        OutputFormat::Json => {
+                            let json_trace =
+                                crate::model::language::Tla::tla_trace_to_json_trace(trace)?;
+                            tracing::debug!("Tla::tla_trace_to_json_trace output {}", json_trace);
+                            write_json_trace_to_file(&write_file_name, &json_trace)
+                        }
+                        OutputFormat::Tla => write_tla_trace_to_file(&write_file_name, &trace),
                     }
                 })
                 .collect();
