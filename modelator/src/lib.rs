@@ -70,6 +70,24 @@ use std::path::{Path, PathBuf};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use tempfile::tempdir;
 
+struct TestReport {
+    test_name_to_trace_execution_result: BTreeMap<String, Vec<Result<(), TestError>>>,
+}
+
+impl TestReport {
+    pub fn is_ok(&self) -> bool {
+        !self
+            .test_name_to_trace_execution_result
+            .values()
+            .flatten()
+            .any(Result::is_err)
+    }
+
+    pub fn result_of_test(&self, name: &str) -> Option<&Vec<Result<(), TestError>>> {
+        self.test_name_to_trace_execution_result.get(name)
+    }
+}
+
 /// Set of options to configure `modelator` runtime.
 #[derive(Clone, Debug)]
 pub struct ModelatorRuntime {
