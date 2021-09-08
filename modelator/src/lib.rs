@@ -89,6 +89,22 @@ impl TestReport {
     pub fn result_of_test(&self, name: &str) -> Option<&Vec<Result<(), TestError>>> {
         self.test_name_to_trace_execution_result.get(name)
     }
+
+    /// Returns the vector containing the results for each test
+    pub fn all(
+        &self,
+    ) -> std::collections::btree_map::Values<
+        '_,
+        std::string::String,
+        Vec<Result<(), error::TestError>>,
+    > {
+        self.test_name_to_trace_execution_result.values()
+    }
+
+    /// Returns the concatenation of the vectors containing the results for each test
+    pub fn flat(&self) -> Vec<&Result<(), TestError>> {
+        self.all().flatten().collect()
+    }
 }
 
 /// Set of options to configure `modelator` runtime.
