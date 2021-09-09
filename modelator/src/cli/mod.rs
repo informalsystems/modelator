@@ -75,11 +75,18 @@ pub struct TraceCli {
     /// TLA+ config file with CONSTANTS, INIT and NEXT.
     #[clap(parse(from_os_str), value_hint = ValueHint::FilePath)]
     tla_config: PathBuf,
+    /// The number of traces to generate for a single test.
+    #[clap(long)]
+    num_traces: i32,
 }
 
 impl TraceCli {
     fn run(&self) -> Result<JsonValue, Error> {
-        let runtime = crate::ModelatorRuntime::default();
+        let runtime = {
+            let mut runtime = crate::ModelatorRuntime::default();
+            runtime.model_checker_runtime.traces_per_test = self.num_traces;
+            runtime
+        };
 
         let file_suite =
             TlaFileSuite::from_tla_and_config_paths(&self.tla_module, &self.tla_config)?;
