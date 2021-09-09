@@ -12,7 +12,7 @@ use std::env;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-const DEFAULT_TRACES_PER_TEST: i32 = 1;
+const DEFAULT_TRACES_PER_TEST: usize = 1;
 
 /// Set of options to select the model checker to be used and configure them.
 #[derive(Clone, Debug)]
@@ -29,7 +29,7 @@ pub struct ModelCheckerRuntime {
     pub log: PathBuf,
 
     /// The maximum number of traces to try to generate for a single test.
-    pub traces_per_test: i32,
+    pub traces_per_test: usize,
 }
 
 impl ModelCheckerRuntime {

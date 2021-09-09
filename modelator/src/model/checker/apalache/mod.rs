@@ -197,7 +197,7 @@ fn test_cmd<P: AsRef<Path>>(
     mut cmd: Command,
     tla_file_base_name: P,
     tla_config_file_base_name: P,
-    max_error: i32,
+    max_error: usize,
 ) -> Command {
     cmd.arg("check")
         .arg(format!(

@@ -69,15 +69,15 @@ pub struct TraceCli {
     /// output format
     #[clap(short, long, arg_enum, default_value = "json")]
     format: OutputFormat,
+    /// The number of traces to generate for a single test.
+    #[clap(short, long, default_value = "0")]
+    num_traces: usize,
     /// TLA+ file with test cases.
     #[clap(parse(from_os_str), value_hint = ValueHint::FilePath)]
     tla_module: PathBuf,
     /// TLA+ config file with CONSTANTS, INIT and NEXT.
     #[clap(parse(from_os_str), value_hint = ValueHint::FilePath)]
     tla_config: PathBuf,
-    /// The number of traces to generate for a single test.
-    #[clap(long)]
-    num_traces: i32,
 }
 
 impl TraceCli {
