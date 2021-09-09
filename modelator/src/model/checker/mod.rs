@@ -12,7 +12,7 @@ use std::env;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-const DEFAULT_TRACES_PER_TEST: i32 = 6;
+const DEFAULT_TRACES_PER_TEST: i32 = 1;
 
 /// Set of options to select the model checker to be used and configure them.
 #[derive(Clone, Debug)]
