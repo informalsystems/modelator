@@ -40,7 +40,7 @@ impl Tlc {
     pub fn test(
         tla_file_suite: &TlaFileSuite,
         runtime: &ModelatorRuntime,
-    ) -> Result<(TlaTrace, ModelCheckerStdout), Error> {
+    ) -> Result<(Vec<TlaTrace>, ModelCheckerStdout), Error> {
         let tla_file = &tla_file_suite.tla_file;
         let tla_config_file = &tla_file_suite.tla_config_file;
         tracing::debug!("Tlc::test {} {} {:?}", tla_file, tla_config_file, runtime);
@@ -76,10 +76,13 @@ impl Tlc {
         tracing::debug!("TLC stderr:\n{}", stderr);
 
         match (stdout.is_empty(), stderr.is_empty()) {
+            (true, true) => {
+                panic!("[modelator] stdout and stderr from TLC both empty")
+            }
             (false, true) => {
                 let tlc_log = ModelCheckerStdout::from_string(&stdout)?;
 
-                let mut traces = output::parse(&stdout, &runtime.model_checker_runtime)?;
+                let traces = output::parse_traces(&stdout, &runtime.model_checker_runtime)?;
 
                 // check if no trace was found
                 if traces.is_empty() {
@@ -89,25 +92,14 @@ impl Tlc {
                     ));
                 }
 
-                // at most one trace should have been found
-                assert_eq!(
-                    traces.len(),
-                    1,
-                    "[modelator] unexpected number of traces in TLC's log"
-                );
-                let trace = traces.pop().unwrap();
-
                 // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
                 // cache trace and then return it
                 //cache.insert(cache_key, &trace)?;
-                Ok((trace, tlc_log))
-            }
-            (true, false) => {
-                // if stdout is empty, but the stderr is not, return an error
-                Err(Error::TLCFailure(stderr))
+                Ok((traces, tlc_log))
             }
             _ => {
-                panic!("[modelator] unexpected TLC's stdout/stderr combination")
+                // stderr not empty
+                Err(Error::TLCFailure(stderr))
             }
         }
     }
@@ -151,6 +143,17 @@ fn test_cmd<P: AsRef<Path>>(
         // set the number of TLC's workers
         .arg("-workers")
         .arg(workers(runtime));
+
+    if 1 < runtime.model_checker_runtime.traces_per_test {
+        // Allow TLC to continue model checking after violating the test invariant
+        // NOTE: currently, limiting the number of tests generated or halting when exploring
+        // an unbounded state space is not supported.
+        cmd.arg("-continue");
+        tracing::warn!(
+            r#"Generating multiple traces per test when using TLC can result in
+TLC not terminating if the state space is unbounded."#
+        );
+    }
 
     // show command being run
     tracing::debug!("{}", crate::util::cmd_show(&cmd));

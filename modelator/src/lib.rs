@@ -62,12 +62,50 @@ pub use step_runner::StepRunner;
 
 use crate::artifact::{Artifact, ArtifactCreator};
 
+use std::collections::BTreeMap;
 use std::env;
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
 
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use tempfile::tempdir;
+
+/// Wraps the data from running test(s), allowing more convenient access to the results.
+pub struct TestReport {
+    test_name_to_trace_execution_result: BTreeMap<String, Vec<Result<(), TestError>>>,
+}
+
+impl TestReport {
+    /// Returns true iff no test failed
+    pub fn is_ok(&self) -> bool {
+        !self
+            .test_name_to_trace_execution_result
+            .values()
+            .flatten()
+            .any(Result::is_err)
+    }
+
+    /// Get the vector of results from running counterexample(s) for a single test
+    pub fn result_of_test(&self, name: &str) -> Option<&Vec<Result<(), TestError>>> {
+        self.test_name_to_trace_execution_result.get(name)
+    }
+
+    /// Returns the vector containing the results for each test
+    pub fn all(
+        &self,
+    ) -> std::collections::btree_map::Values<
+        '_,
+        std::string::String,
+        Vec<Result<(), error::TestError>>,
+    > {
+        self.test_name_to_trace_execution_result.values()
+    }
+
+    /// Returns the concatenation of the vectors containing the results for each test
+    pub fn flat(&self) -> Vec<&Result<(), TestError>> {
+        self.all().flatten().collect()
+    }
+}
 
 /// Set of options to configure `modelator` runtime.
 #[derive(Clone, Debug)]
@@ -145,34 +183,41 @@ impl ModelatorRuntime {
         &self,
         tla_tests_file_path: P,
         tla_config_file_path: P,
-    ) -> Result<Vec<Result<artifact::JsonTrace, Error>>, Error> {
+    ) -> Result<BTreeMap<String, Result<Vec<artifact::JsonTrace>, Error>>, Error> {
+        // Each test maps to a result containing the vec of all it's traces.
+
+        let mut res: BTreeMap<String, Result<Vec<artifact::JsonTrace>, Error>> = BTreeMap::new();
+
         // setup modelator
         self.setup()?;
 
         let file_suite =
             TlaFileSuite::from_tla_and_config_paths(tla_tests_file_path, tla_config_file_path)?;
+
         let tests = Tla::generate_tests(&file_suite)?;
 
         #[allow(clippy::needless_collect)]
         // rust iterators are lazy
         // so we need to collect the traces in memory before deleting the work directory
-
-        // run the model checker configured on each tla test
-        let trace_results = tests
+        let trace_results = (&tests)
             .into_par_iter()
-            .map(
-                |test_file_suite| match self.model_checker_runtime.model_checker {
-                    ModelChecker::Tlc => Tlc::test(&test_file_suite, self),
-                    ModelChecker::Apalache => Apalache::test(&test_file_suite, self),
-                },
-            )
+            .map(|test| match self.model_checker_runtime.model_checker {
+                ModelChecker::Tlc => Tlc::test(&test.file_suite, self),
+                ModelChecker::Apalache => Apalache::test(&test.file_suite, self),
+            })
             .collect::<Vec<_>>();
 
-        // convert each tla trace to json
-        Ok(trace_results
-            .into_iter()
-            .map(|res| res.and_then(|it| Tla::tla_trace_to_json_trace(it.0)))
-            .collect())
+        for (i, trace_result) in trace_results.into_iter().enumerate() {
+            let test_name = tests[i].name.clone();
+            let (traces, _) = trace_result?;
+            let jsons: Result<Vec<artifact::JsonTrace>, Error> = traces
+                .into_iter()
+                .map(Tla::tla_trace_to_json_trace)
+                .collect();
+            res.insert(test_name, jsons);
+        }
+
+        Ok(res)
     }
 
     /// This is the most simple interface to run your system under test (SUT)
@@ -259,17 +304,27 @@ impl ModelatorRuntime {
         tla_tests_file_path: P,
         tla_config_file_path: P,
         system: &mut System,
-    ) -> Result<Vec<Result<(), TestError>>, Error>
+    ) -> Result<TestReport, Error>
     where
         P: AsRef<Path>,
         System: StepRunner<Step> + Debug + Clone,
         Step: DeserializeOwned + Debug + Clone,
     {
-        let trace_results = self.traces(tla_tests_file_path, tla_config_file_path)?;
-        Ok(trace_results
-            .into_iter()
-            .map(|trace_result| system.run(trace_result.map_err(TestError::Modelator)?))
-            .collect())
+        Ok(TestReport {
+            test_name_to_trace_execution_result: {
+                let mut ret = BTreeMap::new();
+
+                let traces_for_tests = self.traces(tla_tests_file_path, tla_config_file_path)?;
+
+                for (test_name, traces) in traces_for_tests {
+                    let traces = traces?;
+                    let results: Vec<Result<(), TestError>> =
+                        traces.into_iter().map(|it| system.run(it)).collect();
+                    ret.insert(test_name, results);
+                }
+                ret
+            },
+        })
     }
 
     /// Run the system under test (SUT) using the abstract events obtained
@@ -379,39 +434,51 @@ impl ModelatorRuntime {
         tla_config_file_path: P,
         system: &mut System,
         runner: &mut event::EventRunner<System>,
-    ) -> Result<Vec<Result<(), TestError>>, Error>
+    ) -> Result<TestReport, Error>
     where
         P: AsRef<Path>,
         System: Debug + Default,
     {
-        let trace_results = self.traces(tla_tests_file_path, tla_config_file_path)?;
+        Ok(TestReport {
+            test_name_to_trace_execution_result: {
+                let mut ret = BTreeMap::new();
 
-        Ok(trace_results
-            .into_iter()
-            .map(|trace_result| {
-                let trace = trace_result.map_err(TestError::Modelator)?;
-                let events: EventStream = trace.clone().into();
-                runner
-                    .run(system, &mut events.into_iter())
-                    .map_err(|op| match op {
-                        TestError::UnhandledTest { system, .. } => TestError::UnhandledTest {
-                            test: trace.to_string(),
-                            system,
-                        },
-                        TestError::FailedTest {
-                            message,
-                            location,
-                            system,
-                            ..
-                        } => TestError::FailedTest {
-                            test: trace.to_string(),
-                            message,
-                            location,
-                            system,
-                        },
-                        TestError::Modelator(_) => op,
-                    })
-            })
-            .collect())
+                let traces_for_tests = self.traces(tla_tests_file_path, tla_config_file_path)?;
+
+                for (test_name, traces) in traces_for_tests {
+                    let traces = traces?;
+                    let results: Vec<Result<(), TestError>> = traces
+                        .iter()
+                        .map(|trace| {
+                            let events: EventStream = trace.clone().into();
+                            runner
+                                .run(system, &mut events.into_iter())
+                                .map_err(|op| match op {
+                                    TestError::UnhandledTest { system, .. } => {
+                                        TestError::UnhandledTest {
+                                            test: trace.to_string(),
+                                            system,
+                                        }
+                                    }
+                                    TestError::FailedTest {
+                                        message,
+                                        location,
+                                        system,
+                                        ..
+                                    } => TestError::FailedTest {
+                                        test: trace.to_string(),
+                                        message,
+                                        location,
+                                        system,
+                                    },
+                                    TestError::Modelator(_) => op,
+                                })
+                        })
+                        .collect();
+                    ret.insert(test_name, results);
+                }
+                ret
+            },
+        })
     }
 }

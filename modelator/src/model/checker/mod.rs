@@ -12,6 +12,8 @@ use std::env;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
+const DEFAULT_TRACES_PER_TEST: usize = 1;
+
 /// Set of options to select the model checker to be used and configure them.
 #[derive(Clone, Debug)]
 pub struct ModelCheckerRuntime {
@@ -25,6 +27,9 @@ pub struct ModelCheckerRuntime {
 
     /// Model checker log file for debugging purposes.
     pub log: PathBuf,
+
+    /// The maximum number of traces to try to generate for a single test.
+    pub traces_per_test: usize,
 }
 
 impl ModelCheckerRuntime {
@@ -53,6 +58,7 @@ impl Default for ModelCheckerRuntime {
             model_checker: ModelChecker::Apalache,
             workers: ModelCheckerWorkers::Auto,
             log: Path::new("mc.log").to_path_buf(),
+            traces_per_test: DEFAULT_TRACES_PER_TEST,
         }
     }
 }

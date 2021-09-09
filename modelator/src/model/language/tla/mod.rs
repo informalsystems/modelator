@@ -12,6 +12,11 @@ use std::path::Path;
 #[derive(Debug, Clone, Copy)]
 pub struct Tla;
 
+pub struct TlaTest {
+    pub file_suite: TlaFileSuite,
+    pub name: String,
+}
+
 impl Tla {
     /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
     ///
@@ -61,7 +66,7 @@ impl Tla {
     /// let mut tests = Tla::generate_tests(&tla_suite).unwrap();
     /// println!("{:?}", tests);
     /// ```
-    pub fn generate_tests(tla_file_suite: &TlaFileSuite) -> Result<Vec<TlaFileSuite>, Error> {
+    pub fn generate_tests(tla_file_suite: &TlaFileSuite) -> Result<Vec<TlaTest>, Error> {
         tracing::debug!(
             "Tla::generate_tests {} {}",
             tla_file_suite.tla_file,
@@ -87,7 +92,12 @@ impl Tla {
         // generate a tla test file and config for each test name found
         test_names
             .into_iter()
-            .map(|test_name| Self::generate_test(&test_name, tla_file_suite))
+            .map(|test_name| {
+                Ok(TlaTest {
+                    name: test_name.clone(),
+                    file_suite: Self::generate_test(&test_name, tla_file_suite)?,
+                })
+            })
             .collect()
     }
 

@@ -47,7 +47,7 @@ impl Apalache {
     pub fn test(
         input_artifacts: &TlaFileSuite,
         runtime: &ModelatorRuntime,
-    ) -> Result<(TlaTrace, ModelCheckerStdout), Error> {
+    ) -> Result<(Vec<TlaTrace>, ModelCheckerStdout), Error> {
         // TODO: this method currently just uses the paths of the files so no need for whole artifact objects!
 
         tracing::debug!(
@@ -77,33 +77,47 @@ impl Apalache {
             cmd,
             input_artifacts.tla_file.file_name(),
             input_artifacts.tla_config_file.filename(),
-            runtime,
+            runtime.model_checker_runtime.traces_per_test,
+        );
+
+        tracing::warn!(
+            "the following workers option was ignored since apalache is single-threaded: {:?}",
+            runtime.model_checker_runtime.workers
         );
 
         let apalache_output = run_apalache(cmd)?;
 
         let counterexample_paths = apalache_output.parse_counterexample_filenames()?;
 
-        if counterexample_paths.len() != 1 || counterexample_paths[0] != "counterexample1.tla" {
-            panic!("[modelator] expect a counterexample file called counterexample.tla")
+        if counterexample_paths.is_empty() {
+            return Err(Error::NoTestTraceFound(
+                //TODO: this will have to be changed to reflect new in-memory log
+                runtime.model_checker_runtime.log.clone(),
+            ));
         }
 
-        // Read the  apalache counterexample from disk and parse a trace from it
-        let counterexample_path = tdir.into_path().join(&counterexample_paths[0]);
+        let traces = counterexample_paths
+            .iter()
+            .map(|counterexample_path_base| {
+                // Read the  apalache counterexample from disk and parse a trace from it
+                let counterexample_path = tdir.path().join(&counterexample_path_base);
 
-        if !counterexample_path.is_file() {
-            panic!("[modelator] expected to find Apalache's counterexample1.tla file");
-        }
+                if !counterexample_path.is_file() {
+                    panic!("[modelator] expected to find Apalache's counterexample1.tla file");
+                }
 
-        let counterexample: TlaFile = TlaFile::try_read_from_file(counterexample_path)?;
-        tracing::debug!("Apalache counterexample:\n{}", counterexample);
-        let trace = counterexample::parse(counterexample.file_contents_backing())?;
+                let counterexample: TlaFile = TlaFile::try_read_from_file(counterexample_path)?;
+                tracing::debug!("Apalache counterexample:\n{}", counterexample);
+                counterexample::parse(counterexample.file_contents_backing())
+            })
+            .filter_map(Result::ok)
+            .collect();
 
         // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
         // cache trace and then return it
         //cache.insert(cache_key, &trace)?;
         Ok((
-            trace,
+            traces,
             ModelCheckerStdout::from_string(&apalache_output.stdout)?,
         ))
     }
@@ -183,19 +197,15 @@ fn test_cmd<P: AsRef<Path>>(
     mut cmd: Command,
     tla_file_base_name: P,
     tla_config_file_base_name: P,
-    runtime: &ModelatorRuntime,
+    max_error: usize,
 ) -> Command {
     cmd.arg("check")
         .arg(format!(
             "--config={}",
             tla_config_file_base_name.as_ref().to_string_lossy()
         ))
+        .arg(format!("--max-error={}", max_error))
         .arg(tla_file_base_name.as_ref());
-
-    tracing::warn!(
-        "the following workers option was ignored since apalache is single-threaded: {:?}",
-        runtime.model_checker_runtime.workers
-    );
 
     // show command being run
     tracing::debug!("{}", crate::util::cmd_show(&cmd));
@@ -224,6 +234,11 @@ fn apalache_start_cmd(temp_dir: &tempfile::TempDir, runtime: &ModelatorRuntime) 
     let apalache = jar::Jar::Apalache.path(&runtime.dir);
 
     let mut cmd = Command::new("java");
+
+    cmd.env(
+        "JAVA_HOME",
+        "/Library/Java/JavaVirtualMachines/zulu-16.jdk/Contents/Home",
+    );
 
     cmd.current_dir(temp_dir)
         .arg(format!(

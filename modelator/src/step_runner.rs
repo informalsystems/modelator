@@ -102,6 +102,6 @@ mod tests {
         let mut runner = NumberSystem::default();
         assert!(runtime
             .run_tla_steps(tla_tests_file, tla_config_file, &mut runner)
-            .is_ok());
+            .map_or_else(|_| false, |v| v.is_ok()),);
     }
 }
