@@ -235,6 +235,11 @@ fn apalache_start_cmd(temp_dir: &tempfile::TempDir, runtime: &ModelatorRuntime) 
 
     let mut cmd = Command::new("java");
 
+    cmd.env(
+        "JAVA_HOME",
+        "/Library/Java/JavaVirtualMachines/zulu-16.jdk/Contents/Home",
+    );
+
     cmd.current_dir(temp_dir)
         .arg(format!(
             "-DTLA-Library={}",
