@@ -225,9 +225,11 @@ fn cli_traces<P: AsRef<Path>>(
         .collect::<Vec<_>>();
 
     // run CLI to run the model checker configured on each tla test
+    // needless collect is allowed because the we need to read
+    // the artifacts before they are removed
+    #[allow(clippy::needless_collect)]
     let traces = tests
-        .clone()
-        .into_iter()
+        .iter()
         .map(|(tla_file, tla_config_file)| {
             let module = match options.model_checker_runtime.model_checker {
                 ModelChecker::Tlc => "tlc",
