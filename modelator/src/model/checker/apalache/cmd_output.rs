@@ -137,7 +137,7 @@ mod tests {
     fn test_is_error_line() {
         let line = "State 2: state invariant 0 violated. Check the counterexample in: counterexample1.tla, MC1.out, counterexample1.json E@11:13:37.003";
         let res = is_error_line(line);
-        assert_eq!(res, true);
+        assert!(res);
     }
 
     #[test]
