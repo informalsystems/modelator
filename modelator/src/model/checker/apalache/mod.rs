@@ -75,14 +75,11 @@ impl Apalache {
         // Check if the main tla module contains a View
         // The view will have a generated name 'ViewForTestNeg'
         // If it has one, then use it.
-        let view = match input_artifacts
+        let view = input_artifacts
             .tla_file
             .file_contents_backing()
             .contains("ViewForTestNeg")
-        {
-            true => Some("ViewForTestNeg".to_owned()),
-            false => None,
-        };
+            .then(|| "ViewForTestNeg".to_owned());
 
         // create 'apalache test' command
         let cmd = check_cmd(

@@ -201,17 +201,18 @@ fn extract_view_operator(
     Ok(operators.iter().fold(None, |acc, s| -> Option<String> {
         // If the operator is a test specific view then use it
         if *s == format!("{}View", test_name) {
-            return Some(s.clone());
+            Some(s.clone())
         }
         // If a test specific view has already been found then use it
-        if acc.is_some() && acc != Some("View".to_owned()) {
-            return acc;
+        else if acc.is_some() && acc != Some("View".to_owned()) {
+            acc
         }
         // Otherwise if a View has been found then use it
-        if s == "View" {
-            return Some("View".to_owned());
+        else if s == "View" {
+            Some("View".to_owned())
+        } else {
+            acc
         }
-        acc
     }))
 }
 
