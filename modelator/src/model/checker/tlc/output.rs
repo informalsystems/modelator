@@ -26,7 +26,7 @@ pub(crate) fn parse_traces(
                 .push(curr_message.drain(..).collect());
 
             let (code, class) = line.splitn(3, ' ').nth(1).unwrap().split_once(':').unwrap();
-            curr_message_id.insert((code.parse().unwrap(), class.parse().unwrap()));
+            let _ = curr_message_id.insert((code.parse().unwrap(), class.parse().unwrap()));
         } else if line.starts_with("@!@!@ENDMSG ") {
             let (code, class) = curr_message_id.take().unwrap_or((0, 0));
             parsed_output

@@ -2,6 +2,14 @@ name: Rust
 
 on: [push, pull_request]
 
+env:
+  CARGO_INCREMENTAL: 0
+  CARGO_PROFILE_DEV_DEBUG: 1
+  CARGO_PROFILE_RELEASE_DEBUG: 1
+  RUST_BACKTRACE: short
+  CARGO_NET_RETRY: 10
+  RUSTUP_MAX_RETRIES: 10
+
 jobs:
   test:
     name: Test Suite
@@ -19,6 +27,11 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - uses: Swatinem/rust-cache@v1
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --no-run
       - uses: actions-rs/cargo@v1
         with:
           command: test
@@ -40,6 +53,7 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - uses: Swatinem/rust-cache@v1
       - run: rustup component add rustfmt
       - uses: actions-rs/cargo@v1
         with:
@@ -47,18 +61,19 @@ jobs:
           args: --all -- --check
 
   docs-build:
-     name: Documentation build
-     runs-on: ubuntu-latest
-     steps:
-       - uses: actions/checkout@v2
-       - uses: actions-rs/toolchain@v1
-         with:
-           profile: minimal
-           toolchain: stable
-           override: true
-       - uses: actions-rs/cargo@v1
-         with:
-           command: doc
+    name: Documentation build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - uses: Swatinem/rust-cache@v1
+      - uses: actions-rs/cargo@v1
+        with:
+          command: doc
 
   clippy:
     name: Clippy
@@ -70,6 +85,7 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - uses: Swatinem/rust-cache@v1
       - run: rustup component add clippy
       - uses: actions-rs/cargo@v1
         with:

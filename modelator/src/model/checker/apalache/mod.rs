@@ -181,7 +181,7 @@ impl Apalache {
         }
 
         // create tla file
-        let full_output_path = tdir.into_path().join(output_path);
+        let full_output_path = tdir.path().join(output_path);
         let tla_parsed_file = TlaFile::try_read_from_file(full_output_path)?;
         Ok((
             tla_parsed_file,
