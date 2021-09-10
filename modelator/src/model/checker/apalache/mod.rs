@@ -72,12 +72,22 @@ impl Apalache {
         // Gets Apalache command with tdir as working dir
         let cmd = apalache_start_cmd(&tdir, runtime);
 
+        // Check if the main tla module contains a View
+        // The view will have a generated name 'ViewForTestNeg'
+        // If it has one, then use it.
+        let view = input_artifacts
+            .tla_file
+            .file_contents_backing()
+            .contains("ViewForTestNeg")
+            .then(|| "ViewForTestNeg".to_owned());
+
         // create 'apalache test' command
-        let cmd = test_cmd(
+        let cmd = check_cmd(
             cmd,
             input_artifacts.tla_file.file_name(),
             input_artifacts.tla_config_file.filename(),
             runtime.model_checker_runtime.traces_per_test,
+            &view,
         );
 
         tracing::warn!(
@@ -193,19 +203,25 @@ fn run_apalache(mut cmd: Command) -> Result<CmdOutput, Error> {
     Ok(CmdOutput { stdout, stderr })
 }
 
-fn test_cmd<P: AsRef<Path>>(
+fn check_cmd<P: AsRef<Path>>(
     mut cmd: Command,
     tla_file_base_name: P,
     tla_config_file_base_name: P,
     max_error: usize,
+    view: &Option<String>,
 ) -> Command {
     cmd.arg("check")
         .arg(format!(
             "--config={}",
             tla_config_file_base_name.as_ref().to_string_lossy()
         ))
-        .arg(format!("--max-error={}", max_error))
-        .arg(tla_file_base_name.as_ref());
+        .arg(format!("--max-error={}", max_error));
+
+    if let Some(view_inner) = view {
+        cmd.arg(format!("--view={}", view_inner));
+    };
+
+    cmd.arg(tla_file_base_name.as_ref());
 
     // show command being run
     tracing::debug!("{}", crate::util::cmd_show(&cmd));
