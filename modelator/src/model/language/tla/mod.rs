@@ -168,6 +168,7 @@ impl Tla {
     }
 }
 
+/// Returns a list of operator names
 fn extract_operator_names(tla_file_contents: &str) -> Result<Vec<String>, Error> {
     let cnt_operators = tla_file_contents.match_indices("==").count();
     lazy_static! {
@@ -178,7 +179,7 @@ fn extract_operator_names(tla_file_contents: &str) -> Result<Vec<String>, Error>
         .captures_iter(tla_file_contents)
         .filter_map(|caps| caps.get(0))
         .map(|m| m.as_str().to_owned())
-        .map(|s| s.trim_end_matches("=").trim().to_owned())
+        .map(|s| s.trim_end_matches('=').trim().to_owned())
         .collect();
 
     match ret.len() == cnt_operators {
@@ -199,7 +200,7 @@ fn extract_view_operator(
     let operators = extract_operator_names(tla_file_contents)?;
     Ok(operators.iter().fold(None, |acc, s| -> Option<String> {
         // If the operator is a test specific view then use it
-        if *s == format!("{}View", test_name).to_owned() {
+        if *s == format!("{}View", test_name) {
             return Some(s.clone());
         }
         // If a test specific view has already been found then use it
@@ -210,7 +211,7 @@ fn extract_view_operator(
         if s == "View" {
             return Some("View".to_owned());
         }
-        return acc;
+        acc
     }))
 }
 
@@ -223,10 +224,6 @@ fn generate_test_module(
     // Format `<operator name> == ...`
     view_operator: &Option<String>,
 ) -> String {
-    // TODO:NEXT: Implemented improved operator name parsing and finding views, now need to write the view here
-    // so that it can be used by the apalache cmd. If there is a view it should be something like UseView=<view>
-    // but I need to check what this here module extends (it should be able to see the original view).
-    // After that I can add the view to the test apalache cmd
     format!(
         r#"
 ---------- MODULE {} ----------
@@ -240,8 +237,8 @@ EXTENDS {}
         negated_test_name,
         test_name,
         match view_operator {
-            Some(s) => s,
-            _ => "",
+            Some(name) => format!("ViewForTestNeg == {}", name),
+            _ => "".to_owned(),
         }
     )
 }
