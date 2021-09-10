@@ -73,6 +73,8 @@ impl Apalache {
         let cmd = apalache_start_cmd(&tdir, runtime);
 
         // Check if the main tla module contains a View
+        // The view will have a generated name 'ViewForTestNeg'
+        // If it has one, then use it.
         let view = match input_artifacts
             .tla_file
             .file_contents_backing()
