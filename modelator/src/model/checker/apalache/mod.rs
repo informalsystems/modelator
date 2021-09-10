@@ -217,8 +217,8 @@ fn check_cmd<P: AsRef<Path>>(
         ))
         .arg(format!("--max-error={}", max_error));
 
-    if view.is_some() {
-        cmd.arg(format!("--view={}", view.as_ref().unwrap()));
+    if let Some(view_inner) = view {
+        cmd.arg(format!("--view={}", view_inner));
     };
 
     cmd.arg(tla_file_base_name.as_ref());
