@@ -47,7 +47,7 @@ impl Apalache {
     pub fn test(
         input_artifacts: &TlaFileSuite,
         runtime: &ModelatorRuntime,
-    ) -> Result<(TlaTrace, ModelCheckerStdout), Error> {
+    ) -> Result<(Vec<TlaTrace>, ModelCheckerStdout), Error> {
         // TODO: this method currently just uses the paths of the files so no need for whole artifact objects!
 
         tracing::debug!(
@@ -72,38 +72,62 @@ impl Apalache {
         // Gets Apalache command with tdir as working dir
         let cmd = apalache_start_cmd(&tdir, runtime);
 
+        // Check if the main tla module contains a View
+        // The view will have a generated name 'ViewForTestNeg'
+        // If it has one, then use it.
+        let view = input_artifacts
+            .tla_file
+            .file_contents_backing()
+            .contains("ViewForTestNeg")
+            .then(|| "ViewForTestNeg".to_owned());
+
         // create 'apalache test' command
-        let cmd = test_cmd(
+        let cmd = check_cmd(
             cmd,
             input_artifacts.tla_file.file_name(),
             input_artifacts.tla_config_file.filename(),
-            runtime,
+            runtime.model_checker_runtime.traces_per_test,
+            &view,
+        );
+
+        tracing::warn!(
+            "the following workers option was ignored since apalache is single-threaded: {:?}",
+            runtime.model_checker_runtime.workers
         );
 
         let apalache_output = run_apalache(cmd)?;
 
         let counterexample_paths = apalache_output.parse_counterexample_filenames()?;
 
-        if counterexample_paths.len() != 1 || counterexample_paths[0] != "counterexample1.tla" {
-            panic!("[modelator] expect a counterexample file called counterexample.tla")
+        if counterexample_paths.is_empty() {
+            return Err(Error::NoTestTraceFound(
+                //TODO: this will have to be changed to reflect new in-memory log
+                runtime.model_checker_runtime.log.clone(),
+            ));
         }
 
-        // Read the  apalache counterexample from disk and parse a trace from it
-        let counterexample_path = tdir.into_path().join(&counterexample_paths[0]);
+        let traces = counterexample_paths
+            .iter()
+            .map(|counterexample_path_base| {
+                // Read the  apalache counterexample from disk and parse a trace from it
+                let counterexample_path = tdir.path().join(&counterexample_path_base);
 
-        if !counterexample_path.is_file() {
-            panic!("[modelator] expected to find Apalache's counterexample1.tla file");
-        }
+                if !counterexample_path.is_file() {
+                    panic!("[modelator] expected to find Apalache's counterexample1.tla file");
+                }
 
-        let counterexample: TlaFile = TlaFile::try_read_from_file(counterexample_path)?;
-        tracing::debug!("Apalache counterexample:\n{}", counterexample);
-        let trace = counterexample::parse(counterexample.file_contents_backing())?;
+                let counterexample: TlaFile = TlaFile::try_read_from_file(counterexample_path)?;
+                tracing::debug!("Apalache counterexample:\n{}", counterexample);
+                counterexample::parse(counterexample.file_contents_backing())
+            })
+            .filter_map(Result::ok)
+            .collect();
 
         // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
         // cache trace and then return it
         //cache.insert(cache_key, &trace)?;
         Ok((
-            trace,
+            traces,
             ModelCheckerStdout::from_string(&apalache_output.stdout)?,
         ))
     }
@@ -157,7 +181,7 @@ impl Apalache {
         }
 
         // create tla file
-        let full_output_path = tdir.into_path().join(output_path);
+        let full_output_path = tdir.path().join(output_path);
         let tla_parsed_file = TlaFile::try_read_from_file(full_output_path)?;
         Ok((
             tla_parsed_file,
@@ -179,23 +203,25 @@ fn run_apalache(mut cmd: Command) -> Result<CmdOutput, Error> {
     Ok(CmdOutput { stdout, stderr })
 }
 
-fn test_cmd<P: AsRef<Path>>(
+fn check_cmd<P: AsRef<Path>>(
     mut cmd: Command,
     tla_file_base_name: P,
     tla_config_file_base_name: P,
-    runtime: &ModelatorRuntime,
+    max_error: usize,
+    view: &Option<String>,
 ) -> Command {
     cmd.arg("check")
         .arg(format!(
             "--config={}",
             tla_config_file_base_name.as_ref().to_string_lossy()
         ))
-        .arg(tla_file_base_name.as_ref());
+        .arg(format!("--max-error={}", max_error));
 
-    tracing::warn!(
-        "the following workers option was ignored since apalache is single-threaded: {:?}",
-        runtime.model_checker_runtime.workers
-    );
+    if let Some(view_inner) = view {
+        cmd.arg(format!("--view={}", view_inner));
+    };
+
+    cmd.arg(tla_file_base_name.as_ref());
 
     // show command being run
     tracing::debug!("{}", crate::util::cmd_show(&cmd));

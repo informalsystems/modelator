@@ -153,10 +153,16 @@ fn all_tests(model_checker: ModelChecker) -> Result<(), Error> {
                 .with_action::<Action>();
 
             // generate traces using Rust API
-            let mut traces = options.traces(&tla_tests_file, &tla_config_file)?;
+            let mut traces = {
+                let all_traces = options.traces(&tla_tests_file, &tla_config_file)?;
+                let mut values: Vec<Result<Vec<JsonTrace>, Error>> =
+                    all_traces.into_values().collect();
+                values.remove(0)
+            }?;
+
             // extract single trace
             assert_eq!(traces.len(), 1, "a single trace should have been generated");
-            let trace = traces.pop().unwrap()?;
+            let trace = traces.pop().unwrap();
 
             let result = runner.run(&mut system, &mut EventStream::from(trace).into_iter());
             assert!(result.is_ok());
@@ -219,9 +225,11 @@ fn cli_traces<P: AsRef<Path>>(
         .collect::<Vec<_>>();
 
     // run CLI to run the model checker configured on each tla test
+    // needless collect is allowed because the we need to read
+    // the artifacts before they are removed
+    #[allow(clippy::needless_collect)]
     let traces = tests
-        .clone()
-        .into_iter()
+        .iter()
         .map(|(tla_file, tla_config_file)| {
             let module = match options.model_checker_runtime.model_checker {
                 ModelChecker::Tlc => "tlc",

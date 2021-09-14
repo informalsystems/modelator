@@ -36,6 +36,10 @@ pub enum Error {
     #[error("No test found in {0}")]
     NoTestFound(String),
 
+    /// Tla operator name parse error
+    #[error("Unable to parse all operator names in tla module with content: {0}")]
+    TlaOperatorNameParseError(String),
+
     /// An error that occurs when the model checker isn't able to generate a test trace.
     #[error("No trace found in {0}")]
     NoTestTraceFound(std::path::PathBuf),
