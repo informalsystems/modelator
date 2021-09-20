@@ -7,8 +7,8 @@
 \* Please see IndicesBalances.tla for the main model.
 \*
 \* Run `modelator trace IndicesBalancesHistoryTests.tla Indices.cfg` for generating all tests
-\* Run `modelator trace -t <TestName> IndicesBalancesHistoryTests.tla Indices.cfg` for a specific test
-\* Run `modelator trace -n <NumTests> IndicesBalancesHistoryTests.tla Indices.cfg` for multiple tests
+\* Run `modelator trace -t <TestName> IndicesBalancesHistoryTests.tla IndicesTests.cfg` for a specific test
+\* Run `modelator trace -n <NumTests> IndicesBalancesHistoryTests.tla IndicesTests.cfg` for multiple tests
 \* You can also combine `-t` and `-n` options.
 \*
 \* 2021 Andrey Kuprianov, Informal Systems

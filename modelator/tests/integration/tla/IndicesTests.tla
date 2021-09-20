@@ -8,8 +8,8 @@
 \* and IndicesExec.tla for the execution environment (actions).
 \*
 \* Run `modelator trace IndicesTests.tla Indices.cfg` for generating all tests
-\* Run `modelator trace -t <TestName> IndicesTests.tla Indices.cfg` for a specific test
-\* Run `modelator trace -n <NumTests> IndicesTests.tla Indices.cfg` for multiple tests
+\* Run `modelator trace -t <TestName> IndicesTests.tla IndicesTests.cfg` for a specific test
+\* Run `modelator trace -n <NumTests> IndicesTests.tla IndicesTests.cfg` for multiple tests
 \* You can also combine `-t` and `-n` options.
 \*
 \* 2021 Andrey Kuprianov, Informal Systems
@@ -31,10 +31,6 @@ TestFree ==
 
 TestFreeze == 
   action.type = "Freeze"
-
-
-Test2Steps ==
-  nsteps = 2
 
 TestFreezeSuccess ==
   /\ action.type = "Freeze"

@@ -8,8 +8,8 @@
 \* and IndicesBalancesExec.tla for the execution environment (actions).
 \*
 \* Run `modelator trace IndicesBalances.tla Indices.cfg` for generating all tests
-\* Run `modelator trace -t <TestName> IndicesBalances.tla Indices.cfg` for a specific test
-\* Run `modelator trace -n <NumTests> IndicesBalances.tla Indices.cfg` for multiple tests
+\* Run `modelator trace -t <TestName> IndicesBalances.tla IndicesTests.cfg` for a specific test
+\* Run `modelator trace -n <NumTests> IndicesBalances.tla IndicesTests.cfg` for multiple tests
 \* You can also combine `-t` and `-n` options.
 \*
 \* 2021 Andrey Kuprianov, Informal Systems
