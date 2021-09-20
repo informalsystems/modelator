@@ -10,6 +10,8 @@
 \*  - MethodAction operator that surrounds method's state updates with the logic
 \*    that checks preconditions, and stores method arguments and outcome
 \*    in the "action" and "actionOutcome" variables.
+\* 2021 Andrey Kuprianov, Informal Systems
+
 
 EXTENDS Integers, FiniteSets
 

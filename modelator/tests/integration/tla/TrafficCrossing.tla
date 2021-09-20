@@ -3,7 +3,7 @@
 \* We have two crossing roads, 0 and 1; with two traffic lights, one for each road.
 \* There can be multiple cars on the roads, each having a specific position.
 \* Position 0 represents the road crossing.
-\* (C) 2021 Andrey Kuprianov
+\* 2021 Andrey Kuprianov, Informal Systems
 
 EXTENDS Integers, FiniteSets
 
