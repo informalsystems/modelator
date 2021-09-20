@@ -82,7 +82,9 @@ impl Tlc {
             (false, true) => {
                 let tlc_log = ModelCheckerStdout::from_string(&stdout)?;
 
-                let traces = output::parse_traces(&stdout, &runtime.model_checker_runtime)?;
+                let mut traces = output::parse_traces(&stdout, &runtime.model_checker_runtime)?;
+
+                traces.truncate(runtime.model_checker_runtime.traces_per_test);
 
                 // check if no trace was found
                 if traces.is_empty() {
