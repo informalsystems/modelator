@@ -1,0 +1,19 @@
+[book]
+authors = ["Andrey Kupriyanov", "Ranadeep Biswas", "Daniel Tisdall"]
+language = "en"
+multilingual = false
+src = "src"
+title = "modelator documentation"
+
+[output.html]
+mathjax-support = true
+git-repository-url = "https://github.com/informalsystems/modelator"
+
+[build]
+# Don't create empty files when a chapter doesn't exist
+create-missing = false
+# Don't rename README.md to index.md
+use-default-preprocessors = false
+
+# Do allow for file inclusion via {{ #include }}
+[preprocessor.links]
