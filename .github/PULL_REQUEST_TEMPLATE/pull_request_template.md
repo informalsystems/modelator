@@ -1,0 +1,25 @@
+
+<!-- < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < ☺
+v                               ✰  Thanks for creating a PR! ✰    
+v    Before smashing the submit button please review the checkboxes.
+v    If a checkbox is n/a - please still include it but + a little note why
+☺ > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >  -->
+
+Closes: #XXX
+
+## Description
+
+<!-- Add a description of the changes that this PR introduces and the files that
+are the most critical to review.
+-->
+
+______
+
+For contributor use:
+
+- [ ] Added a changelog entry, using [`unclog`](https://github.com/informalsystems/unclog).
+- [ ] If applicable: Unit tests written, added test to CI.
+- [ ] Ran `cargo fmt` (or had formatting run automatically on all files edited)
+- [ ] Linked to Github issue with discussion and accepted design OR link to spec that describes this work.
+- [ ] Updated relevant documentation (`docs/`) and code comments.
+- [ ] Re-reviewed `Files changed` in the Github PR explorer.
