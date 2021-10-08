@@ -25,7 +25,7 @@ impl TlaFile {
     }
 
     /// Returns raw file contents (string value that it was initialized with)
-    /// NOTE: will likely change as our internal repr improves
+    /// NOTE: will change as our internal representation of relevant TLA+ related files improves
     pub fn file_contents_backing(&self) -> &str {
         &self.file_contents_backing
     }

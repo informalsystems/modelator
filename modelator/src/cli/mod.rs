@@ -117,20 +117,21 @@ impl TraceCli {
                             crate::model::checker::Tlc::test(&input_artifacts, &runtime)?
                         }
                     }
-                    .0;
-                    for test in traces.iter_mut() {
-                        test.extends_module_name =
+                    .0; // Ignores returned stdout
+
+                    for trace in traces.iter_mut() {
+                        trace.extends_module_name =
                             Some(input_artifacts.tla_file.module_name().to_string());
                     }
                     traces
                 };
 
-                // Convert each trace to json
-                let trace_write_results: Result<Vec<JsonValue>, Error> = traces
+                // Write each trace and get a result containing json information
+                let trace_file_write_results: Result<Vec<JsonValue>, Error> = traces
                     .into_iter()
                     .enumerate()
                     .map(|(i, trace)| {
-                        let write_file_name =
+                        let file_name_to_write =
                             format!("{}{}", input_artifacts.tla_file.module_name(), i);
                         match self.format {
                             OutputFormat::Json => {
@@ -140,14 +141,16 @@ impl TraceCli {
                                     "Tla::tla_trace_to_json_trace output {}",
                                     json_trace
                                 );
-                                write_json_trace_to_file(&write_file_name, &json_trace)
+                                write_json_trace_to_file(&file_name_to_write, &json_trace)
                             }
-                            OutputFormat::Tla => write_tla_trace_to_file(&write_file_name, &trace),
+                            OutputFormat::Tla => {
+                                write_tla_trace_to_file(&file_name_to_write, &trace)
+                            }
                         }
                     })
                     .collect();
 
-                res.insert(test_name, trace_write_results);
+                res.insert(test_name, trace_file_write_results);
             }
             res
         };
@@ -168,7 +171,6 @@ enum Module {
 
 impl Module {
     fn run(&self) -> Result<JsonValue, Error> {
-        // setup modelator
         let runtime = crate::ModelatorRuntime::default();
         runtime.setup()?;
 
@@ -239,7 +241,6 @@ fn write_parsed_tla_file_to_file(tla_file: &TlaFile) -> Result<JsonValue, Error>
 }
 
 fn write_tla_trace_to_file(test_name: &str, tla_trace: &TlaTrace) -> Result<JsonValue, Error> {
-    // TODO: hardcoded!
     let file_name = format!("trace_{}.tla", test_name);
     let path = Path::new(&file_name);
     tla_trace.try_write_to_file(path)?;
@@ -249,7 +250,6 @@ fn write_tla_trace_to_file(test_name: &str, tla_trace: &TlaTrace) -> Result<Json
 }
 
 fn write_json_trace_to_file(test_name: &str, json_trace: &JsonTrace) -> Result<JsonValue, Error> {
-    // TODO: hardcoded!
     let file_name = format!("trace_{}.json", test_name);
     let path = Path::new(&file_name);
     json_trace.try_write_to_file(path)?;

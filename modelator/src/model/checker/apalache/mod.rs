@@ -21,7 +21,6 @@ use std::process::Command;
 pub struct Apalache;
 
 impl Apalache {
-    /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
     ///
     /// Generate a TLA+ trace given a [`TlaFile`] and a [`TlaConfigFile`] produced
     /// by [`crate::model::language::Tla::generate_tests`].
@@ -81,7 +80,7 @@ impl Apalache {
             .contains("ViewForTestNeg")
             .then(|| "ViewForTestNeg".to_owned());
 
-        // create 'apalache test' command
+        // create 'apalache check' command
         let cmd = check_cmd(
             cmd,
             input_artifacts.tla_file.file_name(),
@@ -132,7 +131,6 @@ impl Apalache {
         ))
     }
 
-    /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>.
     ///
     /// Runs Apalache's `parse` command, returning the [`TlaFile`] produced by
     /// Apalache.
@@ -191,7 +189,7 @@ impl Apalache {
 }
 
 fn run_apalache(mut cmd: Command) -> Result<CmdOutput, Error> {
-    // TODO: add timeout
+    // TODO: add functionality to kill Apalache after a given timeout
     let output = cmd.output()?;
 
     // get apalache stdout and stderr
@@ -217,8 +215,8 @@ fn check_cmd<P: AsRef<Path>>(
         ))
         .arg(format!("--max-error={}", max_error));
 
-    if let Some(view_inner) = view {
-        cmd.arg(format!("--view={}", view_inner));
+    if let Some(view) = view {
+        cmd.arg(format!("--view={}", view));
     };
 
     cmd.arg(tla_file_base_name.as_ref());

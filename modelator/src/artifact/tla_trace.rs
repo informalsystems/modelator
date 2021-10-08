@@ -65,11 +65,6 @@ impl std::fmt::Display for TlaTrace {
 
 impl ArtifactCreator for TlaTrace {
     fn from_string(s: &str) -> Result<Self, Error> {
-        // Ok(TlaTrace {
-        //     states: Vec::new(),
-        //     extends_module_name: None,
-        //     file_contents_backing: "".to_owned(),
-        // })
         let tla_trace = remove_tla_comments(s);
 
         let tla: TlaTraceFileContent<'_> = parse_tla_trace_file_contents(&tla_trace).unwrap().1;

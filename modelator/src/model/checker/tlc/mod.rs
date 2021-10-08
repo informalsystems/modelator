@@ -15,8 +15,6 @@ use std::process::Command;
 pub struct Tlc;
 
 impl Tlc {
-    /// TODO: ignoring because of <https://github.com/informalsystems/modelator/issues/47>
-    ///
     /// Generate a TLA+ trace given a [`TlaFile`] and a [`TlaConfigFile`] produced
     /// by [`crate::model::language::Tla::generate_tests`].
     ///
@@ -66,7 +64,6 @@ impl Tlc {
         );
 
         // start tlc
-        // TODO: add timeout
         let output = cmd.output()?;
 
         // get tlc stdout and stderr

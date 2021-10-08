@@ -20,7 +20,7 @@ fn is_counterexample_line(line: &str) -> bool {
 }
 
 fn parse_filename(line: &str) -> String {
-    // Looks like '...d. Check the counterexample in: counterexample1.tla, MC1.out, counterexample1.json E@11:13:37.003'
+    // The line looks like '...d. Check the counterexample in: counterexample1.tla, MC1.out, counterexample1.json E@11:13:37.003'
     assert!(is_counterexample_line(line));
     match line.find("in:") {
         None => {
@@ -28,8 +28,8 @@ fn parse_filename(line: &str) -> String {
         }
         Some(ix) => {
             let slice = &line[ix..];
-            // Have [:, counterexample.tla, ...]
             let mut split = slice.split(' ');
+            // Now have [:, counterexample.tla,, ...]
             split.next();
             let with_trailing_comma = split.next().unwrap();
             with_trailing_comma[..with_trailing_comma.len() - 1].to_owned()
