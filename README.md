@@ -8,6 +8,14 @@
 The framework and tools for model-based testing.
 
 
+## Resources
+
+Currently it is possible to view the docs book only if [mdBook](https://github.com/rust-lang/mdBook) is installed. Then the book can be viewed by navigating to `docs/`, running `mdbook serve` and then navigating to `localhost:3000` in your browser.
+
+## Contributing
+
+Coming soon!
+
 ## License
 
 Copyright © 2021 Informal Systems Inc. and modelator authors.
