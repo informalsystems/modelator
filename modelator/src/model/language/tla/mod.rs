@@ -106,9 +106,6 @@ impl Tla {
         Ok(names
             .iter()
             .filter_map(|name| {
-                // consider this as a test name if:
-                // - it starts/ends Test
-                // - it's not commented out
                 let is_test = name.starts_with("Test") || name.ends_with("Test");
                 let is_commented_out = name.starts_with("\\*") || name.starts_with("(*");
                 if is_test && !is_commented_out {
@@ -234,6 +231,7 @@ EXTENDS {}
         negated_test_name,
         test_name,
         match view_operator {
+            // Write an additional operator that corresponds the view to the specific negated test operator
             Some(name) => format!("ViewForTestNeg == {}", name),
             _ => "".to_owned(),
         }
