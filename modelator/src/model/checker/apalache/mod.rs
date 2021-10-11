@@ -213,7 +213,8 @@ fn check_cmd<P: AsRef<Path>>(
             "--config={}",
             tla_config_file_base_name.as_ref().to_string_lossy()
         ))
-        .arg(format!("--max-error={}", max_error));
+        .arg(format!("--max-error={}", max_error))
+        .arg("--algo=offline");
 
     if let Some(view) = view {
         cmd.arg(format!("--view={}", view));
@@ -260,7 +261,7 @@ fn apalache_start_cmd(temp_dir: &tempfile::TempDir, runtime: &ModelatorRuntime) 
             temp_dir.path().to_string_lossy()
         ))
         .arg("-jar")
-        .arg(format!("{}", apalache.as_path().to_string_lossy()))
-        .arg("--algo=offline");
+        .arg(format!("{}", apalache.as_path().to_string_lossy()));
+
     cmd
 }
