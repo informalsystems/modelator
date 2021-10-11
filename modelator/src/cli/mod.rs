@@ -37,8 +37,8 @@ impl ParseCli {
     }
 }
 
-/// Parse TLA+ files with Apalache.
 #[derive(Debug, Clap)]
+/// List the tests in a TLA file
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct TestListCli {
     /// TLA+ file with test cases.
