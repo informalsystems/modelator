@@ -39,7 +39,7 @@ fn find_dependencies(tla_module_path: impl AsRef<std::path::Path>) -> Result<Vec
     let current_directory = tla_module_path
         .as_ref()
         .parent()
-        .expect("expected a final componenet")
+        .expect("expected a final component")
         .to_path_buf();
 
     let content = crate::util::try_read_file_contents(tla_module_path)?;
