@@ -1,0 +1,24 @@
+{
+    "name": "Numbers",
+    "description": "",
+    "tests": [
+        {
+            "type": "step_runner",
+            "test_function": "default",
+            "tla_tests_filename": "NumbersAMaxBMaxTest.tla",
+            "tla_config_filename": "Numbers.cfg"
+        },
+        {
+            "type": "step_runner",
+            "test_function": "default",
+            "tla_tests_filename": "NumbersAMaxBMinTest.tla",
+            "tla_config_filename": "Numbers.cfg"
+        },
+        {
+            "type": "step_runner",
+            "test_function": "default",
+            "tla_tests_filename": "NumbersAMinBMaxTest.tla",
+            "tla_config_filename": "Numbers.cfg"
+        }
+    ]
+}
