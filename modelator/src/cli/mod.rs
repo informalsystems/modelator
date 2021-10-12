@@ -25,6 +25,9 @@ pub struct ParseCli {
     /// TLA+ file with test cases.
     #[clap(parse(from_os_str), value_hint = ValueHint::FilePath)]
     tla_module: PathBuf,
+    /// Whether or not to write the output file
+    #[clap(long)]
+    write: bool,
 }
 
 impl ParseCli {
@@ -33,7 +36,13 @@ impl ParseCli {
         let tla_file = TlaFileSuite::from_tla_path(&self.tla_module)?;
         let res = crate::model::checker::Apalache::parse(&tla_file, &runtime)?;
         tracing::debug!("Apalache::parse output {}", res.0);
-        write_parsed_tla_file_to_file(&res.0)
+        if self.write {
+            write_parsed_tla_file_to_file(&res.0)
+        } else {
+            Ok(json!({
+                "tla_file_content": res.0.as_string(),
+            }))
+        }
     }
 }
 
@@ -64,7 +73,7 @@ pub struct TraceCli {
     /// test name
     #[clap(short, long, default_value = "@all")]
     test: String,
-    /// TODO: derive ArgEnum for ModelChecker enum
+    // TODO: derive ArgEnum for ModelChecker enum
     /// Checker name
     #[clap(short, long, possible_values = &["apalache", "tlc"], default_value = "apalache")]
     model_checker: ModelChecker,
@@ -80,6 +89,9 @@ pub struct TraceCli {
     /// TLA+ config file with CONSTANTS, INIT and NEXT.
     #[clap(parse(from_os_str), value_hint = ValueHint::FilePath)]
     tla_config: PathBuf,
+    /// Whether or not to write output files
+    #[clap(long)]
+    write: bool,
 }
 
 impl TraceCli {
@@ -141,10 +153,22 @@ impl TraceCli {
                                     "Tla::tla_trace_to_json_trace output {}",
                                     json_trace
                                 );
-                                write_json_trace_to_file(&file_name_to_write, &json_trace)
+                                if self.write {
+                                    write_json_trace_to_file(&file_name_to_write, &json_trace)
+                                } else {
+                                    Ok(json!({
+                                        "json_trace_content": json_trace.as_string()
+                                    }))
+                                }
                             }
                             OutputFormat::Tla => {
-                                write_tla_trace_to_file(&file_name_to_write, &trace)
+                                if self.write {
+                                    write_tla_trace_to_file(&file_name_to_write, &trace)
+                                } else {
+                                    Ok(json!({
+                                        "tla_trace_content": trace.as_string()
+                                    }))
+                                }
                             }
                         }
                     })
@@ -236,7 +260,7 @@ fn write_parsed_tla_file_to_file(tla_file: &TlaFile) -> Result<JsonValue, Error>
     let path = Path::new(tla_file.module_name());
     tla_file.try_write_to_file(path)?;
     Ok(json!({
-        "tla_file": crate::util::absolute_path(path),
+        "tla_filepath": crate::util::absolute_path(path),
     }))
 }
 
@@ -245,7 +269,7 @@ fn write_tla_trace_to_file(test_name: &str, tla_trace: &TlaTrace) -> Result<Json
     let path = Path::new(&file_name);
     tla_trace.try_write_to_file(path)?;
     Ok(json!({
-        "tla_trace_file": crate::util::absolute_path(&path),
+        "tla_trace_filepath": crate::util::absolute_path(&path),
     }))
 }
 
@@ -254,6 +278,6 @@ fn write_json_trace_to_file(test_name: &str, json_trace: &JsonTrace) -> Result<J
     let path = Path::new(&file_name);
     json_trace.try_write_to_file(path)?;
     Ok(json!({
-        "json_trace_file": crate::util::absolute_path(&path),
+        "json_trace_filepath": crate::util::absolute_path(&path),
     }))
 }
