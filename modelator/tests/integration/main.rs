@@ -71,9 +71,11 @@ fn run_single_test(batch: &TestBatch, test: &Test) -> Result<(), modelator::Erro
             Ok(_) => Ok(()),
             Err(e) => Err(e),
         },
+        // TODO: here will be Test::EventRunner
     }
 }
 
+/// Loads the .json files registered in test_batch_resources and creates test batches
 fn load_test_batches() -> Result<Vec<Box<TestBatch>>, modelator::Error> {
     let mut ret: Vec<Box<TestBatch>> = Vec::new();
     for resource_bundle in test_batch_resources() {
