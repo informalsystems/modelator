@@ -6,19 +6,37 @@
             "type": "step_runner",
             "test_function": "default",
             "tla_tests_filename": "NumbersAMaxBMaxTest.tla",
-            "tla_config_filename": "Numbers.cfg"
+            "tla_config_filename": "Numbers.cfg",
+            "expect": {
+                "a": 6,
+                "b": 6,
+                "sum": 12,
+                "prod": 36
+            }
         },
         {
             "type": "step_runner",
             "test_function": "default",
             "tla_tests_filename": "NumbersAMaxBMinTest.tla",
-            "tla_config_filename": "Numbers.cfg"
+            "tla_config_filename": "Numbers.cfg",
+            "expect": {
+                "a": 6,
+                "b": 0,
+                "sum": 6,
+                "prod": 0
+            }
         },
         {
             "type": "step_runner",
             "test_function": "default",
             "tla_tests_filename": "NumbersAMinBMaxTest.tla",
-            "tla_config_filename": "Numbers.cfg"
+            "tla_config_filename": "Numbers.cfg",
+            "expect": {
+                "a": 0,
+                "b": 6,
+                "sum": 6,
+                "prod": 0
+            }
         }
     ]
 }

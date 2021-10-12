@@ -1,8 +1,7 @@
-use modelator::test_util::NumberSystem;
+use crate::common::StepRunnerArgs;
 
-use modelator::TestReport;
+use modelator::test_util::NumberSystem;
 use serde::Deserialize;
-use std::path::Path;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -51,11 +50,23 @@ impl modelator::step_runner::StepRunner<NumbersStep> for NumberSystem {
     }
 }
 
-pub fn default<P: AsRef<Path>>(
-    tla_tests_file_path: P,
-    tla_config_file_path: P,
-) -> Result<TestReport, modelator::Error> {
+pub fn test(args: StepRunnerArgs) -> Result<(), modelator::Error> {
     let runtime = modelator::ModelatorRuntime::default();
     let mut system = NumberSystem::default();
-    runtime.run_tla_steps(tla_tests_file_path, tla_config_file_path, &mut system)
+
+    runtime.run_tla_steps(
+        args.tla_tests_filepath,
+        args.tla_config_filepath,
+        &mut system,
+    )?;
+
+    let expect: NumberSystem = serde_json::value::from_value(args.expect).map_err(|err| {
+        modelator::Error::JsonParseError(format!(
+            "Failed to parse [serde::de::Error : {}]",
+            err.to_string()
+        ))
+    })?;
+
+    assert_eq!(system, expect);
+    Ok(())
 }
