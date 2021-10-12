@@ -16,6 +16,7 @@ pub fn resource_path(suffix: &str) -> PathBuf {
 pub enum Test {
     Cli {
         cmd: String,
+        expect_status: String,
     },
     StepRunner {
         test_function: String,
