@@ -18,6 +18,13 @@ fn test_batch_resources() -> Vec<Box<TestBatchResourceBundle>> {
 
     {
         ret.push(Box::new(TestBatchResourceBundle {
+            config_filename: "IBC_ics02.json",
+            step_runner: None,
+        }));
+    }
+
+    {
+        ret.push(Box::new(TestBatchResourceBundle {
             config_filename: "Numbers.json",
             step_runner: Some(Box::new(|args| numbers::test(args))),
         }));
@@ -54,8 +61,9 @@ Error:
 
 fn run_single_test(batch: &TestBatch, test: &Test) -> Result<(), modelator::Error> {
     match test {
-        Test::Cli { cmd } => {
+        Test::Cli { cmd, expect_status } => {
             todo!()
+            // TODO: exercise cli (lookup clap instructions)
         }
         Test::StepRunner {
             test_function,

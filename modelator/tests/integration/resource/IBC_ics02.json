@@ -4,7 +4,8 @@
     "tests": [
         {
             "type": "cli",
-            "cmd": "modelator parse IBC_ics02.tla"
+            "cmd": "modelator parse IBC_ics02.tla",
+            "expect_status": "success"
         }
     ]
 }
