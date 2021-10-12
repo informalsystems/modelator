@@ -257,7 +257,8 @@ fn json_list_generated_tests(test_files: Vec<(PathBuf, PathBuf)>) -> Result<Json
 
 fn write_parsed_tla_file_to_file(tla_file: &TlaFile) -> Result<JsonValue, Error> {
     // Apalache changes the module name in the output file so we use it directly here.
-    let path = Path::new(tla_file.module_name());
+    let file_name = format!("{}.tla", tla_file.module_name());
+    let path = Path::new(&file_name);
     tla_file.try_write_to_file(path)?;
     Ok(json!({
         "tla_filepath": crate::util::absolute_path(path),
