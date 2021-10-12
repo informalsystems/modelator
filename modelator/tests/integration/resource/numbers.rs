@@ -25,6 +25,7 @@ impl modelator::step_runner::StepRunner<NumbersStep> for NumberSystem {
     fn initial_step(&mut self, step: NumbersStep) -> Result<(), String> {
         self.a = step.a;
         self.b = step.b;
+        self.recalculate();
         Ok(())
     }
 

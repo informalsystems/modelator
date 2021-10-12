@@ -265,6 +265,7 @@ impl ModelatorRuntime {
     ///     fn initial_step(&mut self, step: NumbersStep) -> Result<(), String> {
     ///         self.a = step.a;
     ///         self.b = step.b;
+    ///         self.recalculate;
     ///         Ok(())
     ///     }
     ///
