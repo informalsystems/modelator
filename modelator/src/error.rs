@@ -72,6 +72,10 @@ pub enum Error {
     #[error("JSON parse error: {0}")]
     JsonParseError(String),
 
+    /// An error that occurs when parsing the Cli command string.
+    #[error("Cli command string (Clap) parse error: {0}")]
+    CliParseError(String),
+
     /// An error for unrecognized checker name.
     #[error("Unrecognized checker: {0}")]
     UnrecognizedChecker(String),
@@ -84,6 +88,12 @@ pub enum Error {
 impl From<std::io::Error> for Error {
     fn from(err: std::io::Error) -> Self {
         Self::IO(err.to_string())
+    }
+}
+
+impl From<clap::Error> for Error {
+    fn from(err: clap::Error) -> Self {
+        Self::CliParseError(err.to_string())
     }
 }
 
