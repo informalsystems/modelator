@@ -51,22 +51,28 @@ impl modelator::step_runner::StepRunner<NumbersStep> for NumberSystem {
 }
 
 pub fn test(args: StepRunnerArgs) -> Result<(), modelator::Error> {
-    let runtime = modelator::ModelatorRuntime::default();
-    let mut system = NumberSystem::default();
+    match args.test_function_name.as_str() {
+        "default" => {
+            let runtime = modelator::ModelatorRuntime::default();
+            let mut system = NumberSystem::default();
 
-    runtime.run_tla_steps(
-        args.tla_tests_filepath,
-        args.tla_config_filepath,
-        &mut system,
-    )?;
+            runtime.run_tla_steps(
+                args.tla_tests_filepath,
+                args.tla_config_filepath,
+                &mut system,
+            )?;
 
-    let expect: NumberSystem = serde_json::value::from_value(args.expect).map_err(|err| {
-        modelator::Error::JsonParseError(format!(
-            "Failed to parse [serde::de::Error : {}]",
-            err.to_string()
-        ))
-    })?;
+            let expect: NumberSystem =
+                serde_json::value::from_value(args.expect).map_err(|err| {
+                    modelator::Error::JsonParseError(format!(
+                        "Failed to parse [serde::de::Error : {}]",
+                        err.to_string()
+                    ))
+                })?;
 
-    assert_eq!(system, expect);
-    Ok(())
+            assert_eq!(system, expect);
+            Ok(())
+        }
+        _ => panic!("Wrong test_function name given as argument to numbers.rs test"),
+    }
 }

@@ -97,12 +97,12 @@ mod tests {
 
     #[test]
     fn test_step_runner() {
-        let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
-        let tla_config_file = "tests/integration/tla/Numbers.cfg";
+        let tla_tests_file = "tests/integration/resource/NumbersAMaxBMinTest.tla";
+        let tla_config_file = "tests/integration/resource/Numbers.cfg";
         let runtime = crate::ModelatorRuntime::default();
         let mut runner = NumberSystem::default();
         assert!(runtime
             .run_tla_steps(tla_tests_file, tla_config_file, &mut runner)
-            .map_or_else(|_| false, |v| v.is_ok()),);
+            .map_or_else(|_| false, |v| v.no_test_failed()),);
     }
 }

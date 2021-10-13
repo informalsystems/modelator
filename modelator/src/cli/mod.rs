@@ -81,7 +81,7 @@ pub struct TraceCli {
     #[clap(short, long, arg_enum, default_value = "json")]
     format: OutputFormat,
     /// The number of traces to generate for a single test.
-    #[clap(short, long, default_value = "0")]
+    #[clap(short, long, default_value = "1")]
     num_traces: usize,
     /// TLA+ file with test cases.
     #[clap(parse(from_os_str), value_hint = ValueHint::FilePath)]

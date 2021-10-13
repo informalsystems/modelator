@@ -30,8 +30,8 @@ impl Tla {
     /// use modelator::ModelatorRuntime;
     /// use std::convert::TryFrom;
     ///
-    /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
-    /// let tla_config_file = "tests/integration/tla/Numbers.cfg";
+    /// let tla_tests_file = "tests/integration/resource/NumbersAMaxBMinTest.tla";
+    /// let tla_config_file = "tests/integration/resource/Numbers.cfg";
     /// let tla_suite = TlaFileSuite::from_tla_and_config_paths(tla_tests_file, tla_config_file).unwrap();
     ///
     /// let mut tests = Tla::generate_tests(&tla_suite).unwrap();
@@ -59,8 +59,8 @@ impl Tla {
     /// use modelator::model::language::Tla;
     /// use std::convert::TryFrom;
     ///
-    /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
-    /// let tla_config_file = "tests/integration/tla/Numbers.cfg";
+    /// let tla_tests_file = "tests/integration/resource/NumbersAMaxBMinTest.tla";
+    /// let tla_config_file = "tests/integration/resource/Numbers.cfg";
     /// let tla_suite = TlaFileSuite::from_tla_and_config_paths(tla_tests_file, tla_config_file).unwrap();
     /// let mut tests = Tla::generate_tests(&tla_suite).unwrap();
     /// println!("{:?}", tests);

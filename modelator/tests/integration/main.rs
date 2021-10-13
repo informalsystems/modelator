@@ -97,7 +97,6 @@ fn run_single_test(batch: &TestBatch, test_content: &TestContent) -> Result<(), 
             Ok(_) => Ok(()),
             Err(e) => Err(e),
         },
-        // TODO: here will be Test::EventRunner
     }
 }
 
