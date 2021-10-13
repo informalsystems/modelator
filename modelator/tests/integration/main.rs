@@ -100,8 +100,7 @@ fn run_single_test(
     match test_content {
         TestContent::Cli { cmd, expect_status } => {
             let os_args = mimic_os_args(cmd);
-            let cli_app =
-                modelator::cli::App::try_parse_from(os_args).map_err(IntegrationTestError::Clap)?;
+            let cli_app = modelator::cli::App::try_parse_from(os_args)?;
             let result = cli_app.run();
             let actual = serde_json::to_string(&result.status).unwrap();
             // The actual status is a double quoted string so add quotes
@@ -135,8 +134,7 @@ fn run_single_test(
 fn load_test_batches() -> Result<Vec<Box<TestBatch>>, IntegrationTestError> {
     let mut ret: Vec<Box<TestBatch>> = Vec::new();
     for resource_bundle in test_batch_resources() {
-        let config = TestBatchConfig::load(resource_bundle.config_filename)
-            .map_err(IntegrationTestError::Serde)?;
+        let config = TestBatchConfig::load(resource_bundle.config_filename)?;
 
         let batch = Box::new(TestBatch {
             config,

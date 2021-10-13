@@ -22,3 +22,21 @@ pub enum IntegrationTestError {
     #[error("Serde returned an error: {0}")]
     Serde(serde_json::Error),
 }
+
+impl From<modelator::Error> for IntegrationTestError {
+    fn from(err: modelator::Error) -> Self {
+        Self::Modelator(err)
+    }
+}
+
+impl From<clap::Error> for IntegrationTestError {
+    fn from(err: clap::Error) -> Self {
+        Self::Clap(err)
+    }
+}
+
+impl From<serde_json::Error> for IntegrationTestError {
+    fn from(err: serde_json::Error) -> Self {
+        Self::Serde(err)
+    }
+}

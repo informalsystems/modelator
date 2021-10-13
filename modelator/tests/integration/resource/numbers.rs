@@ -56,16 +56,13 @@ pub fn test(args: StepRunnerArgs) -> Result<(), IntegrationTestError> {
         "default" => {
             let mut system = NumberSystem::default();
 
-            args.modelator_runtime
-                .run_tla_steps(
-                    args.tla_tests_filepath,
-                    args.tla_config_filepath,
-                    &mut system,
-                )
-                .map_err(IntegrationTestError::Modelator)?;
+            args.modelator_runtime.run_tla_steps(
+                args.tla_tests_filepath,
+                args.tla_config_filepath,
+                &mut system,
+            )?;
 
-            let expect: NumberSystem =
-                serde_json::value::from_value(args.expect).map_err(IntegrationTestError::Serde)?;
+            let expect: NumberSystem = serde_json::value::from_value(args.expect)?;
 
             assert_eq!(system, expect);
             Ok(())
