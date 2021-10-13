@@ -25,7 +25,7 @@
             "description": "",
             "content": {
                 "type": "cli",
-                "cmd": "modelator trace -m tlc tests/integration/resource/IndicesTests.tla tests/integration/resource/IndicesTests.cfg",
+                "cmd": "modelator trace -m tlc -t TestClaim tests/integration/resource/IndicesTests.tla tests/integration/resource/IndicesTests.cfg",
                 "expect_status": "success"
             }
         },
