@@ -5,7 +5,6 @@ mod resource;
 use clap::Clap;
 use common::*;
 use error::IntegrationTestError;
-use modelator::Error;
 use modelator::ModelatorRuntime;
 use resource::numbers;
 
@@ -14,45 +13,45 @@ use resource::numbers;
 fn test_batch_resources() -> Vec<Box<TestBatchResourceBundle>> {
     let mut ret: Vec<Box<TestBatchResourceBundle>> = Vec::new();
 
-    {
-        ret.push(Box::new(TestBatchResourceBundle {
-            config_filename: "smoke.json",
-            step_runner: None,
-        }));
-    }
+    // {
+    //     ret.push(Box::new(TestBatchResourceBundle {
+    //         config_filename: "smoke.json",
+    //         step_runner: None,
+    //     }));
+    // }
 
-    {
-        ret.push(Box::new(TestBatchResourceBundle {
-            config_filename: "IBC_ics02.json",
-            step_runner: None,
-        }));
-    }
+    // {
+    //     ret.push(Box::new(TestBatchResourceBundle {
+    //         config_filename: "IBC_ics02.json",
+    //         step_runner: None,
+    //     }));
+    // }
+
+    // {
+    //     ret.push(Box::new(TestBatchResourceBundle {
+    //         config_filename: "TrafficCrossing.json",
+    //         step_runner: None,
+    //     }));
+    // }
+
+    // {
+    //     ret.push(Box::new(TestBatchResourceBundle {
+    //         config_filename: "Indices.json",
+    //         step_runner: None,
+    //     }));
+    // }
+
+    // {
+    //     ret.push(Box::new(TestBatchResourceBundle {
+    //         config_filename: "2PossibleTraces.json",
+    //         step_runner: None,
+    //     }));
+    // }
 
     {
         ret.push(Box::new(TestBatchResourceBundle {
             config_filename: "Numbers.json",
             step_runner: Some(Box::new(numbers::test)),
-        }));
-    }
-
-    {
-        ret.push(Box::new(TestBatchResourceBundle {
-            config_filename: "TrafficCrossing.json",
-            step_runner: None,
-        }));
-    }
-
-    {
-        ret.push(Box::new(TestBatchResourceBundle {
-            config_filename: "Indices.json",
-            step_runner: None,
-        }));
-    }
-
-    {
-        ret.push(Box::new(TestBatchResourceBundle {
-            config_filename: "2PossibleTraces.json",
-            step_runner: None,
         }));
     }
 
