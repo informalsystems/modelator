@@ -80,7 +80,7 @@ pub struct TraceCli {
     /// output format
     #[clap(short, long, arg_enum, default_value = "json")]
     format: OutputFormat,
-    /// The number of traces to generate for a single test.
+    /// The maximum number of traces to generate for a single test.
     #[clap(short, long, default_value = "1")]
     num_traces: usize,
     /// TLA+ file with test cases.
@@ -105,11 +105,21 @@ impl TraceCli {
         let tla_file_suite =
             TlaFileSuite::from_tla_and_config_paths(&self.tla_module, &self.tla_config)?;
 
-        let test_names = crate::model::language::Tla::extract_test_names(
+        let test_names: Vec<String> = crate::model::language::Tla::extract_test_names(
             tla_file_suite.tla_file.file_contents_backing(),
         )?
         .into_iter()
-        .filter(|test_name| allow_test_name(test_name, &self.test));
+        .filter(|test_name| allow_test_name(test_name, &self.test))
+        .collect();
+
+        if test_names.is_empty() {
+            return Err(Error::NoTestFound(format!(
+                "No test found in {}. [tla module name: {}, test pattern: {}]",
+                tla_file_suite.tla_file.module_name(),
+                tla_file_suite.tla_file.module_name(),
+                &self.test
+            )));
+        };
 
         let res = {
             let mut res: BTreeMap<String, Result<Vec<JsonValue>, Error>> = BTreeMap::new();

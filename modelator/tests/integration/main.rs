@@ -33,6 +33,13 @@ fn test_batch_resources() -> Vec<Box<TestBatchResourceBundle>> {
         }));
     }
 
+    {
+        ret.push(Box::new(TestBatchResourceBundle {
+            config_filename: "Indices.json",
+            step_runner: None,
+        }));
+    }
+
     ret
 }
 
