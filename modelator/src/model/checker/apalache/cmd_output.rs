@@ -37,6 +37,11 @@ fn parse_filename(line: &str) -> String {
     }
 }
 
+fn is_deadlock_line(line: &str) -> bool {
+    // This log message appears in a spurious case https://github.com/informalsystems/apalache/issues/1040
+    &line[0..31] == "Found a deadlock. No SMT model."
+}
+
 fn is_error_line(line: &str) -> bool {
     //Searching for strings of this form
     //Len is 14
@@ -45,7 +50,8 @@ fn is_error_line(line: &str) -> bool {
         return false;
     }
     let substr = &line[(line.len() - 14)..(line.len() - 12)];
-    substr == "E@"
+    // Exclude the deadlock error.
+    substr == "E@" && !is_deadlock_line(line)
 }
 
 impl CmdOutput {
@@ -60,7 +66,7 @@ impl CmdOutput {
     /// Try to get a list of counterexample filenames from stdout. If other Apalache errors are found then
     /// return a Result<Error>
     pub(crate) fn parse_counterexample_filenames(&self) -> Result<Vec<String>, Error> {
-        let unparsed_lines: Vec<String> = match self.non_counterexample_error() {
+        let raw_lines_that_must_be_parsed: Vec<String> = match self.non_counterexample_error() {
             Some(err) => Err(Error::ApalacheFailure(err)),
             None => Ok(self
                 .apalache_stdout_error_lines()
@@ -68,7 +74,7 @@ impl CmdOutput {
                 .filter(|line| is_counterexample_line(line))
                 .collect()),
         }?;
-        Ok(unparsed_lines
+        Ok(raw_lines_that_must_be_parsed
             .iter()
             .map(|line| parse_filename(line))
             .collect())
