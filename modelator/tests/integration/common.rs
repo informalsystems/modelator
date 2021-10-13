@@ -1,3 +1,6 @@
+use modelator::model::checker::ModelCheckerWorkers;
+use modelator::model::checker::{ModelChecker, ModelCheckerRuntime};
+use modelator::ModelatorRuntime;
 use serde::Deserialize;
 use serde_json::Value as JsonValue;
 use std::fmt::Debug;
@@ -22,6 +25,7 @@ pub enum TestContent {
         test_function: String,
         tla_tests_filename: String,
         tla_config_filename: String,
+        model_checker_runtime: ModelCheckerRuntimeConfig,
         expect: JsonValue,
     },
 }
@@ -34,7 +38,25 @@ pub struct Test {
     pub content: TestContent,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct ModelCheckerRuntimeConfig {
+    model_checker: ModelChecker,
+    workers: String,
+    traces_per_test: String,
+}
+
+impl ModelCheckerRuntimeConfig {
+    pub fn to_model_checker_runtime(&self) -> ModelCheckerRuntime {
+        use std::str::FromStr;
+        return ModelCheckerRuntime::default()
+            .workers(ModelCheckerWorkers::from_str(&self.workers).unwrap())
+            .model_checker(self.model_checker)
+            .traces_per_test(self.traces_per_test.parse::<usize>().unwrap());
+    }
+}
+
 pub struct StepRunnerArgs {
+    pub modelator_runtime: ModelatorRuntime,
     pub test_function_name: String,
     pub tla_tests_filepath: PathBuf,
     pub tla_config_filepath: PathBuf,

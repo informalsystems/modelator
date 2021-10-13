@@ -3,6 +3,7 @@ mod resource;
 
 use clap::Clap;
 use common::*;
+use modelator::ModelatorRuntime;
 use resource::numbers;
 use shlex;
 
@@ -88,11 +89,14 @@ fn run_single_test(batch: &TestBatch, test_content: &TestContent) -> Result<(), 
             tla_tests_filename,
             tla_config_filename,
             expect,
+            model_checker_runtime,
         } => match batch.step_runner.as_ref().unwrap()(StepRunnerArgs {
             test_function_name: test_function.to_owned(),
             tla_tests_filepath: resource_path(tla_tests_filename),
             tla_config_filepath: resource_path(tla_config_filename),
             expect: expect.to_owned(),
+            modelator_runtime: ModelatorRuntime::default()
+                .model_checker_runtime(model_checker_runtime.to_model_checker_runtime()),
         }) {
             Ok(_) => Ok(()),
             Err(e) => Err(e),

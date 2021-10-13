@@ -53,10 +53,9 @@ impl modelator::step_runner::StepRunner<NumbersStep> for NumberSystem {
 pub fn test(args: StepRunnerArgs) -> Result<(), modelator::Error> {
     match args.test_function_name.as_str() {
         "default" => {
-            let runtime = modelator::ModelatorRuntime::default();
             let mut system = NumberSystem::default();
 
-            runtime.run_tla_steps(
+            args.modelator_runtime.run_tla_steps(
                 args.tla_tests_filepath,
                 args.tla_config_filepath,
                 &mut system,

@@ -12,6 +12,8 @@ use std::env;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
+use serde::Deserialize;
+
 const DEFAULT_TRACES_PER_TEST: usize = 1;
 
 /// Set of options to select the model checker to be used and configure them.
@@ -50,6 +52,12 @@ impl ModelCheckerRuntime {
         self.log = log.as_ref().to_path_buf();
         self
     }
+
+    /// Set the maximum number of traces to try to generate for a single test.
+    pub fn traces_per_test(mut self, n: usize) -> Self {
+        self.traces_per_test = n;
+        self
+    }
 }
 
 impl Default for ModelCheckerRuntime {
@@ -64,7 +72,8 @@ impl Default for ModelCheckerRuntime {
 }
 
 /// Configuration option to select the model checker to be used.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ModelChecker {
     /// Option representing the [TLC](https://github.com/tlaplus/tlaplus) model
     /// checker.
