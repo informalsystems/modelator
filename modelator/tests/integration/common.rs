@@ -8,6 +8,8 @@ use std::fmt::Debug;
 use std::fs;
 use std::path::PathBuf;
 
+use crate::error::IntegrationTestError;
+
 static ROOT_DIR: &str = "tests/integration";
 
 pub fn resource_path(suffix: &str) -> PathBuf {
@@ -70,7 +72,7 @@ pub struct StepRunnerArgs {
     pub expect: JsonValue,
 }
 
-pub type StepRunnerTestFn = dyn Fn(StepRunnerArgs) -> Result<(), modelator::Error>;
+pub type StepRunnerTestFn = dyn Fn(StepRunnerArgs) -> Result<(), IntegrationTestError>;
 
 pub struct TestBatch {
     pub config: TestBatchConfig,

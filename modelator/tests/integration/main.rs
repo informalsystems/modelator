@@ -1,8 +1,11 @@
 pub mod common;
+pub mod error;
 mod resource;
 
 use clap::Clap;
 use common::*;
+use error::IntegrationTestError;
+use modelator::Error;
 use modelator::ModelatorRuntime;
 use resource::numbers;
 
@@ -32,6 +35,13 @@ fn test_batch_resources() -> Vec<Box<TestBatchResourceBundle>> {
     //     }));
     // }
 
+    // {
+    //     ret.push(Box::new(TestBatchResourceBundle {
+    //         config_filename: "TrafficCrossing.json",
+    //         step_runner: None,
+    //     }));
+    // }
+
     {
         ret.push(Box::new(TestBatchResourceBundle {
             config_filename: "Indices.json",
@@ -50,10 +60,11 @@ fn integration_test() {
     // TLDR: use exactly 1 integration test in tests/integration/
 
     // Use to match a single test <batch name>/<test name>
-    let isolate = "";
+    let pattern = "";
 
     let filter = |batch_name, test_name| {
-        isolate.is_empty() || format!("{}/{}", batch_name, test_name) == isolate
+        let compare = format!("{}/{}", batch_name, test_name);
+        pattern.is_empty() || compare == pattern
     };
 
     match load_test_batches() {
@@ -82,16 +93,23 @@ Error:
     }
 }
 
-fn run_single_test(batch: &TestBatch, test_content: &TestContent) -> Result<(), modelator::Error> {
+fn run_single_test(
+    batch: &TestBatch,
+    test_content: &TestContent,
+) -> Result<(), IntegrationTestError> {
     match test_content {
         TestContent::Cli { cmd, expect_status } => {
             let os_args = mimic_os_args(cmd);
-            let cli_app = modelator::cli::App::try_parse_from(os_args)?;
+            let cli_app =
+                modelator::cli::App::try_parse_from(os_args).map_err(IntegrationTestError::Clap)?;
             let result = cli_app.run();
-            let actual_status = serde_json::to_string(&result.status).unwrap();
-            // The actual status is a double quoted string
-            assert_eq!(format!("\"{}\"", expect_status), actual_status);
-            Ok(())
+            let actual = serde_json::to_string(&result.status).unwrap();
+            // The actual status is a double quoted string so add quotes
+            let expect = format!("\"{}\"", expect_status);
+            match expect == actual {
+                true => Ok(()),
+                false => Err(IntegrationTestError::ExpectedValueMismatch(expect, actual)),
+            }
         }
         TestContent::StepRunner {
             test_function,
@@ -114,16 +132,11 @@ fn run_single_test(batch: &TestBatch, test_content: &TestContent) -> Result<(), 
 }
 
 /// Loads the .json files registered in test_batch_resources and creates test batches
-fn load_test_batches() -> Result<Vec<Box<TestBatch>>, modelator::Error> {
+fn load_test_batches() -> Result<Vec<Box<TestBatch>>, IntegrationTestError> {
     let mut ret: Vec<Box<TestBatch>> = Vec::new();
     for resource_bundle in test_batch_resources() {
-        let config = TestBatchConfig::load(resource_bundle.config_filename).map_err(|err| {
-            modelator::Error::JsonParseError(format!(
-                "Failed to parse {} [serde::de::Error : {}]",
-                resource_bundle.config_filename,
-                err.to_string()
-            ))
-        })?;
+        let config = TestBatchConfig::load(resource_bundle.config_filename)
+            .map_err(IntegrationTestError::Serde)?;
 
         let batch = Box::new(TestBatch {
             config,

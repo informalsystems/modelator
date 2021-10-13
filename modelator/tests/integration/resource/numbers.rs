@@ -1,4 +1,5 @@
 use crate::common::StepRunnerArgs;
+use crate::error::IntegrationTestError;
 
 use modelator::test_util::NumberSystem;
 use serde::Deserialize;
@@ -50,28 +51,27 @@ impl modelator::step_runner::StepRunner<NumbersStep> for NumberSystem {
     }
 }
 
-pub fn test(args: StepRunnerArgs) -> Result<(), modelator::Error> {
+pub fn test(args: StepRunnerArgs) -> Result<(), IntegrationTestError> {
     match args.test_function_name.as_str() {
         "default" => {
             let mut system = NumberSystem::default();
 
-            args.modelator_runtime.run_tla_steps(
-                args.tla_tests_filepath,
-                args.tla_config_filepath,
-                &mut system,
-            )?;
+            args.modelator_runtime
+                .run_tla_steps(
+                    args.tla_tests_filepath,
+                    args.tla_config_filepath,
+                    &mut system,
+                )
+                .map_err(IntegrationTestError::Modelator)?;
 
             let expect: NumberSystem =
-                serde_json::value::from_value(args.expect).map_err(|err| {
-                    modelator::Error::JsonParseError(format!(
-                        "Failed to parse [serde::de::Error : {}]",
-                        err.to_string()
-                    ))
-                })?;
+                serde_json::value::from_value(args.expect).map_err(IntegrationTestError::Serde)?;
 
             assert_eq!(system, expect);
             Ok(())
         }
-        _ => panic!("Wrong test_function name given as argument to numbers.rs test"),
+        _ => Err(IntegrationTestError::FaultyTest(
+            "Wrong test_function name given as argument to numbers.rs test".into(),
+        )),
     }
 }
