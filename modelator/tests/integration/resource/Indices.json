@@ -19,6 +19,24 @@
                 "cmd": "modelator trace -t Test2Claim tests/integration/resource/IndicesHistoryTests.tla tests/integration/resource/IndicesTests.cfg",
                 "expect_status": "success"
             }
+        },
+        {
+            "name": "use tlc",
+            "description": "",
+            "content": {
+                "type": "cli",
+                "cmd": "modelator trace -m tlc tests/integration/resource/IndicesTests.tla tests/integration/resource/IndicesTests.cfg",
+                "expect_status": "success"
+            }
+        },
+        {
+            "name": "generate many traces",
+            "description": "",
+            "content": {
+                "type": "cli",
+                "cmd": "modelator trace -n 5 tests/integration/resource/IndicesTests.tla tests/integration/resource/IndicesTests.cfg",
+                "expect_status": "success"
+            }
         }
     ]
 }
