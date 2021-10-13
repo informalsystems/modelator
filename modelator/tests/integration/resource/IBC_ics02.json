@@ -3,9 +3,13 @@
     "description": "",
     "tests": [
         {
-            "type": "cli",
-            "cmd": "modelator parse tests/integration/resource/IBC_ics02.tla",
-            "expect_status": "success"
+            "name": "",
+            "description": "",
+            "content": {
+                "type": "cli",
+                "cmd": "modelator parse tests/integration/resource/IBC_ics02.tla",
+                "expect_status": "success"
+            }
         }
     ]
 }

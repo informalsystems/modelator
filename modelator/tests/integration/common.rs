@@ -13,7 +13,7 @@ pub fn resource_path(suffix: &str) -> PathBuf {
 #[derive(Debug, Deserialize)]
 #[serde(tag = "type")]
 #[serde(rename_all = "snake_case")]
-pub enum Test {
+pub enum TestContent {
     Cli {
         cmd: String,
         expect_status: String,
@@ -24,6 +24,14 @@ pub enum Test {
         tla_config_filename: String,
         expect: JsonValue,
     },
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct Test {
+    pub name: String,
+    pub description: String,
+    pub content: TestContent,
 }
 
 pub struct StepRunnerArgs {

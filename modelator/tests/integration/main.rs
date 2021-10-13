@@ -45,14 +45,19 @@ fn integration_test() {
     match load_test_batches() {
         Ok(batches) => batches.iter().for_each(|batch| {
             for test in batch.config.tests.iter() {
-                if let Err(err) = run_single_test(&batch, &test) {
+                if let Err(err) = run_single_test(&batch, &test.content) {
                     panic!(
-                        r#"Test batch {} failed.
-[name:{},description:{}]
+                        r#"Test {} in batch {} failed.
+[name:{},batch_name:{},description:{}]
 Error: 
 {}
 "#,
-                        batch.config.name, batch.config.name, batch.config.description, err
+                        test.name,
+                        batch.config.name,
+                        test.name,
+                        batch.config.name,
+                        batch.config.description,
+                        err
                     )
                 }
             }
@@ -67,9 +72,9 @@ fn mimic_os_args(cmd: &str) -> Vec<String> {
     shlex::split(cmd).unwrap()
 }
 
-fn run_single_test(batch: &TestBatch, test: &Test) -> Result<(), modelator::Error> {
-    match test {
-        Test::Cli { cmd, expect_status } => {
+fn run_single_test(batch: &TestBatch, test_content: &TestContent) -> Result<(), modelator::Error> {
+    match test_content {
+        TestContent::Cli { cmd, expect_status } => {
             let os_args = mimic_os_args(cmd);
             let cli_app = modelator::cli::App::try_parse_from(os_args)?;
             let result = cli_app.run();
@@ -78,7 +83,7 @@ fn run_single_test(batch: &TestBatch, test: &Test) -> Result<(), modelator::Erro
             assert_eq!(format!("\"{}\"", expect_status), actual_status);
             Ok(())
         }
-        Test::StepRunner {
+        TestContent::StepRunner {
             test_function,
             tla_tests_filename,
             tla_config_filename,
