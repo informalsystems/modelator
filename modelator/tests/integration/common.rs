@@ -16,10 +16,37 @@ pub fn resource_path(suffix: &str) -> PathBuf {
     PathBuf::new().join(ROOT_DIR).join("resource").join(suffix)
 }
 
-/// Take the cmd string and split it to mimic the result of std::env::args_os()
+/// Take the cli cmd string and split it to mimic the result of std::env::args_os()
 pub fn mimic_os_args(cmd: &str) -> Vec<String> {
     // Delegate to a crate because parsing command line strings is non trivial
     shlex::split(cmd).unwrap()
+}
+
+pub struct StepRunnerArgs {
+    pub modelator_runtime: ModelatorRuntime,
+    pub test_function_name: String,
+    pub tla_tests_filepath: PathBuf,
+    pub tla_config_filepath: PathBuf,
+    pub expect: JsonValue,
+}
+
+pub type StepRunnerTestFn = dyn Fn(StepRunnerArgs) -> Result<(), IntegrationTestError>;
+
+#[derive(Debug, Deserialize)]
+pub struct ModelCheckerRuntimeConfig {
+    model_checker: ModelChecker,
+    workers: String,
+    traces_per_test: String,
+}
+
+impl ModelCheckerRuntimeConfig {
+    pub fn to_model_checker_runtime(&self) -> ModelCheckerRuntime {
+        use std::str::FromStr;
+        return ModelCheckerRuntime::default()
+            .workers(ModelCheckerWorkers::from_str(&self.workers).unwrap())
+            .model_checker(self.model_checker)
+            .traces_per_test(self.traces_per_test.parse::<usize>().unwrap());
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -46,33 +73,6 @@ pub struct Test {
     pub description: String,
     pub content: TestContent,
 }
-
-#[derive(Debug, Deserialize)]
-pub struct ModelCheckerRuntimeConfig {
-    model_checker: ModelChecker,
-    workers: String,
-    traces_per_test: String,
-}
-
-impl ModelCheckerRuntimeConfig {
-    pub fn to_model_checker_runtime(&self) -> ModelCheckerRuntime {
-        use std::str::FromStr;
-        return ModelCheckerRuntime::default()
-            .workers(ModelCheckerWorkers::from_str(&self.workers).unwrap())
-            .model_checker(self.model_checker)
-            .traces_per_test(self.traces_per_test.parse::<usize>().unwrap());
-    }
-}
-
-pub struct StepRunnerArgs {
-    pub modelator_runtime: ModelatorRuntime,
-    pub test_function_name: String,
-    pub tla_tests_filepath: PathBuf,
-    pub tla_config_filepath: PathBuf,
-    pub expect: JsonValue,
-}
-
-pub type StepRunnerTestFn = dyn Fn(StepRunnerArgs) -> Result<(), IntegrationTestError>;
 
 pub struct TestBatch {
     pub config: TestBatchConfig,
