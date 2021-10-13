@@ -5,33 +5,32 @@ use clap::Clap;
 use common::*;
 use modelator::ModelatorRuntime;
 use resource::numbers;
-use shlex;
 
 /// Register integration tests here by specifying a config file path and
 /// (optionally) a handler for step runner tests.
 fn test_batch_resources() -> Vec<Box<TestBatchResourceBundle>> {
     let mut ret: Vec<Box<TestBatchResourceBundle>> = Vec::new();
 
-    {
-        ret.push(Box::new(TestBatchResourceBundle {
-            config_filename: "smoke.json",
-            step_runner: None,
-        }));
-    }
+    // {
+    //     ret.push(Box::new(TestBatchResourceBundle {
+    //         config_filename: "smoke.json",
+    //         step_runner: None,
+    //     }));
+    // }
 
-    {
-        ret.push(Box::new(TestBatchResourceBundle {
-            config_filename: "IBC_ics02.json",
-            step_runner: None,
-        }));
-    }
+    // {
+    //     ret.push(Box::new(TestBatchResourceBundle {
+    //         config_filename: "IBC_ics02.json",
+    //         step_runner: None,
+    //     }));
+    // }
 
-    {
-        ret.push(Box::new(TestBatchResourceBundle {
-            config_filename: "Numbers.json",
-            step_runner: Some(Box::new(|args| numbers::test(args))),
-        }));
-    }
+    // {
+    //     ret.push(Box::new(TestBatchResourceBundle {
+    //         config_filename: "Numbers.json",
+    //         step_runner: Some(Box::new(|args| numbers::test(args))),
+    //     }));
+    // }
 
     {
         ret.push(Box::new(TestBatchResourceBundle {
@@ -50,34 +49,37 @@ fn integration_test() {
     // https://matklad.github.io/2021/02/27/delete-cargo-integration-tests.html
     // TLDR: use exactly 1 integration test in tests/integration/
 
+    // Use to match a single test <batch name>/<test name>
+    let isolate = "";
+
+    let filter = |batch_name, test_name| {
+        isolate.is_empty() || format!("{}/{}", batch_name, test_name) == isolate
+    };
+
     match load_test_batches() {
         Ok(batches) => batches.iter().for_each(|batch| {
             for test in batch.config.tests.iter() {
-                if let Err(err) = run_single_test(&batch, &test.content) {
-                    panic!(
-                        r#"Test {} in batch {} failed.
+                if filter(&batch.config.name, &test.name) {
+                    if let Err(err) = run_single_test(&batch, &test.content) {
+                        panic!(
+                            r#"Test {} in batch {} failed.
 [name:{},batch_name:{},description:{}]
 Error: 
 {}
 "#,
-                        test.name,
-                        batch.config.name,
-                        test.name,
-                        batch.config.name,
-                        batch.config.description,
-                        err
-                    )
+                            test.name,
+                            batch.config.name,
+                            test.name,
+                            batch.config.name,
+                            batch.config.description,
+                            err
+                        )
+                    }
                 }
             }
         }),
         Err(e) => panic!("{}", e),
     }
-}
-
-/// Take the cmd string and split it to mimic the result of std::env::args_os()
-fn mimic_os_args(cmd: &str) -> Vec<String> {
-    // Delegate to a crate because parsing command line strings is non trivial
-    shlex::split(cmd).unwrap()
 }
 
 fn run_single_test(batch: &TestBatch, test_content: &TestContent) -> Result<(), modelator::Error> {

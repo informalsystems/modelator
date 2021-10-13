@@ -3,6 +3,7 @@ use modelator::model::checker::{ModelChecker, ModelCheckerRuntime};
 use modelator::ModelatorRuntime;
 use serde::Deserialize;
 use serde_json::Value as JsonValue;
+use shlex;
 use std::fmt::Debug;
 use std::fs;
 use std::path::PathBuf;
@@ -11,6 +12,12 @@ static ROOT_DIR: &str = "tests/integration";
 
 pub fn resource_path(suffix: &str) -> PathBuf {
     PathBuf::new().join(ROOT_DIR).join("resource").join(suffix)
+}
+
+/// Take the cmd string and split it to mimic the result of std::env::args_os()
+pub fn mimic_os_args(cmd: &str) -> Vec<String> {
+    // Delegate to a crate because parsing command line strings is non trivial
+    shlex::split(cmd).unwrap()
 }
 
 #[derive(Debug, Deserialize)]

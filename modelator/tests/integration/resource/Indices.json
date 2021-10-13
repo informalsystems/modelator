@@ -3,12 +3,21 @@
     "description": "",
     "tests": [
         {
-            "name": "test not exist",
+            "name": "match non existing test",
             "description": "Trying to trace a test that doesn't exist should fail",
             "content": {
                 "type": "cli",
                 "cmd": "modelator trace -t TestNotExist tests/integration/resource/IndicesHistoryTests.tla tests/integration/resource/IndicesTests.cfg",
                 "expect_status": "error"
+            }
+        },
+        {
+            "name": "match one test",
+            "description": "",
+            "content": {
+                "type": "cli",
+                "cmd": "modelator trace -t Test2Claim tests/integration/resource/IndicesHistoryTests.tla tests/integration/resource/IndicesTests.cfg",
+                "expect_status": "success"
             }
         }
     ]
