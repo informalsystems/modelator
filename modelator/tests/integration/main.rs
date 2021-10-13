@@ -1,8 +1,10 @@
 pub mod common;
 mod resource;
 
+use clap::Clap;
 use common::*;
 use resource::numbers;
+use shlex;
 
 /// Register integration tests here by specifying a config file path and
 /// (optionally) a handler for step runner tests.
@@ -59,11 +61,22 @@ Error:
     }
 }
 
+/// Take the cmd string and split it to mimic the result of std::env::args_os()
+fn mimic_os_args(cmd: &str) -> Vec<String> {
+    // Delegate to a crate because parsing command line strings is non trivial
+    shlex::split(cmd).unwrap()
+}
+
 fn run_single_test(batch: &TestBatch, test: &Test) -> Result<(), modelator::Error> {
     match test {
         Test::Cli { cmd, expect_status } => {
-            todo!()
-            // TODO: exercise cli (lookup clap instructions)
+            let os_args = mimic_os_args(cmd);
+            let cli_app = modelator::cli::App::try_parse_from(os_args)?;
+            let result = cli_app.run();
+            let actual_status = serde_json::to_string(&result.status).unwrap();
+            // The actual status is a double quoted string
+            assert_eq!(format!("\"{}\"", expect_status), actual_status);
+            Ok(())
         }
         Test::StepRunner {
             test_function,
