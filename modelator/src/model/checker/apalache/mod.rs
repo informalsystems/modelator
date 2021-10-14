@@ -56,14 +56,6 @@ impl Apalache {
             runtime
         );
 
-        // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
-        // load cache and check if the result is cached
-        // let mut cache = TlaTraceCache::new(runtime)?;
-        // let cache_key = TlaTraceCache::key(&tla_file, &tla_config_file)?;
-        // if let Some(value) = cache.get(&cache_key)? {
-        //     return Ok(value);
-        // }
-
         let tdir = tempfile::tempdir()?;
 
         try_write_to_dir(&tdir, input_artifacts)?;
@@ -122,9 +114,6 @@ impl Apalache {
             .filter_map(Result::ok)
             .collect();
 
-        // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
-        // cache trace and then return it
-        //cache.insert(cache_key, &trace)?;
         Ok((
             traces,
             ModelCheckerStdout::from_string(&apalache_output.stdout)?,

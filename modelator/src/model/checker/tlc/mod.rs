@@ -43,14 +43,6 @@ impl Tlc {
         let tla_config_file = &tla_file_suite.tla_config_file;
         tracing::debug!("Tlc::test {} {} {:?}", tla_file, tla_config_file, runtime);
 
-        // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
-        // load cache and check if the result is cached
-        // let mut cache = TlaTraceCache::new(runtime)?;
-        // let cache_key = TlaTraceCache::key(&tla_file, &tla_config_file)?;
-        // if let Some(value) = cache.get(&cache_key)? {
-        //     return Ok(value);
-        // }
-
         let tdir = tempfile::tempdir()?;
 
         try_write_to_dir(&tdir, tla_file_suite)?;
@@ -91,9 +83,6 @@ impl Tlc {
                     ));
                 }
 
-                // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
-                // cache trace and then return it
-                //cache.insert(cache_key, &trace)?;
                 Ok((traces, tlc_log))
             }
             _ => {
