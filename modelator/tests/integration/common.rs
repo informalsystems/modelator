@@ -1,3 +1,4 @@
+use crate::error::IntegrationTestError;
 use modelator::model::checker::ModelCheckerWorkers;
 use modelator::model::checker::{ModelChecker, ModelCheckerRuntime};
 use modelator::ModelatorRuntime;
@@ -8,11 +9,8 @@ use std::fmt::Debug;
 use std::fs;
 use std::path::PathBuf;
 
-use crate::error::IntegrationTestError;
-
-static ROOT_DIR: &str = "tests/integration";
-
 pub fn resource_path(suffix: &str) -> PathBuf {
+    static ROOT_DIR: &str = "tests/integration";
     PathBuf::new().join(ROOT_DIR).join("resource").join(suffix)
 }
 
@@ -22,6 +20,7 @@ pub fn mimic_os_args(cmd: &str) -> Vec<String> {
     shlex::split(cmd).unwrap()
 }
 
+/// Arguments to be passed to a step runner testing function
 pub struct StepRunnerArgs {
     pub modelator_runtime: ModelatorRuntime,
     pub test_function_name: String,
