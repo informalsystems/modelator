@@ -70,6 +70,11 @@ use std::path::{Path, PathBuf};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use tempfile::tempdir;
 
+use once_cell::sync::Lazy;
+use std::sync::Mutex;
+
+static FILE_SYSTEM_MUTEX: Lazy<Mutex<()>> = Lazy::new(Mutex::default);
+
 /// Wraps the data from running test(s), allowing more convenient access to the results.
 pub struct TestReport {
     test_name_to_trace_execution_result: BTreeMap<String, Vec<Result<(), TestError>>>,
@@ -151,13 +156,21 @@ impl ModelatorRuntime {
             );
         }
 
+        self.ensure_dependencies_exist_on_filesystem()?;
+
+        Ok(())
+    }
+
+    fn ensure_dependencies_exist_on_filesystem(&self) -> Result<(), Error> {
+        let _guard = FILE_SYSTEM_MUTEX.lock();
+
         // create modelator dir if it doesn't already exist
         if !self.dir.as_path().is_dir() {
             std::fs::create_dir_all(&self.dir)?;
         }
 
         // download missing jars
-        jar::download_jars(&self.dir)?;
+        jar::download_jars_if_necessary(&self.dir)?;
         tracing::trace!("modelator setup completed");
 
         Ok(())
