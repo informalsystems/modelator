@@ -74,6 +74,10 @@ fn integration_test() {
     };
 
     match load_test_batches() {
+        // Run each batch in parallel
+        // For each batch, run each test in the batch in parallel
+        // Use rayon::try_for_each to bubble up Result::Err value(s)
+        // In the case of multiple failed tests, only 1 will non-deterministically win the race to bubble up
         Ok(batches) => match batches.par_iter().try_for_each(|batch| {
             batch.config.tests.par_iter().try_for_each(|test: &Test| {
                 match do_run_test(&batch.config.name, &test.name) {
