@@ -4,8 +4,9 @@ mod resource;
 
 use clap::Clap;
 use common::*;
-use error::IntegrationTestError;
+use error::{IntegrationTestError, IntegrationTestFailure};
 use modelator::ModelatorRuntime;
+use rayon::prelude::*;
 use resource::numbers;
 
 /// Register integration tests here by specifying a config file path and
@@ -73,28 +74,24 @@ fn integration_test() {
     };
 
     match load_test_batches() {
-        Ok(batches) => batches.iter().for_each(|batch| {
-            for test in batch.config.tests.iter() {
-                if do_run_test(&batch.config.name, &test.name) {
-                    if let Err(err) = run_single_test(&batch, &test.content) {
-                        panic!(
-                            r#"Test {} in batch {} failed.
-[name:{},batch_name:{},description:{}]
-Error: 
-{}
-"#,
-                            test.name,
-                            batch.config.name,
-                            test.name,
-                            batch.config.name,
-                            batch.config.description,
-                            err
-                        )
-                    }
+        Ok(batches) => match batches.par_iter().try_for_each(|batch| {
+            batch.config.tests.par_iter().try_for_each(|test: &Test| {
+                match do_run_test(&batch.config.name, &test.name) {
+                    true => run_single_test(&batch, &test.content).map_err(|err| {
+                        IntegrationTestFailure {
+                            error_str: err.to_string(),
+                            batch_config: batch.config.clone(),
+                            test: test.clone(),
+                        }
+                    }),
+                    false => Ok(()),
                 }
-            }
-        }),
-        Err(e) => panic!("{}", e),
+            })
+        }) {
+            Ok(()) => (),
+            Err(err) => panic!("{}", err),
+        },
+        Err(err) => panic!("{}", err),
     }
 }
 

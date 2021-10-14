@@ -1,3 +1,5 @@
+use crate::common::{Test, TestBatchConfig};
+use std::fmt;
 use thiserror::Error;
 /// Set of possible errors that can occur when running an integration test
 #[derive(Error, Debug)]
@@ -38,5 +40,31 @@ impl From<clap::Error> for IntegrationTestError {
 impl From<serde_json::Error> for IntegrationTestError {
     fn from(err: serde_json::Error) -> Self {
         Self::Serde(err)
+    }
+}
+
+#[derive(Error, Debug)]
+pub struct IntegrationTestFailure {
+    pub error_str: String,
+    pub test: Test,
+    pub batch_config: TestBatchConfig,
+}
+
+impl fmt::Display for IntegrationTestFailure {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            r#"Test '{}' in batch '{}' failed.
+        [name:{}, batch_name:{}, description:{}]
+        Error: 
+        {}
+        "#,
+            self.test.name,
+            self.batch_config.name,
+            self.test.name,
+            self.batch_config.name,
+            self.batch_config.description,
+            self.error_str
+        )
     }
 }

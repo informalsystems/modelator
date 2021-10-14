@@ -30,9 +30,7 @@ pub struct StepRunnerArgs {
     pub expect: JsonValue,
 }
 
-pub type StepRunnerTestFn = dyn Fn(StepRunnerArgs) -> Result<(), IntegrationTestError>;
-
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct ModelCheckerRuntimeConfig {
     model_checker: ModelChecker,
     workers: String,
@@ -49,7 +47,7 @@ impl ModelCheckerRuntimeConfig {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(tag = "type")]
 #[serde(rename_all = "snake_case")]
 pub enum TestContent {
@@ -66,7 +64,7 @@ pub enum TestContent {
     },
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "snake_case")]
 pub struct Test {
     pub name: String,
@@ -74,6 +72,9 @@ pub struct Test {
     pub content: TestContent,
 }
 
+pub type StepRunnerTestFn = fn(StepRunnerArgs) -> Result<(), IntegrationTestError>;
+
+#[derive(Debug)]
 pub struct TestBatch {
     pub config: TestBatchConfig,
     pub step_runner: Option<Box<StepRunnerTestFn>>,
@@ -86,7 +87,7 @@ pub struct TestBatchResourceBundle {
     pub step_runner: Option<Box<StepRunnerTestFn>>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct TestBatchConfig {
     pub name: String,
     pub description: String,
