@@ -1,6 +1,6 @@
 use crate::common::{Test, TestBatchConfig};
-use std::fmt;
 use thiserror::Error;
+
 /// Set of possible errors that can occur when running an integration test
 #[derive(Error, Debug)]
 pub enum IntegrationTestError {
@@ -14,57 +14,29 @@ pub enum IntegrationTestError {
 
     /// An error in the case that modelator returns an error
     #[error("Modelator returned an error: {0}")]
-    Modelator(modelator::Error),
+    Modelator(#[from] modelator::Error),
 
     /// An error in the case that clap returns an error
     #[error("Clap returned an error: {0}")]
-    Clap(clap::Error),
+    Clap(#[from] clap::Error),
 
     /// An error in the case that serde returns an error
     #[error("Serde returned an error: {0}")]
-    Serde(serde_json::Error),
-}
-
-impl From<modelator::Error> for IntegrationTestError {
-    fn from(err: modelator::Error) -> Self {
-        Self::Modelator(err)
-    }
-}
-
-impl From<clap::Error> for IntegrationTestError {
-    fn from(err: clap::Error) -> Self {
-        Self::Clap(err)
-    }
-}
-
-impl From<serde_json::Error> for IntegrationTestError {
-    fn from(err: serde_json::Error) -> Self {
-        Self::Serde(err)
-    }
+    Serde(#[from] serde_json::Error),
 }
 
 #[derive(Error, Debug)]
+#[error(
+    "Test '{0}' in batch '{1}' failed. [name:{2}, batch_name:{3}, description:{4}] Error: {5}",
+    test.name,
+    batch_config.name,
+    test.name,
+    batch_config.name,
+    batch_config.description,
+    error_str
+)]
 pub struct IntegrationTestFailure {
     pub error_str: String,
     pub test: Test,
     pub batch_config: TestBatchConfig,
-}
-
-impl fmt::Display for IntegrationTestFailure {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            r#"Test '{}' in batch '{}' failed.
-        [name:{}, batch_name:{}, description:{}]
-        Error: 
-        {}
-        "#,
-            self.test.name,
-            self.batch_config.name,
-            self.test.name,
-            self.batch_config.name,
-            self.batch_config.description,
-            self.error_str
-        )
-    }
 }
