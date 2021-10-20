@@ -39,10 +39,10 @@ pub struct ModelCheckerRuntimeConfig {
 impl ModelCheckerRuntimeConfig {
     pub fn to_model_checker_runtime(&self) -> ModelCheckerRuntime {
         use std::str::FromStr;
-        return ModelCheckerRuntime::default()
+        ModelCheckerRuntime::default()
             .workers(ModelCheckerWorkers::from_str(&self.workers).unwrap())
             .model_checker(self.model_checker)
-            .traces_per_test(self.traces_per_test.parse::<usize>().unwrap());
+            .traces_per_test(self.traces_per_test.parse::<usize>().unwrap())
     }
 }
 
@@ -97,8 +97,8 @@ impl TestBatchConfig {
     pub fn load(filename: &str) -> Result<TestBatchConfig, serde_json::Error> {
         let path = resource_path(filename);
         let content = fs::read_to_string(path)
-            .expect(&format!("Unable to read contents of a {} file", filename).to_owned());
+            .unwrap_or_else(|_| panic!("Unable to read contents of a {} file", filename));
         let ret: TestBatchConfig = serde_json::from_str(&content)?;
-        return Ok(ret);
+        Ok(ret)
     }
 }

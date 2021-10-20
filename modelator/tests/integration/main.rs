@@ -12,51 +12,32 @@ use resource::numbers;
 /// Register integration tests here by specifying a config file path and
 /// (optionally) a handler for step runner tests.
 fn test_batch_resources() -> Vec<TestBatchResourceBundle> {
-    let mut ret = Vec::new();
-
-    {
-        ret.push(TestBatchResourceBundle {
+    vec![
+        TestBatchResourceBundle {
             config_filename: "smoke.json",
             step_runner: None,
-        });
-    }
-
-    {
-        ret.push(TestBatchResourceBundle {
+        },
+        TestBatchResourceBundle {
             config_filename: "IBC_ics02.json",
             step_runner: None,
-        });
-    }
-
-    {
-        ret.push(TestBatchResourceBundle {
+        },
+        TestBatchResourceBundle {
             config_filename: "Indices.json",
             step_runner: None,
-        });
-    }
-
-    {
-        ret.push(TestBatchResourceBundle {
+        },
+        TestBatchResourceBundle {
             config_filename: "2PossibleTraces.json",
             step_runner: None,
-        });
-    }
-
-    {
-        ret.push(TestBatchResourceBundle {
+        },
+        TestBatchResourceBundle {
             config_filename: "Numbers.json",
             step_runner: Some(Box::new(numbers::test)),
-        });
-    }
-
-    {
-        ret.push(TestBatchResourceBundle {
+        },
+        TestBatchResourceBundle {
             config_filename: "TrafficCrossing.json",
             step_runner: None,
-        });
-    }
-
-    ret
+        },
+    ]
 }
 
 #[test]
@@ -81,7 +62,7 @@ fn integration_test() {
         Ok(batches) => match batches.par_iter().try_for_each(|batch| {
             batch.config.tests.par_iter().try_for_each(|test: &Test| {
                 match do_run_test(&batch.config.name, &test.name) {
-                    true => run_single_test(&batch, &test.content).map_err(|err| {
+                    true => run_single_test(batch, &test.content).map_err(|err| {
                         IntegrationTestFailure {
                             error_str: err.to_string(),
                             batch_config: batch.config.clone(),

@@ -280,7 +280,7 @@ My4Op
         let res = extract_operator_names(content);
         match res {
             Ok(v) => assert_eq!(expect, v),
-            Err(_) => assert!(false),
+            Err(_) => panic!(),
         };
     }
 
@@ -342,7 +342,7 @@ My4Test
         let res = Tla::extract_test_names(content);
         match res {
             Ok(v) => assert_eq!(expect, v),
-            Err(_) => assert!(false),
+            Err(_) => panic!(),
         };
     }
 }
