@@ -6,7 +6,6 @@ use serde::Serialize;
 use serde_json::Value as JsonValue;
 
 /// Struct representing the output of `modelator` CLI.
-/// See [`super::CliOptions`].
 #[derive(Serialize, Debug)]
 pub struct CliOutput {
     /// The return status
