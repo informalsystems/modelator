@@ -2,7 +2,7 @@ pub mod common;
 pub mod error;
 mod resource;
 
-use clap::Clap;
+use clap::Parser;
 use common::*;
 use error::{IntegrationTestError, IntegrationTestFailure};
 use modelator::ModelatorRuntime;

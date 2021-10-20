@@ -1,15 +1,15 @@
-use clap::{App, ArgEnum};
-use clap::{Clap, IntoApp};
+use clap::ArgEnum;
+use clap::{IntoApp, Parser};
+use clap_generate::generate;
 use clap_generate::generators::{Bash, Elvish, Fish, PowerShell, Zsh};
-use clap_generate::{generate, Generator};
 
-#[derive(Debug, Clap)]
+#[derive(Debug, Parser)]
 struct Cli {
     #[clap(arg_enum)]
     generator: ShellName,
 }
 
-#[derive(Debug, ArgEnum)]
+#[derive(Debug, Clone, ArgEnum)]
 enum ShellName {
     Bash,
     Elvish,
@@ -18,20 +18,18 @@ enum ShellName {
     Zsh,
 }
 
-fn print_completions<G: Generator>(app: &mut App) {
-    generate::<G, _>(app, app.get_name().to_string(), &mut std::io::stdout());
-}
-
 fn main() {
     let cli = Cli::parse();
 
-    let mut modelator_app = modelator::cli::App::into_app();
+    let mut app = modelator::cli::App::into_app();
+    let app_name = app.get_name().to_owned();
     eprintln!("Generating completion file for {:?}...", cli.generator);
+
     match cli.generator {
-        ShellName::Bash => print_completions::<Bash>(&mut modelator_app),
-        ShellName::Elvish => print_completions::<Elvish>(&mut modelator_app),
-        ShellName::Fish => print_completions::<Fish>(&mut modelator_app),
-        ShellName::Powershell => print_completions::<PowerShell>(&mut modelator_app),
-        ShellName::Zsh => print_completions::<Zsh>(&mut modelator_app),
+        ShellName::Bash => generate(Bash, &mut app, app_name, &mut std::io::stdout()),
+        ShellName::Elvish => generate(Elvish, &mut app, app_name, &mut std::io::stdout()),
+        ShellName::Fish => generate(Fish, &mut app, app_name, &mut std::io::stdout()),
+        ShellName::Powershell => generate(PowerShell, &mut app, app_name, &mut std::io::stdout()),
+        ShellName::Zsh => generate(Zsh, &mut app, app_name, &mut std::io::stdout()),
     }
 }
