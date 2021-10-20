@@ -11,49 +11,49 @@ use resource::numbers;
 
 /// Register integration tests here by specifying a config file path and
 /// (optionally) a handler for step runner tests.
-fn test_batch_resources() -> Vec<Box<TestBatchResourceBundle>> {
-    let mut ret: Vec<Box<TestBatchResourceBundle>> = Vec::new();
+fn test_batch_resources() -> Vec<TestBatchResourceBundle> {
+    let mut ret = Vec::new();
 
     {
-        ret.push(Box::new(TestBatchResourceBundle {
+        ret.push(TestBatchResourceBundle {
             config_filename: "smoke.json",
             step_runner: None,
-        }));
+        });
     }
 
     {
-        ret.push(Box::new(TestBatchResourceBundle {
+        ret.push(TestBatchResourceBundle {
             config_filename: "IBC_ics02.json",
             step_runner: None,
-        }));
+        });
     }
 
     {
-        ret.push(Box::new(TestBatchResourceBundle {
+        ret.push(TestBatchResourceBundle {
             config_filename: "Indices.json",
             step_runner: None,
-        }));
+        });
     }
 
     {
-        ret.push(Box::new(TestBatchResourceBundle {
+        ret.push(TestBatchResourceBundle {
             config_filename: "2PossibleTraces.json",
             step_runner: None,
-        }));
+        });
     }
 
     {
-        ret.push(Box::new(TestBatchResourceBundle {
+        ret.push(TestBatchResourceBundle {
             config_filename: "Numbers.json",
             step_runner: Some(Box::new(numbers::test)),
-        }));
+        });
     }
 
     {
-        ret.push(Box::new(TestBatchResourceBundle {
+        ret.push(TestBatchResourceBundle {
             config_filename: "TrafficCrossing.json",
             step_runner: None,
-        }));
+        });
     }
 
     ret
@@ -134,15 +134,15 @@ fn run_single_test(
 }
 
 /// Loads the .json files registered in test_batch_resources and creates test batches
-fn load_test_batches() -> Result<Vec<Box<TestBatch>>, IntegrationTestError> {
-    let mut ret: Vec<Box<TestBatch>> = Vec::new();
+fn load_test_batches() -> Result<Vec<TestBatch>, IntegrationTestError> {
+    let mut ret = Vec::new();
     for resource_bundle in test_batch_resources() {
         let config = TestBatchConfig::load(resource_bundle.config_filename)?;
 
-        let batch = Box::new(TestBatch {
+        let batch = TestBatch {
             config,
             step_runner: resource_bundle.step_runner,
-        });
+        };
 
         ret.push(batch);
     }
