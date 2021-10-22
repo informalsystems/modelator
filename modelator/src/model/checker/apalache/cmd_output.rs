@@ -39,7 +39,7 @@ fn parse_filename(line: &str) -> String {
 
 fn is_deadlock_line(line: &str) -> bool {
     // This log message appears in a spurious case https://github.com/informalsystems/apalache/issues/1040
-    &line[0..31] == "Found a deadlock. No SMT model."
+    &line[0..std::cmp::min(line.len(), 31)] == "Found a deadlock. No SMT model."
 }
 
 fn is_error_line(line: &str) -> bool {
