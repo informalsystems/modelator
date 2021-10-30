@@ -3,15 +3,15 @@ name = "modelator"
 description = "A framework and tools for model-based testing."
 version = "0.3.1"
 edition = "2018"
-license    = "Apache-2.0"
-readme     = "README.md"
-keywords   = ["testing", "model", "model-based", "TLA", "abstraction"]
+license = "Apache-2.0"
+readme = "README.md"
+keywords = ["testing", "model", "model-based", "TLA", "abstraction"]
 repository = "https://github.com/informalsystems/modelator"
 authors = [
-    "Vitor Enes <vitorenesduarte@gmail.com>", 
-    "Andrey Kuprianov <andrey@informal.systems>",
-    "Ranadeep Biswas <ranadeep@informal.systems>",
-    "Daniel Tisdall <daniel@informal.systems>"
+  "Vitor Enes <vitorenesduarte@gmail.com>",
+  "Andrey Kuprianov <andrey@informal.systems>",
+  "Ranadeep Biswas <ranadeep@informal.systems>",
+  "Daniel Tisdall <daniel@informal.systems>",
 ]
 
 [dependencies]
