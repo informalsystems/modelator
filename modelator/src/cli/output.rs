@@ -1,11 +1,11 @@
 // This module is inspired by what's in:
 // https://github.com/informalsystems/ibc-rs/blob/ad827a94e5c84ceb1af764a255dd1821d7852fef/relayer-cli/src/conclude.rs
 use crate::Error;
+use serde::Deserialize;
 use serde::Serialize;
 use serde_json::Value as JsonValue;
 
 /// Struct representing the output of `modelator` CLI.
-/// See [`super::CliOptions`].
 #[derive(Serialize, Debug)]
 pub struct CliOutput {
     /// The return status
@@ -51,13 +51,11 @@ impl CliOutput {
 }
 
 /// Represents the exit status of any CLI command
-#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum CliStatus {
     /// An exit status representing success.
-    #[serde(rename(serialize = "success"))]
     Success,
-
     /// An exit status representing an error.
-    #[serde(rename(serialize = "error"))]
     Error,
 }

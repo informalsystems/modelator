@@ -33,8 +33,8 @@ impl Apalache {
     /// use modelator::ModelatorRuntime;
     /// use std::convert::TryFrom;
     ///
-    /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
-    /// let tla_config_file = "tests/integration/tla/Numbers.cfg";
+    /// let tla_tests_file = "tests/integration/resource/NumbersAMaxBMinTest.tla";
+    /// let tla_config_file = "tests/integration/resource/Numbers.cfg";
     /// let tla_suite = TlaFileSuite::from_tla_and_config_paths(tla_tests_file, tla_config_file).unwrap();
     ///
     /// let mut tests = Tla::generate_tests(&tla_suite).unwrap();
@@ -55,14 +55,6 @@ impl Apalache {
             input_artifacts.tla_config_file,
             runtime
         );
-
-        // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
-        // load cache and check if the result is cached
-        // let mut cache = TlaTraceCache::new(runtime)?;
-        // let cache_key = TlaTraceCache::key(&tla_file, &tla_config_file)?;
-        // if let Some(value) = cache.get(&cache_key)? {
-        //     return Ok(value);
-        // }
 
         let tdir = tempfile::tempdir()?;
 
@@ -122,9 +114,6 @@ impl Apalache {
             .filter_map(Result::ok)
             .collect();
 
-        // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
-        // cache trace and then return it
-        //cache.insert(cache_key, &trace)?;
         Ok((
             traces,
             ModelCheckerStdout::from_string(&apalache_output.stdout)?,
@@ -143,7 +132,7 @@ impl Apalache {
     /// use modelator::ModelatorRuntime;
     /// use std::convert::TryFrom;
     ///
-    /// let tla_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
+    /// let tla_file = "tests/integration/resource/NumbersAMaxBMinTest.tla";
     /// let tla_file_suite = TlaFileSuite::from_tla_path(tla_file).unwrap();
     ///
     /// let runtime = ModelatorRuntime::default();
@@ -195,10 +184,15 @@ fn run_apalache(mut cmd: Command) -> Result<CmdOutput, Error> {
     // get apalache stdout and stderr
     let stdout = crate::util::cmd_output_to_string(&output.stdout);
     let stderr = crate::util::cmd_output_to_string(&output.stderr);
+    let status = output.status.code();
     tracing::debug!("Apalache stdout:\n{}", stdout);
     tracing::debug!("Apalache stderr:\n{}", stderr);
 
-    Ok(CmdOutput { stdout, stderr })
+    Ok(CmdOutput {
+        stdout,
+        stderr,
+        status,
+    })
 }
 
 fn check_cmd<P: AsRef<Path>>(

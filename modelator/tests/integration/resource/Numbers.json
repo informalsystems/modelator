@@ -1,0 +1,111 @@
+{
+    "name": "Numbers",
+    "description": "",
+    "tests": [
+        {
+            "name": "",
+            "description": "",
+            "content": {
+                "type": "step_runner",
+                "test_function": "default",
+                "tla_tests_filename": "NumbersAMaxBMaxTest.tla",
+                "tla_config_filename": "Numbers.cfg",
+                "model_checker_runtime": {
+                    "model_checker": "apalache",
+                    "workers": "auto",
+                    "traces_per_test": "1"
+                },
+                "expect": {
+                    "a": 6,
+                    "b": 6,
+                    "sum": 12,
+                    "prod": 36
+                }
+            }
+        },
+        {
+            "name": "",
+            "description": "",
+            "content": {
+                "type": "step_runner",
+                "test_function": "default",
+                "tla_tests_filename": "NumbersAMaxBMinTest.tla",
+                "tla_config_filename": "Numbers.cfg",
+                "model_checker_runtime": {
+                    "model_checker": "apalache",
+                    "workers": "auto",
+                    "traces_per_test": "1"
+                },
+                "expect": {
+                    "a": 6,
+                    "b": 0,
+                    "sum": 6,
+                    "prod": 0
+                }
+            }
+        },
+        {
+            "name": "",
+            "description": "",
+            "content": {
+                "type": "step_runner",
+                "test_function": "default",
+                "tla_tests_filename": "NumbersAMinBMaxTest.tla",
+                "tla_config_filename": "Numbers.cfg",
+                "model_checker_runtime": {
+                    "model_checker": "apalache",
+                    "workers": "auto",
+                    "traces_per_test": "1"
+                },
+                "expect": {
+                    "a": 0,
+                    "b": 6,
+                    "sum": 6,
+                    "prod": 0
+                }
+            }
+        },
+        {
+            "name": "",
+            "description": "",
+            "content": {
+                "type": "step_runner",
+                "test_function": "default",
+                "tla_tests_filename": "NumbersAMinBMaxTest.tla",
+                "tla_config_filename": "Numbers.cfg",
+                "model_checker_runtime": {
+                    "model_checker": "apalache",
+                    "workers": "auto",
+                    "traces_per_test": "2"
+                },
+                "expect": {
+                    "a": 0,
+                    "b": 6,
+                    "sum": 6,
+                    "prod": 0
+                }
+            }
+        },
+        {
+            "name": "",
+            "description": "",
+            "content": {
+                "type": "step_runner",
+                "test_function": "default",
+                "tla_tests_filename": "NumbersAMinBMaxTest.tla",
+                "tla_config_filename": "Numbers.cfg",
+                "model_checker_runtime": {
+                    "model_checker": "tlc",
+                    "workers": "auto",
+                    "traces_per_test": "1"
+                },
+                "expect": {
+                    "a": 0,
+                    "b": 6,
+                    "sum": 6,
+                    "prod": 0
+                }
+            }
+        }
+    ]
+}

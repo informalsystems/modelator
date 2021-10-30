@@ -72,7 +72,7 @@ impl Jar {
     }
 }
 
-pub(crate) fn download_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Error> {
+pub(crate) fn download_jars_if_necessary<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Error> {
     // get all existing jars
     let existing_jars = existing_jars(&modelator_dir)?;
     // compute jars that are missing
@@ -103,7 +103,7 @@ pub(crate) fn download_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Erro
             std::fs::create_dir(&modelator_dir)?;
 
             // try to download jars again
-            return download_jars(modelator_dir);
+            return download_jars_if_necessary(modelator_dir);
         }
     }
     Ok(())

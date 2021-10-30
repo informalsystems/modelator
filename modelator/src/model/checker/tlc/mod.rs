@@ -25,8 +25,8 @@ impl Tlc {
     /// use modelator::ModelatorRuntime;
     /// use std::convert::TryFrom;
     ///
-    /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
-    /// let tla_config_file = "tests/integration/tla/Numbers.cfg";
+    /// let tla_tests_file = "tests/integration/resource/NumbersAMaxBMinTest.tla";
+    /// let tla_config_file = "tests/integration/resource/Numbers.cfg";
     /// let tla_suite = TlaFileSuite::from_tla_and_config_paths(tla_tests_file, tla_config_file).unwrap();
     ///
     /// let mut tests = Tla::generate_tests(&tla_suite).unwrap();
@@ -42,14 +42,6 @@ impl Tlc {
         let tla_file = &tla_file_suite.tla_file;
         let tla_config_file = &tla_file_suite.tla_config_file;
         tracing::debug!("Tlc::test {} {} {:?}", tla_file, tla_config_file, runtime);
-
-        // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
-        // load cache and check if the result is cached
-        // let mut cache = TlaTraceCache::new(runtime)?;
-        // let cache_key = TlaTraceCache::key(&tla_file, &tla_config_file)?;
-        // if let Some(value) = cache.get(&cache_key)? {
-        //     return Ok(value);
-        // }
 
         let tdir = tempfile::tempdir()?;
 
@@ -91,9 +83,6 @@ impl Tlc {
                     ));
                 }
 
-                // TODO: disabling cache for now; see https://github.com/informalsystems/modelator/issues/46
-                // cache trace and then return it
-                //cache.insert(cache_key, &trace)?;
                 Ok((traces, tlc_log))
             }
             _ => {

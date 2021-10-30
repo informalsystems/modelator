@@ -30,8 +30,8 @@ impl Tla {
     /// use modelator::ModelatorRuntime;
     /// use std::convert::TryFrom;
     ///
-    /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
-    /// let tla_config_file = "tests/integration/tla/Numbers.cfg";
+    /// let tla_tests_file = "tests/integration/resource/NumbersAMaxBMinTest.tla";
+    /// let tla_config_file = "tests/integration/resource/Numbers.cfg";
     /// let tla_suite = TlaFileSuite::from_tla_and_config_paths(tla_tests_file, tla_config_file).unwrap();
     ///
     /// let mut tests = Tla::generate_tests(&tla_suite).unwrap();
@@ -59,8 +59,8 @@ impl Tla {
     /// use modelator::model::language::Tla;
     /// use std::convert::TryFrom;
     ///
-    /// let tla_tests_file = "tests/integration/tla/NumbersAMaxBMinTest.tla";
-    /// let tla_config_file = "tests/integration/tla/Numbers.cfg";
+    /// let tla_tests_file = "tests/integration/resource/NumbersAMaxBMinTest.tla";
+    /// let tla_config_file = "tests/integration/resource/Numbers.cfg";
     /// let tla_suite = TlaFileSuite::from_tla_and_config_paths(tla_tests_file, tla_config_file).unwrap();
     /// let mut tests = Tla::generate_tests(&tla_suite).unwrap();
     /// println!("{:?}", tests);
@@ -106,9 +106,6 @@ impl Tla {
         Ok(names
             .iter()
             .filter_map(|name| {
-                // consider this as a test name if:
-                // - it starts/ends Test
-                // - it's not commented out
                 let is_test = name.starts_with("Test") || name.ends_with("Test");
                 let is_commented_out = name.starts_with("\\*") || name.starts_with("(*");
                 if is_test && !is_commented_out {
@@ -234,6 +231,7 @@ EXTENDS {}
         negated_test_name,
         test_name,
         match view_operator {
+            // Write an additional operator that corresponds the view to the specific negated test operator
             Some(name) => format!("ViewForTestNeg == {}", name),
             _ => "".to_owned(),
         }
@@ -282,7 +280,7 @@ My4Op
         let res = extract_operator_names(content);
         match res {
             Ok(v) => assert_eq!(expect, v),
-            Err(_) => assert!(false),
+            Err(_) => panic!(),
         };
     }
 
@@ -344,7 +342,7 @@ My4Test
         let res = Tla::extract_test_names(content);
         match res {
             Ok(v) => assert_eq!(expect, v),
-            Err(_) => assert!(false),
+            Err(_) => panic!(),
         };
     }
 }

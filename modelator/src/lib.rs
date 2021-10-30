@@ -70,6 +70,11 @@ use std::path::{Path, PathBuf};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use tempfile::tempdir;
 
+use once_cell::sync::Lazy;
+use std::sync::Mutex;
+
+static FILE_SYSTEM_MUTEX: Lazy<Mutex<()>> = Lazy::new(Mutex::default);
+
 /// Wraps the data from running test(s), allowing more convenient access to the results.
 pub struct TestReport {
     test_name_to_trace_execution_result: BTreeMap<String, Vec<Result<(), TestError>>>,
@@ -77,7 +82,7 @@ pub struct TestReport {
 
 impl TestReport {
     /// Returns true iff no test failed
-    pub fn is_ok(&self) -> bool {
+    pub fn no_test_failed(&self) -> bool {
         !self
             .test_name_to_trace_execution_result
             .values()
@@ -151,13 +156,21 @@ impl ModelatorRuntime {
             );
         }
 
-        // create modelator dir (if it doens't already exist)
+        self.ensure_dependencies_exist_on_filesystem()?;
+
+        Ok(())
+    }
+
+    fn ensure_dependencies_exist_on_filesystem(&self) -> Result<(), Error> {
+        let _guard = FILE_SYSTEM_MUTEX.lock();
+
+        // create modelator dir if it doesn't already exist
         if !self.dir.as_path().is_dir() {
             std::fs::create_dir_all(&self.dir)?;
         }
 
         // download missing jars
-        jar::download_jars(&self.dir)?;
+        jar::download_jars_if_necessary(&self.dir)?;
         tracing::trace!("modelator setup completed");
 
         Ok(())
@@ -173,8 +186,8 @@ impl ModelatorRuntime {
     /// # Examples
     ///
     /// ```
-    /// let tla_tests_file_path = "tests/integration/tla/NumbersAMaxBMinTest.tla";
-    /// let tla_config_file_path = "tests/integration/tla/Numbers.cfg";
+    /// let tla_tests_file_path = "tests/integration/resource/NumbersAMaxBMinTest.tla";
+    /// let tla_config_file_path = "tests/integration/resource/Numbers.cfg";
     /// let runtime = modelator::ModelatorRuntime::default();
     /// let trace_results = runtime.traces(tla_tests_file_path, tla_config_file_path).unwrap();
     /// println!("{:?}", trace_results);
@@ -265,6 +278,7 @@ impl ModelatorRuntime {
     ///     fn initial_step(&mut self, step: NumbersStep) -> Result<(), String> {
     ///         self.a = step.a;
     ///         self.b = step.b;
+    ///         self.recalculate();
     ///         Ok(())
     ///     }
     ///
@@ -292,8 +306,8 @@ impl ModelatorRuntime {
     ///
     /// // To run your system against a TLA+ test, just point to the corresponding TLA+ files.
     /// fn test() {
-    ///     let tla_tests_file_path = "tests/integration/tla/NumbersAMaxBMinTest.tla";
-    ///     let tla_config_file_path = "tests/integration/tla/Numbers.cfg";
+    ///     let tla_tests_file_path = "tests/integration/resource/NumbersAMaxBMinTest.tla";
+    ///     let tla_config_file_path = "tests/integration/resource/Numbers.cfg";
     ///     let runtime = modelator::ModelatorRuntime::default();
     ///     let mut system = NumberSystem::default();
     ///     assert!(runtime.run_tla_steps(tla_tests_file_path, tla_config_file_path, &mut system).is_ok());
@@ -401,8 +415,8 @@ impl ModelatorRuntime {
     ///
     /// // To run your system against a TLA+ test, just point to the corresponding TLA+ files.
     /// fn main() {
-    ///     let tla_tests_file_path = "tests/integration/tla/NumbersAMaxBMaxTest.tla";
-    ///     let tla_config_file_path = "tests/integration/tla/Numbers.cfg";
+    ///     let tla_tests_file_path = "tests/integration/resource/NumbersAMaxBMaxTest.tla";
+    ///     let tla_config_file_path = "tests/integration/resource/Numbers.cfg";
     ///     let runtime = modelator::ModelatorRuntime::default();
     ///     
     ///     // We create a system under test

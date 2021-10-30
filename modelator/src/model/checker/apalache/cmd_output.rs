@@ -3,10 +3,11 @@ use crate::Error;
 use serde::Serialize;
 use std::fmt;
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Debug, Serialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, PartialEq)]
 pub(crate) struct CmdOutput {
     pub(crate) stdout: String,
     pub(crate) stderr: String,
+    pub(crate) status: Option<i32>,
 }
 
 impl fmt::Display for CmdOutput {
@@ -37,6 +38,11 @@ fn parse_filename(line: &str) -> String {
     }
 }
 
+fn is_deadlock_line(line: &str) -> bool {
+    // This log message appears in a spurious case https://github.com/informalsystems/apalache/issues/1040
+    line.starts_with("Found a deadlock. No SMT model.")
+}
+
 fn is_error_line(line: &str) -> bool {
     //Searching for strings of this form
     //Len is 14
@@ -45,7 +51,8 @@ fn is_error_line(line: &str) -> bool {
         return false;
     }
     let substr = &line[(line.len() - 14)..(line.len() - 12)];
-    substr == "E@"
+    // Exclude the deadlock error.
+    substr == "E@" && !is_deadlock_line(line)
 }
 
 impl CmdOutput {
@@ -60,7 +67,7 @@ impl CmdOutput {
     /// Try to get a list of counterexample filenames from stdout. If other Apalache errors are found then
     /// return a Result<Error>
     pub(crate) fn parse_counterexample_filenames(&self) -> Result<Vec<String>, Error> {
-        let unparsed_lines: Vec<String> = match self.non_counterexample_error() {
+        let raw_lines_that_must_be_parsed: Vec<String> = match self.non_counterexample_error() {
             Some(err) => Err(Error::ApalacheFailure(err)),
             None => Ok(self
                 .apalache_stdout_error_lines()
@@ -68,7 +75,7 @@ impl CmdOutput {
                 .filter(|line| is_counterexample_line(line))
                 .collect()),
         }?;
-        Ok(unparsed_lines
+        Ok(raw_lines_that_must_be_parsed
             .iter()
             .map(|line| parse_filename(line))
             .collect())
@@ -78,10 +85,7 @@ impl CmdOutput {
         match (self.stdout.is_empty(), self.stderr.is_empty()) {
             (true, true) => Some(ApalacheError {
                 summary: "stdout and stderr both empty".to_owned(),
-                output: CmdOutput {
-                    stdout: self.stdout.clone(),
-                    stderr: self.stderr.clone(),
-                },
+                output: self.clone(),
             }),
             (false, true) => {
                 let non_counterexample_error_lines: Vec<String> = self
@@ -95,19 +99,13 @@ impl CmdOutput {
                     false => Some(ApalacheError {
                         summary: "Non counterexample errors found in stdout:\n".to_owned()
                             + &non_counterexample_error_lines.join("\n"),
-                        output: CmdOutput {
-                            stdout: self.stdout.clone(),
-                            stderr: self.stderr.clone(),
-                        },
+                        output: self.clone(),
                     }),
                 }
             }
             _ => Some(ApalacheError {
                 summary: "stderr not empty".to_owned(),
-                output: CmdOutput {
-                    stdout: self.stdout.clone(),
-                    stderr: self.stderr.clone(),
-                },
+                output: self.clone(),
             }),
         }
     }
@@ -160,6 +158,7 @@ EXITCODE: ERROR (12)
         let output = CmdOutput {
             stdout: to_parse.to_owned(),
             stderr: "".to_owned(),
+            status: Some(12),
         };
         let res = output.parse_counterexample_filenames().unwrap();
         let expect = vec!["counterexample1.tla", "counterexample2.tla"];
