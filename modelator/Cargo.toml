@@ -3,6 +3,7 @@ name = "modelator"
 description = "A framework and tools for model-based testing."
 version = "0.3.1"
 edition = "2018"
+rust-version = "1.56"
 license = "Apache-2.0"
 readme = "README.md"
 keywords = ["testing", "model", "model-based", "TLA", "abstraction"]
