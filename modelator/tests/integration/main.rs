@@ -6,7 +6,6 @@ use clap::Parser;
 use common::*;
 use error::{IntegrationTestError, IntegrationTestFailure};
 use modelator::ModelatorRuntime;
-use rayon::prelude::*;
 use resource::numbers;
 
 /// Register integration tests here by specifying a config file path and
@@ -59,7 +58,7 @@ fn integration_test() {
         // For each batch, run each test in the batch in parallel
         // Use rayon::try_for_each to bubble up Result::Err value(s)
         // In the case of multiple failed tests, only 1 will non-deterministically win the race to bubble up
-        Ok(batches) => match batches.par_iter().try_for_each(|batch| {
+        Ok(batches) => match batches.iter().try_for_each(|batch| {
             batch.config.tests.iter().try_for_each(|test: &Test| {
                 match do_run_test(&batch.config.name, &test.name) {
                     true => run_single_test(batch, &test.content).map_err(|err| {
