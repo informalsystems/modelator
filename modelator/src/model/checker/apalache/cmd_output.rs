@@ -3,10 +3,11 @@ use crate::Error;
 use serde::Serialize;
 use std::fmt;
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Debug, Serialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, PartialEq)]
 pub(crate) struct CmdOutput {
     pub(crate) stdout: String,
     pub(crate) stderr: String,
+    pub(crate) status: Option<i32>,
 }
 
 impl fmt::Display for CmdOutput {
@@ -84,10 +85,7 @@ impl CmdOutput {
         match (self.stdout.is_empty(), self.stderr.is_empty()) {
             (true, true) => Some(ApalacheError {
                 summary: "stdout and stderr both empty".to_owned(),
-                output: CmdOutput {
-                    stdout: self.stdout.clone(),
-                    stderr: self.stderr.clone(),
-                },
+                output: self.clone(),
             }),
             (false, true) => {
                 let non_counterexample_error_lines: Vec<String> = self
@@ -101,19 +99,13 @@ impl CmdOutput {
                     false => Some(ApalacheError {
                         summary: "Non counterexample errors found in stdout:\n".to_owned()
                             + &non_counterexample_error_lines.join("\n"),
-                        output: CmdOutput {
-                            stdout: self.stdout.clone(),
-                            stderr: self.stderr.clone(),
-                        },
+                        output: self.clone(),
                     }),
                 }
             }
             _ => Some(ApalacheError {
                 summary: "stderr not empty".to_owned(),
-                output: CmdOutput {
-                    stdout: self.stdout.clone(),
-                    stderr: self.stderr.clone(),
-                },
+                output: self.clone(),
             }),
         }
     }
@@ -166,6 +158,7 @@ EXITCODE: ERROR (12)
         let output = CmdOutput {
             stdout: to_parse.to_owned(),
             stderr: "".to_owned(),
+            status: Some(12),
         };
         let res = output.parse_counterexample_filenames().unwrap();
         let expect = vec!["counterexample1.tla", "counterexample2.tla"];

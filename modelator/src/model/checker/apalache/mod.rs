@@ -184,10 +184,15 @@ fn run_apalache(mut cmd: Command) -> Result<CmdOutput, Error> {
     // get apalache stdout and stderr
     let stdout = crate::util::cmd_output_to_string(&output.stdout);
     let stderr = crate::util::cmd_output_to_string(&output.stderr);
+    let status = output.status.code();
     tracing::debug!("Apalache stdout:\n{}", stdout);
     tracing::debug!("Apalache stderr:\n{}", stderr);
 
-    Ok(CmdOutput { stdout, stderr })
+    Ok(CmdOutput {
+        stdout,
+        stderr,
+        status,
+    })
 }
 
 fn check_cmd<P: AsRef<Path>>(
