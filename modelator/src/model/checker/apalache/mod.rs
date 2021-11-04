@@ -250,6 +250,10 @@ fn apalache_start_cmd(temp_dir: &tempfile::TempDir, runtime: &ModelatorRuntime) 
             temp_dir.path().to_string_lossy()
         ))
         .arg("-jar")
+        .arg(format!(
+            "-Djava.io.tmpdir={}",
+            temp_dir.path().to_string_lossy()
+        ))
         .arg(format!("{}", apalache.as_path().to_string_lossy()));
 
     cmd
