@@ -1,14 +1,9 @@
 name: Go
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: [push, pull_request]
 
 jobs:
-
-  build:
+  go-test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -17,21 +12,24 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: 1.17
-        
+
     - uses: actions-rs/toolchain@v1
       with:
         profile: minimal
         toolchain: stable
         override: true
-        
+
+    - uses: Swatinem/rust-cache@v1
+
     - uses: actions-rs/cargo@v1
       with:
         command: build
-        args: --release --manifest-path third_party/mbt/Cargo.toml
+        args: --manifest-path mbt-go/third_party/mbt/Cargo.toml --release
 
     - name: Build
-      run:
-        go build -v ./...
+      working-directory: mbt-go
+      run: go build -v ./...
 
     - name: Test
+      working-directory: mbt-go
       run: go test -v ./...
