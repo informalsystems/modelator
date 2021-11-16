@@ -59,7 +59,16 @@ impl TestListCli {
         let tla_file_suite = TlaFileSuite::from_tla_path(&self.tla_module)?;
         let tests = crate::model::language::Tla::extract_test_names(
             tla_file_suite.tla_file.file_contents_backing(),
-        );
+        )
+        .and_then(|names| {
+            if names.is_empty() {
+                Err(Error::NoTestFound(
+                    tla_file_suite.tla_file.module_name().into(),
+                ))
+            } else {
+                Ok(names)
+            }
+        })?;
         tracing::debug!("Tla::extract_test_names output {:?}", &tests);
         Ok(json!(tests))
     }
