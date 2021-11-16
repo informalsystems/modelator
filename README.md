@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Crates.io Version](https://img.shields.io/crates/v/modelator.svg)](https://crates.io/crates/modelator)
 [![Docs.rs](https://docs.rs/modelator/badge.svg)](https://docs.rs/modelator)
-[![Build Status](https://github.com/informalsystems/modelator/actions/workflows/ci.yml/badge.svg)](https://github.com/informalsystems/modelator/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/informalsystems/modelator?sort=semver&include_prereleases)](https://github.com/informalsystems/modelator/releases)
 
 The framework and tools for model-based testing.
 
