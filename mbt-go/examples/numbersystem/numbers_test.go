@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/informalsystems/gopherator/pkg/core"
+	"github.com/informalsystems/modelator/go/pkg/core"
 )
 
 func FixedExecutions() [][]core.StepI {

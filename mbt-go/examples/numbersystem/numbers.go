@@ -3,7 +3,7 @@ package numbers
 import (
 	"log"
 
-	"github.com/informalsystems/gopherator/pkg/core"
+	"github.com/informalsystems/modelator/go/pkg/core"
 )
 
 // compile time check if steprunner interfaces are implemented

@@ -11,8 +11,8 @@
 ---
 ### Instruction
 ```sh
-git clone git@github.com/informalsystems/gopherator
-cd gopherator
+git clone git@github.com/informalsystems/modelator
+cd modelator/go
 # Build modelator library (one time)
 cargo build --release --manifest-path third_party/mbt/Cargo.toml
 # Test all examples
@@ -47,5 +47,5 @@ go test -v ./examples/numbersystem
     --- PASS: TestModelBased/[test:_AMaxBMinTest,_trace:_0] (0.00s)
     --- PASS: TestModelBased/[test:_AMinBMaxTest,_trace:_0] (0.00s)
 PASS
-ok  	github.com/informalsystems/gopherator/examples/numbersystem	2.792s
+ok  	github.com/informalsystems/modelator/go/examples/numbersystem	2.792s
 ```
