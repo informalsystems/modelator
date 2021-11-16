@@ -24,12 +24,12 @@ jobs:
     - uses: actions-rs/cargo@v1
       with:
         command: build
-        args: --manifest-path mbt-go/third_party/mbt/Cargo.toml --release
+        args: --manifest-path go/third_party/mbt/Cargo.toml --release
 
     - name: Build
-      working-directory: mbt-go
+      working-directory: go
       run: go build -v ./...
 
     - name: Test
-      working-directory: mbt-go
+      working-directory: go
       run: go test -v ./...

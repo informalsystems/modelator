@@ -31,11 +31,11 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path mbt-rs/Cargo.toml --no-run
+          args: --manifest-path rs/Cargo.toml --no-run
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path mbt-rs/Cargo.toml -- --test-threads=1
+          args: --manifest-path rs/Cargo.toml -- --test-threads=1
       - name: Setup tmate session
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
@@ -58,7 +58,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --manifest-path mbt-rs/Cargo.toml --all -- --check
+          args: --manifest-path rs/Cargo.toml --all -- --check
 
   cargo-docs-build:
     name: Cargo documentation build
@@ -74,7 +74,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: doc
-          args: --manifest-path mbt-rs/Cargo.toml
+          args: --manifest-path rs/Cargo.toml
 
   cargo-clippy:
     name: Clippy
@@ -91,4 +91,4 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --manifest-path mbt-rs/Cargo.toml -- -D warnings
+          args: --manifest-path rs/Cargo.toml -- -D warnings
