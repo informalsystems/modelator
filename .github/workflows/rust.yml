@@ -11,15 +11,15 @@ env:
   RUSTUP_MAX_RETRIES: 10
 
 jobs:
-  test:
-    name: Test Suite
-    runs-on: ${{ matrix.os }}
+  cargo-test:
+    name: Cargo test
     strategy:
       matrix:
         os:
           - windows-latest
           - ubuntu-latest
           - macos-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -31,11 +31,11 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --no-run
+          args: --manifest-path rs/Cargo.toml --no-run
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: -- --test-threads=1
+          args: --manifest-path rs/Cargo.toml -- --test-threads=1
       - name: Setup tmate session
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
@@ -43,8 +43,8 @@ jobs:
         with:
           limit-access-to-actor: true
 
-  fmt:
-    name: Rustfmt
+  cargo-fmt:
+    name: Cargo format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -58,10 +58,10 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --all -- --check
+          args: --manifest-path rs/Cargo.toml --all -- --check
 
-  docs-build:
-    name: Documentation build
+  cargo-docs-build:
+    name: Cargo documentation build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -74,8 +74,9 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: doc
+          args: --manifest-path rs/Cargo.toml
 
-  clippy:
+  cargo-clippy:
     name: Clippy
     runs-on: ubuntu-latest
     steps:
@@ -90,4 +91,4 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: -- -D warnings
+          args: --manifest-path rs/Cargo.toml -- -D warnings
