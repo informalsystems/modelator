@@ -147,10 +147,6 @@ impl TraceCli {
                 }
                 .0; // Ignores returned stdout
 
-                if traces.len() < self.num_traces {
-                    return Err(Error::LessNumberOfTracesFound(traces.len()));
-                }
-
                 traces.iter_mut().for_each(|trace| {
                     trace.extends_module_name =
                         Some(input_artifacts.tla_file.module_name().to_string());
