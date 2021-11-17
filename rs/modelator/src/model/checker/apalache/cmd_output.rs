@@ -5,8 +5,8 @@ use std::fmt;
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub(crate) struct CmdOutput {
-    pub(crate) stdout: String,
-    pub(crate) stderr: String,
+    pub(crate) stdout: Vec<String>,
+    pub(crate) stderr: Vec<String>,
     pub(crate) status: Option<i32>,
 }
 
@@ -58,7 +58,7 @@ fn is_error_line(line: &str) -> bool {
 impl CmdOutput {
     pub(crate) fn apalache_stdout_error_lines(&self) -> Vec<String> {
         self.stdout
-            .lines()
+            .iter()
             .filter(|line| is_error_line(line))
             .map(ToString::to_string)
             .collect()
@@ -156,8 +156,8 @@ Total time: 4.857 sec                                             I@11:13:37.020
 EXITCODE: ERROR (12)
         "#;
         let output = CmdOutput {
-            stdout: to_parse.to_owned(),
-            stderr: "".to_owned(),
+            stdout: to_parse.lines().map(Into::into).collect(),
+            stderr: vec![],
             status: Some(12),
         };
         let res = output.parse_counterexample_filenames().unwrap();

@@ -116,7 +116,7 @@ impl Apalache {
 
         Ok((
             traces,
-            ModelCheckerStdout::from_string(&apalache_output.stdout)?,
+            ModelCheckerStdout::from_string(&apalache_output.stdout.join("\n"))?,
         ))
     }
 
@@ -172,7 +172,7 @@ impl Apalache {
         let tla_parsed_file = TlaFile::try_read_from_file(full_output_path)?;
         Ok((
             tla_parsed_file,
-            ModelCheckerStdout::from_string(&apalache_output.stdout)?,
+            ModelCheckerStdout::from_string(&apalache_output.stdout.join("\n"))?,
         ))
     }
 }
@@ -189,8 +189,8 @@ fn run_apalache(mut cmd: Command) -> Result<CmdOutput, Error> {
     tracing::debug!("Apalache stderr:\n{}", stderr);
 
     Ok(CmdOutput {
-        stdout,
-        stderr,
+        stdout: stdout.lines().map(Into::into).collect(),
+        stderr: stderr.lines().map(Into::into).collect(),
         status,
     })
 }
