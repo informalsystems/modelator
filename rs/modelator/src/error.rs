@@ -36,6 +36,10 @@ pub enum Error {
     #[error("No test found in {0}")]
     NoTestFound(String),
 
+    /// An error that occurs when a test generates less number of traces than mentioned.
+    #[error("{0} many traces found")]
+    LessNumberOfTracesFound(usize),
+
     /// Tla operator name parse error
     #[error("Unable to parse all operator names in tla module with content: {0}")]
     TlaOperatorNameParseError(String),

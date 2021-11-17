@@ -129,35 +129,36 @@ impl TraceCli {
             )));
         };
 
-        let res = {
-            let mut res: BTreeMap<String, Result<Vec<JsonValue>, Error>> = BTreeMap::new();
-
-            for test_name in test_names {
+        let res: BTreeMap<String, Result<Vec<JsonValue>, Error>> = test_names
+            .iter()
+            .cloned()
+            .zip(test_names.iter().map(|test_name| {
                 // Create the intermediary file suite to run a single test
                 let input_artifacts =
-                    crate::model::language::Tla::generate_test(&test_name, &tla_file_suite)?;
+                    crate::model::language::Tla::generate_test(test_name, &tla_file_suite)?;
 
                 // Model check the test and collect traces
-                let traces = {
-                    let mut traces = match self.model_checker {
-                        ModelChecker::Apalache => {
-                            crate::model::checker::Apalache::test(&input_artifacts, &runtime)?
-                        }
-                        ModelChecker::Tlc => {
-                            crate::model::checker::Tlc::test(&input_artifacts, &runtime)?
-                        }
+                let mut traces = match self.model_checker {
+                    ModelChecker::Apalache => {
+                        crate::model::checker::Apalache::test(&input_artifacts, &runtime)?
                     }
-                    .0; // Ignores returned stdout
+                    ModelChecker::Tlc => {
+                        crate::model::checker::Tlc::test(&input_artifacts, &runtime)?
+                    }
+                }
+                .0; // Ignores returned stdout
 
-                    for trace in traces.iter_mut() {
-                        trace.extends_module_name =
-                            Some(input_artifacts.tla_file.module_name().to_string());
-                    }
-                    traces
-                };
+                if traces.len() < self.num_traces {
+                    return Err(Error::LessNumberOfTracesFound(traces.len()));
+                }
+
+                traces.iter_mut().for_each(|trace| {
+                    trace.extends_module_name =
+                        Some(input_artifacts.tla_file.module_name().to_string());
+                });
 
                 // Write each trace and get a result containing json information
-                let trace_file_write_results: Result<Vec<JsonValue>, Error> = traces
+                traces
                     .into_iter()
                     .enumerate()
                     .map(|(i, trace)| {
@@ -190,12 +191,9 @@ impl TraceCli {
                             }
                         }
                     })
-                    .collect();
-
-                res.insert(test_name, trace_file_write_results);
-            }
-            res
-        };
+                    .collect::<Result<Vec<JsonValue>, Error>>()
+            }))
+            .collect();
 
         Ok(json!(res))
     }
