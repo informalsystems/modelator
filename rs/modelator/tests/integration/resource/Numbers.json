@@ -106,6 +106,15 @@
                     "prod": 0
                 }
             }
+        },
+        {
+            "name": "",
+            "description": "Produce no traces",
+            "content": {
+                "type": "cli",
+                "cmd": "modelator trace tests/integration/resource/NumbersBIsOdd.tla tests/integration/resource/Numbers.cfg",
+                "expect_status": "error"
+            }
         }
     ]
 }
