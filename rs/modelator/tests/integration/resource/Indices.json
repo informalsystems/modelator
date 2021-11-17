@@ -35,6 +35,15 @@
             "content": {
                 "type": "cli",
                 "cmd": "modelator trace -n 5 tests/integration/resource/IndicesTests.tla tests/integration/resource/IndicesTests.cfg",
+                "expect_status": "error"
+            }
+        },
+        {
+            "name": "generate exactly one trace",
+            "description": "",
+            "content": {
+                "type": "cli",
+                "cmd": "modelator trace -n 1 tests/integration/resource/IndicesTests.tla tests/integration/resource/IndicesTests.cfg",
                 "expect_status": "success"
             }
         }

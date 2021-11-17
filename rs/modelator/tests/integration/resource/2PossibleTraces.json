@@ -26,7 +26,7 @@
             "content": {
                 "type": "cli",
                 "cmd": "modelator trace -n 3 tests/integration/resource/2PossibleTracesTests.tla tests/integration/resource/2PossibleTraces.cfg",
-                "expect_status": "success"
+                "expect_status": "error"
             }
         }
     ]

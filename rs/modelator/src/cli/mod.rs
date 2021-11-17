@@ -129,10 +129,9 @@ impl TraceCli {
             )));
         };
 
-        let res: BTreeMap<String, Result<Vec<JsonValue>, Error>> = test_names
+        let test_results = test_names
             .iter()
-            .cloned()
-            .zip(test_names.iter().map(|test_name| {
+            .map(|test_name| {
                 // Create the intermediary file suite to run a single test
                 let input_artifacts =
                     crate::model::language::Tla::generate_test(test_name, &tla_file_suite)?;
@@ -191,9 +190,15 @@ impl TraceCli {
                             }
                         }
                     })
-                    .collect::<Result<Vec<JsonValue>, Error>>()
-            }))
-            .collect();
+                    .collect::<Result<Vec<_>, Error>>()
+            })
+            .collect::<Result<Vec<_>, Error>>()?;
+
+        let res = test_names
+            .iter()
+            .cloned()
+            .zip(test_results)
+            .collect::<BTreeMap<String, Vec<JsonValue>>>();
 
         Ok(json!(res))
     }
