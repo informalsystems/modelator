@@ -84,7 +84,7 @@ impl CmdOutput {
     pub(crate) fn non_counterexample_error(&self) -> Option<ApalacheError> {
         match (self.stdout.is_empty(), self.stderr.is_empty()) {
             (true, true) => Some(ApalacheError {
-                summary: "stdout and stderr both empty".to_owned(),
+                summary: vec!["stdout and stderr both empty".into()],
                 output: self.clone(),
             }),
             (false, true) => {
@@ -97,14 +97,17 @@ impl CmdOutput {
                 match non_counterexample_error_lines.is_empty() {
                     true => None,
                     false => Some(ApalacheError {
-                        summary: "Non counterexample errors found in stdout:\n".to_owned()
-                            + &non_counterexample_error_lines.join("\n"),
+                        summary: std::iter::once(
+                            "Non counterexample errors found in stdout:".into(),
+                        )
+                        .chain(non_counterexample_error_lines)
+                        .collect(),
                         output: self.clone(),
                     }),
                 }
             }
             _ => Some(ApalacheError {
-                summary: "stderr not empty".to_owned(),
+                summary: vec!["stderr not empty".into()],
                 output: self.clone(),
             }),
         }
@@ -117,7 +120,7 @@ impl CmdOutput {
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Serialize, PartialEq)]
 pub struct ApalacheError {
-    summary: String,
+    summary: Vec<String>,
     output: CmdOutput,
 }
 
