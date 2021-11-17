@@ -8,7 +8,7 @@ use std::str::FromStr;
 /// `modelator`'s artifact containing a test trace encoded as JSON.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct JsonTrace {
-    states: JsonValue,
+    pub(crate) states: JsonValue,
 }
 
 impl IntoIterator for JsonTrace {

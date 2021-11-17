@@ -175,7 +175,7 @@ impl TraceCli {
                                     write_json_trace_to_file(&file_name_to_write, &json_trace)
                                 } else {
                                     Ok(json!({
-                                        "json_trace_content": json_trace.as_string()
+                                        "json_trace_content": json_trace.states
                                     }))
                                 }
                             }
@@ -184,7 +184,7 @@ impl TraceCli {
                                     write_tla_trace_to_file(&file_name_to_write, &trace)
                                 } else {
                                     Ok(json!({
-                                        "tla_trace_content": trace.as_string()
+                                        "tla_trace_content": trace.states
                                     }))
                                 }
                             }
