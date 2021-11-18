@@ -1,8 +1,8 @@
-------------------------------- MODULE IBC_ics02 ----------------------------------
+------------------------------- MODULE IBC_ics03 ----------------------------------
 \* This is a simplified model of IBC ICS02 from 
 \* https://github.com/informalsystems/ibc-rs/tree/v0.7.0/modules/tests/support/model_based
 \*
-\* This file contains protocol-specific methods for ICS02 (Client).
+\* This file contains protocol-specific methods for ICS03 (Connection).
 \* For IBC constants and state variables see IBC_state.tla.
 \* For execution environment (Init & Next), invariants, and tests see IBC_tests.tla.
 
@@ -27,17 +27,6 @@ Ics02ClientExists == "Ics02ClientExists"
 Ics02MaxClientsReached == "Ics02MaxClientsReached"
 Ics02ClientNotFound == "Ics02ClientNotFound"
 Ics02HeaderVerificationFailure == "Ics02HeaderVerificationFailure"
-
-VARIABLE 
-  \* @typeAlias: CHAIN_ID = Str;
-  \* @typeAlias: CLIENT_ID = Int;
-  \* @typeAlias: HEIGHT = [ revision_number: Int, revision_height: Int ];
-  \* @typeAlias: CLIENT = [ heights: Set(HEIGHT) ];
-  \* @typeAlias: CLIENTS = CLIENT_ID -> CLIENT;
-  \* @typeAlias: CHAIN = [ height: HEIGHT, clients:  CLIENTS, clientIdCounter: Int ];
-  \* @typeAlias: CHAIN_CLIENTS = CHAIN_ID -> CLIENTS;
-  \* 
-  \* @type: CHAIN_CLIENTS; mapping from chain id to its data
 
 
 \***************************************************************
@@ -66,29 +55,6 @@ CreateClient(chainId, height) ==
     ]
   ]
 
-SetClient(chainId, clientId, heights) ==
-  clients' = [clients EXCEPT 
-    ![chainId] = [ c \in DOMAIN @ \union {clientId} |-> 
-          IF c = clientId THEN heights] ELSE @[c]]
-    ]
-
-GetClientIdCounter(chainId) ==
-
-\* @type: (CHAIN_ID, HEIGHT) => Bool;
-CreateClient(chainId, height) ==
-  LET clientId == chains[chainId].clientIdCounter IN
-  clients' = [clients EXCEPT 
-   ![chainId] = [ c \in DOMAIN @ \union {clientId} |-> 
-        IF c = clientId THEN [heights |-> {height}] ELSE @[c]]
-  ]
-  clientIdCounters
-    ![chainId] = [@ EXCEPT 
-      !.height = [@ EXCEPT !.revision_height = @+1], 
-      !.clientIdCounter = @+1,
-      !.clients = [ c \in DOMAIN @ \union {clientId} |-> 
-        IF c = clientId THEN [heights |-> {height}] ELSE @[c]]
-    ]
-  ]
 
 \* @type: (CHAIN_ID, CLIENT_ID, HEIGHT) => Str;
 UpdateClientOutcome(chainId, clientId, height) ==
