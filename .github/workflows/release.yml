@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [ closed ]
+
+env:
+  GOLANG_DIR: go
+  PYTHON_DIR: py
+  RUST_DIR: rs
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    if: startsWith(github.event.pull_request.title, '[release]') && github.event.pull_request.merged == true
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Check versions
+        run: |
+          sed 's/^\[release\] v//g' <<< ${{ github.event.pull_request.title }} >> $RELEASE_VERSION
+
+      - name: Tag on main and make a Github release
+        run: ./scripts/github_release.sh
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Golang
+        run: |
+          list -m github.com/{{ github.repository }}/$GOLANG_DIR@v$RELEASE_VERSION
+
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - uses: Gr1N/setup-poetry@v7
+
+      - name: Python
+        working-directory: $PYTHON_DIR
+        run: |
+          poetry publish --dry-run
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Rust
+        working-directory: $RUST_DIR
+        run: |
+          cargo publish --dry-run

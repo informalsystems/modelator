@@ -1,0 +1,51 @@
+name: Prepare Release
+
+env:
+  GOLANG_DIR: go
+  PYTHON_DIR: py
+  RUST_DIR: rs
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Release version"
+        required: true
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_VERSION: ${{ github.event.inputs.release_version }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Prepare release branch
+        run: |
+          ./scripts/prepare_release.sh
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - uses: Gr1N/setup-poetry@v7
+
+      - name: Python
+        working-directory: $PYTHON_DIR
+        run: |
+          poetry publish --dry-run
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Rust
+        working-directory: $RUST_DIR
+        run: |
+          cargo publish --dry-run
