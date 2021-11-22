@@ -40,16 +40,30 @@ When a release is prepared, the unrelease changes must be moved to `release` usi
 
 ## Release
 
-We follow [_Semantic Versioning_](http://semver.org) for releases.
+### Checklist
+- The versions **should not be bumped** from current version. The versions will be bumped by the workflow.
+- The changes are added to `.changelog` via `unclog add`.
+- Write a summary of the release at `.changelog/unreleased/summary.md`.
+- Perform `unclog build -u` to check the latest changelog. Commit changes if something is wrong.
+  - This will be used as release notes in PR and Github release.
 
-When all the code changes are ready and merged to `main`, a `release/vX.Y.Z` branch must be opened from `main`.
-All the changes for bumping version numbers and moving unreleased changes via unclog should be committed in this branch.
-
-When `release/vX.Y.Z` is ready with correct version bumps, create a PR and merge it to `main`.
-Tag the merge commit with `vX.Y.Z` and prepare a release on Github, publish on package registries for Golang, Rust and Python.
-
-In future, the releases would be done via GH workflow. It must be triggered by tagging a commit with `vX.Y.Z`.
-The workflow must contain a check to make sure that everything is ready for release, otherwise fail.
+### Workflow
+- When the codebase is ready for a release, trigger the [`Prepare Release` workflow](actions/workflows/prepare-release.yml) from project Actions.
+  - We follow [_Semantic Versioning_](http://semver.org). The workflow takes an input - the component of the semantic version to be updated.
+    - `patch` (v1.4.2 becomes v1.4.3) _(default)_
+    - `minor` (v1.4.2 becomes v1.5.0)
+    - `major` (v1.4.2 becomes v2.0.0)
+  - The workflow will create a branch `release/vX.Y.Z` from `main`.
+  - And commit necessary changes on it for the release.
+    - This includes bumping version numbers in projects.
+    - Preparing changelog.
+    - Publish projects with `--dry-run` to make sure everything is fine locally.
+  - Then, create a PR with title `[RELEASE] vX.Y.Z` to `main` branch.
+- We review the PR. If something went wrong in the PR, we push changes to the branch to correct them.
+- When the PR is ready, we simply merge it to `main`, which triggers the [`Release` workflow](actions/workflows/release.yml).
+  - It will tag the merge commit with `vX.Y.Z`.
+  - Publish the projects to package registries.
+  - Create a Github release with changelog.
 
 ## License
 
