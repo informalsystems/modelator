@@ -1,0 +1,1 @@
+Execute model checkers in temporary directories to avoid clutters.

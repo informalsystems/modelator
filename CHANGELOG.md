@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## Unreleased
+
+### FEATURES
+
+- Go
+    Modelator-go for Golang.
+    Implemented step runner.
+- Rust
+    Event stream API.
+    Support for parallel tests.
+
+### IMPROVEMENTS
+
+- Rust
+    Huge rework on modelator-rs API and CLI.
+    Better parsers for TLA+ traces.
+    Execute model checkers in temporary directories to avoid clutters.
+
+### TEST
+
+- General
+    CI Workflow matrix for Windows, MacOS and Linux.
+- Rust
+    Large integration test.
+
 ## v0.3.2
 
 This is a bug-fixing release:
