@@ -12,6 +12,7 @@ env:
 
 jobs:
   github-release:
+    environment: Release
     runs-on: ubuntu-latest
     if:
       startsWith(github.event.pull_request.title, '[RELEASE] ') &&

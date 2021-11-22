@@ -15,6 +15,7 @@ on:
 
 jobs:
   prepare-release:
+    environment: Release
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
