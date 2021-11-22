@@ -3,12 +3,12 @@ name: Python
 on:
   push:
     branches-ignore:
-      - 'gh-pages'
+      - "gh-pages"
     paths:
-      - 'py/**'
+      - "py/**"
   pull_request:
     paths:
-      - 'py/**'
+      - "py/**"
 
 jobs:
   python-build:

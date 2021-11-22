@@ -3,12 +3,12 @@ name: Rust
 on:
   push:
     branches-ignore:
-      - 'gh-pages'
+      - "gh-pages"
     paths:
-      - 'rs/**'
+      - "rs/**"
   pull_request:
     paths:
-      - 'rs/**'
+      - "rs/**"
 
 env:
   CARGO_INCREMENTAL: 0

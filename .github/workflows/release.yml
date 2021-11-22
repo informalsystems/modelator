@@ -2,8 +2,8 @@ name: Release
 
 on:
   pull_request:
-    branches: [ main ]
-    types: [ closed ]
+    branches: [main]
+    types: [closed]
 
 env:
   GOLANG_DIR: go
@@ -14,8 +14,7 @@ jobs:
   github-release:
     environment: Release
     runs-on: ubuntu-latest
-    if:
-      startsWith(github.event.pull_request.title, '[RELEASE] ') &&
+    if: startsWith(github.event.pull_request.title, '[RELEASE] ') &&
       github.event.pull_request.merged == true
     env:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
