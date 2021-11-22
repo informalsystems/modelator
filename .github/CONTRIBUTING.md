@@ -9,13 +9,13 @@ The `main` branch is modified only through PRs.
 
 ## Forking
 
-If you want to contribute, but do not have write permission, the contribution must be made through a fork on Github.
+If you want to contribute, but do not have the write permission, the contribution must be made through a fork on Github.
 
 ## Reporting bugs
 
 When reporting bugs, search among existing issues first - even among closed issues.
-If you found one exisiting issues, do comment with the details of your own bug.
-So that we are aware of number of people affected by that bug.
+If you found one existing issue, do comment with the details of your own bug.
+So that we are aware of the number of people affected by that bug.
 
 If you can not find an issue, thank you for finding a new issue.
 Please go ahead open a new issue with details.
@@ -36,16 +36,16 @@ We maintain our changelog using [`unclog`](https://github.com/informalsystems/un
 Every non-trivial PR must add an entry(ies) to `.changelog` directory using `unclog add`.
 This will add the entries to `unreleased` changes.
 
-When a release is prepared, the unrelease changes must be moved to `release` using `unclog release`.
+When a release is prepared, the unreleased changes must be moved to `release` using `unclog release`.
 
 ## Release
 
 ### Checklist
-- The versions **should not be bumped** from current version. The versions will be bumped by the workflow.
+- The versions **should not be bumped** from the current version. The versions will be bumped by the workflow.
 - The changes are added to `.changelog` via `unclog add`.
 - Write a summary of the release at `.changelog/unreleased/summary.md`.
 - Perform `unclog build -u` to check the latest changelog. Commit changes if something is wrong.
-  - This will be used as release notes in PR and Github release.
+  - This will be used as release notes in PR and Github releases.
 
 ### Workflow
 - When the codebase is ready for a release, trigger the [`Prepare Release` workflow](actions/workflows/prepare-release.yml) from project Actions.
@@ -54,11 +54,11 @@ When a release is prepared, the unrelease changes must be moved to `release` usi
     - `minor` (v1.4.2 becomes v1.5.0)
     - `major` (v1.4.2 becomes v2.0.0)
   - The workflow will create a branch `release/vX.Y.Z` from `main`.
-  - And commit necessary changes on it for the release.
+  - And commit necessary changes to it for the release.
     - This includes bumping version numbers in projects.
     - Preparing changelog.
     - Publish projects with `--dry-run` to make sure everything is fine locally.
-  - Then, create a PR with title `[RELEASE] vX.Y.Z` to `main` branch.
+  - Then, create a PR with the title `[RELEASE] vX.Y.Z` to `main` branch.
 - We review the PR. If something went wrong in the PR, we push changes to the branch to correct them.
 - When the PR is ready, we simply merge it to `main`, which triggers the [`Release` workflow](actions/workflows/release.yml).
   - It will tag the merge commit with `vX.Y.Z`.

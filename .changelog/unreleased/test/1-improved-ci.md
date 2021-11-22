@@ -1,1 +1,1 @@
-CI Workflow matrix for Windows, MacOS and Linux.
+CI Workflow matrix for Windows, MacOS, and Linux.
