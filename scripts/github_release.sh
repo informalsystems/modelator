@@ -16,7 +16,9 @@ RELEASE_NOTES_FILE="current_changelog"
 
 unclog build -u | tail -n +3 > "$RELEASE_NOTES_FILE"
 
-git tag -a "$TAG_NAME" -F "$RELEASE_NOTES_FILE"
+git tag \
+    --annotate "$TAG_NAME" \
+    --message "Release version $TAG_NAME"
 git push --tags
 
 # create a github release with change log
@@ -24,6 +26,7 @@ git push --tags
 gh release create \
     --title "$TAG_NAME" \
     --notes-file "$RELEASE_NOTES_FILE" \
+    --prerelease
     "$TAG_NAME"
     # ./dist/*.tar.gz
     # ./dist/*.zip
