@@ -11,7 +11,8 @@ git checkout -B "release/v${RELEASE_VERSION}"
 sed -i "s|^version = \"[^\"]\+\"|version = \"${RELEASE_VERSION}\"|g" "$RUST_DIR/modelator/Cargo.toml"
 
 # update the version on Python module
-sed -i "s|^version = \"[^\"]\+\"|version = \"${RELEASE_VERSION}\"|g" "$PYTHON_DIR/pyproject.toml"
+# skip python
+# sed -i "s|^version = \"[^\"]\+\"|version = \"${RELEASE_VERSION}\"|g" "$PYTHON_DIR/pyproject.toml"
 
 # nothing to do for Go lang for now
 

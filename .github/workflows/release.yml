@@ -76,7 +76,8 @@ jobs:
       - name: Poetry publish
         working-directory: ${{ env.PYTHON_DIR }}
         run: |
-          poetry publish --build
+          # poetry publish --build
+          echo "Skipping Python package"
 
       - name: Install Rust stable toolchain
         uses: actions-rs/toolchain@v1
