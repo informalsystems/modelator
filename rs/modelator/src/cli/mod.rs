@@ -59,7 +59,16 @@ impl TestListCli {
         let tla_file_suite = TlaFileSuite::from_tla_path(&self.tla_module)?;
         let tests = crate::model::language::Tla::extract_test_names(
             tla_file_suite.tla_file.file_contents_backing(),
-        );
+        )
+        .and_then(|names| {
+            if names.is_empty() {
+                Err(Error::NoTestFound(
+                    tla_file_suite.tla_file.module_name().into(),
+                ))
+            } else {
+                Ok(names)
+            }
+        })?;
         tracing::debug!("Tla::extract_test_names output {:?}", &tests);
         Ok(json!(tests))
     }
@@ -120,35 +129,31 @@ impl TraceCli {
             )));
         };
 
-        let res = {
-            let mut res: BTreeMap<String, Result<Vec<JsonValue>, Error>> = BTreeMap::new();
-
-            for test_name in test_names {
+        let test_results = test_names
+            .iter()
+            .map(|test_name| {
                 // Create the intermediary file suite to run a single test
                 let input_artifacts =
-                    crate::model::language::Tla::generate_test(&test_name, &tla_file_suite)?;
+                    crate::model::language::Tla::generate_test(test_name, &tla_file_suite)?;
 
                 // Model check the test and collect traces
-                let traces = {
-                    let mut traces = match self.model_checker {
-                        ModelChecker::Apalache => {
-                            crate::model::checker::Apalache::test(&input_artifacts, &runtime)?
-                        }
-                        ModelChecker::Tlc => {
-                            crate::model::checker::Tlc::test(&input_artifacts, &runtime)?
-                        }
+                let mut traces = match self.model_checker {
+                    ModelChecker::Apalache => {
+                        crate::model::checker::Apalache::test(&input_artifacts, &runtime)?
                     }
-                    .0; // Ignores returned stdout
+                    ModelChecker::Tlc => {
+                        crate::model::checker::Tlc::test(&input_artifacts, &runtime)?
+                    }
+                }
+                .0; // Ignores returned stdout
 
-                    for trace in traces.iter_mut() {
-                        trace.extends_module_name =
-                            Some(input_artifacts.tla_file.module_name().to_string());
-                    }
-                    traces
-                };
+                traces.iter_mut().for_each(|trace| {
+                    trace.extends_module_name =
+                        Some(input_artifacts.tla_file.module_name().to_string());
+                });
 
                 // Write each trace and get a result containing json information
-                let trace_file_write_results: Result<Vec<JsonValue>, Error> = traces
+                traces
                     .into_iter()
                     .enumerate()
                     .map(|(i, trace)| {
@@ -166,7 +171,7 @@ impl TraceCli {
                                     write_json_trace_to_file(&file_name_to_write, &json_trace)
                                 } else {
                                     Ok(json!({
-                                        "json_trace_content": json_trace.as_string()
+                                        "json_trace_content": json_trace.states
                                     }))
                                 }
                             }
@@ -175,18 +180,21 @@ impl TraceCli {
                                     write_tla_trace_to_file(&file_name_to_write, &trace)
                                 } else {
                                     Ok(json!({
-                                        "tla_trace_content": trace.as_string()
+                                        "tla_trace_content": trace.states
                                     }))
                                 }
                             }
                         }
                     })
-                    .collect();
+                    .collect::<Result<Vec<_>, Error>>()
+            })
+            .collect::<Result<Vec<_>, Error>>()?;
 
-                res.insert(test_name, trace_file_write_results);
-            }
-            res
-        };
+        let res = test_names
+            .iter()
+            .cloned()
+            .zip(test_results)
+            .collect::<BTreeMap<String, Vec<JsonValue>>>();
 
         Ok(json!(res))
     }

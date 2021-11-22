@@ -5,8 +5,8 @@ use std::fmt;
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub(crate) struct CmdOutput {
-    pub(crate) stdout: String,
-    pub(crate) stderr: String,
+    pub(crate) stdout: Vec<String>,
+    pub(crate) stderr: Vec<String>,
     pub(crate) status: Option<i32>,
 }
 
@@ -58,7 +58,7 @@ fn is_error_line(line: &str) -> bool {
 impl CmdOutput {
     pub(crate) fn apalache_stdout_error_lines(&self) -> Vec<String> {
         self.stdout
-            .lines()
+            .iter()
             .filter(|line| is_error_line(line))
             .map(ToString::to_string)
             .collect()
@@ -84,7 +84,7 @@ impl CmdOutput {
     pub(crate) fn non_counterexample_error(&self) -> Option<ApalacheError> {
         match (self.stdout.is_empty(), self.stderr.is_empty()) {
             (true, true) => Some(ApalacheError {
-                summary: "stdout and stderr both empty".to_owned(),
+                summary: vec!["stdout and stderr both empty".into()],
                 output: self.clone(),
             }),
             (false, true) => {
@@ -97,14 +97,17 @@ impl CmdOutput {
                 match non_counterexample_error_lines.is_empty() {
                     true => None,
                     false => Some(ApalacheError {
-                        summary: "Non counterexample errors found in stdout:\n".to_owned()
-                            + &non_counterexample_error_lines.join("\n"),
+                        summary: std::iter::once(
+                            "Non counterexample errors found in stdout:".into(),
+                        )
+                        .chain(non_counterexample_error_lines)
+                        .collect(),
                         output: self.clone(),
                     }),
                 }
             }
             _ => Some(ApalacheError {
-                summary: "stderr not empty".to_owned(),
+                summary: vec!["stderr not empty".into()],
                 output: self.clone(),
             }),
         }
@@ -117,7 +120,7 @@ impl CmdOutput {
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Serialize, PartialEq)]
 pub struct ApalacheError {
-    summary: String,
+    summary: Vec<String>,
     output: CmdOutput,
 }
 
@@ -156,8 +159,8 @@ Total time: 4.857 sec                                             I@11:13:37.020
 EXITCODE: ERROR (12)
         "#;
         let output = CmdOutput {
-            stdout: to_parse.to_owned(),
-            stderr: "".to_owned(),
+            stdout: to_parse.lines().map(Into::into).collect(),
+            stderr: vec![],
             status: Some(12),
         };
         let res = output.parse_counterexample_filenames().unwrap();

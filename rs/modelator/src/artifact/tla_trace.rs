@@ -22,7 +22,7 @@ pub struct TlaTrace {
     /// TODO: file_contents backing strings are to be removed
     file_contents_backing: String,
 
-    states: Vec<TlaState>,
+    pub(crate) states: Vec<TlaState>,
     // Name of module that is extended by the trace
     pub(crate) extends_module_name: Option<String>,
 }
