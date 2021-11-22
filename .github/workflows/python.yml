@@ -1,6 +1,14 @@
 name: Python
 
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore:
+      - 'gh-pages'
+    paths:
+      - 'py/**'
+  pull_request:
+    paths:
+      - 'py/**'
 
 jobs:
   python-build:
