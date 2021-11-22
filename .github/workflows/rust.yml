@@ -1,6 +1,14 @@
 name: Rust
 
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore:
+      - "gh-pages"
+    paths:
+      - "rs/**"
+  pull_request:
+    paths:
+      - "rs/**"
 
 env:
   CARGO_INCREMENTAL: 0

@@ -1,35 +1,43 @@
 name: Go
 
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore:
+      - "gh-pages"
+    paths:
+      - "go/**"
+  pull_request:
+    paths:
+      - "go/**"
 
 jobs:
   go-test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.17
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
 
-    - uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: stable
-        override: true
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
 
-    - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v1
 
-    - uses: actions-rs/cargo@v1
-      with:
-        command: build
-        args: --manifest-path go/third_party/mbt/Cargo.toml --release
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --manifest-path go/third_party/mbt/Cargo.toml --release
 
-    - name: Build
-      working-directory: go
-      run: go build -v ./...
+      - name: Build
+        working-directory: go
+        run: go build -v ./...
 
-    - name: Test
-      working-directory: go
-      run: go test -v ./...
+      - name: Test
+        working-directory: go
+        run: go test -v ./...
