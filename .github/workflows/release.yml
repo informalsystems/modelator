@@ -11,45 +11,81 @@ env:
   RUST_DIR: rs
 
 jobs:
-  prepare-release:
+  github-release:
     runs-on: ubuntu-latest
-    if: startsWith(github.event.pull_request.title, '[release]') && github.event.pull_request.merged == true
+    if:
+      startsWith(github.event.pull_request.title, '[RELEASE] ') &&
+      github.event.pull_request.merged == true
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
       - uses: actions/checkout@v2
 
-      - name: Check versions
+      - name: Configure Git
         run: |
-          sed 's/^\[release\] v//g' <<< ${{ github.event.pull_request.title }} >> $RELEASE_VERSION
+          git config --global user.name "$GITHUB_ACTOR"
+          git config --global user.email "github@actions.ci"
 
-      - name: Tag on main and make a Github release
-        run: ./scripts/github_release.sh
-
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.17
-
-      - name: Golang
+      - name: Add local bin paths
         run: |
-          list -m github.com/{{ github.repository }}/$GOLANG_DIR@v$RELEASE_VERSION
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-      - uses: actions/setup-python@v1
-        with:
-          python-version: 3.8
-      - uses: Gr1N/setup-poetry@v7
-
-      - name: Python
-        working-directory: $PYTHON_DIR
-        run: |
-          poetry publish --dry-run
-
-      - uses: actions-rs/toolchain@v1
+      - name: Install Rust stable toolchain
+        uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
 
-      - name: Rust
-        working-directory: $RUST_DIR
+      - name: Install Rust-Cache for Github actions
+        uses: Swatinem/rust-cache@v1
+
+      - name: Install `quickinstall`
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: cargo-quickinstall
+
+      - name: Install `unclog`
+        uses: actions-rs/cargo@v1
+        with:
+          command: quickinstall
+          args: unclog
+
+      - name: Parse release version
         run: |
-          cargo publish --dry-run
+          echo "RELEASE_VERSION=`sed 's/^\[RELEASE\] v//g' <<< "${{ github.event.pull_request.title }}"`" >> $GITHUB_ENV
+
+      - name: Tag on main and make a Github release
+        run: ./scripts/github_release.sh
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+
+      - name: Golang publish
+        working-directory: ${{ env.GOLANG_DIR }}
+        run: |
+          GOPROXY=proxy.golang.org go list -m github.com/${{ github.repository }}/$GOLANG_DIR@v$RELEASE_VERSION
+
+      - name: Setup Python
+        uses: actions/setup-python@v1
+
+      - name: Setup Poetry
+        uses: Gr1N/setup-poetry@v7
+
+      - name: Poetry publish
+        working-directory: ${{ env.PYTHON_DIR }}
+        run: |
+          poetry publish --build
+
+      - name: Install Rust stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Rust publish
+        working-directory: ${{ env.RUST_DIR }}/modelator
+        run: |
+          cargo publish

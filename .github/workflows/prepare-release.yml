@@ -8,44 +8,85 @@ env:
 on:
   workflow_dispatch:
     inputs:
-      release_version:
-        description: "Release version"
-        required: true
+      update_component:
+        description: "Release component (eg. major, minor, patch)"
+        required: false
+        default: patch
 
 jobs:
   prepare-release:
     runs-on: ubuntu-latest
     env:
-      RELEASE_VERSION: ${{ github.event.inputs.release_version }}
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
       - uses: actions/checkout@v2
 
-      - name: Prepare release branch
+      - name: Verify and generate version
         run: |
-          ./scripts/prepare_release.sh
+          ./scripts/generate_version.sh "${{ github.event.inputs.update_component }}"
 
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.17
-
-      - uses: actions/setup-python@v1
-        with:
-          python-version: 3.8
-      - uses: Gr1N/setup-poetry@v7
-
-      - name: Python
-        working-directory: $PYTHON_DIR
+      - name: Configure Git
         run: |
-          poetry publish --dry-run
+          git config --global user.name "$GITHUB_ACTOR"
+          git config --global user.email "github@actions.ci"
 
-      - uses: actions-rs/toolchain@v1
+      - name: Add local bin paths
+        run: |
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install Rust stable toolchain
+        uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
 
-      - name: Rust
-        working-directory: $RUST_DIR
+      - name: Install Rust-Cache for Github actions
+        uses: Swatinem/rust-cache@v1
+
+      - name: Install `quickinstall`
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: cargo-quickinstall
+
+      - name: Install `unclog`
+        uses: actions-rs/cargo@v1
+        with:
+          command: quickinstall
+          args: unclog
+
+      - name: Prepare release branch
+        run: |
+          ./scripts/prepare_release.sh
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+
+      - name: Golang publish
+        working-directory: ${{ env.GOLANG_DIR }}
+        run: |
+          go list -m github.com/${{ github.repository }}/$GOLANG_DIR
+
+      - name: Setup Python
+        uses: actions/setup-python@v1
+
+      - name: Setup Poetry
+        uses: Gr1N/setup-poetry@v7
+
+      - name: Poetry publish
+        working-directory: ${{ env.PYTHON_DIR }}
+        run: |
+          poetry publish --username u --password p --build --dry-run
+
+      - name: Install Rust stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Rust publish
+        working-directory: ${{ env.RUST_DIR }}/modelator
         run: |
           cargo publish --dry-run
