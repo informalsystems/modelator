@@ -17,9 +17,9 @@ ______
 
 For contributor use:
 
-- [ ] Added a changelog entry, using [`unclog`](https://github.com/informalsystems/unclog).
-- [ ] If applicable: Unit tests written, added test to CI.
-- [ ] Ran `cargo fmt` (or had formatting run automatically on all files edited)
-- [ ] Linked to Github issue with discussion and accepted design OR link to spec that describes this work.
+- [ ] If applicable, unit tests are written and added to CI.
+- [ ] Ran `go fmt`, `cargo fmt` and etc. (or had formatting run automatically on all files edited)
 - [ ] Updated relevant documentation (`docs/`) and code comments.
+- [ ] Linked to Github issue with discussion and accepted design OR link to spec that describes this work.
 - [ ] Re-reviewed `Files changed` in the Github PR explorer.
+- [ ] Added a changelog entry, using [`unclog`](https://github.com/informalsystems/unclog).
