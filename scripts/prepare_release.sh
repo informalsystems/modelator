@@ -20,12 +20,9 @@ BODY_FILE="current_changelog"
 unclog build -u | sed "s/## Unreleased/## v${RELEASE_VERSION}/g" > "$BODY_FILE"
 
 # unclog hack until https://github.com/informalsystems/unclog/issues/22 closes
-
-echo "release v${RELEASE_VERSION}" > summary.txt
-
 cat > fake_editor <<EOF
 #!/bin/sh
-cat summary.txt > \$1
+echo "fake editor"
 EOF
 
 chmod u+x fake_editor
