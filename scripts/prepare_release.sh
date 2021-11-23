@@ -14,8 +14,7 @@ sed -i "s|^version = \"[^\"]\+\"|version = \"${RELEASE_VERSION}\"|g" "$RUST_DIR/
 cargo build --manifest-path "$RUST_DIR/modelator/Cargo.toml"
 
 # update the version on Python module
-# skip python
-# sed -i "s|^version = \"[^\"]\+\"|version = \"${RELEASE_VERSION}\"|g" "$PYTHON_DIR/pyproject.toml"
+sed -i "s|^version = \"[^\"]\+\"|version = \"${RELEASE_VERSION}\"|g" "$PYTHON_DIR/pyproject.toml"
 
 # nothing to do for Go lang for now
 

@@ -17,12 +17,6 @@ LAST_PYTHON_VERSION=$(grep -i '^version = ' "$PYTHON_DIR/pyproject.toml" | sed '
 # get last release tag
 LAST_RELEASE_VERSION=$(grep '^## v' CHANGELOG.md | head -1 | sed 's|^## v||g')
 
-# hardcoded for first bootstrap
-# TODO: remove this codeblock after first automated release
-LAST_RELEASE_VERSION="0.3.2"
-LAST_RUST_VERSION="0.3.2"
-LAST_PYTHON_VERSION="0.3.2"
-
 echo "Python version $LAST_PYTHON_VERSION"
 echo "Rust version $LAST_RUST_VERSION"
 echo "Release version $LAST_RELEASE_VERSION"
