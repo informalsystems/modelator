@@ -26,7 +26,7 @@ git push --tags
 gh release create \
     --title "$TAG_NAME" \
     --notes-file "$RELEASE_NOTES_FILE" \
-    --prerelease
+    --prerelease \
     "$TAG_NAME"
     # ./dist/*.tar.gz
     # ./dist/*.zip
