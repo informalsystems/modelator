@@ -2,10 +2,11 @@
 _<sup>but in Golang<sup>_
 
 [![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/informalsystems/modelator?filename=go%2Fgo.mod)](https://github.com/informalsystems/modelator/tree/main/go)
+[![Go project version](https://badge.fury.io/go/github.com%2Finformalsystems%2Fmodelator%2Fgo.svg)](https://badge.fury.io/go/github.com%2Finformalsystems%2Fmodelator%2Fgo)
+[![License](https://img.shields.io/github/license/informalsystems/modelator)](https://github.com/informalsystems/modelator/tree/main/go/LICENSE)</br>
 [![Go Reference](https://pkg.go.dev/badge/github.com/informalsystems/modelator/go.svg)](https://pkg.go.dev/github.com/informalsystems/modelator/go)
 [![Status](https://github.com/informalsystems/modelator/actions/workflows/golang.yml/badge.svg)](https://github.com/informalsystems/modelator/actions/workflows/golang.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/informalsystems/modelator/go)](https://goreportcard.com/report/github.com/informalsystems/modelator/go)
-[![License](https://img.shields.io/github/license/informalsystems/modelator)](https://github.com/informalsystems/modelator/tree/main/go/LICENSE)
 
 [Modelator](https://github.com/informalsystems/modelator)'s cousin for Golang
 
