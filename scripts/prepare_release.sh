@@ -10,6 +10,9 @@ git checkout -B "release/v${RELEASE_VERSION}"
 # update the versions on Rust crate
 sed -i "s|^version = \"[^\"]\+\"|version = \"${RELEASE_VERSION}\"|g" "$RUST_DIR/modelator/Cargo.toml"
 
+# update Cargo.lock with latest version
+cargo build --manifest-path "$RUST_DIR/modelator/Cargo.toml"
+
 # update the version on Python module
 # skip python
 # sed -i "s|^version = \"[^\"]\+\"|version = \"${RELEASE_VERSION}\"|g" "$PYTHON_DIR/pyproject.toml"

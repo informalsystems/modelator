@@ -1,11 +1,11 @@
 # CHANGELOG
 
-## Unreleased
+## v0.4.0
 
-Just like the last minor release, this is the massive refactoring release.
-Interfaces have been reworked for friendlier usage.
-Better parsers for improved handling of model checker outputs.
-Golang bindings are introduced.
+Like the last minor release, this is another massive refactoring release.
+- Reworked interfaces for friendlier usage.
+- Better parsers for improved handling of model checker outputs.
+- Golang bindings.
 
 ### FEATURES
 
