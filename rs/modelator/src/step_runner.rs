@@ -50,13 +50,19 @@ mod tests {
     use crate::test_util::NumberSystem;
     use serde::Deserialize;
 
+    #[derive(Debug, Clone, PartialEq, Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    enum TlaDT {
+        String(String),
+    }
+
     #[derive(Debug, Clone, Deserialize)]
     #[serde(rename_all = "camelCase")]
     struct NumbersStep {
         a: u64,
         b: u64,
-        action: Action,
-        action_outcome: String,
+        action: TlaDT,
+        action_outcome: TlaDT,
     }
 
     #[derive(Debug, Clone, Deserialize)]
@@ -76,22 +82,27 @@ mod tests {
 
         fn next_step(&mut self, step: NumbersStep) -> Result<(), String> {
             // Execute the action, and check the outcome
-            let res = match step.action {
-                Action::None => Ok(()),
-                Action::IncreaseA => self.increase_a(1),
-                Action::IncreaseB => self.increase_b(2),
-            };
-            let outcome = match res {
-                Ok(()) => "OK".to_string(),
-                Err(s) => s,
-            };
-            assert_eq!(outcome, step.action_outcome);
+            match step.action {
+                TlaDT::String(action) => {
+                    let res = match action.as_str() {
+                        "None" => Ok(()),
+                        "IncreaseA" => self.increase_a(1),
+                        "IncreaseB" => self.increase_b(2),
+                        _ => unreachable!(),
+                    };
+                    let outcome = match res {
+                        Ok(()) => "OK".to_string(),
+                        Err(s) => s,
+                    };
+                    assert_eq!(TlaDT::String(outcome), step.action_outcome);
 
-            // Check that the system state matches the state of the model
-            assert_eq!(self.a, step.a);
-            assert_eq!(self.b, step.b);
+                    // Check that the system state matches the state of the model
+                    assert_eq!(self.a, step.a);
+                    assert_eq!(self.b, step.b);
 
-            Ok(())
+                    Ok(())
+                }
+            }
         }
     }
 

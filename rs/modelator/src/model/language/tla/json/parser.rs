@@ -1,14 +1,14 @@
 use nom::{
     branch::alt,
-    bytes::complete::{is_not, tag, take_while},
-    character::complete::{char, digit1, multispace0, satisfy},
-    combinator::{complete, cut, map, opt, recognize, value},
+    bytes::complete::{tag, take_while},
+    character::complete::{char, digit1, multispace0, multispace1, satisfy},
+    combinator::{complete, cut, eof, map, not, opt, peek, success, value},
     multi::{many1, separated_list0, separated_list1},
-    sequence::{delimited, pair, preceded, separated_pair},
+    sequence::{delimited, pair, preceded, separated_pair, terminated},
     IResult,
 };
 
-use serde_json::Value as JsonValue;
+use serde_json::{json, Value as JsonValue};
 
 pub(crate) fn parse_state(i: &str) -> IResult<&str, JsonValue> {
     map(
@@ -16,50 +16,111 @@ pub(crate) fn parse_state(i: &str) -> IResult<&str, JsonValue> {
             opt(delimited(multispace0, complete(tag("/\\")), multispace0)),
             separated_list0(
                 delimited(multispace0, complete(tag("/\\")), multispace0),
-                parse_var,
+                parse_assignment,
             ),
         ),
-        |value| JsonValue::Object(value.into_iter().collect()),
+        |pairs| {
+            let j = JsonValue::Object(pairs.into_iter().collect());
+            println!("{}", serde_json::to_string_pretty(&j).unwrap());
+            j
+        },
     )(i)
 }
 
-fn parse_var(i: &str) -> IResult<&str, (String, JsonValue)> {
+fn parse_assignment(i: &str) -> IResult<&str, (String, JsonValue)> {
     delimited(
         multispace0,
         separated_pair(
-            parse_identifier,
+            parse_identifier_as_string,
             delimited(multispace0, char('='), multispace0),
-            parse_any_value,
+            parse_anything,
         ),
         multispace0,
     )(i)
 }
 
 // TODO: what else can TLA var idenfitiers have?
-fn parse_identifier(i: &str) -> IResult<&str, String> {
+fn parse_identifier_as_string(i: &str) -> IResult<&str, String> {
     map(
         many1(satisfy(|c| c.is_alphanumeric() || "_-".contains(c))),
         |value| value.into_iter().collect(),
     )(i)
 }
 
-fn parse_identifiers_as_values(i: &str) -> IResult<&str, JsonValue> {
-    map(parse_identifier, JsonValue::String)(i)
+fn parse_identifier(i: &str) -> IResult<&str, JsonValue> {
+    map(parse_identifier_as_string, |x| json!(x))(i)
 }
 
-fn parse_any_value(i: &str) -> IResult<&str, JsonValue> {
-    preceded(
+fn parse_any_value_consuming(i: &str) -> IResult<&str, JsonValue> {
+    alt((
+        parse_bool,
+        parse_number,
+        parse_string,
+        parse_identifier,
+        parse_set,
+        parse_sequence,
+        parse_record,
+    ))(i)
+}
+
+// TODO: add more TLA+ operators? support prefix operators
+fn parse_operator(i: &str) -> IResult<&str, JsonValue> {
+    map(alt((tag("\\in"), tag("\\notin"))), |x| {
+        json!({ "operator": x })
+    })(i)
+}
+
+fn parse_expression(i: &str) -> IResult<&str, JsonValue> {
+    map(
+        delimited(
+            multispace0,
+            pair(
+                alt((
+                    delimited(char('('), parse_anything, char(')')),
+                    parse_any_value_consuming,
+                )),
+                many1(pair(
+                    delimited(multispace1, parse_operator, multispace1),
+                    alt((
+                        delimited(char('('), parse_anything, char(')')),
+                        parse_any_value_consuming,
+                    )),
+                )),
+            ),
+            multispace0,
+        ),
+        |(f, r)| {
+            let mut a = vec![f];
+            r.into_iter().for_each(|(p, q)| {
+                a.push(p);
+                a.push(q);
+            });
+            json!({ "expression": a })
+        },
+    )(i)
+}
+
+fn parse_anything(i: &str) -> IResult<&str, JsonValue> {
+    delimited(
         multispace0,
-        alt((
-            parse_bool,
-            parse_function,
-            parse_number,
-            parse_string,
-            parse_identifiers_as_values,
-            parse_set,
-            parse_sequence,
-            parse_record,
-        )),
+        preceded(
+            peek(not(alt((
+                tag(")"),
+                tag("}"),
+                tag("]"),
+                tag(","),
+                tag("|->"),
+                tag(":>"),
+                tag("@@"),
+            )))),
+            alt((
+                parse_expression,
+                parse_function,
+                parse_any_value_consuming,
+                // delimited(char('('), parse_anything, char(')')),
+            )),
+        ),
+        multispace0,
     )(i)
 }
 
@@ -71,35 +132,30 @@ fn parse_bool(i: &str) -> IResult<&str, JsonValue> {
 }
 
 fn parse_number(i: &str) -> IResult<&str, JsonValue> {
-    alt((parse_pos_number, parse_neg_number))(i)
-}
-
-fn parse_pos_number(i: &str) -> IResult<&str, JsonValue> {
-    map(digit1, |value: &str| {
-        JsonValue::Number(
-            value
-                .parse::<u64>()
-                .expect("u64 parsed by nom should be a valid u64")
-                .into(),
-        )
-    })(i)
-}
-
-fn parse_neg_number(i: &str) -> IResult<&str, JsonValue> {
-    map(preceded(char('-'), digit1), |value| {
-        JsonValue::Number(
-            format!("-{}", value)
-                .parse::<i64>()
-                .expect("i64 parsed by nom should be a valid i64")
-                .into(),
-        )
-    })(i)
+    map(
+        pair(alt((char('+'), char('-'), success('+'))), digit1),
+        |(sign, value)| match sign {
+            '+' => JsonValue::Number(
+                format!("+{}", value)
+                    .parse::<u64>()
+                    .expect("i64 parsed by nom should be a valid i64")
+                    .into(),
+            ),
+            '-' => JsonValue::Number(
+                format!("-{}", value)
+                    .parse::<i64>()
+                    .expect("i64 parsed by nom should be a valid i64")
+                    .into(),
+            ),
+            _ => unreachable!(),
+        },
+    )(i)
 }
 
 fn parse_string(i: &str) -> IResult<&str, JsonValue> {
     map(
         delimited(char('"'), cut(take_while(|c| c != '"')), char('"')),
-        |value: &str| JsonValue::String(value.into()),
+        |value: &str| json!({ "string": value.to_string() }),
     )(i)
 }
 
@@ -109,11 +165,11 @@ fn parse_set(i: &str) -> IResult<&str, JsonValue> {
             pair(char('{'), multispace0),
             cut(separated_list0(
                 delimited(multispace0, char(','), multispace0),
-                parse_any_value,
+                parse_anything,
             )),
             pair(multispace0, char('}')),
         ),
-        JsonValue::Array,
+        |x| json!({ "set": x }),
     )(i)
 }
 
@@ -123,11 +179,11 @@ fn parse_sequence(i: &str) -> IResult<&str, JsonValue> {
             pair(tag("<<"), multispace0),
             cut(separated_list0(
                 delimited(multispace0, char(','), multispace0),
-                parse_any_value,
+                parse_anything,
             )),
             pair(multispace0, tag(">>")),
         ),
-        JsonValue::Array,
+        |x| json!({ "sequence": x }),
     )(i)
 }
 
@@ -138,9 +194,7 @@ fn parse_function(i: &str) -> IResult<&str, JsonValue> {
             separated_list1(
                 delimited(multispace0, complete(tag("@@")), multispace0),
                 alt((
-                    map(parse_function_entry, |x| {
-                        JsonValue::Object(vec![x].into_iter().collect())
-                    }),
+                    map(parse_function_entry, |x| json!({ "function" : vec![x]})),
                     delimited(
                         pair(char('('), multispace0),
                         parse_function,
@@ -151,31 +205,40 @@ fn parse_function(i: &str) -> IResult<&str, JsonValue> {
             multispace0,
         ),
         |values| {
-            JsonValue::Object(
-                values
+            json!({ "function": values
                     .into_iter()
-                    .flat_map(|value| {
-                        value
-                            .as_object()
-                            .unwrap()
-                            .into_iter()
-                            .map(|(k, v)| (k.clone(), v.clone()))
-                            .collect::<Vec<_>>()
-                    })
-                    .collect(),
-            )
+                    .flat_map(|value| value.as_object().unwrap()["function"].as_array().unwrap().to_vec())
+                    .collect::<Vec<_>>(),
+            })
         },
     )(i)
 }
 
-fn parse_function_entry(i: &str) -> IResult<&str, (String, JsonValue)> {
-    preceded(
-        multispace0,
-        separated_pair(
-            parse_identifier,
-            delimited(multispace0, complete(tag(":>")), multispace0),
-            parse_any_value,
+fn parse_function_entry(i: &str) -> IResult<&str, JsonValue> {
+    map(
+        delimited(
+            multispace0,
+            separated_pair(
+                alt((
+                    parse_any_value_consuming,
+                    delimited(char('('), parse_anything, char(')')),
+                )),
+                delimited(multispace0, complete(tag(":>")), multispace0),
+                separated_list1(
+                    delimited(multispace0, complete(tag(":>")), multispace0),
+                    alt((
+                        parse_any_value_consuming,
+                        delimited(char('('), parse_anything, char(')')),
+                    )),
+                ),
+            ),
+            multispace0,
         ),
+        |(f, r)| {
+            let mut a = vec![f];
+            a.extend(r);
+            json!(a)
+        },
     )(i)
 }
 
@@ -189,18 +252,19 @@ fn parse_record(i: &str) -> IResult<&str, JsonValue> {
             )),
             pair(multispace0, char(']')),
         ),
-        |value| JsonValue::Object(value.into_iter().collect()),
+        |value| json!({ "record": value }),
     )(i)
 }
 
-fn parse_record_entry(i: &str) -> IResult<&str, (String, JsonValue)> {
-    preceded(
+fn parse_record_entry(i: &str) -> IResult<&str, (JsonValue, JsonValue)> {
+    delimited(
         multispace0,
         separated_pair(
-            parse_identifier,
+            parse_anything,
             delimited(multispace0, tag("|->"), multispace0),
-            parse_any_value,
+            parse_anything,
         ),
+        multispace0,
     )(i)
 }
 
@@ -240,8 +304,13 @@ mod tests {
 
     #[test]
     fn parse_string_test() {
-        let parse_and_check =
-            |value| assert!(check_ok!(parse_string, format!("\"{}\"", value), value));
+        let parse_and_check = |value| {
+            assert!(check_ok!(
+                parse_string,
+                format!("\"{}\"", value),
+                json!({ "string": value })
+            ))
+        };
         parse_and_check("");
         parse_and_check("A1");
         parse_and_check("abc XYZ!");
@@ -297,8 +366,8 @@ mod tests {
 
     fn booleans_and_numbers_expected() -> JsonValue {
         json!({
-            "empty_set": [],
-            "set": [1, 2, 3],
+            "empty_set": { "set": [] },
+            "set": { "set": [1, 2, 3] },
             "pos_number": 1,
             "neg_number": -1,
             "bool": true
@@ -317,8 +386,8 @@ mod tests {
 
     fn sets_expected() -> JsonValue {
         json!({
-            "empty_set": [],
-            "set": [1, 2, 3],
+            "empty_set": { "set": [] },
+            "set": { "set": [1, 2, 3] },
             "pos_number": 1,
             "neg_number": -1,
             "bool": true
@@ -337,8 +406,8 @@ mod tests {
 
     fn sequences_expected() -> JsonValue {
         json!({
-            "empty_seq": [],
-            "seq": [1, 2, 3],
+            "empty_seq": { "sequence" : [] },
+            "seq": { "sequence": [1, 2, 3] },
             "pos_number": 1,
             "neg_number": -1,
             "bool": true
@@ -355,12 +424,16 @@ mod tests {
     fn records_expected() -> JsonValue {
         json!({
             "record": {
-                "t1": "-",
-                "t2": "-",
+                "function": [
+                    ["t1", { "string": "-" }],
+                    ["t2", { "string": "-" }],
+                ]
             },
             "mix": {
-                "set": [-1, -2, 3],
-                "number": 99,
+                "function": [
+                    ["set", { "set": [-1, -2, 3] }],
+                    ["number", 99]
+                ]
             },
         })
     }
@@ -375,12 +448,16 @@ mod tests {
     fn functions_expected() -> JsonValue {
         json!({
             "function": {
-                "t1": "-",
-                "t2": "-",
+                "record": [
+                    ["t1", { "string": "-" }],
+                    ["t2", { "string": "-" }],
+                ]
             },
             "mix": {
-                "set": [-1, -2, 3],
-                "number": 99,
+                "record": [
+                    ["set", { "set": [-1, -2, 3] }],
+                    ["number", 99]
+                ]
             },
         })
     }
@@ -398,26 +475,20 @@ mod tests {
 
     fn expected1() -> JsonValue {
         json!({
-            "browsers": {
-                "b1": []
-            },
-            "network": [],
+            "browsers": { "function": [ [ "b1", { "sequence": [] } ] ] },
+            "network": { "sequence": [] },
+            "remote": { "set": [] },
             "tabs": {
-                "t1": {
-                    "status": "-"
-                },
-                "t2": {
-                    "status": "-"
-                }
+                "function": [
+                    [ "t1", { "record": [[ "status", { "string": "-" } ]] } ],
+                    [ "t2", { "record": [[ "status", { "string": "-" } ]] } ]
+                ]
             },
-            "remote": [],
             "workers": {
-                "w1": {
-                    "status": "-"
-                },
-                "w2": {
-                    "status": "-"
-                }
+                "function": [
+                    [ "w1", { "record": [[ "status", { "string": "-" } ]] } ],
+                    [ "w2", { "record": [[ "status", { "string": "-" } ]] } ]
+                ]
             },
         })
     }
@@ -443,35 +514,37 @@ mod tests {
     fn expected2() -> JsonValue {
         json!({
             "tabs": {
-                "t1": {
-                    "status": "-"
-                },
-                "t2": {
-                    "drafts": [],
-                    "worker": "w1",
-                    "status": "loading",
-                    "awaiting": [
-                        "Remote"
-                    ]
-                }
+                "function": [
+                    [ "t1", { "record": [ [ "status", { "string": "-" } ] ] } ],
+                    [ "t2", { "record": [
+                        [ "drafts", { "set": [] } ],
+                        [ "worker", "w1" ],
+                        [ "status", { "string": "loading" } ],
+                        [  "awaiting", { "set": [ { "string": "Remote" } ] } ]
+                    ] } ]
+                ]
             },
             "workers": {
-                "w1": {
-                    "drafts": [],
-                    "time": 1,
-                    "status": "live",
-                    "browser": "b1",
-                    "sync": {
-                        "Remote": {
-                            "desired": 0,
-                            "lastReq": 0,
-                            "lastAck": 0,
-                        }
-                    }
-                },
-                "w2": {
-                    "status": "-"
-                }
+                "function": [
+                    [ "w1", { "record": [
+                        [ "drafts", { "set": [] } ],
+                        [ "time", 1 ],
+                        [ "status", { "string": "live" } ],
+                        [ "browser", "b1" ],
+                        [ "sync", {
+                            "record": [
+                                [ "Remote", { "record": [
+                                    [ "desired", 0 ],
+                                    [ "lastReq", 0 ],
+                                    [ "lastAck", 0 ]
+                                ] } ]
+                            ]
+                        } ]
+                    ] } ],
+                    [ "w2", { "record": [
+                        [ "status", { "string": "-" } ]
+                    ] } ]
+                ]
             },
         })
     }
@@ -506,50 +579,50 @@ mod tests {
     fn expected3() -> JsonValue {
         json!({
             "tabs": {
-                "t1": {
-                    "drafts": [],
-                    "worker": "w2",
-                    "status": "loading",
-                    "awaiting": [
-                        "Remote"
-                    ]
-                },
-                "t2": {
-                    "drafts": [],
-                    "worker": "w1",
-                    "status": "loading",
-                    "awaiting": [
-                        "Remote"
-                    ]
-                }
+                "function": [
+                [ "t1", { "record": [
+                    [ "drafts", { "set": [] } ],
+                    [ "worker", "w2" ],
+                    [ "status", { "string": "loading" } ],
+                    [ "awaiting", { "set": [ { "string": "Remote" } ] } ]
+                ] } ],
+                [ "t2", { "record": [
+                    [ "drafts", { "set": [] } ],
+                    [ "worker", "w1" ],
+                    [ "status", { "string": "loading" } ],
+                    [ "awaiting", {  "set": [  { "string": "Remote" } ] } ]
+                ] } ]
+                ]
             },
             "workers": {
-                "w1": {
-                    "drafts": [],
-                    "time": 1,
-                    "status": "live",
-                    "browser": "b1",
-                    "sync": {
-                        "Remote": {
-                            "desired": 0,
-                            "lastReq": 0,
-                            "lastAck": 0,
-                        }
-                    }
-                },
-                "w2": {
-                    "drafts": [],
-                    "time": 1,
-                    "status": "live",
-                    "browser": "b1",
-                    "sync": {
-                        "Remote": {
-                            "desired": 0,
-                            "lastReq": 0,
-                            "lastAck": 0,
-                        }
-                    }
-                },
+                "function": [
+                    [ "w1", { "record": [
+                        [ "drafts", { "set": [] } ],
+                        [ "time", 1 ],
+                        [ "status", { "string": "live" } ],
+                        [ "browser", "b1" ],
+                        [ "sync", { "record": [
+                            [ "Remote", { "record": [
+                                    [ "desired", 0 ],
+                                    [ "lastReq", 0 ],
+                                    [ "lastAck", 0 ]
+                                ] } ]
+                            ] } ]
+                    ] } ],
+                    [ "w2", { "record": [
+                        [ "drafts", { "set": [] } ],
+                        [ "time", 1 ],
+                        [ "status", { "string": "live" } ],
+                        [ "browser", "b1" ],
+                        [ "sync", { "record": [
+                            [ "Remote", { "record": [
+                                [ "desired", 0 ],
+                                [ "lastReq", 0 ],
+                                [ "lastAck", 0 ]
+                            ] } ]
+                        ] } ]
+                    ] } ]
+                ]
             },
         })
     }
@@ -563,18 +636,18 @@ mod tests {
 
     fn expected4() -> JsonValue {
         json!({
-            "tabs": {
-                "t1": {
-                    "drafts": [],
-                    "worker": "w2",
-                    "status": "loading",
-                    "awaiting": []
-                },
-                "t2": {
-                    "worker": "w1",
-                    "status": "clean"
-                }
-            },
+            "tabs": { "function": [
+                [ "t1", { "record": [
+                    [ "drafts", { "set": [] } ],
+                    [ "worker", "w2" ],
+                    [ "status", { "string": "loading" } ],
+                    [ "awaiting", { "set": [] } ]
+                ] } ],
+                [ "t2", { "record": [
+                    [ "worker", "w1" ],
+                    [ "status", { "string": "clean" } ] ]
+                } ]
+            ] },
         })
     }
 
@@ -600,39 +673,37 @@ mod tests {
 
     fn expected5() -> JsonValue {
         json!({
-            "network": [
-                {
-                    "drafts": [],
-                    "type": "sync:T->W",
-                    "from": "t2",
-                    "to": "w1",
-                    "newEdit": {
-                        "isEmpty": false,
-                        "get": {
-                            "w1": 0,
-                            "w2": 0
-                        }
-                    },
-                }
-            ],
-            "tabs": {
-                "t1": {
-                    "worker": "w2",
-                    "status": "dirty",
-                    "draft": {
-                        "isEmpty": true,
-                    },
-                    "localChange": true,
-                },
-                "t2": {
-                    "worker": "w1",
-                    "status": "dirty",
-                    "draft": {
-                        "isEmpty": true,
-                    },
-                    "localChange": false,
-                }
-            },
+            "network": { "sequence": [ { "record": [
+                [ "drafts", { "set": [] } ],
+                [ "type", { "string": "sync:T->W" } ],
+                [ "from", "t2" ],
+                [ "to", "w1" ],
+                [ "newEdit", {
+                    "record": [
+                    [ "isEmpty", false ],
+                    [ "get", {
+                        "function": [
+                            [ "w1", 0 ],
+                            [ "w2", 0 ]
+                        ]
+                        } ]
+                    ]
+                } ]
+            ] } ] },
+            "tabs": { "function": [
+                [ "t1", { "record": [
+                    [ "worker",  "w2" ],
+                    [ "status", { "string": "dirty" } ],
+                    [ "draft", { "record": [ [ "isEmpty", true ] ] } ],
+                    [ "localChange", true ]
+                ] } ],
+                [ "t2", { "record": [
+                    [ "worker", "w1" ],
+                    [ "status", { "string": "dirty" } ],
+                    [ "draft", { "record": [ [ "isEmpty", true ] ] } ],
+                    [ "localChange", false ]
+                ] }]
+            ] },
         })
     }
 }
