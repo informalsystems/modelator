@@ -1,0 +1,40 @@
+title: Model Based Testing
+description: Part of Informal Systems
+baseurl: ""
+url: "https://mbt.informal.systems"
+
+remote_theme: pmarsceill/just-the-docs
+
+plugins:
+  - jekyll-remote-theme
+  - jekyll-spaceship
+  - jekyll-pdf-embed
+  - jekyll-seo-tag
+
+repository: "informalsystems/modelator"
+
+nav_sort: case_sensitive
+
+back_to_top: true
+back_to_top_text: "Back to top"
+
+gh_edit_link: true
+gh_edit_link_text: "Edit this page on GitHub"
+gh_edit_repository: "https://github.com/informalsystems/modelator"
+gh_edit_branch: "main"
+# gh_edit_source: jekyll
+gh_edit_view_mode: "tree"
+
+markdown: kramdown
+
+kramdown:
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false
+
+jekyll-spaceship:
+  mathjax-processor:
+    optimize:
+      enabled: false
+
+logo: "/assets/images/model-based-testing.svg"
