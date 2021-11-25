@@ -1,0 +1,36 @@
+name: Jekyll publication on GitHub Pages
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "jekyll/**"
+  pull_request:
+    paths:
+      - "jekyll/**"
+
+jobs:
+  jekyll:
+    environment: Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-
+
+      - uses: jeffreytse/jekyll-deploy-action@v0.3.1
+        with:
+          provider: "github"
+          token: ${{ secrets.GH_TOKEN }}
+          repository: "informalsystems/modelator"
+          branch: "gh-pages"
+          jekyll_src: "./jekyll"
+          jekyll_cfg: "_config.yml"
+          bundler_ver: ">=0"
+          cname: "mbt.informal.systems"
