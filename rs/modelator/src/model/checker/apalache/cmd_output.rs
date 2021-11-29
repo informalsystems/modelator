@@ -146,14 +146,14 @@ mod tests {
 
     #[test]
     fn test_is_error_line() {
-        let line = "State 2: state invariant 0 violated. Check the counterexample in: counterexample1.tla, MC1.out, counterexample1.json E@11:13:37.003";
+        let line = "State 2: state invariant 0 violated. Check the counterexample in:\n  counterexample1.tla\n  MC1.out\n  counterexample1.json E@11:13:37.003";
         let res = is_error_line(line);
         assert!(res);
     }
 
     #[test]
     fn test_parse_filename() {
-        let line = "State 2: state invariant 0 violated. Check the counterexample in: counterexample1.tla, MC1.out, counterexample1.json E@11:13:37.003";
+        let line = "State 2: state invariant 0 violated. Check the counterexample in:\n  counterexample1.tla\n  MC1.out\n  counterexample1.json E@11:13:37.003";
         let res = parse_filename(line);
         assert_eq!("counterexample1.tla".to_owned(), res);
     }
@@ -162,8 +162,14 @@ mod tests {
     fn test_parse_all_counterexample_filenames() {
         let to_parse = r#"PASS #13: BoundedChecker                                          I@11:13:35.033
 State 2: Checking 1 state invariants                              I@11:13:36.959
-State 2: state invariant 0 violated. Check the counterexample in: counterexample1.tla, MC1.out, counterexample1.json E@11:13:37.003
-State 2: state invariant 0 violated. Check the counterexample in: counterexample2.tla, MC2.out, counterexample2.json E@11:13:37.015
+State 2: state invariant 0 violated. Check the counterexample in:
+  counterexample1.tla
+  MC1.out
+  counterexample1.json E@11:13:37.003
+State 2: state invariant 0 violated. Check the counterexample in:
+  counterexample2.tla
+  MC2.out
+  counterexample2.json E@11:13:37.015
 Found 2 error(s)                                                  I@11:13:37.017
 Total time: 4.857 sec                                             I@11:13:37.020
 EXITCODE: ERROR (12)
