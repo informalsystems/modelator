@@ -23,19 +23,15 @@ fn is_counterexample_line(line: &str) -> bool {
 fn parse_filename(line: &str) -> String {
     // The line looks like '...d. Check the counterexample in: counterexample1.tla, MC1.out, counterexample1.json E@11:13:37.003'
     assert!(is_counterexample_line(line));
-    match line.find("in:") {
-        None => {
-            panic!("Expected to find substring 'in:' in line when parsing for counterexample file name")
-        }
-        Some(ix) => {
-            let slice = &line[ix..];
-            let mut split = slice.split(' ');
-            // Now have [:, counterexample.tla,, ...]
-            split.next();
-            let with_trailing_comma = split.next().unwrap();
-            with_trailing_comma[..with_trailing_comma.len() - 1].to_owned()
-        }
-    }
+    let (_, files) = line.split_once("in:").expect(
+        "Expected to find substring 'in:' in line when parsing for counterexample file name",
+    );
+    let tla_file = files
+        .trim()
+        .split_whitespace()
+        .next()
+        .expect("Must have counterexample1.tla, MC1.OUT, counterexample1.json");
+    tla_file.trim().into()
 }
 
 fn is_deadlock_line(line: &str) -> bool {
@@ -59,8 +55,22 @@ impl CmdOutput {
     pub(crate) fn apalache_stdout_error_lines(&self) -> Vec<String> {
         self.stdout
             .iter()
+            .scan(Vec::new(), |state, line| {
+                state.push(line.clone());
+                // Looking for E@XX:XX:XX.XXX lines
+                if line.len() >= 14 && &line[(line.len() - 14)..(line.len() - 12)] == "E@" {
+                    let next_state = state.join("\n");
+                    *state = Vec::new();
+                    Some(Some(next_state))
+                } else if line.len() >= 14 && &line[(line.len() - 13)..(line.len() - 12)] == "@" {
+                    *state = Vec::new();
+                    Some(None)
+                } else {
+                    Some(None)
+                }
+            })
+            .flatten()
             .filter(|line| is_error_line(line))
-            .map(ToString::to_string)
             .collect()
     }
 
