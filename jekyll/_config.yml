@@ -21,9 +21,9 @@ back_to_top_text: "Back to top"
 gh_edit_link: true
 gh_edit_link_text: "Edit this page on GitHub"
 gh_edit_repository: "https://github.com/informalsystems/modelator"
-gh_edit_branch: "main"
-# gh_edit_source: jekyll
-gh_edit_view_mode: "tree"
+gh_edit_branch: main
+gh_edit_source: jekyll
+gh_edit_view_mode: tree
 
 markdown: kramdown
 
@@ -37,4 +37,5 @@ jekyll-spaceship:
     optimize:
       enabled: false
 
-logo: "/assets/images/model-based-testing.svg"
+logo_svg: "/images/model-based-testing.svg"
+short_title: "MBT"
