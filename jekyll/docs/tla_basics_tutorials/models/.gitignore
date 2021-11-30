@@ -1,0 +1,4 @@
+apalache-pkg-0.17.4-full.jar
+tla2tools.jar
+**/states/
+**/*.out
