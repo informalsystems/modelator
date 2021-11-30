@@ -2,11 +2,13 @@
 title: Typechecking
 description: How to type check your models
 layout: default
-parent: TLA+
+parent: TLA+ Basics Tutorials
 nav_order: 4
 ---
 
 # Typechecking
+
+**The .tla and other referenced files are included [here](https://github.com/informalsystems/modelator/tree/main/jekyll/docs/tla_basics_tutorials/models).**
 
 As a model grows it becomes difficult to ensure that the TLA+ code in the models is doing what you think it is. There are techniques to help ensure there are no bugs in your model. The best way to make sure your model is high quality is to use types and the Apalache type checker.
 

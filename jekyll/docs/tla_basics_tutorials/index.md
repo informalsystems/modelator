@@ -1,5 +1,5 @@
 ---
-title: TLA+
+title: TLA+ Basics Tutorials
 description: TLA+ basic tutorials overview
 layout: default
 has_children: true

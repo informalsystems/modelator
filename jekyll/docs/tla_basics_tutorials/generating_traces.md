@@ -2,11 +2,13 @@
 title: Generating Traces
 description: How to generate execution traces from models
 layout: default
-parent: TLA+
+parent: TLA+ Basics Tutorials
 nav_order: 7
 ---
 
 # Generating traces for automated testing using Apalache
+
+**The .tla and other referenced files are included [here](https://github.com/informalsystems/modelator/tree/main/jekyll/docs/tla_basics_tutorials/models).**
 
 Apalache allows you to generate more than trace that satisfies a given behavior specified by a [state invariant](https://apalache.informal.systems/docs/tutorials/symbmc.html?highlight=invariant#invariants) or [trace invariant](https://apalache.informal.systems/docs/apalache/invariants.html?highlight=trace#trace-invariants).
 

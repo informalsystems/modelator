@@ -2,11 +2,13 @@
 title: Ethereum Exploit
 description: Finding an exploit using Apalache
 layout: default
-parent: TLA+
+parent: TLA+ Basics Tutorials
 nav_order: 6
 ---
 
 # Finding an Ethereum exploit using Apalache
+
+**The .tla and other referenced files are included [here](https://github.com/informalsystems/modelator/tree/main/jekyll/docs/tla_basics_tutorials/models).**
 
 In 'Hello World' we used TLC to check a simple model. Now we will walk through a real model. The model models part of the ERC20 Ethereum blockchain technical standard; in particular the model can be used to generate a trace which exploits the API to transfer funds to an attackers address. The model was written by Igor Konnov.
 

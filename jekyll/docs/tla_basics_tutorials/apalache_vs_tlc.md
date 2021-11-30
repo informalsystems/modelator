@@ -2,7 +2,7 @@
 title: Apalache vs TLC
 description: Comparing model checkers
 layout: default
-parent: TLA+
+parent: TLA+ Basics Tutorials
 nav_order: 5
 ---
 

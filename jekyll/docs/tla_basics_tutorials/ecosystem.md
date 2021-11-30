@@ -2,7 +2,7 @@
 title: (Bonus) Ecosystem
 description: A glance at the TLA+ ecosystem
 layout: default
-parent: TLA+
+parent: TLA+ Basics Tutorials
 nav_order: 8
 ---
 

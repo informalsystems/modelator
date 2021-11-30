@@ -2,7 +2,7 @@
 title: TLA+ cheat sheet
 description: A TLA+ and model checker cheat sheet
 layout: default
-parent: TLA+
+parent: TLA+ Basics Tutorials
 nav_order: 1
 ---
 
