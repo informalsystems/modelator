@@ -6,11 +6,6 @@ on:
       - "main"
     paths:
       - "jekyll/**"
-  pull_request:
-    types:
-      - closed
-    paths:
-      - "jekyll/**"
   workflow_dispatch:
 
 jobs:
