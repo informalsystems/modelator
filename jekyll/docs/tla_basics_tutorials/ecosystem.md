@@ -1,5 +1,5 @@
 ---
-title: Ecosystem
+title: (Bonus) Ecosystem
 description: A glance at the TLA+ ecosystem
 layout: default
 parent: TLA+
@@ -41,3 +41,7 @@ Using them may require downloading and providing the path for the package.
 Pluscal is less expressive than TLA+ and uses a different syntax. There are Pascal and C-like flavours. You have to translate it to TLA+ using a transpiler before checking a model written in it. We recommend trying it only after getting used to using regular TLA+.
 6. [Specifying Systems](https://lamport.azurewebsites.net/tla/book-02-08-08.pdf) - a book on TLA+ written by Leslie Lamport, original creator of TLA+\
 It contains useful information on niche features of TLC and TLA+.
+
+## Footnote
+
+Please note there are many more tools and works in the ecosystem. This page contains a basic subset.
