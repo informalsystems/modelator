@@ -30,7 +30,10 @@ bundle exec jekyll serve
 
 If you are using M1 Apple silicon then you might have issues running jekyll locally.
 
-TODO: write some help tips here
+You _might_ benefit from these resources
+
+- [github issue discussing jekyll on M1](https://github.com/jekyll/jekyll/issues/8576)
+- [a guide to installing Ruby (on M1)](https://github.com/monfresh/laptop)
 
 ## Maintainance
 
