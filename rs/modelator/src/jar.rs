@@ -93,7 +93,10 @@ pub(crate) fn download_jars_if_necessary<P: AsRef<Path>>(modelator_dir: P) -> Re
 
     if !missing_jars.is_empty() {
         // download missing jars
-        println!("[modelator] Downloading model-checkers... ");
+        println!(
+            "[modelator] Downloading model-checkers at \"{}\"...",
+            modelator_dir.as_ref().to_string_lossy()
+        );
         for jar in missing_jars {
             jar.download(&modelator_dir)?;
         }
