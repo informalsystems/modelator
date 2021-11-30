@@ -1,0 +1,19 @@
+
+#mbtlogo {
+    width: auto;
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
+#mbtlogo > path {
+    fill: $purple-000;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Mukta+Mahee&display=swap');
+#minititle {
+    margin-left: auto;
+    font-family: 'Mukta Mahee', sans-serif;
+    vertical-align: middle;
+    font-size: xx-large;
+    color: $grey-dk-200;
+}

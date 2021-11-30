@@ -1,0 +1,8 @@
+{% if site.short_title %}
+  <div id="minititle">{{ site.short_title }}</div>
+{% if site.logo_svg and site.short_title %}
+  {% include {{ site.logo_svg }} %}
+{% endif %}
+{% else %}
+  {{ site.title }}
+{% endif %}
