@@ -67,8 +67,8 @@ impl Jar {
         Ok(())
     }
 
-    fn all() -> Vec<Self> {
-        vec![Self::Tla, Self::CommunityModules, Self::Apalache]
+    const fn all() -> [Self; 3] {
+        [Self::Tla, Self::CommunityModules, Self::Apalache]
     }
 }
 
