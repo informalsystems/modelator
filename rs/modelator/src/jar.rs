@@ -10,9 +10,18 @@ const MIN_JAVA_VERSION: usize = 8;
 
 pub(crate) const TLA_JAR: &str = "tla2tools-v1.8.0.jar";
 pub(crate) const COMMUNITY_MODULES_JAR: &str = "CommunityModules-202103092123.jar";
-pub(crate) const APALACHE_JAR: &str = "apalache-pkg-0.15.13-full.jar";
+pub(crate) const APALACHE_JAR: &str = "apalache-pkg-0.17.5-full.jar";
+
+/* To update to new checksum, execute
+cd jars/
+LC_COLLATE=C sort <<EOF | xargs cat | sha256sum
+tla2tools-v1.8.0.jar
+CommunityModules-202103092123.jar
+apalache-pkg-0.17.5-full.jar
+EOF
+*/
 pub(crate) const JARS_CHECKSUM: &str =
-    "d99b5645fbf6986bfbe50895f2b02d9268f3595a171f2bfffc989979d8f2c8bf";
+    "fa5c17bfe6adf631e2d0250de5a8f905e9e41a0ead837608f8c35d131077a9c2";
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub(crate) enum Jar {
@@ -45,8 +54,9 @@ impl Jar {
     }
 
     fn link(&self) -> String {
+        // TODO: change to `main` branch after merge
         format!(
-            "https://github.com/informalsystems/modelator/raw/main/jars/{}",
+            "https://github.com/informalsystems/modelator/raw/rnbguy/rust/support-latest-apalache/jars/{}",
             self.file_name()
         )
     }
