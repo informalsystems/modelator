@@ -43,16 +43,6 @@ impl Jar {
         }
     }
 
-    fn from<F: AsRef<str>>(file_name: F) -> Self {
-        let file_name = file_name.as_ref();
-        match file_name {
-            TLA_JAR => Self::Tla,
-            COMMUNITY_MODULES_JAR => Self::CommunityModules,
-            APALACHE_JAR => Self::Apalache,
-            _ => panic!("[modelator] unexpected jar file: {}", file_name),
-        }
-    }
-
     fn link(&self) -> String {
         // TODO: change to `main` branch after merge
         format!(
@@ -79,6 +69,20 @@ impl Jar {
 
     fn all() -> Vec<Self> {
         vec![Self::Tla, Self::CommunityModules, Self::Apalache]
+    }
+}
+
+// We can't use TryFrom<AsRef<str>> because of the following
+// https://github.com/rust-lang/rust/issues/50133
+impl<'a> TryFrom<&'a str> for Jar {
+    type Error = &'a str;
+    fn try_from(file_name: &'a str) -> Result<Self, Self::Error> {
+        match file_name {
+            TLA_JAR => Ok(Self::Tla),
+            COMMUNITY_MODULES_JAR => Ok(Self::CommunityModules),
+            APALACHE_JAR => Ok(Self::Apalache),
+            _ => Err(file_name),
+        }
     }
 }
 
@@ -122,7 +126,11 @@ pub(crate) fn download_jars_if_necessary<P: AsRef<Path>>(modelator_dir: P) -> Re
 fn existing_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<HashSet<Jar>, Error> {
     let existing_jars: HashSet<_> = list_jars(modelator_dir)?
         .into_iter()
-        .map(|file_name| Jar::from(&file_name))
+        .map(|file_name| {
+            file_name.as_str().try_into().unwrap_or_else(|file_name| {
+                panic!("[modelator] unexpected jar file: {}", file_name);
+            })
+        })
         .collect();
     assert!(
         existing_jars.len() <= 3,
