@@ -17,7 +17,6 @@ authors = [
 
 [dependencies]
 clap = "=3.0.0-beta.5"
-directories = "4.0.1"
 hex = "0.4.3"
 lazy_static = "1.4.0"
 nom = "7.1.0"

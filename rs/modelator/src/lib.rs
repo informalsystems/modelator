@@ -126,10 +126,7 @@ impl Default for ModelatorRuntime {
     fn default() -> Self {
         Self {
             model_checker_runtime: ModelCheckerRuntime::default(),
-            dir: directories::ProjectDirs::from("systems", "Informal", "modelator")
-                .expect("there is no valid home directory")
-                .data_dir()
-                .into(), // env::home_dir().unwrap().join(".modelator"), //Path::new(".modelator").to_path_buf(),
+            dir: env::current_dir().unwrap().join(".modelator"), //Path::new(".modelator").to_path_buf(),
         }
     }
 }
