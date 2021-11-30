@@ -26,6 +26,15 @@ bundle exec jekyll serve
 # when you are finished, push the commits to new_page branch
 ```
 
+### Troubleshooting
+
+If you are using M1 Apple silicon then you might have issues running jekyll locally.
+
+You _might_ benefit from these resources
+
+- [github issue discussing jekyll on M1](https://github.com/jekyll/jekyll/issues/8576)
+- [a guide to installing Ruby (on M1)](https://github.com/monfresh/laptop)
+
 ## Maintainance
 
 As discussed above, to add new changes or pages to the website, we need to update `main` branch. As per our [contribution guide](/CONTRIBUTING.md), please follow the rules of opening a PR to `main`.

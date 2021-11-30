@@ -1,9 +1,11 @@
 ---
 title: Apalache vs TLC
+description: Comparing model checkers
 layout: default
-parent: Tla+
-grand_parent: Model Based Testing
+parent: TLA+ Basics Tutorials
+nav_order: 5
 ---
+
 # Apalache vs TLC
 
 In 'Hello World' we used TLC to model check a simple model. Both model checkers have advantages and disadvantages.
@@ -14,7 +16,7 @@ Apalache is a _bounded symbolic model checker_. Apalache will [transform](https:
 
 The advantage of Apalache's approach is that it can deal with some infinite state spaces. For example it can solve the constraint problem (x is integer) /\ (0 <= x) /\ (x < 2^32) very easily - providing concrete values of x that satisfy the constraints. Can you see how this may be useful for modelling financial transaction software?
 
-The disadvantage of Apalache's approach is that it can not easily check executions which take many steps from Init. This is because the formula grows for each step in the execution, becoming progressively more difficult to solve with an SMT solver. In practice up to 12 steps may be achievable in a reasonable time.
+The disadvantage of Apalache's approach is that it can not easily check executions which take many steps from Init. This is because the formula grows for each step in the execution, becoming progressively more difficult to solve with an SMT solver. In practice 6-12 steps may be achievable in a reasonable time, depending on the model.
 
 ## TLC
 

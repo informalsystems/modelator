@@ -1,9 +1,11 @@
 ---
-title: Tutorial
+title: Overview
+description: How to make them most of the tutorials
 layout: default
-parent: Tla+
-grand_parent: Model Based Testing
+parent: TLA+ Basics Tutorials
+nav_order: 2
 ---
+
 # TLA+ Basics Tutorial
 
 This is a straightforward introduction to TLA+. By the end you should be able to write your own models of distributed systems and concurrent algorithms. You should also be able to check properties of the models, and generate execution traces which can be used in automatic testing pipelines. The target audience is software engineers who are fluent in a mainstream programming language and understand computer science.
@@ -38,11 +40,13 @@ apalacheurl=https://github.com/informalsystems/apalache/releases/download/v0.17.
 curl -LO $apalacheurl;
 ```
 
-You will need to unzip Apalache and move `mod-distribution/target/apalache-pkg-0.17.5-full.jar` to your working directory.
+You will need to unzip Apalache and move the jar from `mod-distribution/target/apalache-pkg-0.17.5-full.jar` to your working directory.
 
-We recommend using the Visual Studio Code [TLA+ extension](https://marketplace.visualstudio.com/items?itemName=alygin.vscode-tlaplus) to work on your models. It provides syntax highlighting, parsing and model checking through TLC.
+We recommend using the Visual Studio Code [TLA+ extension](https://marketplace.visualstudio.com/items?itemName=alygin.vscode-tlaplus) to work on your models. It provides syntax highlighting, parsing and model checking through TLC. Model checking, parsing and other features are accessed through the VSCode context menu (cmd + shift + p on OSX).
 
 There are more resources that we won't in this set of tutorials but that might be useful to know about. Please see [The TLA+ ecosystem](./ecosystem).
+
+**The .tla and other files referenced in these tutorials are included [here](https://github.com/informalsystems/modelator/tree/main/jekyll/docs/tla_basics_tutorials/models).**
 
 ## Let's get started
 

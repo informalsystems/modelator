@@ -1,12 +1,16 @@
 ---
 title: Hello World
+description: A minimal TLA+ spec
 layout: default
-parent: Tla+
-grand_parent: Model Based Testing
+parent: TLA+ Basics Tutorials
+nav_order: 3
 ---
+
 # 'Hello world' using TLC
 
-Let's model a system with two processes Alice and Bob. They are connected by a network that can lose and reorder messages. Alice will send three messages, 'a', 'b' and 'c' to Bob in an undetermined order. If Bob receives 'a' and then 'b' and then 'c' he will become happy.
+**The .tla and other referenced files are included [here](https://github.com/informalsystems/modelator/tree/main/jekyll/docs/tla_basics_tutorials/models).**
+
+Let's model a system with two processes Alice and Bob. They are connected by a network that can lose and reorder messages. Alice will send two messages "hello" and "world" to Bob in an undetermined order. If Bob receives "hello" and then "world" he will become happy.
 
 hello_world.tla contains the model and hello_world.cfg contains the configuration file needed to model check it using TLC.
 
@@ -34,11 +38,11 @@ it provides the Sequence data structure. It is a list.
 
 In TLA+ you define a state machine. There is an initial state, which is a choice of values for each variable declared. You also define the transitions allowed in the system.
 
-We model 4 pieces of state: Alice's memory of which messages she has sent, the messages in the network, Bob's mood and Bob's inbox.
+We model 4 pieces of state: Alice's outbox, the messages in the network, Bob's mood and Bob's inbox.
 
 ```tla
 VARIABLES
-    sent_by_alice,
+    alices_outbox,
     network,
     bobs_mood,
     bobs_inbox
@@ -48,21 +52,21 @@ The Init _operator_ defines the initial values of the state variables of the mod
 
 ```tla
 Init ==
-    /\ sent_by_alice = {} \* Alice's memory of what she sent is the empty set
+    /\ alices_outbox = {} \* Alice has sent nothing (empty set)
     /\ network = {} \* AND so is the network
     /\ bobs_mood = "neutral" \* AND Bob's mood is neutral
     /\ bobs_inbox = <<>> \* AND Bob's inbox is an empty Sequence (list)
 ```
 
-**In TLA you describe which transitions are valid from the universe of all possible transitions using a boolean function**. This is probably the most confusing thing to get your around when learning TLA+.
+State machine transitions are pairs: (CurrentState, NextState). In TLA+ you describe the transitions allowed in the system by writing a boolean function over pairs (CurrentState, NextState). If a pair makes your boolean function evaluate true then the model checker will check that transition. In fact, the model checker will check **all** transitions that match your boolean function. This is what allows the model checker to exhaustively explore system behavior.
 
-A transition is a pair: (CurrentState, NextState). We write a boolean function/operator over the set of all values that (CurrentState, NextState) can take. Given a state CurrentState, the model checker will look for all NextStates's such that (CurrentState, NextState) evaluates to true. The boolean function is called Next.
+_Practically_ this means that you define transitions by writing _actions_: operators that take into account the CurrentState and the NextState. Because the variable names are the same in both states, you denote the NextState variables by appending the **'** character to identifiers. In TLA+ you write actions OR'ed together in the Next operator.
+
 
 ```tla
 Next ==
-    \/ AliceSend("a")
-    \/ AliceSend("b")
-    \/ AliceSend("c")
+    \/ AliceSend("hello")
+    \/ AliceSend("world")
     \/ NetworkLoss
     \/ NetworkDeliver
     \/ BobCheckInbox
@@ -70,47 +74,43 @@ Next ==
 
 ```tla
 AliceSend(m) == 
-    /\ m \notin sent_by_alice
-    /\ sent_by_alice' = sent_by_alice \union {m}
+    /\ m \notin alices_outbox
+    /\ alices_outbox' = alices_outbox \union {m}
     /\ network' = network \union {m}
     /\ UNCHANGED <<bobs_mood, bobs_inbox>>
 
 NetworkLoss == 
     /\ \E e \in network: network' = network \ {e}
-    /\ UNCHANGED <<bobs_mood, bobs_inbox, sent_by_alice>>
+    /\ UNCHANGED <<bobs_mood, bobs_inbox, alices_outbox>>
 
 NetworkDeliver == 
     /\ \E e \in network:
         /\ bobs_inbox' = bobs_inbox \o <<e>> 
         /\ network' = network \ {e}
-    /\ UNCHANGED <<bobs_mood, sent_by_alice>>
+    /\ UNCHANGED <<bobs_mood, alices_outbox>>
 
 BobCheckInbox == 
-    /\ bobs_mood' = IF bobs_inbox = <<"a", "b", "c">> THEN "happy" ELSE "neutral"
-    /\ UNCHANGED <<network, bobs_inbox, sent_by_alice>>
+    /\ bobs_mood' = IF bobs_inbox = <<"hello", "world">> THEN "happy" ELSE "neutral"
+    /\ UNCHANGED <<network, bobs_inbox, alices_outbox>>
 ```
 
-We can see that Next is the OR'ing (\\/ = logical OR in TLA.) of a number of operators, which are shown above. Operators can be parameterized, as in the case of AliceSend(m). The Next operator defines a boolean function over all (CurrentState, NextState) pairs. A subset of those pairs will make the function evaluate to true. The model checker will check all of the NextState's from all of the valid pairs.
+Pretend we are the model checker and we are currently 'looking' at the CurrentState _C_. We compute all possible NextState's _N_, but we only consider  a candidate _N_ to be valid if Next is true when evaluated over the pair (_C_, _N_). Since Next is the OR'ing of actions, the pair will make Next true if it makes at least one of the actions true.
 
-Pretend we are the model checker and we are currently 'looking' at the state _C_. We will consider all possible states as the NextState, but we will only consider the state _N_, for example, to be valid, if Next is true when evaluated over the pair (_C_,_N_).
-
-We share the same variable names between _C_ and _N_ so we add a dash (') to the end of variable names when we mean the variable in the NextState. It's called priming.
-
-We can see that the operators that Next is made of contain these primed variables. Inspect AliceSend(m) for example.
+Inspect the AliceSend(m) action for example.
 
 ```tla
 AliceSend(m) == 
-    /\ m \notin sent_by_alice
-    /\ sent_by_alice' = sent_by_alice \union {m}
+    /\ m \notin alices_outbox
+    /\ alices_outbox' = alices_outbox \union {m}
     /\ network' = network \union {m}
     /\ UNCHANGED <<bobs_mood, bobs_inbox>>
 ```
 
-In English the operator says this
+In English the action says this
 
 "I am true when: \
-my argument _m_ is not in the set _sent_by_alice_ in the CurrentState \
-AND _sent_by_alice_ in the NextState is the same as it is in the CurrentState, but with _m_ included\
+my argument _m_ is not in the set _alices_outbox_ in the CurrentState \
+AND _alices_outbox_ in the NextState is the same as it is in the CurrentState, but with _m_ included\
 AND _network_ in the NextState is the same as it is in the CurrentState, but with _m_ included\
 AND _bobs_mood_ doesn't change between the CurrentState and NextState\
 AND _bobs_inbox_ doesn't change between the CurrentState and NextState
@@ -123,10 +123,10 @@ Consider NetworkLoss
 ```tla
 NetworkLoss == 
     /\ \E e \in network: network' = network \ {e}
-    /\ UNCHANGED <<bobs_mood, bobs_inbox, sent_by_alice>>
+    /\ UNCHANGED <<bobs_mood, bobs_inbox, alices_outbox>>
 ```
 
-This operator is more advanced: it contains the '\\E' (there exists) operator. It says
+This action is more advanced: it contains the '\\E' (there exists) syntax. It says
 
 "I am true when:\
 There is an element e in the _network_ of the CurrentState, and that element is not in the _network_ of NextState\
@@ -137,8 +137,8 @@ AND ...
 Let's consider how a model checker could select a transition, given a current state where
 
 ```
-sent_by_alice = {"a"}
-network = {"a"}
+alices_outbox = {"hello"}
+network = {"hello"}
 \* ignore bobs variables for now
 ```
 
@@ -146,34 +146,31 @@ knowing that Next is
 
 ```tla
 Next ==
-    \/ AliceSend("a")
-    \/ AliceSend("b")
-    \/ AliceSend("c")
+    \/ AliceSend("hello")
+    \/ AliceSend("world")
     \/ NetworkLoss
     \* (ignore other operators for now)
 ```
 
-In a pair (CurrentState, NextState) where AliceSend("b") was true NextState must look like
+In a pair (CurrentState, NextState) where AliceSend("world") was true NextState must look like
 
 ```
-sent_by_alice = {"a", "b"}
-network = {"a", "b"}
+alices_outbox = {"hello", "world"}
+network = {"hello", "world"}
 \* ignore bobs variables for now
 ```
 
 and in one where NetworkLoss was true NextState would look like 
 
 ```
-sent_by_alice = {"a", "b"}
+alices_outbox = {"hello"}
 network = {}
 \* ignore bobs variables for now
 ```
 
-Next evaluates to true over both of these pairs, and the model checker will check _both_ possibilities for us.
+Next evaluates to true for both of these pairs, and the model checker will check _both_ possibilities for us.
 
-Understanding Next as a boolean function over pairs of states is key to understanding TLA+. The Init operator is a special case, it's a boolean function over one state only. (It's not a special case if you consider it to be a boolean function over a pair (SentinelState, InitialState) for a hidden SentinelState).
-
-A common misinterpretation is to view TLA+ code as describing an imperative execution, where one statement precedes the next. In actuality you define boolean functions and other simple pure functions, there is no concept of execution or execution order.
+Understanding Next as a boolean function over pairs of states is key. The Init operator is a special case, it's a boolean function over one state only. (It's not a special case if you consider it to be a boolean function over a pair (IgnoredState, InitialState) for a hidden IgnoredState).
 
 We have looked at AliceSend and NetworkLoss. Let's look at NetworkDeliver and BobCheckInbox.
 
@@ -182,15 +179,15 @@ NetworkDeliver ==
     /\ \E e \in network:
         /\ bobs_inbox' = bobs_inbox \o <<e>> 
         /\ network' = network \ {e}
-    /\ UNCHANGED <<bobs_mood, sent_by_alice>>
+    /\ UNCHANGED <<bobs_mood, alices_outbox>>
 ```
 
 NetworkDeliver matches transitions where an element e is removed from the network set and added (with the \\o operator) to bobs_inbox list.
 
 ```tla
 BobCheckInbox == 
-    /\ bobs_mood' = IF bobs_inbox = <<"a", "b", "c">> THEN "happy" ELSE "neutral"
-    /\ UNCHANGED <<network, bobs_inbox, sent_by_alice>>
+    /\ bobs_mood' = IF bobs_inbox = <<"hello", "world">> THEN "happy" ELSE "neutral"
+    /\ UNCHANGED <<network, bobs_inbox, alices_outbox>>
 ```
 
 As a challenge try to write BobCheckInbox (above) using only the logical operators /\ and \\/.
@@ -200,10 +197,10 @@ Answer:
 ```tla
 BobCheckInbox == 
     /\ \/ /\ bobs_mood' = "happy"
-          /\ bobs_inbox = <<"a", "b", "c">>
+          /\ bobs_inbox = <<"hello", "world">>
        \/ /\ bobs_mood' = "neutral"
-          /\ bobs_inbox # <<"a", "b", "c">>
-    /\ UNCHANGED <<network, bobs_inbox, sent_by_alice>> 
+          /\ bobs_inbox # <<"hello", "world">>
+    /\ UNCHANGED <<network, bobs_inbox, alices_outbox>> 
 ```
 
 ## Checking Invariants
@@ -219,12 +216,12 @@ If we want to make sure that no execution exists whose final state satisfies P w
 Suppose we want to ensure that every (\\A means 'for all' in TLA+) message in the network was at some point sent by Alice.
 
 ```tla
-NothingUnexpectedInNetwork == \A e \in network: e \in sent_by_alice
+NothingUnexpectedInNetwork == \A e \in network: e \in alices_outbox
 ```
 
 NothingUnexpectedInNetwork is a boolean function over a single state. Using the model checker we can check it as an invariant.
 
-We use the following configuration for TLC
+We use the following configuration for TLC (hello_world.cfg)
 
 ```tla
 INIT Init
@@ -266,55 +263,60 @@ INVARIANTS
 NotBobIsHappy
 ```
 
-Using the above we ask TLC to check if 'always BobIsNotHappy'. If Bob ever becomes happy then it will be false, so TLC will give us a counterexample, or trace, in which Bob becomes happy.
+We ask TLC to check if 'always NotBobIsHappy'. If Bob ever becomes happy then it will be false, so TLC will give us a counterexample, or trace, where Bob becomes happy.
 
 TLC should spit out a trace
 
 ```
 Error: Invariant NotBobIsHappy is violated.
 Error: The behavior up to this point is:
-State 1: <Initial predicate>
+State 1: <..>
 /\ network = {}
-/\ sent_by_alice = {}
+/\ alices_outbox = {}
 /\ bobs_inbox = <<>>
 /\ bobs_mood = "neutral"
+
 State 2: <..>
-/\ network = {"a"}
-/\ sent_by_alice = {"a"}
+/\ network = {"hello"}
+/\ alices_outbox = {"hello"}
 /\ bobs_inbox = <<>>
 /\ bobs_mood = "neutral"
+
 State 3: <..>
-/\ network = {"a", "b"}
-/\ sent_by_alice = {"a", "b"}
+/\ network = {"hello", "world"}
+/\ alices_outbox = {"hello", "world"}
 /\ bobs_inbox = <<>>
 /\ bobs_mood = "neutral"
+
 State 4: <..>
-/\ network = {"a", "b", "c"}
-/\ sent_by_alice = {"a", "b", "c"}
-/\ bobs_inbox = <<>>
+/\ network = {"world"}
+/\ alices_outbox = {"hello", "world"}
+/\ bobs_inbox = <<"hello">>
 /\ bobs_mood = "neutral"
+
 State 5: <..>
-/\ network = {"b", "c"}
-/\ sent_by_alice = {"a", "b", "c"}
-/\ bobs_inbox = <<"a">>
+/\ network = {}
+/\ alices_outbox = {"hello", "world"}
+/\ bobs_inbox = <<"hello", "world">>
 /\ bobs_mood = "neutral"
+
 State 6: <..>
-/\ network = {"c"}
-/\ sent_by_alice = {"a", "b", "c"}
-/\ bobs_inbox = <<"a", "b">>
-/\ bobs_mood = "neutral"
-State 7: <..>
 /\ network = {}
-/\ sent_by_alice = {"a", "b", "c"}
-/\ bobs_inbox = <<"a", "b", "c">>
-/\ bobs_mood = "neutral"
-State 8: <..>
-/\ network = {}
-/\ sent_by_alice = {"a", "b", "c"}
-/\ bobs_inbox = <<"a", "b", "c">>
+/\ alices_outbox = {"hello", "world"}
+/\ bobs_inbox = <<"hello", "world">>
 /\ bobs_mood = "happy"
 ```
 
 Notice that bob is happy in state 8.
+
+## Wrapping up
+
+### This tutorial
+
+1. How to read and write simple TLA+ 
+2. How to structure models with the (boilerplate, variables, Init, Next, .cfg) pattern
+3. How to think about transitions in terms of (CurrentState, NextState) pairs
+4. How to use _actions_ to specify transitions in the Next operator
+5. How to generate traces matching behaviors using TLC
 
 That's it, congratulations :) Try the next tutorial.
