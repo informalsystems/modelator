@@ -1,3 +1,11 @@
+---
+title: Tutorials
+description: How to make them most of the tutorials
+layout: default
+parent: TLA+
+nav_order: 2
+---
+
 # TLA+ Basics Tutorial
 
 This is a straightforward introduction to TLA+. By the end you should be able to write your own models of distributed systems and concurrent algorithms. You should also be able to check properties of the models, and generate execution traces which can be used in automatic testing pipelines. The target audience is software engineers who are fluent in a mainstream programming language and understand computer science.

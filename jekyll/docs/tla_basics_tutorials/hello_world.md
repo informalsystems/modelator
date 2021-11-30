@@ -1,3 +1,11 @@
+---
+title: Hello World
+description: A minimal TLA+ spec
+layout: default
+parent: TLA+
+nav_order: 3
+---
+
 # 'Hello world' using TLC
 
 Let's model a system with two processes Alice and Bob. They are connected by a network that can lose and reorder messages. Alice will send two messages "hello" and "world" to Bob in an undetermined order. If Bob receives "hello" and then "world" he will become happy.

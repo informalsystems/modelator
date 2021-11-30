@@ -1,3 +1,11 @@
+---
+title: Ecosystem
+description: A glance at the TLA+ ecosystem
+layout: default
+parent: TLA+
+nav_order: 8
+---
+
 # The TLA+ ecosystem
 
 There are a number of resources in the ecosystem. The most important are

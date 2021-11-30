@@ -1,3 +1,11 @@
+---
+title: Typechecking
+description: How to type check your models
+layout: default
+parent: TLA+
+nav_order: 4
+---
+
 # Typechecking
 
 As a model grows it becomes difficult to ensure that the TLA+ code in the models is doing what you think it is. There are techniques to help ensure there are no bugs in your model. The best way to make sure your model is high quality is to use types and the Apalache type checker.

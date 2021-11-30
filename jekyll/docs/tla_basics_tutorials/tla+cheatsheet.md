@@ -1,3 +1,11 @@
+---
+title: TLA+ cheat sheet
+description: A TLA+ and model checker cheat sheet
+layout: default
+parent: TLA+
+nav_order: 1
+---
+
 # TLA+ Cheatsheet
 
 ## TLA+ Quick Start - contains enough to model almost anything

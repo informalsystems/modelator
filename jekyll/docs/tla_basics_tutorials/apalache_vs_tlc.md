@@ -1,3 +1,11 @@
+---
+title: Apalache vs TLC
+description: Comparing model checkers
+layout: default
+parent: TLA+
+nav_order: 5
+---
+
 # Apalache vs TLC
 
 In 'Hello World' we used TLC to model check a simple model. Both model checkers have advantages and disadvantages.

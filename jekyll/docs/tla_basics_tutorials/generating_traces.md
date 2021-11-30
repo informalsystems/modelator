@@ -1,3 +1,11 @@
+---
+title: Generating Traces
+description: How to generate execution traces from models
+layout: default
+parent: TLA+
+nav_order: 7
+---
+
 # Generating traces for automated testing using Apalache
 
 Apalache allows you to generate more than trace that satisfies a given behavior specified by a [state invariant](https://apalache.informal.systems/docs/tutorials/symbmc.html?highlight=invariant#invariants) or [trace invariant](https://apalache.informal.systems/docs/apalache/invariants.html?highlight=trace#trace-invariants).
