@@ -83,8 +83,18 @@ impl Tla {
             test_names
         );
 
+        // retrieve invariant names from tla tests file
+        let inv_names =
+            Self::extract_invariant_names(tla_file_suite.tla_file.file_contents_backing())?;
+
+        tracing::debug!(
+            "invariant names extracted from {}:\n{:?}",
+            tla_file_suite.tla_file,
+            inv_names
+        );
+
         // check if no test was found
-        if test_names.is_empty() {
+        if test_names.is_empty() && inv_names.is_empty() {
             return Err(Error::NoTestFound(tla_tests_module_name.to_string()));
         }
 
@@ -93,20 +103,26 @@ impl Tla {
             .into_iter()
             .map(|test_name| {
                 Ok(TlaTest {
-                    name: test_name.clone(),
-                    file_suite: Self::generate_test(&test_name, tla_file_suite)?,
+                    file_suite: Self::generate_test(&test_name, tla_file_suite, "~")?,
+                    name: test_name,
                 })
             })
+            .chain(inv_names.into_iter().map(|inv_name| {
+                Ok(TlaTest {
+                    file_suite: Self::generate_test(&inv_name, tla_file_suite, " ")?,
+                    name: inv_name.clone(),
+                })
+            }))
             .collect()
     }
 
-    /// Generate test names from a tla file
-    pub fn extract_test_names(content: &str) -> Result<Vec<String>, Error> {
+    /// Generate tagged names from a tla file
+    pub fn extract_tagged_names(tag: &str, content: &str) -> Result<Vec<String>, Error> {
         let names = extract_operator_names(content)?;
         Ok(names
             .iter()
             .filter_map(|name| {
-                let is_test = name.starts_with("Test") || name.ends_with("Test");
+                let is_test = name.starts_with(tag) || name.ends_with(tag);
                 let is_commented_out = name.starts_with("\\*") || name.starts_with("(*");
                 if is_test && !is_commented_out {
                     Some(name.to_string())
@@ -117,14 +133,25 @@ impl Tla {
             .collect())
     }
 
+    /// Generate test names from a tla file
+    pub fn extract_test_names(content: &str) -> Result<Vec<String>, Error> {
+        Self::extract_tagged_names("Test", content)
+    }
+
+    /// Generate invariant names from a tla file
+    pub fn extract_invariant_names(content: &str) -> Result<Vec<String>, Error> {
+        Self::extract_tagged_names("Inv", content)
+    }
+
     /// Generate test tla file and config for a testname
     pub fn generate_test(
         test_name: &str,
         tla_file_suite: &TlaFileSuite,
+        operator: &str,
     ) -> Result<TlaFileSuite, Error> {
         let tla_tests_file_name = tla_file_suite.tla_file.module_name();
         let test_module_name = format!("{}_{}", tla_tests_file_name, test_name);
-        let negated_test_name = format!("{}Neg", test_name);
+        let negated_test_name = format!("{}Check", test_name);
         let view_operator =
             extract_view_operator(test_name, tla_file_suite.tla_file.file_contents_backing())?;
 
@@ -133,6 +160,7 @@ impl Tla {
             &test_module_name,
             tla_tests_file_name,
             &negated_test_name,
+            operator,
             test_name,
             &view_operator,
         );
@@ -213,6 +241,7 @@ fn generate_test_module(
     module_name: &str,
     file_to_extend: &str,
     negated_test_name: &str,
+    operator: &str,
     test_name: &str,
     // String representing operators which will define a View projection which can be used by Apalache
     // Format `<operator name> == ...`
@@ -222,13 +251,14 @@ fn generate_test_module(
         r#"
 ---------- MODULE {} ----------
 EXTENDS {}
-{} == ~{}
+{} == {}{}
 {}
 ===============================
 "#,
         module_name,
         file_to_extend,
         negated_test_name,
+        operator,
         test_name,
         match view_operator {
             // Write an additional operator that corresponds the view to the specific negated test operator

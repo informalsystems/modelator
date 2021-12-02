@@ -120,83 +120,98 @@ impl TraceCli {
         .filter(|test_name| allow_test_name(test_name, &self.test))
         .collect();
 
-        if test_names.is_empty() {
+        let inv_names: Vec<String> = crate::model::language::Tla::extract_invariant_names(
+            tla_file_suite.tla_file.file_contents_backing(),
+        )?
+        .into_iter()
+        .filter(|inv_name| allow_test_name(inv_name, &self.test))
+        .collect();
+
+        if test_names.is_empty() && inv_names.is_empty() {
             return Err(Error::NoTestFound(format!(
-                "No test found in {}. [tla module name: {}, test pattern: {}]",
+                "No test or invariant found in {}. [tla module name: {}, test pattern: {}]",
                 tla_file_suite.tla_file.module_name(),
                 tla_file_suite.tla_file.module_name(),
                 &self.test
             )));
         };
 
-        let test_results = test_names
-            .iter()
+        let result = test_names
+            .into_iter()
             .map(|test_name| {
-                // Create the intermediary file suite to run a single test
-                let input_artifacts =
-                    crate::model::language::Tla::generate_test(test_name, &tla_file_suite)?;
-
-                // Model check the test and collect traces
-                let mut traces = match self.model_checker {
-                    ModelChecker::Apalache => {
-                        crate::model::checker::Apalache::test(&input_artifacts, &runtime)?
-                    }
-                    ModelChecker::Tlc => {
-                        crate::model::checker::Tlc::test(&input_artifacts, &runtime)?
-                    }
-                }
-                .0; // Ignores returned stdout
-
-                traces.iter_mut().for_each(|trace| {
-                    trace.extends_module_name =
-                        Some(input_artifacts.tla_file.module_name().to_string());
-                });
-
-                // Write each trace and get a result containing json information
-                traces
-                    .into_iter()
-                    .enumerate()
-                    .map(|(i, trace)| {
-                        let file_name_to_write =
-                            format!("{}{}", input_artifacts.tla_file.module_name(), i);
-                        match self.format {
-                            OutputFormat::Json => {
-                                let json_trace =
-                                    crate::model::language::Tla::tla_trace_to_json_trace(trace)?;
-                                tracing::debug!(
-                                    "Tla::tla_trace_to_json_trace output {}",
-                                    json_trace
-                                );
-                                if self.write {
-                                    write_json_trace_to_file(&file_name_to_write, &json_trace)
-                                } else {
-                                    Ok(json!({
-                                        "json_trace_content": json_trace.states
-                                    }))
-                                }
-                            }
-                            OutputFormat::Tla => {
-                                if self.write {
-                                    write_tla_trace_to_file(&file_name_to_write, &trace)
-                                } else {
-                                    Ok(json!({
-                                        "tla_trace_content": trace.states
-                                    }))
-                                }
-                            }
+                Ok((
+                    crate::model::language::Tla::generate_test(&test_name, &tla_file_suite, "~")?,
+                    test_name,
+                ))
+            })
+            .chain(inv_names.into_iter().map(|inv_name| {
+                Ok((
+                    crate::model::language::Tla::generate_test(&inv_name, &tla_file_suite, " ")?,
+                    inv_name,
+                ))
+            }))
+            .map(|check| {
+                check.and_then(|(input_artifacts, test_name)| {
+                    // Model check the test and collect traces
+                    let mut traces = match self.model_checker {
+                        ModelChecker::Apalache => {
+                            crate::model::checker::Apalache::test(&input_artifacts, &runtime)?
                         }
-                    })
-                    .collect::<Result<Vec<_>, Error>>()
+                        ModelChecker::Tlc => {
+                            crate::model::checker::Tlc::test(&input_artifacts, &runtime)?
+                        }
+                    }
+                    .0; // Ignores returned stdout
+
+                    traces.iter_mut().for_each(|trace| {
+                        trace.extends_module_name =
+                            Some(input_artifacts.tla_file.module_name().to_string());
+                    });
+
+                    // Write each trace and get a result containing json information
+                    let result = traces
+                        .into_iter()
+                        .enumerate()
+                        .map(|(i, trace)| {
+                            let file_name_to_write =
+                                format!("{}{}", input_artifacts.tla_file.module_name(), i);
+                            match self.format {
+                                OutputFormat::Json => {
+                                    let json_trace =
+                                        crate::model::language::Tla::tla_trace_to_json_trace(
+                                            trace,
+                                        )?;
+                                    tracing::debug!(
+                                        "Tla::tla_trace_to_json_trace output {}",
+                                        json_trace
+                                    );
+                                    if self.write {
+                                        write_json_trace_to_file(&file_name_to_write, &json_trace)
+                                    } else {
+                                        Ok(json!({
+                                            "json_trace_content": json_trace.states
+                                        }))
+                                    }
+                                }
+                                OutputFormat::Tla => {
+                                    if self.write {
+                                        write_tla_trace_to_file(&file_name_to_write, &trace)
+                                    } else {
+                                        Ok(json!({
+                                            "tla_trace_content": trace.states
+                                        }))
+                                    }
+                                }
+                            }
+                        })
+                        .collect::<Result<Vec<_>, Error>>()?;
+
+                    Ok((test_name, result))
+                })
             })
             .collect::<Result<Vec<_>, Error>>()?;
 
-        let res = test_names
-            .iter()
-            .cloned()
-            .zip(test_results)
-            .collect::<BTreeMap<String, Vec<JsonValue>>>();
-
-        Ok(json!(res))
+        Ok(json!(result))
     }
 }
 
