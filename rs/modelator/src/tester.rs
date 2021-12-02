@@ -166,7 +166,7 @@ impl<State> SystemTester<State> {
     }
 }
 
-fn capture_test<'a, F, R>(mut test: F) -> TestResult
+fn capture_test<'a, F, R>(test: F) -> TestResult
 where
     F: FnMut() -> R + 'a,
     R: Serialize,
@@ -191,7 +191,7 @@ where
             *result = TestResult::Failure { message, location };
         })
     });
-    let result = panic::catch_unwind(AssertUnwindSafe(|| test()));
+    let result = panic::catch_unwind(AssertUnwindSafe(test));
     panic::set_hook(old_hook);
     match result {
         Ok(res) => TestResult::Success(serde_json::to_string_pretty(&res).unwrap()),

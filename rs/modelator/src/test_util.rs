@@ -6,23 +6,12 @@ const MAX_NUMBER: u64 = 6;
 /// if they do not exceed the `MAX_NUMBER`.
 /// Maintains also the sum and product of the variables.
 #[allow(missing_docs)]
-#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Deserialize)]
 pub struct NumberSystem {
     pub a: u64,
     pub b: u64,
     pub sum: u64,
     pub prod: u64,
-}
-
-impl Default for NumberSystem {
-    fn default() -> Self {
-        Self {
-            a: 0,
-            b: 0,
-            sum: 0,
-            prod: 0,
-        }
-    }
 }
 
 #[allow(missing_docs)]
