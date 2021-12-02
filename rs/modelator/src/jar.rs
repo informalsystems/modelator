@@ -44,9 +44,8 @@ impl Jar {
     }
 
     fn link(&self) -> String {
-        // TODO: change to `main` branch after merge
         format!(
-            "https://github.com/informalsystems/modelator/raw/rnbguy/rust/support-latest-apalache/jars/{}",
+            "https://github.com/informalsystems/modelator/raw/main/jars/{}",
             self.file_name()
         )
     }
