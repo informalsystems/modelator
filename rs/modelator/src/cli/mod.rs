@@ -209,7 +209,7 @@ impl TraceCli {
                     Ok((test_name, result))
                 })
             })
-            .collect::<Result<Vec<_>, Error>>()?;
+            .collect::<Result<BTreeMap<_, _>, Error>>()?;
 
         Ok(json!(result))
     }
