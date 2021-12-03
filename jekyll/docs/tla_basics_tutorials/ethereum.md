@@ -37,7 +37,7 @@ Submit an order allowing `spender` to transfer funds from `sender`'s address on 
 
 The orders are submitted to the pendingTransactions pool. While the pool is not empty the blockchain will select and execute orders from the pool in a non-deterministic order.
 
-You may notice that the descriptions of the _Submit*_ API calls not totally clear with respect to ordering and timing. We will see that this is exactly the problem with the API.
+You may notice that the descriptions of the _Submit*_ API calls are not totally clear with respect to ordering and timing. We will see that this is exactly the problem with the API.
 
 ## Defining State
 
@@ -281,7 +281,7 @@ If the transaction does not fail, funds are transferred: the sender balance decr
 
 ### ProcessTransferFrom
 
-_transfer_ transactions are made by addresses transferring their own funds. _transferFrom_ transactions transfer funds between any two addresses, so long as the caller of transferFrom has been give approval.
+_transfer_ transactions are made by addresses transferring their own funds. _transferFrom_ transactions transfer funds between any two addresses, so long as the caller of transferFrom has been given approval.
 
 ```tla
 ProcessTransferFrom(tx) == 
@@ -389,7 +389,7 @@ In order to use trace invariants we must define a STATE type alias in typdefs.tl
 ```
 It is straightforward to copy the declerations following the VARIABLES keyword that we already wrote.
 
-Given the alias, Foo allows us to access any state in the execution trace using sequence indexing (1-based). For example we can access the initial state with trace[1], the second state with trace[2] ect.
+Given the alias, Foo allows us to access any state in the execution trace using sequence indexing (1-based). For example we can access the initial state with trace[1], the second state with trace[2] etc.
 
 ### Trace Invariant: All Fund Transfers Have Sufficient Approval
 
