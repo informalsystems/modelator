@@ -199,7 +199,7 @@ BobCheckInbox ==
     /\ \/ /\ bobs_mood' = "happy"
           /\ bobs_inbox = <<"hello", "world">>
        \/ /\ bobs_mood' = "neutral"
-          /\ bobs_inbox # <<"hello", "world">>
+          /\ bobs_inbox /= <<"hello", "world">>
     /\ UNCHANGED <<network, bobs_inbox, alices_outbox>> 
 ```
 
@@ -307,7 +307,7 @@ State 6: <..>
 /\ bobs_mood = "happy"
 ```
 
-Notice that bob is happy in state 8.
+Notice that bob is happy in state 6.
 
 ## Wrapping up
 

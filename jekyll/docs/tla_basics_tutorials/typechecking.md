@@ -43,10 +43,10 @@ We have specified that
 
 1. _alices_outbox_ is a set of strings
 2. _network_ is a set of strings
-3. _bobs_moods_ is a string
+3. _bobs_mood_ is a string
 4. _bobs_inbox_ is a sequence of strings
 
-We should also specify the type of operators. For example we can annotate AliceSend(m)
+We can also specify the type of operators. For example we can annotate AliceSend(m)
 
 ```tla
 \* @type: (Str) => Bool;
@@ -58,6 +58,7 @@ AliceSend(m) ==
 ```
 
 The annotation says that AliceSend is an operator taking strings and returning booleans.
+(Note that very often the typechecker can infer annotations for operators automatically. It is able to do so for the operator AliceSend, too. You can try typechecking with the manual annotation left out.)
 
 Finally we can typecheck the model
 
