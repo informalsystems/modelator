@@ -1,8 +1,9 @@
 package core
 
 /*
-#cgo LDFLAGS: -L ../../third_party/mbt/target/release -lmbt -ldl -lm
-#include "../../third_party/mbt/src/lib.h"
+#cgo LDFLAGS: -L${SRCDIR}/../../third_party/mbt/target/release -lmbt -ldl -lm
+#cgo CFLAGS: -I${SRCDIR}/../../third_party/mbt/src
+#include <lib.h>
 */
 import "C"
 
