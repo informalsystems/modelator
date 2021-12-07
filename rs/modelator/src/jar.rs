@@ -126,14 +126,18 @@ pub(crate) fn download_jars_if_necessary<P: AsRef<Path>>(modelator_dir: P) -> Re
 }
 
 fn existing_jars<P: AsRef<Path>>(modelator_dir: P) -> Result<HashSet<Jar>, Error> {
-    let existing_jars: HashSet<_> = list_jars(modelator_dir)?
+    let existing_jars: HashSet<_> = list_jars(&modelator_dir)?
         .into_iter()
-        .map(|file_name| {
-            file_name.as_str().try_into().unwrap_or_else(|file_name| {
-                panic!("[modelator] unexpected jar file: {}", file_name);
-            })
+        .flat_map(|file_name| match file_name.as_str().try_into() {
+            Ok(jar) => Some(Ok(jar)),
+            Err(file_name) => {
+                match std::fs::remove_file(modelator_dir.as_ref().to_path_buf().join(file_name)) {
+                    Err(e) => Some(Err(Error::IO(format!("IO error: {:?}", e)))),
+                    _ => None,
+                }
+            }
         })
-        .collect();
+        .collect::<Result<_, Error>>()?;
     assert!(
         existing_jars.len() <= 3,
         "[modelator] at most 3 jar files should have been downloaded"
