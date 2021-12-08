@@ -120,6 +120,10 @@ fn test_cmd<P: AsRef<Path>>(
             ]
             .join(path_seperator_char),
         )
+        .arg(format!(
+            "-Djava.io.tmpdir={}",
+            temp_dir.path().to_string_lossy()
+        ))
         // set tla file
         .arg("tlc2.TLC")
         .arg(tla_file.as_ref())
