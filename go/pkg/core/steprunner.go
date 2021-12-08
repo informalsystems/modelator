@@ -1,7 +1,7 @@
 package core
 
 /*
-#cgo LDFLAGS: -L${SRCDIR}/../../third_party/mbt/target/release -lmbt -ldl -lm
+#cgo LDFLAGS: -L${SRCDIR}/../../third_party/mbt/target/x86_64-unknown-linux-musl/release -L${SRCDIR}/../../third_party/mbt/target/x86_64-pc-windows-gnu/release -lmbt -ldl -lm
 #cgo CFLAGS: -I${SRCDIR}/../../third_party/mbt/src
 #include <lib.h>
 */
