@@ -1,7 +1,9 @@
 package core
 
 /*
-#cgo LDFLAGS: -L${SRCDIR}/../../third_party/mbt/target/x86_64-unknown-linux-musl/release -L${SRCDIR}/../../third_party/mbt/target/x86_64-pc-windows-gnu/release -lmbt -ldl -lm
+#cgo linux,amd64 LDFLAGS: -L${SRCDIR}/../../third_party/mbt/target/x86_64-unknown-linux-gnu/release -lmbt -ldl -lm
+#cgo darwin,amd64 LDFLAGS: -L${SRCDIR}/../../third_party/mbt/target/x86_64-apple-darwin/release -lmbt -ldl -lm
+#cgo windows,amd64 LDFLAGS: -L${SRCDIR}/../../third_party/mbt/target/x86_64-pc-windows-gnu/release -lmbt -lm
 #cgo CFLAGS: -I${SRCDIR}/../../third_party/mbt/src
 #include <lib.h>
 */
