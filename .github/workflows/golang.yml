@@ -27,19 +27,6 @@ jobs:
         with:
           go-version: 1.17
 
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-
-      - uses: Swatinem/rust-cache@v1
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --manifest-path go/third_party/mbt/Cargo.toml --release
-
       - name: Build
         working-directory: go
         run: go build -v ./...
