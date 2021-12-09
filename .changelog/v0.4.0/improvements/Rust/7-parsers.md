@@ -1,1 +1,1 @@
-Better parsers for TLA+ traces.
+- Better parsers for TLA+ traces.

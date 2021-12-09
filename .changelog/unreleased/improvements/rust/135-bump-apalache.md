@@ -1,1 +1,0 @@
-Update Apalache to `v0.17.5`.

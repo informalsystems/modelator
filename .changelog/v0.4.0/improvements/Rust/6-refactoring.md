@@ -1,1 +1,1 @@
-Huge rework on modelator-rs API and CLI.
+- Huge rework on modelator-rs API and CLI.

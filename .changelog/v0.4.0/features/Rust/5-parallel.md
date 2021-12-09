@@ -1,1 +1,1 @@
-Support for parallel tests.
+- Support for parallel tests.
