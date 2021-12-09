@@ -61,6 +61,18 @@ jobs:
         run: |
           ./scripts/prepare_release.sh
 
+      - name: Install Rust stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Rust publish
+        working-directory: ${{ env.RUST_DIR }}/modelator
+        run: |
+          cargo publish --dry-run
+
       - name: Setup Go
         uses: actions/setup-go@v2
 
@@ -79,15 +91,3 @@ jobs:
         working-directory: ${{ env.PYTHON_DIR }}
         run: |
           poetry publish --username u --password p --build --dry-run
-
-      - name: Install Rust stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-
-      - name: Rust publish
-        working-directory: ${{ env.RUST_DIR }}/modelator
-        run: |
-          cargo publish --dry-run

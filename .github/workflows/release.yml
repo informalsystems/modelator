@@ -59,6 +59,18 @@ jobs:
       - name: Tag on main and make a Github release
         run: ./scripts/github_release.sh
 
+      - name: Install Rust stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Rust publish
+        working-directory: ${{ env.RUST_DIR }}/modelator
+        run: |
+          cargo publish
+
       - name: Setup Go
         uses: actions/setup-go@v2
 
@@ -78,15 +90,3 @@ jobs:
         run: |
           # poetry publish --build
           echo "Skipping Python package"
-
-      - name: Install Rust stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-
-      - name: Rust publish
-        working-directory: ${{ env.RUST_DIR }}/modelator
-        run: |
-          cargo publish
