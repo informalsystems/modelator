@@ -6,9 +6,6 @@ on:
       - "gh-pages"
     paths:
       - "go/**"
-  pull_request:
-    paths:
-      - "go/**"
 
 jobs:
   go-test:

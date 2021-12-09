@@ -6,9 +6,6 @@ on:
       - "gh-pages"
     paths:
       - "rs/**"
-  pull_request:
-    paths:
-      - "rs/**"
 
 env:
   CARGO_INCREMENTAL: 0
