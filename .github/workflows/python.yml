@@ -2,10 +2,15 @@ name: Python
 
 on:
   push:
-    branches-ignore:
-      - "gh-pages"
+    branches:
+      - main
     paths:
-      - "py/**"
+      - .github/workflows/python.yml
+      - py/**
+  pull_request:
+    paths:
+      - .github/workflows/python.yml
+      - py/**
 
 jobs:
   python-build:

@@ -2,10 +2,15 @@ name: Go
 
 on:
   push:
-    branches-ignore:
-      - "gh-pages"
+    branches:
+      - main
     paths:
-      - "go/**"
+      - .github/workflows/golang.yml
+      - go/**
+  pull_request:
+    paths:
+      - .github/workflows/golang.yml
+      - go/**
 
 jobs:
   go-test:

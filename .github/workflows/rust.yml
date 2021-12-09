@@ -2,10 +2,15 @@ name: Rust
 
 on:
   push:
-    branches-ignore:
-      - "gh-pages"
+    branches:
+      - main
     paths:
-      - "rs/**"
+      - .github/workflows/rust.yml
+      - rs/**
+  pull_request:
+    paths:
+      - .github/workflows/rust.yml
+      - rs/**
 
 env:
   CARGO_INCREMENTAL: 0
