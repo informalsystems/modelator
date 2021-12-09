@@ -100,6 +100,8 @@ fn test_cmd<P: AsRef<Path>>(
     runtime: &ModelatorRuntime,
 ) -> Command {
     let tla2tools = jar::Jar::Tla.path(&runtime.dir);
+    let jgrapht = jar::Jar::JGraphT.path(&runtime.dir);
+    let jungraphtlayout = jar::Jar::JUngraphTLayout.path(&runtime.dir);
     let community_modules = jar::Jar::CommunityModules.path(&runtime.dir);
 
     let path_seperator_char = match std::path::MAIN_SEPARATOR {
@@ -116,6 +118,8 @@ fn test_cmd<P: AsRef<Path>>(
         .arg(
             [
                 tla2tools.as_path().to_string_lossy(),
+                jgrapht.as_path().to_string_lossy(),
+                jungraphtlayout.as_path().to_string_lossy(),
                 community_modules.as_path().to_string_lossy(),
             ]
             .join(path_seperator_char),
