@@ -16,8 +16,6 @@ _<sup>but in Golang<sup>_
 ```sh
 git clone git@github.com/informalsystems/modelator
 cd modelator/go
-# Build modelator library (one time)
-cargo build --release --manifest-path third_party/mbt/Cargo.toml
 # Test all examples
 go test -v ./examples/...
 ```
@@ -26,8 +24,6 @@ go test -v ./examples/...
 [Golang port](https://github.com/informalsystems/modelator/tree/main/go/examples/numbersystem) of [NumberSystem](https://github.com/informalsystems/modelator/blob/main/rs/modelator/tests/integration/resource/numbers.rs)
 
 ```sh
-# Build modelator library (if not built already)
-cargo build --release --manifest-path third_party/mbt/Cargo.toml
 # Test NumberSystem example
 go test -v ./examples/numbersystem
 ```
