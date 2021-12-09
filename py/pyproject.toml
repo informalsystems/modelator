@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "modelator"
-version = "0.4.0"
+version = "0.4.1"
 description = "Python bindings of Modelator"
 license = "Apache-2.0"
 authors = ["Ranadeep Biswas <mail@rnbguy.at>"]
