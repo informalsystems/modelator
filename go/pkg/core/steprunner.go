@@ -1,8 +1,11 @@
 package core
 
 /*
-#cgo LDFLAGS: -L ../../third_party/mbt/target/release -lmbt -ldl -lm
-#include "../../third_party/mbt/src/lib.h"
+#cgo linux,amd64 LDFLAGS: -L${SRCDIR}/../../third_party/mbt/target/x86_64-unknown-linux-gnu/release -lmbt -ldl -lm
+#cgo darwin,amd64 LDFLAGS: -L${SRCDIR}/../../third_party/mbt/target/x86_64-apple-darwin/release -lmbt -framework Security
+#cgo windows,amd64 LDFLAGS: -L${SRCDIR}/../../third_party/mbt/target/x86_64-pc-windows-gnu/release -lmbt -lws2_32 -lole32 -luserenv -lbcrypt
+#cgo CFLAGS: -I${SRCDIR}/../../third_party/mbt/src
+#include <lib.h>
 */
 import "C"
 
