@@ -16,6 +16,8 @@ lazy_static::lazy_static! {
     /// This is an example for using doc comment attributes
     static ref TLA_JAR: TlaJar = TlaJar::latest();
     static ref COMMUNITY_MODULES_JAR: CommunityModuleJar = CommunityModuleJar::latest();
+    static ref JGRAPHT_JAR: JGraphT = JGraphT::latest();
+    static ref JUNGRAPHT_LAYOUT_JAR: JUngraphTLayout = JUngraphTLayout::latest();
     static ref APALACHE_JAR: ApalacheJar = ApalacheJar::latest();
 }
 
@@ -105,7 +107,7 @@ impl Asset for TlaJar {
     }
 
     fn template_name() -> &'static str {
-        "tla2tools.jar"
+        "tla2tools-{VERSION}.jar"
     }
 
     fn version_with_hash() -> Vec<(&'static str, &'static str)> {
@@ -154,6 +156,90 @@ impl Asset for CommunityModuleJar {
         vec![(
             "202112070657",
             "92b162418d2bafbe58016d47896847c9dd771ff230d6474fdec9049068559b3b",
+        )]
+    }
+
+    fn download_and_save<W: Write>(&self, writer: W) -> Result<(), Error> {
+        println!("Fetching {} from {}", self.file_name(), self.link());
+        // download the jar
+        let response = ureq::get(&self.link()).call()?;
+        let mut reader = response.into_reader();
+
+        // write jar bytes to the file
+        let mut file_writer = std::io::BufWriter::new(writer);
+        std::io::copy(&mut reader, &mut file_writer)?;
+        Ok(())
+    }
+
+    fn version(&self) -> &str {
+        self.version.as_ref()
+    }
+
+    fn latest() -> Self {
+        Self {
+            version: Self::latest_version().into(),
+        }
+    }
+}
+
+struct JGraphT {
+    version: String,
+}
+
+impl Asset for JGraphT {
+    fn template_link() -> &'static str {
+        "https://repo1.maven.org/maven2/org/jgrapht/jgrapht-core/{VERSION}/jgrapht-core-{VERSION}.jar"
+    }
+    fn template_name() -> &'static str {
+        "jgrapht-core-{VERSION}.jar"
+    }
+
+    fn version_with_hash() -> Vec<(&'static str, &'static str)> {
+        vec![(
+            "1.5.1",
+            "a4d810cb63e0a77a753d147094fea9dd42e82cfc57aa289f9f85229f26043bb4",
+        )]
+    }
+
+    fn download_and_save<W: Write>(&self, writer: W) -> Result<(), Error> {
+        println!("Fetching {} from {}", self.file_name(), self.link());
+        // download the jar
+        let response = ureq::get(&self.link()).call()?;
+        let mut reader = response.into_reader();
+
+        // write jar bytes to the file
+        let mut file_writer = std::io::BufWriter::new(writer);
+        std::io::copy(&mut reader, &mut file_writer)?;
+        Ok(())
+    }
+
+    fn version(&self) -> &str {
+        self.version.as_ref()
+    }
+
+    fn latest() -> Self {
+        Self {
+            version: Self::latest_version().into(),
+        }
+    }
+}
+
+struct JUngraphTLayout {
+    version: String,
+}
+
+impl Asset for JUngraphTLayout {
+    fn template_link() -> &'static str {
+        "https://repo1.maven.org/maven2/com/github/tomnelson/jungrapht-layout/{VERSION}/jungrapht-layout-{VERSION}.jar"
+    }
+    fn template_name() -> &'static str {
+        "jungrapht-layout-{VERSION}.jar"
+    }
+
+    fn version_with_hash() -> Vec<(&'static str, &'static str)> {
+        vec![(
+            "1.3",
+            "ba959bab8bf4792a35989300a713d74f616e920334def7ccf9e85200c264f408",
         )]
     }
 
@@ -236,6 +322,8 @@ impl Asset for ApalacheJar {
 pub(crate) enum Jar {
     Tla,
     CommunityModules,
+    JGraphT,
+    JUngraphTLayout,
     Apalache,
 }
 
@@ -248,6 +336,8 @@ impl Jar {
         match self {
             Self::Tla => TLA_JAR.file_name(),
             Self::CommunityModules => COMMUNITY_MODULES_JAR.file_name(),
+            Self::JGraphT => JGRAPHT_JAR.file_name(),
+            Self::JUngraphTLayout => JUNGRAPHT_LAYOUT_JAR.file_name(),
             Self::Apalache => APALACHE_JAR.file_name(),
         }
     }
@@ -289,6 +379,10 @@ impl<'a> TryFrom<&'a str> for Jar {
             Ok(Self::Tla)
         } else if file_name == COMMUNITY_MODULES_JAR.file_name() {
             Ok(Self::CommunityModules)
+        } else if file_name == JGRAPHT_JAR.file_name() {
+            Ok(Self::JGraphT)
+        } else if file_name == JUNGRAPHT_LAYOUT_JAR.file_name() {
+            Ok(Self::JUngraphTLayout)
         } else if file_name == APALACHE_JAR.file_name() {
             Ok(Self::Apalache)
         } else {
@@ -340,6 +434,8 @@ impl<'a> TryFrom<&'a str> for Jar {
 pub(crate) fn prepare_modelator_data_dir<P: AsRef<Path>>(modelator_dir: P) -> Result<(), Error> {
     TLA_JAR.prepare(&modelator_dir)?;
     COMMUNITY_MODULES_JAR.prepare(&modelator_dir)?;
+    JGRAPHT_JAR.prepare(&modelator_dir)?;
+    JUNGRAPHT_LAYOUT_JAR.prepare(&modelator_dir)?;
     APALACHE_JAR.prepare(&modelator_dir)?;
     Ok(())
 }
