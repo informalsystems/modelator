@@ -99,10 +99,11 @@ fn test_cmd<P: AsRef<Path>>(
     tla_config_file_path: P,
     runtime: &ModelatorRuntime,
 ) -> Command {
-    let tla2tools = jar::Jar::Tla.path(&runtime.dir);
-    let jgrapht = jar::Jar::JGraphT.path(&runtime.dir);
-    let jungraphtlayout = jar::Jar::JUngraphTLayout.path(&runtime.dir);
-    let community_modules = jar::Jar::CommunityModules.path(&runtime.dir);
+    let all_jar_paths = jar::Jar::Tla.paths_with_deps(&runtime.dir);
+    let all_jar_paths_string = all_jar_paths
+        .iter()
+        .map(|x| x.to_string_lossy())
+        .collect::<Vec<_>>();
 
     let path_seperator_char = match std::path::MAIN_SEPARATOR {
         '/' => ":",
@@ -115,15 +116,7 @@ fn test_cmd<P: AsRef<Path>>(
     cmd.current_dir(temp_dir)
         // set classpath
         .arg("-cp")
-        .arg(
-            [
-                tla2tools.as_path().to_string_lossy(),
-                jgrapht.as_path().to_string_lossy(),
-                jungraphtlayout.as_path().to_string_lossy(),
-                community_modules.as_path().to_string_lossy(),
-            ]
-            .join(path_seperator_char),
-        )
+        .arg(all_jar_paths_string.join(path_seperator_char))
         .arg(format!(
             "-Djava.io.tmpdir={}",
             temp_dir.path().to_string_lossy()

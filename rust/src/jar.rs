@@ -14,28 +14,100 @@ const MIN_JAVA_VERSION: usize = 8;
 
 lazy_static::lazy_static! {
     /// This is an example for using doc comment attributes
-    static ref TLA_JAR: TlaJar = TlaJar::latest();
-    static ref COMMUNITY_MODULES_JAR: CommunityModuleJar = CommunityModuleJar::latest();
-    static ref JGRAPHT_JAR: JGraphT = JGraphT::latest();
-    static ref JUNGRAPHT_LAYOUT_JAR: JUngraphTLayout = JUngraphTLayout::latest();
-    static ref APALACHE_JAR: ApalacheJar = ApalacheJar::latest();
+    static ref TLA_JAR: Asset = Asset::latest(Jar::Tla);
+    static ref COMMUNITY_MODULES_JAR: Asset = Asset::latest(Jar::CommunityModules);
+    static ref JGRAPHT_JAR: Asset = Asset::latest(Jar::JGraphT);
+    static ref JUNGRAPHT_LAYOUT_JAR: Asset = Asset::latest(Jar::JUngraphTLayout);
+    static ref GSON_JAR: Asset = Asset::latest(Jar::Gson);
+    static ref SLF4JAPI_JAR: Asset = Asset::latest(Jar::Slf4jApi);
+    static ref APALACHE_JAR: Asset = Asset::latest(Jar::Apalache);
 }
 
-trait Asset {
-    fn template_link() -> &'static str;
-    fn template_name() -> &'static str;
-    fn version_with_hash() -> Vec<(&'static str, &'static str)>;
-    fn download_and_save<W: Write>(&self, _: W) -> Result<(), Error>;
-    fn latest() -> Self;
+struct Asset {
+    t: Jar,
+    version: String,
+}
 
-    fn version(&self) -> &str;
+impl Asset {
+    fn template_link(t: Jar) -> &'static str {
+        match t {
+            Jar::Tla => "https://github.com/tlaplus/tlaplus/releases/download/v{VERSION}/tla2tools.jar",
+            Jar::CommunityModules => "https://github.com/tlaplus/CommunityModules/releases/download/{VERSION}/CommunityModules-{VERSION}.jar",
+            Jar::JGraphT => "https://repo1.maven.org/maven2/org/jgrapht/jgrapht-core/{VERSION}/jgrapht-core-{VERSION}.jar",
+            Jar::JUngraphTLayout =>  "https://repo1.maven.org/maven2/com/github/tomnelson/jungrapht-layout/{VERSION}/jungrapht-layout-{VERSION}.jar",
+            Jar::Gson => "https://repo1.maven.org/maven2/com/google/code/gson/gson/{VERSION}/gson-{VERSION}.jar",
+            Jar::Slf4jApi => "https://repo1.maven.org/maven2/org/slf4j/slf4j-api/{VERSION}/slf4j-api-{VERSION}.jar",
+            Jar::Apalache => "https://github.com/informalsystems/apalache/releases/download/v{VERSION}/apalache.zip",
 
-    fn latest_version() -> &'static str {
-        Self::version_with_hash()[0].0
+        }
+    }
+    fn template_name(t: Jar) -> &'static str {
+        match t {
+            Jar::Tla => "tla2tools-{VERSION}.jar",
+            Jar::CommunityModules => "CommunityModules-{VERSION}.jar",
+            Jar::JGraphT => "jgrapht-core-{VERSION}.jar",
+            Jar::JUngraphTLayout => "jungrapht-layout-{VERSION}.jar",
+            Jar::Gson => "gson-{VERSION}.jar",
+            Jar::Slf4jApi => "slf4j-api-{VERSION}.jar",
+            Jar::Apalache => "apalache-pkg-{VERSION}-full.jar",
+        }
+    }
+    fn version_with_hash(t: Jar) -> Vec<(&'static str, &'static str)> {
+        match t {
+            Jar::Tla => vec![(
+                "1.8.0",
+                "d7d491946f62c9b2606e7b0ff0d3db88739b16204f23410ea4fba2db6fb6cc38",
+            )],
+            Jar::CommunityModules => vec![(
+                "202112070657",
+                "92b162418d2bafbe58016d47896847c9dd771ff230d6474fdec9049068559b3b",
+            )],
+            Jar::JGraphT => vec![(
+                "1.5.1",
+                "a4d810cb63e0a77a753d147094fea9dd42e82cfc57aa289f9f85229f26043bb4",
+            )],
+            Jar::JUngraphTLayout => vec![(
+                "1.3",
+                "ba959bab8bf4792a35989300a713d74f616e920334def7ccf9e85200c264f408",
+            )],
+            Jar::Gson => vec![(
+                "2.8.9",
+                "d3999291855de495c94c743761b8ab5176cfeabe281a5ab0d8e8d45326fd703e",
+            )],
+            Jar::Slf4jApi => vec![(
+                "1.7.32",
+                "3624f8474c1af46d75f98bc097d7864a323c81b3808aa43689a6e1c601c027be",
+            )],
+            Jar::Apalache => vec![(
+                "0.18.0",
+                "26610a5c73ba25f40e6af9854dbd1c4e2fcffd9d89c549f3fcdd90c4e04bbd4a",
+            )],
+        }
+    }
+    fn latest(t: Jar) -> Self {
+        Self {
+            t,
+            version: Self::latest_version(t).into(),
+        }
+    }
+
+    fn zip_path(t: Jar) -> Option<&'static str> {
+        match t {
+            Jar::Apalache => Some("mod-distribution/target/apalache-pkg-{VERSION}-full.jar"),
+            _ => None,
+        }
+    }
+
+    fn version(&self) -> &str {
+        self.version.as_ref()
+    }
+
+    fn latest_version(t: Jar) -> &'static str {
+        Self::version_with_hash(t)[0].0
     }
 
     fn file_name(&self) -> String {
-        Self::template_name().replace("{VERSION}", self.version())
+        Self::template_name(self.t).replace("{VERSION}", self.version())
     }
     fn valid<P: AsRef<Path>>(&self, path: P) -> Result<bool, Error> {
         if self.is_present(&path) {
@@ -49,13 +121,39 @@ trait Asset {
         }
     }
     fn get_hash(&self) -> String {
-        Self::version_with_hash()
+        Self::version_with_hash(self.t)
             .iter()
             .find(|(v, _)| v == &self.version())
             .unwrap()
             .1
             .into()
     }
+
+    fn download_and_save<W: Write>(&self, writer: W) -> Result<(), Error> {
+        println!("Fetching {} from {}", self.file_name(), self.link());
+        // download the zip
+        let response = ureq::get(&self.link()).call()?;
+
+        if let Some(zip_path) = Self::zip_path(self.t) {
+            let mut cursor = std::io::Cursor::new(Vec::new());
+            std::io::copy(&mut response.into_reader(), &mut cursor)?;
+
+            // extract zip
+            let mut archive = zip::ZipArchive::new(cursor).unwrap();
+            let mut reader = archive
+                .by_name(&zip_path.replace("{VERSION}", self.version()))
+                .map_err(|_| Error::IO("failed to extract".into()))?;
+            // write jar bytes to the file
+            let mut file_writer = std::io::BufWriter::new(writer);
+            std::io::copy(&mut reader, &mut file_writer)?;
+        } else {
+            // write jar bytes to the file
+            let mut file_writer = std::io::BufWriter::new(writer);
+            std::io::copy(&mut response.into_reader(), &mut file_writer)?;
+        }
+        Ok(())
+    }
+
     fn file_path<P: AsRef<Path>>(&self, path: P) -> PathBuf {
         path.as_ref().to_path_buf().join(self.file_name())
     }
@@ -63,7 +161,7 @@ trait Asset {
         self.file_path(path).is_file()
     }
     fn link(&self) -> String {
-        Self::template_link().replace("{VERSION}", self.version())
+        Self::template_link(self.t).replace("{VERSION}", self.version())
     }
     fn sha256sum<P: AsRef<Path>>(&self, path: P) -> Result<String, Error> {
         let mut digest = sha2::Sha256::default();
@@ -97,233 +195,14 @@ trait Asset {
     }
 }
 
-struct TlaJar {
-    version: String,
-}
-
-impl Asset for TlaJar {
-    fn template_link() -> &'static str {
-        "https://github.com/tlaplus/tlaplus/releases/download/v{VERSION}/tla2tools.jar"
-    }
-
-    fn template_name() -> &'static str {
-        "tla2tools-{VERSION}.jar"
-    }
-
-    fn version_with_hash() -> Vec<(&'static str, &'static str)> {
-        vec![(
-            "1.8.0",
-            "d7d491946f62c9b2606e7b0ff0d3db88739b16204f23410ea4fba2db6fb6cc38",
-        )]
-    }
-
-    fn download_and_save<W: Write>(&self, writer: W) -> Result<(), Error> {
-        println!("Fetching {} from {}", self.file_name(), self.link());
-        // download the jar
-        let response = ureq::get(&self.link()).call()?;
-        let mut reader = response.into_reader();
-
-        // write jar bytes to the file
-        let mut file_writer = std::io::BufWriter::new(writer);
-        std::io::copy(&mut reader, &mut file_writer)?;
-        Ok(())
-    }
-
-    fn version(&self) -> &str {
-        self.version.as_ref()
-    }
-
-    fn latest() -> Self {
-        Self {
-            version: Self::latest_version().into(),
-        }
-    }
-}
-
-struct CommunityModuleJar {
-    version: String,
-}
-
-impl Asset for CommunityModuleJar {
-    fn template_link() -> &'static str {
-        "https://github.com/tlaplus/CommunityModules/releases/download/{VERSION}/CommunityModules-{VERSION}.jar"
-    }
-    fn template_name() -> &'static str {
-        "CommunityModules-{VERSION}.jar"
-    }
-
-    fn version_with_hash() -> Vec<(&'static str, &'static str)> {
-        vec![(
-            "202112070657",
-            "92b162418d2bafbe58016d47896847c9dd771ff230d6474fdec9049068559b3b",
-        )]
-    }
-
-    fn download_and_save<W: Write>(&self, writer: W) -> Result<(), Error> {
-        println!("Fetching {} from {}", self.file_name(), self.link());
-        // download the jar
-        let response = ureq::get(&self.link()).call()?;
-        let mut reader = response.into_reader();
-
-        // write jar bytes to the file
-        let mut file_writer = std::io::BufWriter::new(writer);
-        std::io::copy(&mut reader, &mut file_writer)?;
-        Ok(())
-    }
-
-    fn version(&self) -> &str {
-        self.version.as_ref()
-    }
-
-    fn latest() -> Self {
-        Self {
-            version: Self::latest_version().into(),
-        }
-    }
-}
-
-struct JGraphT {
-    version: String,
-}
-
-impl Asset for JGraphT {
-    fn template_link() -> &'static str {
-        "https://repo1.maven.org/maven2/org/jgrapht/jgrapht-core/{VERSION}/jgrapht-core-{VERSION}.jar"
-    }
-    fn template_name() -> &'static str {
-        "jgrapht-core-{VERSION}.jar"
-    }
-
-    fn version_with_hash() -> Vec<(&'static str, &'static str)> {
-        vec![(
-            "1.5.1",
-            "a4d810cb63e0a77a753d147094fea9dd42e82cfc57aa289f9f85229f26043bb4",
-        )]
-    }
-
-    fn download_and_save<W: Write>(&self, writer: W) -> Result<(), Error> {
-        println!("Fetching {} from {}", self.file_name(), self.link());
-        // download the jar
-        let response = ureq::get(&self.link()).call()?;
-        let mut reader = response.into_reader();
-
-        // write jar bytes to the file
-        let mut file_writer = std::io::BufWriter::new(writer);
-        std::io::copy(&mut reader, &mut file_writer)?;
-        Ok(())
-    }
-
-    fn version(&self) -> &str {
-        self.version.as_ref()
-    }
-
-    fn latest() -> Self {
-        Self {
-            version: Self::latest_version().into(),
-        }
-    }
-}
-
-struct JUngraphTLayout {
-    version: String,
-}
-
-impl Asset for JUngraphTLayout {
-    fn template_link() -> &'static str {
-        "https://repo1.maven.org/maven2/com/github/tomnelson/jungrapht-layout/{VERSION}/jungrapht-layout-{VERSION}.jar"
-    }
-    fn template_name() -> &'static str {
-        "jungrapht-layout-{VERSION}.jar"
-    }
-
-    fn version_with_hash() -> Vec<(&'static str, &'static str)> {
-        vec![(
-            "1.3",
-            "ba959bab8bf4792a35989300a713d74f616e920334def7ccf9e85200c264f408",
-        )]
-    }
-
-    fn download_and_save<W: Write>(&self, writer: W) -> Result<(), Error> {
-        println!("Fetching {} from {}", self.file_name(), self.link());
-        // download the jar
-        let response = ureq::get(&self.link()).call()?;
-        let mut reader = response.into_reader();
-
-        // write jar bytes to the file
-        let mut file_writer = std::io::BufWriter::new(writer);
-        std::io::copy(&mut reader, &mut file_writer)?;
-        Ok(())
-    }
-
-    fn version(&self) -> &str {
-        self.version.as_ref()
-    }
-
-    fn latest() -> Self {
-        Self {
-            version: Self::latest_version().into(),
-        }
-    }
-}
-
-struct ApalacheJar {
-    version: String,
-}
-
-impl Asset for ApalacheJar {
-    fn template_link() -> &'static str {
-        "https://github.com/informalsystems/apalache/releases/download/v{VERSION}/apalache.zip"
-    }
-
-    fn template_name() -> &'static str {
-        "apalache-pkg-{VERSION}-full.jar"
-    }
-
-    fn version_with_hash() -> Vec<(&'static str, &'static str)> {
-        vec![(
-            "0.18.0",
-            "26610a5c73ba25f40e6af9854dbd1c4e2fcffd9d89c549f3fcdd90c4e04bbd4a",
-        )]
-    }
-
-    fn download_and_save<W: Write>(&self, writer: W) -> Result<(), Error> {
-        println!("Fetching {} from {}", self.file_name(), self.link());
-        // download the zip
-        let response = ureq::get(&self.link()).call()?;
-        let mut cursor = std::io::Cursor::new(Vec::new());
-        std::io::copy(&mut response.into_reader(), &mut cursor)?;
-
-        // extract zip
-        let mut archive = zip::ZipArchive::new(cursor).unwrap();
-        let mut reader = archive
-            .by_name(&format!(
-                "mod-distribution/target/apalache-pkg-{}-full.jar",
-                self.version()
-            ))
-            .map_err(|_| Error::IO("failed to extract".into()))?;
-        // write jar bytes to the file
-        let mut file_writer = std::io::BufWriter::new(writer);
-        std::io::copy(&mut reader, &mut file_writer)?;
-        Ok(())
-    }
-
-    fn version(&self) -> &str {
-        self.version.as_ref()
-    }
-
-    fn latest() -> Self {
-        Self {
-            version: Self::latest_version().into(),
-        }
-    }
-}
-
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub(crate) enum Jar {
     Tla,
     CommunityModules,
     JGraphT,
     JUngraphTLayout,
+    Gson,
+    Slf4jApi,
     Apalache,
 }
 
@@ -332,12 +211,29 @@ impl Jar {
         modelator_dir.as_ref().join(self.file_name())
     }
 
+    pub(crate) fn paths_with_deps<P: AsRef<Path>>(&self, modelator_dir: P) -> Vec<PathBuf> {
+        match self {
+            Self::Tla => vec![
+                Self::JGraphT.path(&modelator_dir),
+                Self::JUngraphTLayout.path(&modelator_dir),
+                Self::Gson.path(&modelator_dir),
+                Self::Slf4jApi.path(&modelator_dir),
+                Self::CommunityModules.path(&modelator_dir),
+                Self::Tla.path(&modelator_dir),
+            ],
+            Self::Apalache => vec![Self::Apalache.path(&modelator_dir)],
+            other => vec![other.path(&modelator_dir)],
+        }
+    }
+
     fn file_name(&self) -> String {
         match self {
             Self::Tla => TLA_JAR.file_name(),
             Self::CommunityModules => COMMUNITY_MODULES_JAR.file_name(),
             Self::JGraphT => JGRAPHT_JAR.file_name(),
             Self::JUngraphTLayout => JUNGRAPHT_LAYOUT_JAR.file_name(),
+            Self::Gson => GSON_JAR.file_name(),
+            Self::Slf4jApi => SLF4JAPI_JAR.file_name(),
             Self::Apalache => APALACHE_JAR.file_name(),
         }
     }
@@ -436,6 +332,8 @@ pub(crate) fn prepare_modelator_data_dir<P: AsRef<Path>>(modelator_dir: P) -> Re
     COMMUNITY_MODULES_JAR.prepare(&modelator_dir)?;
     JGRAPHT_JAR.prepare(&modelator_dir)?;
     JUNGRAPHT_LAYOUT_JAR.prepare(&modelator_dir)?;
+    GSON_JAR.prepare(&modelator_dir)?;
+    SLF4JAPI_JAR.prepare(&modelator_dir)?;
     APALACHE_JAR.prepare(&modelator_dir)?;
     Ok(())
 }
