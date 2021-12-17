@@ -44,6 +44,8 @@ jobs:
 
       - name: Install Rust-Cache for Github actions
         uses: Swatinem/rust-cache@v1
+        with:
+          working-directory: ${{ env.RUST_DIR }}
 
       - name: Install `quickinstall`
         uses: actions-rs/cargo@v1

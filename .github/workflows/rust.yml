@@ -38,6 +38,8 @@ jobs:
           toolchain: stable
           override: true
       - uses: Swatinem/rust-cache@v1
+        with:
+          working-directory: rs
       - uses: actions-rs/cargo@v1
         with:
           command: test
@@ -45,7 +47,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path rs/Cargo.toml -- --test-threads=1
+          args: --manifest-path rs/Cargo.toml
       - name: Setup tmate session
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
@@ -64,6 +66,8 @@ jobs:
           toolchain: stable
           override: true
       - uses: Swatinem/rust-cache@v1
+        with:
+          working-directory: rs
       - run: rustup component add rustfmt
       - uses: actions-rs/cargo@v1
         with:
@@ -81,6 +85,8 @@ jobs:
           toolchain: stable
           override: true
       - uses: Swatinem/rust-cache@v1
+        with:
+          working-directory: rs
       - uses: actions-rs/cargo@v1
         with:
           command: doc
@@ -97,6 +103,8 @@ jobs:
           toolchain: stable
           override: true
       - uses: Swatinem/rust-cache@v1
+        with:
+          working-directory: rs
       - run: rustup component add clippy
       - uses: actions-rs/cargo@v1
         with:
