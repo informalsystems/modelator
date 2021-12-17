@@ -56,7 +56,7 @@ impl Asset {
         match t {
             Jar::Tla => vec![(
                 "1.8.0",
-                "d7d491946f62c9b2606e7b0ff0d3db88739b16204f23410ea4fba2db6fb6cc38",
+                "3d515ff77d303d71cc65647bea2037148805f7c74a053a8041495cd61c36b65e",
             )],
             Jar::CommunityModules => vec![(
                 "202112070657",
