@@ -295,7 +295,7 @@ mod tests {
 
     const fn booleans_and_numbers_state_without_first_logical_and() -> &'static str {
         r#"
-            empty_set = {} /\ set = {1, 2, 3} /\ pos_number = 1 /\ neg_number = -1 /\ bool = TRUE
+            empty_set = {} /\ set = {1, 2, 3} /\ ranged_set = 1..5 /\ pos_number = 1 /\ neg_number = -1 /\ bool = TRUE
         "#
     }
 
@@ -303,6 +303,7 @@ mod tests {
         r#"
             /\ empty_set = {}
             /\ set = {1, 2, 3}
+            /\ ranged_set = 1..5
             /\ pos_number = 1
             /\ neg_number = -1
             /\ bool = TRUE
@@ -313,6 +314,7 @@ mod tests {
         json!({
             "empty_set": [],
             "set": [1, 2, 3],
+            "ranged_set": [1, 2, 3, 4, 5],
             "pos_number": 1,
             "neg_number": -1,
             "bool": true
@@ -323,6 +325,7 @@ mod tests {
         r#"
             /\ empty_set = {}
             /\ set = {1, 2, 3}
+            /\ ranged_set = 1..5
             /\ pos_number = 1
             /\ neg_number = -1
             /\ bool = TRUE
@@ -333,6 +336,7 @@ mod tests {
         json!({
             "empty_set": [],
             "set": [1, 2, 3],
+            "ranged_set": [1, 2, 3, 4, 5],
             "pos_number": 1,
             "neg_number": -1,
             "bool": true
