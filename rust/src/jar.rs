@@ -216,8 +216,6 @@ impl Jar {
             Self::Tla => vec![
                 Self::JGraphT.path(&modelator_dir),
                 Self::JUngraphTLayout.path(&modelator_dir),
-                Self::Gson.path(&modelator_dir),
-                Self::Slf4jApi.path(&modelator_dir),
                 Self::CommunityModules.path(&modelator_dir),
                 Self::Tla.path(&modelator_dir),
             ],
