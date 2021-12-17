@@ -53,6 +53,7 @@ fn parse_any_value(i: &str) -> IResult<&str, JsonValue> {
         alt((
             parse_bool,
             parse_function,
+            parse_range,
             parse_number,
             parse_string,
             parse_identifiers_as_values,
@@ -100,6 +101,19 @@ fn parse_string(i: &str) -> IResult<&str, JsonValue> {
     map(
         delimited(char('"'), cut(take_while(|c| c != '"')), char('"')),
         |value: &str| JsonValue::String(value.into()),
+    )(i)
+}
+
+fn parse_range(i: &str) -> IResult<&str, JsonValue> {
+    map(
+        separated_pair(parse_number, tag(".."), parse_number),
+        |(low, high)| {
+            JsonValue::Array(
+                (low.as_i64().unwrap()..=high.as_i64().unwrap())
+                    .map(|x| JsonValue::Number(x.into()))
+                    .collect(),
+            )
+        },
     )(i)
 }
 
