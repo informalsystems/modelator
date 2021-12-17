@@ -10,7 +10,7 @@ use sha2::Digest;
 // The minimum java version supported by Apalache is Java 8:
 // https://apalache.informal.systems/docs/apalache/system-reqs.html
 // TLC doesn't seem to have such requirement.
-const MIN_JAVA_VERSION: usize = 8;
+const MIN_JAVA_VERSION: usize = 11;
 
 lazy_static::lazy_static! {
     /// This is an example for using doc comment attributes
