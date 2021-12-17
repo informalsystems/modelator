@@ -55,12 +55,8 @@ impl Tlc {
             runtime,
         );
 
-        println!("{:?}", cmd);
-
         // start tlc
         let output = cmd.output()?;
-
-        println!("{:?}", output);
 
         // get tlc stdout and stderr
         let stdout = crate::util::cmd_output_to_string(&output.stdout);
