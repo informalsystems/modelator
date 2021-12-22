@@ -106,7 +106,11 @@ fn parse_string(i: &str) -> IResult<&str, JsonValue> {
 
 fn parse_range(i: &str) -> IResult<&str, JsonValue> {
     map(
-        separated_pair(parse_number, tag(".."), parse_number),
+        separated_pair(
+            parse_number,
+            delimited(multispace0, tag(".."), multispace0),
+            parse_number,
+        ),
         |(low, high)| {
             JsonValue::Array(
                 (low.as_i64().unwrap()..=high.as_i64().unwrap())
@@ -303,7 +307,7 @@ mod tests {
         r#"
             /\ empty_set = {}
             /\ set = {1, 2, 3}
-            /\ ranged_set = 1..5
+            /\ ranged_set = 1 .. 5
             /\ pos_number = 1
             /\ neg_number = -1
             /\ bool = TRUE
@@ -325,7 +329,7 @@ mod tests {
         r#"
             /\ empty_set = {}
             /\ set = {1, 2, 3}
-            /\ ranged_set = 1..5
+            /\ ranged_set = 1 ..5
             /\ pos_number = 1
             /\ neg_number = -1
             /\ bool = TRUE
