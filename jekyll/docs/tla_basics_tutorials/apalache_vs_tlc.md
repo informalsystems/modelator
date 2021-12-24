@@ -36,7 +36,7 @@ In this tutorial we focus on Apalache, and particularly three features:
 
 1. [The type checker](https://apalache.informal.systems/docs/apalache/typechecker-snowcat.html)\
 Apalache comes with a type checker for TLA+ which helps you to develop models without creating bugs in the model itself
-2. [Trace invariants](https://apalache.informal.systems/docs/apalache/invariants.html?highlight=invariant#trace-invariants)\
+2. [Trace invariants](https://apalache.informal.systems/docs/apalache/principles/invariants.html?highlight=invariant#trace-invariants)\
 Apalache lets you define boolean functions over the entire sequence of states in an execution. This lets you detect system behavior that single state boolean functions would not be able to detect
-3. [Enumerating counterexamples](https://apalache.informal.systems/docs/apalache/enumeration.html?highlight=enumer#enumerating-counterexamples)\
+3. [Enumerating counterexamples](https://apalache.informal.systems/docs/apalache/principles/enumeration.html?highlight=enumer#enumerating-counterexamples)\
 Apalache can generate multiple traces for a given behavior. This enables generating thorough tests for a real system.
