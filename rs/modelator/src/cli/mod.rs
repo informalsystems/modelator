@@ -10,7 +10,7 @@ pub(crate) mod output;
 use crate::artifact::{Artifact, JsonTrace, TlaFile, TlaFileSuite, TlaTrace};
 use crate::model::checker::ModelChecker;
 use crate::Error;
-use clap::{crate_authors, crate_description, crate_license, crate_name, crate_version};
+use clap::crate_name;
 use clap::{AppSettings, ArgEnum, ArgSettings, ColorChoice, Parser, Subcommand, ValueHint};
 use serde_json::{json, Value as JsonValue};
 use std::path::Path;
