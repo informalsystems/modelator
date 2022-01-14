@@ -10,8 +10,11 @@ pub(crate) mod output;
 use crate::artifact::{Artifact, JsonTrace, TlaFile, TlaFileSuite, TlaTrace};
 use crate::model::checker::ModelChecker;
 use crate::Error;
-use clap::{crate_authors, crate_description, crate_license, crate_name, crate_version};
-use clap::{AppSettings, ArgEnum, ArgSettings, ColorChoice, Parser, Subcommand, ValueHint};
+use clap::crate_name;
+use clap::{
+    AppSettings, ArgEnum, ArgSettings, ColorChoice, IntoApp, Parser, Subcommand, ValueHint,
+};
+use clap_complete::{generate, Shell};
 use serde_json::{json, Value as JsonValue};
 use std::path::Path;
 
@@ -200,6 +203,20 @@ impl TraceCli {
     }
 }
 
+#[derive(Debug, Parser)]
+struct CompletionsCli {
+    #[clap(arg_enum)]
+    shell: Shell,
+}
+
+impl CompletionsCli {
+    fn run(&self) {
+        let mut app = App::into_app();
+        let app_name = app.get_name().to_owned();
+        generate(self.shell, &mut app, app_name, &mut std::io::stdout());
+    }
+}
+
 #[derive(Parser, Debug)]
 enum Module {
     /// Parse TLA+ files.
@@ -208,6 +225,9 @@ enum Module {
     List(TestListCli),
     /// Generate TLA+ traces using model checker.
     Trace(TraceCli),
+    /// Generate auto-complete scripts for different shells.
+    #[clap(display_order = 1000)]
+    Completions(CompletionsCli),
 }
 
 impl Module {
@@ -219,6 +239,7 @@ impl Module {
             Self::Parse(parse_cli) => parse_cli.run(),
             Self::List(testlist_cli) => testlist_cli.run(),
             Self::Trace(trace_cli) => trace_cli.run(),
+            Self::Completions(_) => unreachable!("shell completions are handled separately"),
         }
     }
 }
@@ -241,6 +262,16 @@ impl App {
     /// The top cli arg handler
     pub fn run(&self) -> CliOutput {
         CliOutput::with_result(self.module.run())
+    }
+
+    /// Shell completions
+    pub fn try_print_completions(&self) -> bool {
+        if let Module::Completions(completions_cli) = &self.module {
+            completions_cli.run();
+            true
+        } else {
+            false
+        }
     }
 }
 
