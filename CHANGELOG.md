@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v0.4.2
+
+Few fixes and dependency improvements.
+
+### RUST
+
+- Parse ranged sets from TLA states. (#157)
+- `clap` v3 (#162)
+
 ## v0.4.1
 
 Various fixes and improvements.
