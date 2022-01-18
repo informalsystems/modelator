@@ -14,7 +14,7 @@ In 'Hello World' we used TLC to check a simple model. Now we will walk through a
 
 ## Intro
 
-This model builds on the skills gained in ['Hello World'](./hell_world) and ['Typechecking'](./typechecking).
+This model builds on the skills gained in ['Hello World'](./hello_world) and ['Typechecking'](./typechecking).
 
 The model variables use a richer set of data structures including integers, tuples, and key value maps (called functions in TLA+). The operator definitions are also more complicated, making more use of the LET statement to define helper operators inline. 
 
@@ -363,7 +363,7 @@ You should see Type checker [OK].
 
 We have defined the state and the allowed transitions. It is time to explore behavior using Apalache.
 
-Apalache lets you define [trace invariants](https://apalache.informal.systems/docs/apalache/invariants.html?highlight=invariant#trace-invariants): boolean functions over the entire sequence of states in an execution. They let you detect system behavior that single state boolean functions would not be able to detect.
+Apalache lets you define [trace invariants](https://apalache.informal.systems/docs/apalache/principles/invariants.html?highlight=invariant#trace-invariants): boolean functions over the entire sequence of states in an execution. They let you detect system behavior that single state boolean functions would not be able to detect.
 
 A trace invariant should be an operator of the following form
 
@@ -863,4 +863,4 @@ Try the next one :)
 - [Description of attack scenario](https://docs.google.com/document/d/1YLPtQxZu1UAvO9cZ1O2RPXBbT0mooh4DYKjA_jp-RLM/). Written by Mikhail Vladimirov and Dmitry Khovratovich.
 - [Relevant Ethereum API](https://eips.ethereum.org/EIPS/eip-20)
 - [Apalache library module](https://github.com/informalsystems/apalache/blob/unstable/src/tla/Apalache.tla)
-- [Apalache trace invariants](https://apalache.informal.systems/docs/apalache/invariants.html?highlight=trace%20invariant#trace-invariants)
+- [Apalache trace invariants](https://apalache.informal.systems/docs/apalache/principles/invariants.html?highlight=trace%20invariant#trace-invariants)

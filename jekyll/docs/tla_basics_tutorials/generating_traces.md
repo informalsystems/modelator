@@ -10,14 +10,14 @@ nav_order: 7
 
 **The .tla and other referenced files are included [here](https://github.com/informalsystems/modelator/tree/main/jekyll/docs/tla_basics_tutorials/models).**
 
-Apalache allows you to generate more than one trace that satisfies a given behavior specified by a [state invariant](https://apalache.informal.systems/docs/tutorials/symbmc.html?highlight=invariant#invariants) or [trace invariant](https://apalache.informal.systems/docs/apalache/invariants.html?highlight=trace#trace-invariants).
+Apalache allows you to generate more than one trace that satisfies a given behavior specified by a [state invariant](https://apalache.informal.systems/docs/tutorials/symbmc.html?highlight=invariant#invariants) or [trace invariant](https://apalache.informal.systems/docs/apalache/principles/invariants.html?highlight=trace#trace-invariants).
 
 Generating multiple traces can be useful because different traces may give you insight into your system. There may be several different methods of exploiting the same vulnerability, for example. Generating multiple traces is also useful for [model-based testing](https://mbt.informal.systems/docs/modelator.html), where the goal is to use a model to generate tests for a software implementation of the system.
 
 This tutorial shows you 
 
 - How to use Apalache to generate multiple traces
-- How to control the way that traces differ using Apalache's [VIEW](https://apalache.informal.systems/docs/apalache/enumeration.html?highlight=View#enumerating-counterexamples) feature
+- How to control the way that traces differ using Apalache's [VIEW](https://apalache.informal.systems/docs/apalache/principles/enumeration.html?highlight=View#enumerating-counterexamples) feature
 
 The tutorial builds on the skills gained in ['Hello World'](./hello_world) and ['Ethereum'](./ethereum) where we model checked state and trace invariants but only generated a single trace.
 
@@ -90,7 +90,7 @@ include_typedefs == TRUE
 
 The model contains two state variables. Suppose that auxiliary_str represents some data in your system that's needed for bookkeeping, but won't have an effect on the interesting behaviors. Suppose also that important_int contains some highly critical data.
 
-The goal is to generate traces which differ only by the value of important_int in each state. Apalache's [VIEW](https://apalache.informal.systems/docs/apalache/enumeration.html?highlight=View#enumerating-counterexamples) feature lets you define an operator named View taking all state variables and outputting some value. Apalache ensures that all pairs of generated traces t1 and t2 differ on the value of that function for at least one state.
+The goal is to generate traces which differ only by the value of important_int in each state. Apalache's [VIEW](https://apalache.informal.systems/docs/apalache/principles/enumeration.html?highlight=View#enumerating-counterexamples) feature lets you define an operator named View taking all state variables and outputting some value. Apalache ensures that all pairs of generated traces t1 and t2 differ on the value of that function for at least one state.
 
 By writing
 
@@ -258,5 +258,5 @@ That's it. Congratulations for completing the basic tutorial set :)
 
 - [model-based testing](https://mbt.informal.systems/docs/modelator.html) with modelator
 - Documentation: [state invariants](https://apalache.informal.systems/docs/tutorials/symbmc.html?highlight=invariant#invariants)
-- Documentation: [trace invariants](https://apalache.informal.systems/docs/apalache/invariants.html?highlight=trace#trace-invariants)
-- Documentation: [VIEW](https://apalache.informal.systems/docs/apalache/enumeration.html?highlight=View#enumerating-counterexamples)
+- Documentation: [trace invariants](https://apalache.informal.systems/docs/apalache/principles/invariants.html?highlight=trace#trace-invariants)
+- Documentation: [VIEW](https://apalache.informal.systems/docs/apalache/principles/enumeration.html?highlight=View#enumerating-counterexamples)
