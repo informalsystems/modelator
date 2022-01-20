@@ -6,11 +6,7 @@ on:
       - main
     paths:
       - .github/workflows/rust.yml
-      - rs/**
-  pull_request:
-    paths:
-      - .github/workflows/rust.yml
-      - rs/**
+      - rust/**
 
 env:
   CARGO_INCREMENTAL: 0
@@ -43,11 +39,10 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path rs/Cargo.toml --no-run
+          args: --no-run
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path rs/Cargo.toml
       - name: Setup tmate session
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
@@ -72,7 +67,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --manifest-path rs/Cargo.toml --all -- --check
+          args: --all -- --check
 
   cargo-docs-build:
     name: Cargo documentation build
@@ -90,7 +85,6 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: doc
-          args: --manifest-path rs/Cargo.toml
 
   cargo-clippy:
     name: Clippy
@@ -109,4 +103,4 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --manifest-path rs/Cargo.toml -- -D warnings
+          args: -- -D warnings

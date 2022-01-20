@@ -1,0 +1,15 @@
+{
+    "name": "IBC_ics02",
+    "description": "",
+    "tests": [
+        {
+            "name": "",
+            "description": "",
+            "content": {
+                "type": "cli",
+                "cmd": "modelator parse tests/integration/resource/IBC_ics02.tla",
+                "expect_status": "success"
+            }
+        }
+    ]
+}

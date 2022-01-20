@@ -1,0 +1,5 @@
+{
+    "name": "smoke",
+    "description": "This json file is only used to test the implementation of the integration test framework",
+    "tests": []
+}

@@ -1,0 +1,51 @@
+{
+    "name": "TrafficCrossing",
+    "description": "",
+    "tests": [
+        {
+            "name": "",
+            "description": "",
+            "content": {
+                "type": "cli",
+                "cmd": "modelator parse tests/integration/resource/TrafficCrossing.tla",
+                "expect_status": "success"
+            }
+        },
+        {
+            "name": "",
+            "description": "",
+            "content": {
+                "type": "cli",
+                "cmd": "modelator parse tests/integration/resource/TrafficCrossingTest.tla",
+                "expect_status": "success"
+            }
+        },
+        {
+            "name": "",
+            "description": "",
+            "content": {
+                "type": "cli",
+                "cmd": "modelator parse tests/integration/resource/TrafficCrossingHistoryTest.tla",
+                "expect_status": "success"
+            }
+        },
+        {
+            "name": "",
+            "description": "",
+            "content": {
+                "type": "cli",
+                "cmd": "modelator trace tests/integration/resource/TrafficCrossingTest.tla tests/integration/resource/TrafficCrossingTest.cfg",
+                "expect_status": "success"
+            }
+        },
+        {
+            "name": "",
+            "description": "An annotation should be required",
+            "content": {
+                "type": "cli",
+                "cmd": "modelator trace tests/integration/resource/TrafficCrossingHistoryTest.tla tests/integration/resource/TrafficCrossingHistoryTest.cfg",
+                "expect_status": "error"
+            }
+        }
+    ]
+}

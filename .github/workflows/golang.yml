@@ -6,11 +6,7 @@ on:
       - main
     paths:
       - .github/workflows/golang.yml
-      - go/**
-  pull_request:
-    paths:
-      - .github/workflows/golang.yml
-      - go/**
+      - golang/**
 
 jobs:
   go-test:

@@ -5,11 +5,6 @@ on:
     branches: [main]
     types: [closed]
 
-env:
-  GOLANG_DIR: go
-  PYTHON_DIR: py
-  RUST_DIR: rs
-
 jobs:
   github-release:
     environment: Release
@@ -39,8 +34,6 @@ jobs:
 
       - name: Install Rust-Cache for Github actions
         uses: Swatinem/rust-cache@v1
-        with:
-          working-directory: ${{ env.RUST_DIR }}
 
       - name: Install `quickinstall`
         uses: actions-rs/cargo@v1
@@ -69,17 +62,17 @@ jobs:
           override: true
 
       - name: Rust publish
-        working-directory: ${{ env.RUST_DIR }}
-        run: |
-          cargo publish --token ${{ secrets.CRATES_IO_TOKEN }}
+        uses: actions-rs/cargo@v1
+        with:
+          command: publish
+          args: --token ${{ secrets.CRATES_IO_TOKEN }} --package modelator
 
       - name: Setup Go
         uses: actions/setup-go@v2
 
       - name: Golang publish
-        working-directory: ${{ env.GOLANG_DIR }}
         run: |
-          # GOPROXY=proxy.golang.org go list -m github.com/${{ github.repository }}/$GOLANG_DIR@v$RELEASE_VERSION
+          # GOPROXY=proxy.golang.org go list -m github.com/${{ github.repository }}
           echo "Skipping Go package"
 
       - name: Setup Python
@@ -89,7 +82,6 @@ jobs:
         uses: Gr1N/setup-poetry@v7
 
       - name: Poetry publish
-        working-directory: ${{ env.PYTHON_DIR }}
         run: |
           # poetry publish --build
           echo "Skipping Python package"

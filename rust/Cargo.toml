@@ -1,0 +1,41 @@
+[package]
+name = "modelator"
+description = "A framework and tools for model-based testing."
+version = "0.4.2"
+edition = "2021"
+rust-version = "1.56"
+license = "Apache-2.0"
+readme = "README.md"
+keywords = ["testing", "model", "model-based", "TLA", "abstraction"]
+repository = "https://github.com/informalsystems/modelator"
+authors = [
+  "Vitor Enes <vitorenesduarte@gmail.com>",
+  "Andrey Kuprianov <andrey@informal.systems>",
+  "Ranadeep Biswas <ranadeep@informal.systems>",
+  "Daniel Tisdall <daniel@informal.systems>",
+]
+
+[dependencies]
+anyhow = "1.0.45"
+clap = { version = "3.0.6", features = ["derive", "cargo"] }
+clap_complete = "3.0.2"
+directories = "4.0.1"
+hex = "0.4.3"
+lazy_static = "1.4.0"
+nom = "7.1.0"
+once_cell = "1.9.0"
+rayon = "1.5.1"
+regex = "1.5.4"
+serde = { version = "1.0.133", features = ["derive"] }
+serde_json = "1.0.74"
+sha2 = "0.10.1"
+tempfile = "3.3.0"
+thiserror = "1.0.30"
+tracing = "0.1.29"
+tracing-subscriber = { version = "0.3.5", features = ["env-filter"] }
+ureq = "2.4.0"
+
+[dev-dependencies]
+quickcheck = "1.0.3"
+quickcheck_macros = "1.0.0"
+shlex = "1.1.0"
