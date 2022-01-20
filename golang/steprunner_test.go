@@ -1,9 +1,13 @@
-package golang
+package modelator_test
 
-import "testing"
+import (
+	"testing"
+
+	modelator "github.com/informalsystems/modelator/go/pkg/core"
+)
 
 func TestModelBased(t *testing.T) {
-	_, err := GenerateJSONTracesFromTLATests("doesnotexist", "doesnotexist")
+	_, err := modelator.GenerateJSONTracesFromTLATests("doesnotexist", "doesnotexist")
 	if err == nil {
 		t.Error("Modelator should have returned error.")
 	}

@@ -1,4 +1,4 @@
-package golang
+package modelator
 
 /*
 #cgo linux,amd64 LDFLAGS: -L${SRCDIR}/../target/x86_64-unknown-linux-gnu/release -lmodelatorc -ldl -lm
