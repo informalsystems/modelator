@@ -50,16 +50,17 @@ where
 }
 
 #[no_mangle]
-pub extern "C" fn generate_json_traces_from_tla_tests_rs(
+/// # Safety
+///
+/// Dereference raw pointer arguments
+pub unsafe extern "C" fn generate_json_traces_from_tla_tests_rs(
     tla_tests_file_path_c: *const c_char,
     tla_config_file_path_c: *const c_char,
 ) -> CResult {
-    let (tla_tests_file_path, tla_config_file_path) = unsafe {
-        (
-            CStr::from_ptr(tla_tests_file_path_c),
-            CStr::from_ptr(tla_config_file_path_c),
-        )
-    };
+    let (tla_tests_file_path, tla_config_file_path) = (
+        CStr::from_ptr(tla_tests_file_path_c),
+        CStr::from_ptr(tla_config_file_path_c),
+    );
     generate_json_traces_from_tla_tests(
         tla_tests_file_path.to_str().unwrap(),
         tla_config_file_path.to_str().unwrap(),
