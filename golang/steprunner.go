@@ -34,10 +34,10 @@ func (e StepMismatch) Error() string {
 	return fmt.Sprintf("expected: %v, observed: %v, outcome: %v", e.Expected, e.Observed, e.Outcome)
 }
 
-// ModelatorError when modelator throws an error
-type ModelatorError string
+// TraceError when modelator throws an error
+type TraceError string
 
-func (e ModelatorError) Error() string {
+func (e TraceError) Error() string {
 	return fmt.Sprintf("[Modelator]: %v", string(e))
 }
 
@@ -66,7 +66,7 @@ func GenerateJSONTracesFromTLATests(tlaFile, cfgFile string) (string, error) {
 	// ignoring errno from C
 	// log.Printf("errno: %v\n", errno.(syscall.Errno))
 	if res.error != nil {
-		return "", ModelatorError(C.GoString(res.error))
+		return "", TraceError(C.GoString(res.error))
 	}
 	return C.GoString(res.data), nil
 }
