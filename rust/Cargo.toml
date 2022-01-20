@@ -16,7 +16,6 @@ authors = [
 ]
 
 [dependencies]
-anyhow = "1.0.45"
 clap = { version = "3.0.6", features = ["derive", "cargo"] }
 clap_complete = "3.0.2"
 directories = "4.0.1"

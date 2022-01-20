@@ -446,7 +446,6 @@ dependencies = [
 name = "modelator"
 version = "0.4.2"
 dependencies = [
- "anyhow",
  "clap",
  "clap_complete",
  "directories",
