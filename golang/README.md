@@ -8,20 +8,17 @@ _<sup>but in Golang<sup>_
 [![Status](https://github.com/informalsystems/modelator/actions/workflows/golang.yml/badge.svg)](https://github.com/informalsystems/modelator/actions/workflows/golang.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/informalsystems/modelator/go)](https://goreportcard.com/report/github.com/informalsystems/modelator/go)
 
-[Modelator](https://github.com/informalsystems/modelator)'s cousin for Golang
-
-[<img alt="Modelator Go" src="https://github.com/informalsystems/modelator/blob/main/assets/images/matrix_gopherator.png?raw=true" height="250">](https://youtu.be/wW1ar7onzuc)
 ---
 ### Instruction
 ```sh
 git clone git@github.com/informalsystems/modelator
-cd modelator
+cd golang
 # Test all examples
 go test -v ./examples/...
 ```
 
 ### Example
-[Golang port](https://github.com/informalsystems/modelator/tree/main/examples/numbersystem) of [NumberSystem](https://github.com/informalsystems/modelator/blob/main/rust/tests/integration/resource/numbers.rs)
+[Golang port](examples/numbersystem) of [NumberSystem](../rust/tests/integration/resource/numbers.rs)
 
 ```sh
 # Test NumberSystem example

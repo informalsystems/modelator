@@ -7,6 +7,32 @@
 
 The framework and tools for model-based testing.
 
+This (mono-)repository contains the source code for `modelator`.
+- [`rust`](rust) directory contains the source code for the core library, cli app and C library via FFI.
+- [`golang`](golang) directory contains the golang module using C library via FFI.
+- [`python`](python) directory contains the python code to fetch assets to set up `modelator` for the first time.
+
+## Usage
+
+There are two ways to use `modelator` - as a cli app or as a library.
+
+### CLI
+
+The latest release,
+```
+cargo install modelator
+```
+
+The `main` branch,
+```
+cargo install --git https://github.com/informalsystems/modelator
+```
+
+Make sure `$HOME/.cargo/bin` is added to your system path. Check the `modelator --help` for usage instructions.
+
+### Library
+
+Currently we support [`rust`](rust) and [`golang`](golang) libraries. Please refer to the `README.md`s at [`rust`](rust/README.md) and [`golang`](golang/README.md) directories for more details.
 
 ## Resources
 
