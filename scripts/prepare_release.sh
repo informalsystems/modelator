@@ -8,13 +8,13 @@ set -o xtrace
 git checkout -B "release/v${RELEASE_VERSION}"
 
 # update the versions on Rust crate
-sed -i "s|^version = \"[^\"]\+\"|version = \"${RELEASE_VERSION}\"|g" "$RUST_DIR/modelator/Cargo.toml"
+sed -i "s|^version = \"[^\"]\+\"|version = \"${RELEASE_VERSION}\"|g" "rust/Cargo.toml"
 
 # update Cargo.lock with latest version
-cargo build --manifest-path "$RUST_DIR/modelator/Cargo.toml"
+cargo build
 
 # update the version on Python module
-sed -i "s|^version = \"[^\"]\+\"|version = \"${RELEASE_VERSION}\"|g" "$PYTHON_DIR/pyproject.toml"
+sed -i "s|^version = \"[^\"]\+\"|version = \"${RELEASE_VERSION}\"|g" "python/pyproject.toml"
 
 # nothing to do for Go lang for now
 
