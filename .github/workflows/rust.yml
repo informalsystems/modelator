@@ -7,11 +7,7 @@ on:
       - main
     paths:
       - .github/workflows/rust.yml
-      - rs/**
-  pull_request:
-    paths:
-      - .github/workflows/rust.yml
-      - rs/**
+      - rust/**
 
 env:
   CARGO_INCREMENTAL: 0
@@ -31,6 +27,7 @@ jobs:
           - ubuntu-latest
           - macos-latest
     runs-on: ${{ matrix.os }}
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -39,16 +36,13 @@ jobs:
           toolchain: stable
           override: true
       - uses: Swatinem/rust-cache@v1
-        with:
-          working-directory: rs
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path rs/Cargo.toml --no-run
+          args: --no-run
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path rs/Cargo.toml
       - name: Setup tmate session
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
@@ -67,13 +61,11 @@ jobs:
           toolchain: stable
           override: true
       - uses: Swatinem/rust-cache@v1
-        with:
-          working-directory: rs
       - run: rustup component add rustfmt
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --manifest-path rs/Cargo.toml --all -- --check
+          args: --all -- --check
 
   cargo-docs-build:
     name: Cargo documentation build
@@ -86,12 +78,9 @@ jobs:
           toolchain: stable
           override: true
       - uses: Swatinem/rust-cache@v1
-        with:
-          working-directory: rs
       - uses: actions-rs/cargo@v1
         with:
           command: doc
-          args: --manifest-path rs/Cargo.toml
 
   cargo-clippy:
     name: Clippy
@@ -104,10 +93,8 @@ jobs:
           toolchain: stable
           override: true
       - uses: Swatinem/rust-cache@v1
-        with:
-          working-directory: rs
       - run: rustup component add clippy
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --manifest-path rs/Cargo.toml -- -D warnings
+          args: -- -D warnings

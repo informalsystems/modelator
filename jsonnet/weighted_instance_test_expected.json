@@ -1,0 +1,3209 @@
+[
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 4
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 4
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 8
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 8
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustSuccess",
+      "instance_weight": 12
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustFailure",
+      "instance_weight": 12
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestNonMonotonicHeight",
+      "instance_weight": 16
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestHeaderFromFuture",
+      "instance_weight": 20
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 9
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 9
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 18
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 18
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustSuccess",
+      "instance_weight": 27
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustFailure",
+      "instance_weight": 27
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestNonMonotonicHeight",
+      "instance_weight": 36
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestHeaderFromFuture",
+      "instance_weight": 45
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 16
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 16
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 32
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 32
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustSuccess",
+      "instance_weight": 48
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustFailure",
+      "instance_weight": 48
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestNonMonotonicHeight",
+      "instance_weight": 64
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestHeaderFromFuture",
+      "instance_weight": 80
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 5,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 25
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 5,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 25
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 5,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 50
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 5,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 50
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 5,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustSuccess",
+      "instance_weight": 75
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 5,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustFailure",
+      "instance_weight": 75
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 5,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestNonMonotonicHeight",
+      "instance_weight": 100
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 6,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 36
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 6,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 36
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 6,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 72
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 6,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 72
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 7,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 49
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 7,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 49
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 7,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 98
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 7,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 98
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 8,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 64
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 8,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 64
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 9,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 81
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 9,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 81
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 10,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 100
+   },
+   {
+      "AllNodes": [
+         "n1"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 10,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 100
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 8
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 8
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 16
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 16
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustSuccess",
+      "instance_weight": 24
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustFailure",
+      "instance_weight": 24
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestNonMonotonicHeight",
+      "instance_weight": 32
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestHeaderFromFuture",
+      "instance_weight": 40
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 18
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 18
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 36
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 36
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustSuccess",
+      "instance_weight": 54
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustFailure",
+      "instance_weight": 54
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestNonMonotonicHeight",
+      "instance_weight": 72
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestHeaderFromFuture",
+      "instance_weight": 90
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 32
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 32
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 64
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 64
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustSuccess",
+      "instance_weight": 96
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustFailure",
+      "instance_weight": 96
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 5,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 50
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 5,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 50
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 5,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 100
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 5,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 100
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 6,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 72
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 6,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 72
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 7,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 98
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 7,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 98
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 12
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 12
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 24
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 24
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustSuccess",
+      "instance_weight": 36
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustFailure",
+      "instance_weight": 36
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestNonMonotonicHeight",
+      "instance_weight": 48
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestHeaderFromFuture",
+      "instance_weight": 60
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 27
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 27
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 54
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 54
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustSuccess",
+      "instance_weight": 81
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustFailure",
+      "instance_weight": 81
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 48
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 48
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 96
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 96
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 5,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 75
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 5,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 75
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 16
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 16
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 32
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 32
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustSuccess",
+      "instance_weight": 48
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustFailure",
+      "instance_weight": 48
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestNonMonotonicHeight",
+      "instance_weight": 64
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestHeaderFromFuture",
+      "instance_weight": 80
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 36
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 36
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 72
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 72
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 64
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 64
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 5,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 100
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 5,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 100
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 20
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 20
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 40
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 40
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustSuccess",
+      "instance_weight": 60
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustFailure",
+      "instance_weight": 60
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestNonMonotonicHeight",
+      "instance_weight": 80
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestHeaderFromFuture",
+      "instance_weight": 100
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 45
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 45
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 90
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 90
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 80
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 80
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 24
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 24
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 48
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 48
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustSuccess",
+      "instance_weight": 72
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustFailure",
+      "instance_weight": 72
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestNonMonotonicHeight",
+      "instance_weight": 96
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 54
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 54
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 96
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 4,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 96
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 28
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 28
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 56
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 56
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustSuccess",
+      "instance_weight": 84
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustFailure",
+      "instance_weight": 84
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 63
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 63
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 32
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 32
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 64
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 64
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustSuccess",
+      "instance_weight": 96
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test3NotEnoughTrustFailure",
+      "instance_weight": 96
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 72
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 72
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 36
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 36
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 72
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 72
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 81
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 81
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 40
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 40
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 80
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 80
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 90
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 90
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 44
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 44
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 88
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 88
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 99
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 3,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 99
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 48
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 48
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustSuccess",
+      "instance_weight": 96
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "Test2NotEnoughTrustFailure",
+      "instance_weight": 96
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 52
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 52
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 56
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 56
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 60
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 60
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 64
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 64
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 68
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 68
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17",
+         "n18"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 72
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17",
+         "n18"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 72
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17",
+         "n18",
+         "n19"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 76
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17",
+         "n18",
+         "n19"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 76
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17",
+         "n18",
+         "n19",
+         "n20"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 80
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17",
+         "n18",
+         "n19",
+         "n20"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 80
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17",
+         "n18",
+         "n19",
+         "n20",
+         "n21"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 84
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17",
+         "n18",
+         "n19",
+         "n20",
+         "n21"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 84
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17",
+         "n18",
+         "n19",
+         "n20",
+         "n21",
+         "n22"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 88
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17",
+         "n18",
+         "n19",
+         "n20",
+         "n21",
+         "n22"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 88
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17",
+         "n18",
+         "n19",
+         "n20",
+         "n21",
+         "n22",
+         "n23"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 92
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17",
+         "n18",
+         "n19",
+         "n20",
+         "n21",
+         "n22",
+         "n23"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 92
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17",
+         "n18",
+         "n19",
+         "n20",
+         "n21",
+         "n22",
+         "n23",
+         "n24"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 96
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17",
+         "n18",
+         "n19",
+         "n20",
+         "n21",
+         "n22",
+         "n23",
+         "n24"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 96
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17",
+         "n18",
+         "n19",
+         "n20",
+         "n21",
+         "n22",
+         "n23",
+         "n24",
+         "n25"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestSuccess",
+      "instance_weight": 100
+   },
+   {
+      "AllNodes": [
+         "n1",
+         "n2",
+         "n3",
+         "n4",
+         "n5",
+         "n6",
+         "n7",
+         "n8",
+         "n9",
+         "n10",
+         "n11",
+         "n12",
+         "n13",
+         "n14",
+         "n15",
+         "n16",
+         "n17",
+         "n18",
+         "n19",
+         "n20",
+         "n21",
+         "n22",
+         "n23",
+         "n24",
+         "n25"
+      ],
+      "IS_PRIMARY_CORRECT": false,
+      "TARGET_HEIGHT": 2,
+      "TRUSTED_HEIGHT": 1,
+      "TRUSTING_PERIOD": 1400,
+      "Test": "TestFailure",
+      "instance_weight": 100
+   }
+]

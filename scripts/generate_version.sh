@@ -6,10 +6,10 @@ set -o xtrace
 [ -z $1 ] && echo "No update component provided." && exit 1
 
 # get rust-version
-LAST_RUST_VERSION=$(grep -i '^version = ' "$RUST_DIR/modelator/Cargo.toml" | sed 's|^version = "\([^\"]\+\)"|\1|g')
+LAST_RUST_VERSION=$(grep -i '^version = ' "rust/Cargo.toml" | sed 's|^version = "\([^\"]\+\)"|\1|g')
 
 # get python-version
-LAST_PYTHON_VERSION=$(grep -i '^version = ' "$PYTHON_DIR/pyproject.toml" | sed 's|^version = "\([^"]\+\)"|\1|g')
+LAST_PYTHON_VERSION=$(grep -i '^version = ' "python/pyproject.toml" | sed 's|^version = "\([^"]\+\)"|\1|g')
 
 # get golang-version
 # skip
