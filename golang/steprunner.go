@@ -3,6 +3,7 @@ package modelator
 /*
 #cgo linux,amd64 LDFLAGS: -L${SRCDIR}/../target/x86_64-unknown-linux-gnu/release -lmodelatorc -ldl -lm
 #cgo darwin,amd64 LDFLAGS: -L${SRCDIR}/../target/x86_64-apple-darwin/release -lmodelatorc -framework Security
+#cgo darwin,arm64 LDFLAGS: -L${SRCDIR}/../target/aarch64-apple-darwin/release -lmodelatorc -framework Security
 #cgo windows,amd64 LDFLAGS: -L${SRCDIR}/../target/x86_64-pc-windows-gnu/release -lmodelatorc -lws2_32 -lole32 -luserenv -lbcrypt
 #cgo CFLAGS: -I${SRCDIR}/../rust/ffi/src
 #include <lib.h>
