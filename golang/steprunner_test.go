@@ -3,7 +3,7 @@ package modelator_test
 import (
 	"testing"
 
-	modelator "github.com/informalsystems/modelator/go/pkg/core"
+	modelator "github.com/informalsystems/modelator/golang"
 )
 
 func TestModelBased(t *testing.T) {

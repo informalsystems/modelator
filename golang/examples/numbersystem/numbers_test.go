@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/informalsystems/modelator/go/pkg/core"
+	modelator "github.com/informalsystems/modelator/golang"
 )
 
-func FixedExecutions() [][]core.StepI {
-	return [][]core.StepI{
+func FixedExecutions() [][]modelator.StepI {
+	return [][]modelator.StepI{
 		{
 			Step{0, 0, None, "OK"},
 			Step{1, 0, IncreaseA, "OK"},
@@ -34,7 +34,7 @@ func TestFixedExecutions(t *testing.T) {
 		name := fmt.Sprintf("test_%v", i)
 		t.Run(name, func(t *testing.T) {
 			initialState := &NumberSystem{}
-			if err := core.Run(initialState, testRun); err != nil {
+			if err := modelator.Run(initialState, testRun); err != nil {
 				t.Error(err)
 			}
 		})
@@ -42,7 +42,7 @@ func TestFixedExecutions(t *testing.T) {
 }
 
 func TestModelBased(t *testing.T) {
-	jsonTraces, err := core.GenerateJSONTracesFromTLATests("NumbersTest.tla", "Numbers.cfg")
+	jsonTraces, err := modelator.GenerateJSONTracesFromTLATests("NumbersTest.tla", "Numbers.cfg")
 	if err != nil {
 		t.Error(err)
 	}
@@ -53,11 +53,11 @@ func TestModelBased(t *testing.T) {
 			name := fmt.Sprintf("[test: %v, trace: %v]", name, i)
 			t.Run(name, func(t *testing.T) {
 				initialState := &NumberSystem{}
-				testRunI := make([]core.StepI, len(testRun))
+				testRunI := make([]modelator.StepI, len(testRun))
 				for i, testStep := range testRun {
 					testRunI[i] = testStep
 				}
-				if err := core.Run(initialState, testRunI); err != nil {
+				if err := modelator.Run(initialState, testRunI); err != nil {
 					t.Error(err)
 				}
 			})

@@ -3,13 +3,13 @@ package numbers
 import (
 	"log"
 
-	"github.com/informalsystems/modelator/go/pkg/core"
+	modelator "github.com/informalsystems/modelator/golang"
 )
 
 // compile time check if steprunner interfaces are implemented
 var (
-	_ core.StepRunner = &NumberSystem{}
-	_ core.StepI      = Step{}
+	_ modelator.StepRunner = &NumberSystem{}
+	_ modelator.StepI      = Step{}
 )
 
 // MaxNumber is the maximum bound for a and b
@@ -77,7 +77,7 @@ func (state *NumberSystem) IncreaseB(n uint64) error {
 }
 
 // InitialStep initialize system state with initial values
-func (state *NumberSystem) InitialStep(stepI core.StepI) error {
+func (state *NumberSystem) InitialStep(stepI modelator.StepI) error {
 	step, ok := stepI.(Step)
 	if !ok {
 		return NumberSystemError("Failed to cast step interface to concrete step type")
@@ -89,7 +89,7 @@ func (state *NumberSystem) InitialStep(stepI core.StepI) error {
 }
 
 // NextStep performs given step and modifies the current state
-func (state *NumberSystem) NextStep(stepI core.StepI) error {
+func (state *NumberSystem) NextStep(stepI modelator.StepI) error {
 	step, ok := stepI.(Step)
 	if !ok {
 		return NumberSystemError("Failed to cast step interface to concrete step type")
@@ -119,7 +119,7 @@ func (state *NumberSystem) NextStep(stepI core.StepI) error {
 		return nil
 	}
 
-	return core.StepMismatch{
+	return modelator.StepMismatch{
 		Expected: step,
 		Observed: state,
 		Outcome:  outcome,
