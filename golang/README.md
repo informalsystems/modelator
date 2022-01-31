@@ -1,12 +1,12 @@
 # modelator
 _<sup>but in Golang<sup>_
 
-[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/informalsystems/modelator?filename=go%2Fgo.mod)](https://github.com/informalsystems/modelator/tree/main/go)
-[![Go project version](https://badge.fury.io/go/github.com%2Finformalsystems%2Fmodelator%2Fgo.svg)](https://badge.fury.io/go/github.com%2Finformalsystems%2Fmodelator%2Fgo)
+[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/informalsystems/modelator?filename=go.mod)](https://github.com/informalsystems/modelator)
+[![Go project version](https://badge.fury.io/go/github.com%2Finformalsystems%2Fmodelator.svg)](https://badge.fury.io/go/github.com%2Finformalsystems%2Fmodelator)
 [![License](https://img.shields.io/github/license/informalsystems/modelator)](https://github.com/informalsystems/modelator/tree/main/go/LICENSE)</br>
-[![Go Reference](https://pkg.go.dev/badge/github.com/informalsystems/modelator/go.svg)](https://pkg.go.dev/github.com/informalsystems/modelator/go)
+[![Go Reference](https://pkg.go.dev/badge/github.com/informalsystems/modelator.svg)](https://pkg.go.dev/github.com/informalsystems/modelator)
 [![Status](https://github.com/informalsystems/modelator/actions/workflows/golang.yml/badge.svg)](https://github.com/informalsystems/modelator/actions/workflows/golang.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/informalsystems/modelator/go)](https://goreportcard.com/report/github.com/informalsystems/modelator/go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/informalsystems/modelator)](https://goreportcard.com/report/github.com/informalsystems/modelator)
 
 ---
 ### Instruction
