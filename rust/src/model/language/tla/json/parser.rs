@@ -213,11 +213,29 @@ fn parse_function(i: &str) -> IResult<&str, JsonValue> {
     )(i)
 }
 
+fn parse_function_key(i: &str) -> IResult<&str, String> {
+    map(
+        preceded(
+            multispace0,
+            alt((
+                parse_bool,
+                parse_number,
+                parse_string,
+                parse_identifiers_as_values,
+            )),
+        ),
+        |value| match value {
+            JsonValue::String(string_value) => string_value,
+            _ => format!("{value}"),
+        },
+    )(i)
+}
+
 fn parse_function_entry(i: &str) -> IResult<&str, (String, JsonValue)> {
     preceded(
         multispace0,
         separated_pair(
-            parse_identifier,
+            parse_function_key,
             delimited(multispace0, complete(tag(":>")), multispace0),
             parse_any_value,
         ),
@@ -419,6 +437,7 @@ mod tests {
             /\ function = [t1 |-> "-", t2 |-> "-"]
             /\ empty_function = [key \in {} |-> value]
             /\ mix = [set |-> {-1, -2, 3}, number |-> 99]
+            /\ function_with_non_identifer_keys = "12" :> 12 @@ 13 :> "13"
         "#
     }
 
@@ -433,6 +452,10 @@ mod tests {
                 "set": [-1, -2, 3],
                 "number": 99,
             },
+            "function_with_non_identifer_keys": {
+                "12": 12,
+                "13": "13",
+            }
         })
     }
 
