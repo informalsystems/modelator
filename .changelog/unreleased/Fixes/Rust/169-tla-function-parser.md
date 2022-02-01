@@ -1,0 +1,1 @@
+- fixes function parsing for TLA+ states (#170)
