@@ -1,10 +1,10 @@
 use nom::{
     branch::alt,
     bytes::complete::{is_not, tag, take_while},
-    character::complete::{char, digit1, multispace0, satisfy},
+    character::complete::{char, digit1, multispace0, multispace1, satisfy},
     combinator::{complete, cut, map, opt, recognize, value},
     multi::{many1, separated_list0, separated_list1},
-    sequence::{delimited, pair, preceded, separated_pair},
+    sequence::{delimited, pair, preceded, separated_pair, tuple},
     IResult,
 };
 
@@ -149,39 +149,84 @@ fn parse_sequence(i: &str) -> IResult<&str, JsonValue> {
     )(i)
 }
 
-fn parse_function(i: &str) -> IResult<&str, JsonValue> {
+fn parse_empty_function(i: &str) -> IResult<&str, JsonValue> {
     map(
         delimited(
-            multispace0,
-            separated_list1(
-                delimited(multispace0, complete(tag("@@")), multispace0),
-                alt((
-                    map(parse_function_entry, |x| {
-                        JsonValue::Object(vec![x].into_iter().collect())
-                    }),
-                    delimited(
-                        pair(char('('), multispace0),
-                        parse_function,
-                        pair(multispace0, char(')')),
-                    ),
+            pair(char('['), multispace0),
+            separated_pair(
+                parse_identifier,
+                tuple((
+                    multispace0,
+                    tag("\\in"),
+                    multispace1,
+                    tag("{}"),
+                    multispace1,
+                    tag("|->"),
+                    multispace0,
                 )),
+                parse_identifier,
             ),
-            multispace0,
+            pair(multispace0, char(']')),
         ),
-        |values| {
-            JsonValue::Object(
-                values
-                    .into_iter()
-                    .flat_map(|value| {
-                        value
-                            .as_object()
-                            .unwrap()
+        |_| JsonValue::Object(Default::default()),
+    )(i)
+}
+
+fn parse_function(i: &str) -> IResult<&str, JsonValue> {
+    delimited(
+        multispace0,
+        alt((
+            parse_empty_function,
+            map(
+                separated_list1(
+                    delimited(multispace0, complete(tag("@@")), multispace0),
+                    alt((
+                        parse_empty_function,
+                        map(parse_function_entry, |x| {
+                            JsonValue::Object(vec![x].into_iter().collect())
+                        }),
+                        delimited(
+                            pair(char('('), multispace0),
+                            parse_function,
+                            pair(multispace0, char(')')),
+                        ),
+                    )),
+                ),
+                |values| {
+                    JsonValue::Object(
+                        values
                             .into_iter()
-                            .map(|(k, v)| (k.clone(), v.clone()))
-                            .collect::<Vec<_>>()
-                    })
-                    .collect(),
-            )
+                            .flat_map(|value| {
+                                value
+                                    .as_object()
+                                    .unwrap()
+                                    .into_iter()
+                                    .map(|(k, v)| (k.clone(), v.clone()))
+                                    .collect::<Vec<_>>()
+                            })
+                            .collect(),
+                    )
+                },
+            ),
+        )),
+        multispace0,
+    )(i)
+}
+
+fn parse_function_key(i: &str) -> IResult<&str, String> {
+    map(
+        preceded(
+            multispace0,
+            alt((
+                parse_bool,
+                parse_number,
+                parse_string,
+                parse_identifiers_as_values,
+            )),
+        ),
+        |value| match value {
+            JsonValue::String(string_value) => string_value,
+            _ => format!("{value}"),
         },
     )(i)
 }
@@ -190,7 +235,7 @@ fn parse_function_entry(i: &str) -> IResult<&str, (String, JsonValue)> {
     preceded(
         multispace0,
         separated_pair(
-            parse_identifier,
+            parse_function_key,
             delimited(multispace0, complete(tag(":>")), multispace0),
             parse_any_value,
         ),
@@ -390,7 +435,9 @@ mod tests {
     const fn functions_state() -> &'static str {
         r#"
             /\ function = [t1 |-> "-", t2 |-> "-"]
+            /\ empty_function = [key \in {} |-> value]
             /\ mix = [set |-> {-1, -2, 3}, number |-> 99]
+            /\ function_with_non_identifer_keys = "12" :> 12 @@ 13 :> "13"
         "#
     }
 
@@ -400,10 +447,15 @@ mod tests {
                 "t1": "-",
                 "t2": "-",
             },
+            "empty_function": {},
             "mix": {
                 "set": [-1, -2, 3],
                 "number": 99,
             },
+            "function_with_non_identifer_keys": {
+                "12": 12,
+                "13": "13",
+            }
         })
     }
 
