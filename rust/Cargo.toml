@@ -33,6 +33,7 @@ thiserror = "1.0.30"
 tracing = "0.1.29"
 tracing-subscriber = { version = "0.3.5", features = ["env-filter"] }
 ureq = "2.4.0"
+zip = "0.5.13"
 
 [dev-dependencies]
 quickcheck = "1.0.3"

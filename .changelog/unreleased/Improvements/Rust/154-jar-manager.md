@@ -1,0 +1,1 @@
+- Improved JAR management (#154).

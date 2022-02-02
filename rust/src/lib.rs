@@ -173,7 +173,8 @@ impl ModelatorRuntime {
         }
 
         // download missing jars
-        jar::download_jars_if_necessary(&self.dir)?;
+        // jar::download_jars_if_necessary(&self.dir)?;
+        jar::prepare_modelator_data_dir(&self.dir)?;
         tracing::trace!("modelator setup completed");
 
         Ok(())
