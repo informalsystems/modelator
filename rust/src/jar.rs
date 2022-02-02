@@ -56,7 +56,7 @@ impl Asset {
         match t {
             Jar::Tla => vec![(
                 "1.8.0",
-                "3d515ff77d303d71cc65647bea2037148805f7c74a053a8041495cd61c36b65e",
+                "SKIP", // god knows why tlaplus overwrites old releases. https://api.github.com/repos/tlaplus/tlaplus/releases/tags/v1.8.0
             )],
             Jar::CommunityModules => vec![(
                 "202112070657",
