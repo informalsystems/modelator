@@ -181,7 +181,6 @@ fn parse_function(i: &str) -> IResult<&str, JsonValue> {
                 separated_list1(
                     delimited(multispace0, complete(tag("@@")), multispace0),
                     alt((
-                        parse_empty_function,
                         map(parse_function_entry, |x| {
                             JsonValue::Object(vec![x].into_iter().collect())
                         }),
@@ -237,7 +236,14 @@ fn parse_function_entry(i: &str) -> IResult<&str, (String, JsonValue)> {
         separated_pair(
             parse_function_key,
             delimited(multispace0, complete(tag(":>")), multispace0),
-            parse_any_value,
+            alt((
+                delimited(
+                    delimited(multispace0, char('('), multispace0),
+                    parse_any_value,
+                    delimited(multispace0, char(')'), multispace0),
+                ),
+                parse_any_value,
+            )),
         ),
     )(i)
 }
