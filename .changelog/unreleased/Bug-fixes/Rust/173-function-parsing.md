@@ -1,0 +1,1 @@
+- Fixes function parsing (#173)
