@@ -444,6 +444,7 @@ mod tests {
             /\ empty_function = [key \in {} |-> value]
             /\ mix = [set |-> {-1, -2, 3}, number |-> 99]
             /\ function_with_non_identifer_keys = "12" :> 12 @@ 13 :> "13"
+            /\ function_with_brackets = 1 :> ("a" :> 0) @@ 2 :> ("b" :> 0)
         "#
     }
 
@@ -461,7 +462,11 @@ mod tests {
             "function_with_non_identifer_keys": {
                 "12": 12,
                 "13": "13",
-            }
+            },
+            "function_with_brackets": {
+                "1": {"a": 0},
+                "2": {"b": 0},
+            },
         })
     }
 
