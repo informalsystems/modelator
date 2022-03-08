@@ -64,6 +64,22 @@ fn parse_any_value(i: &str) -> IResult<&str, JsonValue> {
     )(i)
 }
 
+fn parse_any_value_but_function(i: &str) -> IResult<&str, JsonValue> {
+    preceded(
+        multispace0,
+        alt((
+            parse_bool,
+            parse_range,
+            parse_number,
+            parse_string,
+            parse_identifiers_as_values,
+            parse_set,
+            parse_sequence,
+            parse_record,
+        )),
+    )(i)
+}
+
 fn parse_bool(i: &str) -> IResult<&str, JsonValue> {
     map(
         alt((value(true, tag("TRUE")), value(false, tag("FALSE")))),
@@ -176,6 +192,7 @@ fn parse_function(i: &str) -> IResult<&str, JsonValue> {
     delimited(
         multispace0,
         alt((
+            parse_set_as_function,
             parse_empty_function,
             map(
                 separated_list1(
@@ -212,6 +229,28 @@ fn parse_function(i: &str) -> IResult<&str, JsonValue> {
     )(i)
 }
 
+fn parse_set_as_function(i: &str) -> IResult<&str, JsonValue> {
+    map(
+        delimited(
+            delimited(multispace0, tag("SetAsFun({"), multispace0),
+            separated_list0(
+                delimited(multispace0, char(','), multispace0),
+                delimited(
+                    delimited(multispace0, tag("<<"), multispace0),
+                    separated_pair(
+                        parse_function_key,
+                        delimited(multispace0, char(','), multispace0),
+                        parse_any_value,
+                    ),
+                    delimited(multispace0, tag(">>"), multispace0),
+                ),
+            ),
+            delimited(multispace0, tag("})"), multispace0),
+        ),
+        |values| JsonValue::Object(values.into_iter().collect()),
+    )(i)
+}
+
 fn parse_function_key(i: &str) -> IResult<&str, String> {
     map(
         preceded(
@@ -242,7 +281,7 @@ fn parse_function_entry(i: &str) -> IResult<&str, (String, JsonValue)> {
                     parse_any_value,
                     delimited(multispace0, char(')'), multispace0),
                 ),
-                parse_any_value,
+                parse_any_value_but_function,
             )),
         ),
     )(i)
@@ -445,6 +484,9 @@ mod tests {
             /\ mix = [set |-> {-1, -2, 3}, number |-> 99]
             /\ function_with_non_identifer_keys = "12" :> 12 @@ 13 :> "13"
             /\ function_with_brackets = 1 :> ("a" :> 0) @@ 2 :> ("b" :> 0)
+            /\ set_as_functions = SetAsFun({<<
+                0, 2                
+            >>, <<3, 1>>})
         "#
     }
 
@@ -467,6 +509,10 @@ mod tests {
                 "1": {"a": 0},
                 "2": {"b": 0},
             },
+            "set_as_functions": {
+                "0": 2,
+                "3": 1,
+            }
         })
     }
 
