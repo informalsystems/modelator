@@ -25,7 +25,7 @@ pub(crate) fn parse_traces(
                 .or_default()
                 .push(curr_message.drain(..).collect());
 
-            let (code, class) = line.splitn(3, ' ').nth(1).unwrap().split_once(':').unwrap();
+            let (code, class) = line.split(' ').nth(1).unwrap().split_once(':').unwrap();
             let _ = curr_message_id.insert((code.parse().unwrap(), class.parse().unwrap()));
         } else if line.starts_with("@!@!@ENDMSG ") {
             let (code, class) = curr_message_id.take().unwrap_or((0, 0));
@@ -36,7 +36,7 @@ pub(crate) fn parse_traces(
                 .or_default()
                 .push(curr_message.drain(..).collect());
 
-            let c_code = line.splitn(3, ' ').nth(1).unwrap();
+            let c_code = line.split(' ').nth(1).unwrap();
             assert_eq!(code, c_code.parse::<usize>().unwrap());
         } else {
             curr_message.push_str(line);
@@ -80,7 +80,7 @@ pub(crate) fn parse_traces(
                     code,
                     &message
                         .iter()
-                        .map(|x| x.trim().replace("\n", " "))
+                        .map(|x| x.trim().replace('\n', " "))
                         .collect::<Vec<_>>()
                         .join(" ")
                 )
