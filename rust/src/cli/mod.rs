@@ -211,7 +211,7 @@ struct CompletionsCli {
 
 impl CompletionsCli {
     fn run(&self) {
-        let mut app = App::into_app();
+        let mut app = App::command();
         let app_name = app.get_name().to_owned();
         generate(self.shell, &mut app, app_name, &mut std::io::stdout());
     }
@@ -251,7 +251,7 @@ impl Module {
     author,
     about,
     version,
-    setting = AppSettings::InferSubcommands
+    infer_subcommands = true,
 )]
 #[clap(color = ColorChoice::Auto)]
 pub struct App {
