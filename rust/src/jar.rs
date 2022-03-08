@@ -79,8 +79,8 @@ impl Asset {
                 "3624f8474c1af46d75f98bc097d7864a323c81b3808aa43689a6e1c601c027be",
             )],
             Jar::Apalache => vec![(
-                "0.18.0",
-                "26610a5c73ba25f40e6af9854dbd1c4e2fcffd9d89c549f3fcdd90c4e04bbd4a",
+                "0.22.1",
+                "d8a04322c557fb1b1815779757a31a699aaeec1bc1ba0ce7e988800f49661c35",
             )],
         }
     }
@@ -91,9 +91,9 @@ impl Asset {
         }
     }
 
-    fn zip_path(t: Jar) -> Option<&'static str> {
+    fn zip_filename(t: Jar) -> Option<&'static str> {
         match t {
-            Jar::Apalache => Some("mod-distribution/target/apalache-pkg-{VERSION}-full.jar"),
+            Jar::Apalache => Some("apalache.jar"),
             _ => None,
         }
     }
@@ -134,14 +134,19 @@ impl Asset {
         // download the zip
         let response = ureq::get(&self.link()).call()?;
 
-        if let Some(zip_path) = Self::zip_path(self.t) {
+        if let Some(zip_filename) = Self::zip_filename(self.t) {
             let mut cursor = std::io::Cursor::new(Vec::new());
             std::io::copy(&mut response.into_reader(), &mut cursor)?;
 
             // extract zip
             let mut archive = zip::ZipArchive::new(cursor).unwrap();
+            let zip_path = archive
+                .file_names()
+                .find(|name| name.ends_with(&zip_filename.replace("{VERSION}", self.version())))
+                .ok_or_else(|| Error::IO("zip does not contain file".into()))?
+                .to_owned();
             let mut reader = archive
-                .by_name(&zip_path.replace("{VERSION}", self.version()))
+                .by_name(&zip_path)
                 .map_err(|_| Error::IO("failed to extract".into()))?;
             // write jar bytes to the file
             let mut file_writer = std::io::BufWriter::new(writer);
