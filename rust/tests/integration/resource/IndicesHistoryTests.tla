@@ -24,14 +24,14 @@ VARIABLES
 
 
 \* This predicate extends the Init predicate with history tracking
-InitForTest ==
+InitForIntegration ==
   /\ Init
   /\ nsteps = 0
   /\ history = [ n \in {0} |->
      [ action |-> action, actionOutcome |-> actionOutcome]]
 
 \* This predicate extends the Next predicate with history tracking
-NextForTest ==
+NextForIntegration ==
   /\ Next
   /\ nsteps' = nsteps + 1
   /\ history' = [ n \in DOMAIN history \union {nsteps'} |->

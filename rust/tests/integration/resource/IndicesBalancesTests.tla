@@ -20,8 +20,8 @@ EXTENDS IndicesBalancesExec
 \* @type: <<Str, Str>>;
 View == << action.type, actionOutcome >>
 
-InitForTest == Init
-NextForTest == Next
+InitForIntegration == Init
+NextForIntegration == Next
 
 TestClaim == 
   action.type = "Claim"

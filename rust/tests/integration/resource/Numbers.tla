@@ -31,7 +31,7 @@ IncreaseA ==
         /\ actionOutcome' = "OK"
         /\ UNCHANGED <<b>>
     ELSE
-        /\ UNCHANGED <<a, b, action>>
+        /\ UNCHANGED <<a, b>>
         /\ actionOutcome' = "FAIL"
 
 IncreaseB ==
@@ -42,7 +42,7 @@ IncreaseB ==
         /\ actionOutcome' = "OK"
         /\ UNCHANGED <<a>>
     ELSE
-        /\ UNCHANGED <<a, b, action>>
+        /\ UNCHANGED <<a, b>>
         /\ actionOutcome' = "FAIL"
 
 Next ==
