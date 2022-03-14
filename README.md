@@ -1,5 +1,8 @@
 # Modelator
 
+|⚠️ We are working on a new and entirely reworked Modelator architecture for improved performance and interoperability. Therefore, the current version is not maintained. The reworked version will be released in Q2 2022. ⚠️|
+|-|
+
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Crates.io Version](https://img.shields.io/crates/v/modelator.svg)](https://crates.io/crates/modelator)
 [![Docs.rs](https://docs.rs/modelator/badge.svg)](https://docs.rs/modelator)
