@@ -11,3 +11,5 @@ nav_order: 3
  - automatic enumeration of tests in TLA+ files
  - generation of multiple test executions from the same test assertion
  - interfaces for execution of generated tests in target languages (currently Rust and Go)
+
+![MBT Architecture](MBT-Architecture.svg)
