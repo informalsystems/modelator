@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en-US"> <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="UTF-8"> <meta http-equiv="X-UA-Compatible" content="IE=Edge"> <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"> <link rel="stylesheet" href="/assets/css/just-the-docs-default.css"> <script type="text/javascript" src="/assets/js/vendor/lunr.min.js"></script> <script type="text/javascript" src="/assets/js/just-the-docs.js"></script> <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- Begin Jekyll SEO tag v2.8.0 --> <title>Ethereum Exploit | Model Based Testing</title> <meta name="generator" content="Jekyll v4.2.2"> <meta property="og:title" content="Ethereum Exploit"> <meta property="og:locale" content="en_US"> <meta name="description" content="Finding an exploit using Apalache"> <meta property="og:description" content="Finding an exploit using Apalache"> <link rel="canonical" href="https://mbt.informal.systems/docs/tla_basics_tutorials/ethereum.html"> <meta property="og:url" content="https://mbt.informal.systems/docs/tla_basics_tutorials/ethereum.html"> <meta property="og:site_name" content="Model Based Testing"> <meta property="og:type" content="website"> <meta name="twitter:card" content="summary"> <meta property="twitter:title" content="Ethereum Exploit"> <script type="application/ld+json"> {"@context":"https://schema.org","@type":"WebPage","description":"Finding an exploit using Apalache","headline":"Ethereum Exploit","url":"https://mbt.informal.systems/docs/tla_basics_tutorials/ethereum.html"}</script> <!-- End Jekyll SEO tag --> <script>MathJax={"tex":{"inlineMath":[["$","$"],["\\(","\\)"]],"displayMath":[["$$","$$"],["\\[","\\]"]]},"svg":{"fontCache":"global"}}</script><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head> <body> <svg xmlns="http://www.w3.org/2000/svg" style="display: none;"> <symbol id="svg-link" viewbox="0 0 24 24"> <title>Link</title> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-link"> <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path> </svg> </symbol> <symbol id="svg-search" viewbox="0 0 24 24"> <title>Search</title> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"> <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line> </svg> </symbol> <symbol id="svg-menu" viewbox="0 0 24 24"> <title>Menu</title> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"> <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line> </svg> </symbol> <symbol id="svg-arrow-right" viewbox="0 0 24 24"> <title>Expand</title> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"> <polyline points="9 18 15 12 9 6"></polyline> </svg> </symbol> <symbol id="svg-doc" viewbox="0 0 24 24"> <title>Document</title> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file"> <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline> </svg> </symbol> </svg> <div class="side-bar"> <div class="site-header"> <a href="https://mbt.informal.systems/" class="site-title lh-tight"> <div id="minititle">MBT</div> <svg class="site-logo" id="mbtlogo" width="48" height="48" viewbox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"> <path opacity="0.2" fill-rule="evenodd" clip-rule="evenodd" d="M42.061 29.9924L32.061 10.9924L23.061 29.9924H42.061Z" fill="black"></path> <path opacity="0.5" fill-rule="evenodd" clip-rule="evenodd" d="M32.5653 12.073L32.4193 12L24.0653 29.637C24.0103 29.752 23.9903 29.878 24.0043 30H27.8913L34.5513 15.847L32.5653 12.073Z" fill="black"></path> <path opacity="0.3" fill-rule="evenodd" clip-rule="evenodd" d="M32.986 29.9924L23.986 10.9924C23.986 10.9924 17.268 25.1754 15.44 29.0334C15.342 29.2414 15.356 29.4854 15.48 29.6804C15.603 29.8744 15.817 29.9924 16.047 29.9924C19.908 29.9924 32.986 29.9924 32.986 29.9924Z" fill="black"></path> <path opacity="0.5" fill-rule="evenodd" clip-rule="evenodd" d="M23.795 11.4139L15.44 29.0509C15.342 29.2589 15.356 29.5029 15.48 29.6979C15.603 29.8919 15.817 30.0099 16.047 30.0099H18.986L25.963 15.1839L24.296 11.6649L23.795 11.4139Z" fill="black"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M27.2589 37C25.7279 37 24.0279 37 22.2589 37C21.7069 37 21.2589 37.448 21.2589 38C21.2589 38.552 21.7069 39 22.2589 39C24.0279 39 25.7279 39 27.2589 39C27.8109 39 28.2589 38.552 28.2589 38C28.2589 37.448 27.8109 37 27.2589 37ZM17.2589 37C15.5429 37 13.8479 37 12.2589 37C11.7069 37 11.2589 37.448 11.2589 38C11.2589 38.552 11.7069 39 12.2589 39C13.8479 39 15.5429 39 17.2589 39C17.8109 39 18.2589 38.552 18.2589 38C18.2589 37.448 17.8109 37 17.2589 37ZM7.25895 37H5.59995C5.39195 37 5.19894 36.892 5.08994 36.715C4.97994 36.538 4.96995 36.317 5.06295 36.131L5.10195 36.055C5.34895 35.562 5.14894 34.961 4.65494 34.713C4.16194 34.466 3.55995 34.666 3.31295 35.16L3.27494 35.236C2.87194 36.042 2.91395 36.999 3.38795 37.766C3.86195 38.533 4.69895 39 5.59995 39C6.09595 39 6.65295 39 7.25895 39C7.81095 39 8.25895 38.552 8.25895 38C8.25895 37.448 7.81095 37 7.25895 37ZM30.8049 33.822L31.9589 36.132C32.0519 36.318 32.0419 36.539 31.9329 36.716C31.8789 36.801 31.8069 36.871 31.7219 36.92C31.2439 37.195 31.0789 37.807 31.3549 38.286C31.6309 38.764 32.2429 38.928 32.7209 38.653C33.0879 38.441 33.4029 38.14 33.6339 37.767C34.1069 37.001 34.1509 36.044 33.7479 35.238L32.5949 32.928C32.3479 32.434 31.747 32.234 31.253 32.48C30.76 32.727 30.5589 33.328 30.8049 33.822ZM7.33994 31.584C8.03594 30.195 8.79595 28.677 9.57795 27.113C9.82595 26.62 9.62595 26.019 9.13195 25.772C8.63795 25.524 8.03694 25.724 7.78994 26.218C7.00694 27.782 6.24695 29.299 5.55195 30.689C5.30495 31.182 5.50495 31.784 5.99795 32.031C6.49195 32.278 7.09294 32.078 7.33994 31.584ZM30.0099 13.764L28.3439 10.433C27.9049 9.555 27.0069 9 26.0259 9C26.0149 9 26.0039 9 25.9929 9C25.0119 9 24.1139 9.555 23.6749 10.433C22.3909 13.001 18.5879 20.608 16.1829 25.417C15.9359 25.91 16.137 26.511 16.63 26.758C17.124 27.005 17.7249 26.805 17.9719 26.311L22.5169 17.222L24.1039 20.402C24.3509 20.895 24.9519 21.096 25.4459 20.85C25.9399 20.603 26.1399 20.002 25.8939 19.508C25.0949 17.909 24.3349 16.386 23.6599 15.035C23.6519 15.018 23.6429 15.002 23.6339 14.987L25.4639 11.327C25.5639 11.127 25.7689 11 25.9929 11H26.0259C26.2499 11 26.4549 11.127 26.5549 11.327L28.8919 16L23.2729 27.237C22.9959 27.79 22.9299 28.415 23.0689 29H18.9999C18.4479 29 17.9999 29.448 17.9999 30C17.9999 30.552 18.4479 31 18.9999 31H40.9999C41.5519 31 41.9999 30.552 41.9999 30C41.9999 29.448 41.5519 29 40.9999 29H36.951C37.089 28.415 37.0229 27.79 36.7459 27.237L31.128 16L33.4629 11.329C33.5639 11.127 33.7699 11 33.9959 11H34.0229C34.2489 11 34.4549 11.127 34.5559 11.329L42.1029 26.423C42.3499 26.917 42.951 27.117 43.445 26.871C43.939 26.624 44.1389 26.023 43.8919 25.529C41.4919 20.728 37.6399 13.025 36.3449 10.435C35.9049 9.555 35.0069 9 34.0229 9C34.0139 9 34.0049 9 33.9959 9C33.0129 9 32.1139 9.555 31.6739 10.435L30.0099 13.764ZM44.006 28C44.555 28.003 44.9999 28.45 44.9999 29C44.9999 29.55 44.555 29.997 44.006 30H43.9999C43.4479 30 42.9999 29.552 42.9999 29C42.9999 28.448 43.4479 28 43.9999 28H44.006ZM15.9999 28C16.5519 28 16.9999 28.448 16.9999 29C16.9999 29.552 16.5519 30 15.9999 30C15.4479 30 14.9999 29.552 14.9999 29C14.9999 28.448 15.4479 28 15.9999 28ZM30.0099 18.236L27.5639 23.128C28.3969 24.794 29.7029 27.406 30.4999 29H34.4209C34.629 29 34.8219 28.892 34.9309 28.715C35.0399 28.539 35.0499 28.318 34.9569 28.132L30.0099 18.236ZM26.514 25.227L25.0619 28.132C24.9689 28.318 24.9789 28.539 25.0879 28.715C25.1969 28.892 25.391 29 25.598 29H28.3979L26.514 25.227ZM11.8169 22.642C12.5909 21.097 13.3499 19.581 14.0549 18.172C14.3019 17.678 14.1019 17.077 13.6089 16.83C13.1149 16.583 12.5139 16.783 12.2669 17.276C11.5619 18.685 10.803 20.201 10.029 21.747C9.78095 22.241 9.98195 22.842 10.475 23.089C10.969 23.336 11.5699 23.136 11.8169 22.642ZM15.4629 10.892L14.505 12.805C14.258 13.299 14.4579 13.9 14.9519 14.147C15.4449 14.394 16.047 14.194 16.294 13.701L17.2519 11.788C17.4929 11.305 17.9869 11 18.5269 11H18.5279C18.9939 11 19.4259 11.228 19.6909 11.601C20.0099 12.051 20.635 12.157 21.085 11.838C21.535 11.519 21.642 10.894 21.322 10.444C20.687 9.547 19.6489 9 18.5279 9H18.5269C17.2299 9 16.0439 9.732 15.4629 10.892Z" fill="black"></path> </svg> </a> <a href="#" id="menu-button" class="site-button"> <svg viewbox="0 0 24 24" class="icon"><use xlink:href="#svg-menu"></use></svg> </a> </div> <nav role="navigation" aria-label="Main" id="site-nav" class="site-nav"> <ul class="nav-list">
+<li class="nav-list-item">
+<a href="#" class="nav-list-expander"><svg viewbox="0 0 24 24"><use xlink:href="#svg-arrow-right"></use></svg></a><a href="https://mbt.informal.systems/" class="nav-list-link">Model Based Testing</a><ul class="nav-list "><li class="nav-list-item "><a href="https://mbt.informal.systems/docs/modelator.html" class="nav-list-link">Modelator</a></li></ul>
+</li>
+<li class="nav-list-item active">
+<a href="#" class="nav-list-expander"><svg viewbox="0 0 24 24"><use xlink:href="#svg-arrow-right"></use></svg></a><a href="https://mbt.informal.systems/docs/tla_basics_tutorials/" class="nav-list-link">TLA+ Basics Tutorials</a><ul class="nav-list ">
+<li class="nav-list-item "><a href="https://mbt.informal.systems/docs/tla_basics_tutorials/tla+cheatsheet.html" class="nav-list-link">TLA+ cheat sheet</a></li>
+<li class="nav-list-item "><a href="https://mbt.informal.systems/docs/tla_basics_tutorials/tutorial.html" class="nav-list-link">Overview</a></li>
+<li class="nav-list-item "><a href="https://mbt.informal.systems/docs/tla_basics_tutorials/hello_world.html" class="nav-list-link">Hello World</a></li>
+<li class="nav-list-item "><a href="https://mbt.informal.systems/docs/tla_basics_tutorials/typechecking.html" class="nav-list-link">Typechecking</a></li>
+<li class="nav-list-item "><a href="https://mbt.informal.systems/docs/tla_basics_tutorials/apalache_vs_tlc.html" class="nav-list-link">Apalache vs TLC</a></li>
+<li class="nav-list-item active"><a href="https://mbt.informal.systems/docs/tla_basics_tutorials/ethereum.html" class="nav-list-link active">Ethereum Exploit</a></li>
+<li class="nav-list-item "><a href="https://mbt.informal.systems/docs/tla_basics_tutorials/generating_traces.html" class="nav-list-link">Generating Traces</a></li>
+<li class="nav-list-item "><a href="https://mbt.informal.systems/docs/tla_basics_tutorials/ecosystem.html" class="nav-list-link">(Bonus) Ecosystem</a></li>
+</ul>
+</li>
+</ul> </nav> <footer class="site-footer"> This site uses <a href="https://github.com/just-the-docs/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll. </footer> </div> <div class="main" id="top"> <div id="main-header" class="main-header"> <div class="search"> <div class="search-input-wrap"> <input type="text" id="search-input" class="search-input" tabindex="0" placeholder="Search Model Based Testing" aria-label="Search Model Based Testing" autocomplete="off"> <label for="search-input" class="search-label"><svg viewbox="0 0 24 24" class="search-icon"><use xlink:href="#svg-search"></use></svg></label> </div> <div id="search-results" class="search-results"></div> </div> </div> <div id="main-content-wrap" class="main-content-wrap"> <nav aria-label="Breadcrumb" class="breadcrumb-nav"> <ol class="breadcrumb-nav-list"> <li class="breadcrumb-nav-list-item"><a href="https://mbt.informal.systems/docs/tla_basics_tutorials/">TLA+ Basics Tutorials</a></li> <li class="breadcrumb-nav-list-item"><span>Ethereum Exploit</span></li> </ol> </nav> <div id="main-content" class="main-content" role="main"> <h1 id="finding-an-ethereum-exploit-using-apalache"> <a href="#finding-an-ethereum-exploit-using-apalache" class="anchor-heading" aria-labelledby="finding-an-ethereum-exploit-using-apalache"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Finding an Ethereum exploit using Apalache </h1> <p><strong>The .tla and other referenced files are included <a href="https://github.com/informalsystems/modelator/tree/main/jekyll/docs/tla_basics_tutorials/models">here</a>.</strong></p> <p>In ‘Hello World’ we used TLC to check a simple model. Now we will walk through a real model. The model models part of the ERC20 Ethereum blockchain technical standard; in particular the model can be used to generate a trace which exploits the API to transfer funds to an attackers address. The model was written by Igor Konnov.</p> <h2 id="intro"> <a href="#intro" class="anchor-heading" aria-labelledby="intro"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Intro </h2> <p>This model builds on the skills gained in <a href="./hello_world">‘Hello World’</a> and <a href="./typechecking">‘Typechecking’</a>.</p> <p>The model variables use a richer set of data structures including integers, tuples, and key value maps (called functions in TLA+). The operator definitions are also more complicated, making more use of the LET statement to define helper operators inline.</p> <p>Finally, we will search for a more interesting behavior pattern than we did in ‘Hello World’: an execution that withdraws funds from a target wallet into an attackers wallet. We will see how TLA+ can be used to find vulnerabilities in a real system.</p> <p>You will probably find the <a href="./tla+cheatsheet">cheatsheet</a> useful while reading.</p> <h2 id="the-system-we-model"> <a href="#the-system-we-model" class="anchor-heading" aria-labelledby="the-system-we-model"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> The system we model </h2> <p>The system being modeled maintains addresses for blockchain wallets. It’s possible to transfer funds between addresses by executing transactions on the blockchain. There is a pool which holds transactions that have been submitted for execution, but have not yet been executed; these are pending transactions. Additionally, it is possible for wallet owners to delegate the ability to transfer their funds to a third party. This functionality is used in <a href="https://en.wikipedia.org/wiki/Smart_contract">smart contracts</a>.</p> <p>The Ethereum ERC20 standard defines an <a href="https://eips.ethereum.org/EIPS/eip-20">API</a> for the system. The API has three calls</p> <ul> <li>
+<code class="language-plaintext highlighter-rouge">SubmitTransfer(sender, toAddr, value)</code><br> Submit a transfer order, sending <code class="language-plaintext highlighter-rouge">value</code> from the address of <code class="language-plaintext highlighter-rouge">sender</code> to <code class="language-plaintext highlighter-rouge">toAddr</code>. The order will only be processed if the balance of the <code class="language-plaintext highlighter-rouge">sender</code> address is at least <code class="language-plaintext highlighter-rouge">value</code>.</li> <li>
+<code class="language-plaintext highlighter-rouge">SubmitTransferFrom(sender, fromAddr, toAddr, value)</code><br> Submit a transfer order, sending <code class="language-plaintext highlighter-rouge">value</code> from <code class="language-plaintext highlighter-rouge">fromAddr</code> to <code class="language-plaintext highlighter-rouge">toAddr</code>. The order will only be processed if the balance of the <code class="language-plaintext highlighter-rouge">fromAddr</code> is at least <code class="language-plaintext highlighter-rouge">value</code> <em>and</em> the owner of <code class="language-plaintext highlighter-rouge">fromAddr</code> has previously given permission for <code class="language-plaintext highlighter-rouge">sender</code> to send transactions on their behalf, via the <em>SubmitApprove(…)</em> call.</li> <li>
+<code class="language-plaintext highlighter-rouge">SubmitApprove(sender, spender, value)</code><br> Submit an order allowing <code class="language-plaintext highlighter-rouge">spender</code> to transfer funds from <code class="language-plaintext highlighter-rouge">sender</code>’s address on their behalf, up to a total sum of <code class="language-plaintext highlighter-rouge">value</code>.</li> </ul> <p>The orders are submitted to the pendingTransactions pool. While the pool is not empty the blockchain will select and execute orders from the pool in a non-deterministic order.</p> <p>You may notice that the descriptions of the <em>Submit*</em> API calls are not totally clear with respect to ordering and timing. We will see that this is exactly the problem with the API.</p> <h2 id="defining-state"> <a href="#defining-state" class="anchor-heading" aria-labelledby="defining-state"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Defining State </h2> <p>We isolate parts of the blockchain system relevant to the behavior we are trying to understand. For the purpose of verifying the API we should track</p> <ul> <li>A set of blockchain addresses</li> <li>The balance of each address</li> <li>For each pair of addresses (A, B), the value address A has allowed address B to transfer to third parties on their behalf</li> <li>The pool of pending transactions</li> </ul> <h3 id="data-declarations"> <a href="#data-declarations" class="anchor-heading" aria-labelledby="data-declarations"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Data Declarations </h3> <p>Apalache lets you define type aliases in a typedefs.tla file. You import them all at once using the EXTEND keyword in other .tla files. We define aliases for an ADDR (address) and TX (transaction) type.</p>
+<pre><code class="language-tla">\* (In typedefs.tla)
+
+(*
+
+An account address, in our case, simply an uninterpreted string:
+@typeAlias: ADDR = Str;
+
+A transaction (a la discriminated union but all fields are packed together):
+@typeAlias: TX = [
+    tag: Str,
+    id: Int,
+    fail: Bool,
+    sender: ADDR,
+    spender: ADDR,
+    fromAddr: ADDR,
+    toAddr: ADDR,
+    value: Int
+];
+
+*)
+</code></pre>
+<p>We define ADDR as an alias for the builtin Str string type. We define TX as a composition of built in types and other aliases. In this case TX is a <em>record</em> (struct) with types associated to keys.</p> <p>For the state we define variables</p>
+<pre><code class="language-tla">VARIABLES
+    \*
+    \* Token balance for every account. This is exactly as `balanceOf` in ERC20.
+    \* @type: ADDR -&gt; Int;
+    balanceOf,
+    \*
+    \* Allowance to transfer tokens
+    \* from owner (1st element) by spender (2nd element).
+    \* This is exactly as `allowance` of ERC20.
+    \* @type: &lt;&lt;ADDR, ADDR&gt;&gt; -&gt; Int;
+    allowance,
+    \*
+    \* Pending transactions to be executed against the contract.
+    \* Note that we have a set of transactions instead of a sequence,
+    \* as the order of transactions on Ethereum is not predefined.
+    \* To make it possible to submit two 'equal' transactions,
+    \* we introduce a unique transaction id.
+    \* @type: Set(TX);
+    pendingTransactions,
+    \*
+    \* The last executed transaction.
+    \* @type: TX;
+    lastTx,
+    \*
+    \* A serial number to assign unique ids to transactions
+    \* @type: Int;
+    nextTxId
+</code></pre>
+<p>Breaking them down we have</p> <ul> <li>balanceOf with type <code class="language-plaintext highlighter-rouge">ADDR -&gt; Int</code><br> This is Apalache’s notation for specifying function (key value map) types. balanceOf is a function mapping addresses (ADDR) to integers (Int).</li> <li>allowance with type <code class="language-plaintext highlighter-rouge">&lt;&lt;ADDR, ADDR&gt;&gt; -&gt; Int</code><br> Each allowance is an association between an allowing address, the allowed address, and the value that the allowing address allows the allowed address to transfer. We can store this as a function mapping pairs («T,T») to integers.</li> <li>pendingTransactions with type <code class="language-plaintext highlighter-rouge">Set(TX)</code><br> The pendingTransactions pool is a set, as it has no concept of order. In this case it is a set of the TX type that we defined an alias for earlier.</li> <li>lastTx with type <code class="language-plaintext highlighter-rouge">TX</code><br> The model checker will always give you traces as a sequence of states. It can be useful to have additional information to understand why one state follows another in the sequence. Storing additional state variables can be useful if they record the <em>reason</em> that the state changed the way it did. Saving the last processed transaction in the lastTx variable will make it easier for us to infer the flow of transactions in a trace.</li> <li>nextTxId with type <code class="language-plaintext highlighter-rouge">Int</code><br> We would like to have multiple identical transactions in the pendingTransactions pool. We modeled the pool as a set, which can only store one of a given value. Adding a unique id to transactions lets us store multiple logically identical transactions in the pool.</li> </ul> <p>The absolute values of the addresses in the system are unimportant and we can model a fixed number of addresses without it affecting API interactions. This means we can define an immutable set of ADDR types: an operator taking no input and giving us a fixed set of addresses.</p>
+<pre><code class="language-tla">\* @type: () =&gt; Set(ADDR);
+ADDRESSES == { "addr1", "addr2", "addr3" }
+</code></pre>
+<h3 id="data-definitions"> <a href="#data-definitions" class="anchor-heading" aria-labelledby="data-definitions"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Data Definitions </h3> <p>We have declared the data in the system but not defined concrete values. In particular we should define initial values for the variables.</p>
+<pre><code class="language-tla">Init ==
+    \* every address has a non-negative number of tokens
+    /\ balanceOf \in [ADDRESSES -&gt; Nat]
+    \* no account is allowed to withdraw from another account
+    /\ allowance = [ pair \in ADDRESSES \X ADDRESSES |-&gt; 0 ]
+    \* no pending transactions
+    /\ pendingTransactions = {}
+    /\ nextTxId = 0
+    /\ lastTx = [ id |-&gt; 0, tag |-&gt; "None", fail |-&gt; FALSE ]
+</code></pre>
+<p>TLA+ syntax can be opaque. Step by step</p> <ul> <li>
+<code class="language-plaintext highlighter-rouge">balanceOf \in [ADDRESSES -&gt; Nat]</code><br> balanceOf is <em>in</em> the set of <em>all</em> functions mapping addresses to natural numbers</li> <li>
+<code class="language-plaintext highlighter-rouge">allowance = [ pair \in ADDRESSES \X ADDRESSES |-&gt; 0 ]</code><br> allowance is <em>the</em> function whose keys are all the possible pairs of addresses, and whose values are all 0.</li> <li>
+<code class="language-plaintext highlighter-rouge">pendingTransactions = {}</code><br> pendingTransactions is the empty set</li> <li>
+<code class="language-plaintext highlighter-rouge">nextTxId = 0</code><br> nextTxId is 0</li> <li>
+<code class="language-plaintext highlighter-rouge">lastTx = [ id |-&gt; 0, tag |-&gt; "None", fail |-&gt; FALSE ]</code><br> lastTx is the record mapping id to 0, tag to “None” and fail to FALSE</li> </ul> <p>Remember: Init is a boolean function that will evaluate true for a subset of <em>all</em> possible states. In this case Init will match (hold true for) states where</p> <ol> <li>balanceOf is <em>a</em> function mapping addresses to natural numbers</li> <li>AND allowance is <em>the</em> function mapping all pairs of addresses to 0</li> <li>AND pendingTransactions is <em>the</em> empty set</li> <li>AND nextTxId is 0</li> <li> <div class="table-wrapper"><table> <tbody> <tr> <td>AND lastTx is <em>exactly</em> the record [ id</td> <td>-&gt; 0, tag</td> <td>-&gt; “None”, fail</td> <td>-&gt; FALSE ]</td> </tr> </tbody> </table></div> </li> </ol> <p>The model checker will check <em>all</em> systems whose initial state matches the above criteria!</p> <h2 id="defining-transitions"> <a href="#defining-transitions" class="anchor-heading" aria-labelledby="defining-transitions"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Defining Transitions </h2> <p>We have defined the variables in the system, now we must define transitions. The Next operator defines which transitions are allowed in the system.</p>
+<pre><code class="language-tla">Next ==
+    \/ \E sender, toAddr \in ADDRESSES, value \in Int:
+        SubmitTransfer(sender, toAddr, value)
+    \/ \E sender, fromAddr, toAddr \in ADDRESSES, value \in Int:
+        SubmitTransferFrom(sender, fromAddr, toAddr, value)
+    \/ \E sender, spender \in ADDRESSES, value \in Int:
+        SubmitApprove(sender, spender, value)
+    \/ \E tx \in pendingTransactions:
+        \/ /\ tx.tag = "transfer"
+           /\ ProcessTransfer(tx)
+        \/ /\ tx.tag = "transferFrom"
+           /\ ProcessTransferFrom(tx)
+        \/ /\ tx.tag = "approve"
+           /\ ProcessApprove(tx)
+</code></pre>
+<p>There are 6 actions, or types of transition in the system. They are</p> <ul> <li>SubmitTransfer(sender, toAddr, value)</li> <li>SubmitTransferFrom(sender, fromAddr, toAddr, value)</li> <li>SubmitApprove(sender, spender, value)</li> <li>ProcessTransfer(tx)</li> <li>ProcessTransferFrom(tx)</li> <li>ProcessApprove(tx)</li> </ul> <p>The three <em>Submit*</em> actions match the API calls and the <em>Process*</em> actions define the processing of a pending transaction from the pendingTransactions pool.</p> <p>The actions are written using parameterized operators, this makes the code more readable.</p>
+<pre><code class="language-tla">SubmitTx(tx) == 
+    /\ pendingTransactions' = pendingTransactions \union { tx }
+    /\ lastTx' = [ id |-&gt; 0, tag |-&gt; "None", fail |-&gt; FALSE ]
+    /\ nextTxId' = nextTxId + 1
+    /\ UNCHANGED &lt;&lt;balanceOf, allowance&gt;&gt;
+
+SubmitTransfer(_sender, _toAddr, _value) == 
+    SubmitTx([  
+                id |-&gt; nextTxId,
+                tag |-&gt; "transfer",
+                fail |-&gt; FALSE,
+                sender |-&gt; _sender,
+                toAddr |-&gt; _toAddr,
+                value |-&gt; _value
+            ])
+
+SubmitTransferFrom(_sender, _fromAddr, _toAddr, _value) == 
+    SubmitTx([
+                id |-&gt; nextTxId,
+                tag |-&gt; "transferFrom",
+                fail |-&gt; FALSE,
+                sender |-&gt; _sender,
+                fromAddr |-&gt; _fromAddr,
+                toAddr |-&gt; _toAddr,
+                value |-&gt; _value
+            ])
+
+SubmitApprove(_sender, _spender, _value) == 
+    SubmitTx([
+                id |-&gt; nextTxId,
+                tag |-&gt; "approve",
+                fail |-&gt; FALSE,
+                sender |-&gt; _sender,
+                spender |-&gt; _spender,
+                value |-&gt; _value
+            ])
+</code></pre>
+<p>We see that each of the <em>Submit*</em> operators delegates to the <em>SubmitTx(tx)</em> operator. Each operator adds a new transaction of TX type to the pendingTransactions set (and increments the unique nextTxId). Each transaction is tagged with a string “transfer”, “transferFrom” or “approve”. This allows us to disambiguate transactions in the <em>Process*</em> actions.</p> <h3 id="processtransfer"> <a href="#processtransfer" class="anchor-heading" aria-labelledby="processtransfer"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> ProcessTransfer </h3> <p>The <em>Process*</em> actions make use of the LET keyword to define inline operators. Inline operators are analogous to local variables or lambda functions in typical programming languages.</p>
+<pre><code class="language-tla">ProcessTransfer(tx) == 
+    /\ pendingTransactions' = pendingTransactions \ { tx }
+    /\ UNCHANGED &lt;&lt;allowance, nextTxId&gt;&gt;
+    /\  LET fail ==
+          \/ tx.value &lt; 0
+          \/ tx.value &gt; balanceOf[tx.sender]
+          \/ tx.sender = tx.toAddr
+        IN
+        /\ lastTx' = [ tx EXCEPT !.fail = fail ]
+        /\ IF fail
+           THEN UNCHANGED balanceOf
+           ELSE 
+           \* transaction succeeds
+           \* update the balances of the 'sender' and 'toAddr' addresses
+           balanceOf' = [ 
+               balanceOf EXCEPT
+               ![tx.sender] = @ - tx.value,
+               ![tx.toAddr] = @ + tx.value
+           ]
+</code></pre>
+<p>ProcessTransfer takes a TX type tx, tagged with “transfer”, as input. For a pair of states (CurrentState, NextState). In all cases where the ProcessTransfer action is taken, the tx is removed from pendingTransactions, and allowance and nextTxId do not change. Additionally, there <em>may</em> be a change to the balanceOf variable.</p> <p><em>fail</em> is defined as a boolean: the transaction will fail if the value field is negative, or if the value is greater than the senders balance, or if the sender tries to send funds to themself (tx.sender = tx.toAddr).</p> <p><em>fail</em> is used: the lastTx variable in NextState (lastTx’) must be equal to tx, except for in the .fail key - where it should match the value of the inline operator <em>fail</em>. The syntax [ f EXCEPT !.foo = bar ] is the record f except for that the key foo is equal to bar.</p> <p><em>fail</em> is also used to update the balanceOf variable (or not). If <em>fail</em> is true then the transaction is void and the balances are not updated. However, if the transaction did not fail then the balanceOf variable is updated for the keys tx.sender and tx.toAddr. The syntax [f EXCEPT ![foo] = g(@)] is the function f except for that the key equal to the value of foo is equal to the value of the operator g(@), where @ is the value of of foo in f (@ can be used as a variable).</p> <p>If the transaction does not fail, funds are transferred: the sender balance decreases by tx.value and the toAddr balance increases by tx.value.</p> <h3 id="processtransferfrom"> <a href="#processtransferfrom" class="anchor-heading" aria-labelledby="processtransferfrom"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> ProcessTransferFrom </h3> <p><em>transfer</em> transactions are made by addresses transferring their own funds. <em>transferFrom</em> transactions transfer funds between any two addresses, so long as the caller of transferFrom has been given approval.</p>
+<pre><code class="language-tla">ProcessTransferFrom(tx) == 
+    /\ pendingTransactions' = pendingTransactions \ { tx }
+    /\ UNCHANGED nextTxId
+    /\  LET fail ==
+          \/ tx.value &lt; 0
+          \/ tx.value &gt; balanceOf[tx.fromAddr]
+          \/ tx.value &gt; allowance[tx.fromAddr, tx.sender]
+          \/ tx.fromAddr = tx.toAddr
+        IN
+        /\ lastTx' = [ tx EXCEPT !.fail = fail ]
+        /\  IF fail
+            THEN UNCHANGED &lt;&lt;balanceOf, allowance&gt;&gt;
+            ELSE
+            \* transaction succeeds
+            \* update the balances of the 'fromAddr' and 'toAddr' addresses
+            /\ balanceOf' = [
+                    balanceOf EXCEPT
+                    ![tx.fromAddr] = @ - tx.value,
+                    ![tx.toAddr] = @ + tx.value
+               ]
+            \* decrease the allowance for the sender
+            /\ allowance' = [
+                    allowance EXCEPT
+                    ![tx.fromAddr, tx.sender] = @ - tx.value
+               ]
+</code></pre>
+<p>Similarly to the ProcessTransfer action, ProcessTransferFrom defines an inline <em>fail</em> operator and uses it control the logic elsewhere in the action. In this case the transaction will fail if</p> <ul> <li>the value is negative</li> <li>the fromAddr has insufficient balance to make the transfer</li> <li>the value is greater than the amount tx.fromAddr has allowed tx.sender to spend on their behalf</li> <li>the fromAddr and toAddr are the same</li> </ul> <p>If the transaction does not fail, then the balances are updated and the spending allowance is decreased.</p> <h3 id="processapprove"> <a href="#processapprove" class="anchor-heading" aria-labelledby="processapprove"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> ProcessApprove </h3> <p>ProcessApprove does not transfer funds: it updates the allowance (quantity of funds) that tx.spender can spend on behalf of tx.sender.</p> <p>The transaction will fail if the tx.value field is negative or if tx.sender = tx.spender.</p>
+<pre><code class="language-tla">ProcessApprove(tx) ==
+    /\ pendingTransactions' = pendingTransactions \ { tx }
+    /\ UNCHANGED &lt;&lt;balanceOf, nextTxId&gt;&gt;
+    /\  LET fail == tx.value &lt; 0 \/ tx.sender = tx.spender IN
+        /\ lastTx' = [ tx EXCEPT !.fail = fail ]
+        /\  IF fail
+            THEN UNCHANGED allowance
+            ELSE
+            \* transaction succeeds
+            \* set the allowance for the pair &lt;&lt;sender, spender&gt;&gt; to value
+            allowance' = [ 
+                allowance EXCEPT
+                ![tx.sender, tx.spender] = tx.value 
+            ]
+</code></pre>
+<h2 id="type-checking"> <a href="#type-checking" class="anchor-heading" aria-labelledby="type-checking"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Type checking </h2> <p>We should run the type checker to make sure we have not made a silly mistake writing the model. The model has medium complexity and size so annotating types for the variables and the ADDRESSES operator should be enough for Apalache to be able to understand the entire model.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java <span class="nt">-jar</span> apalache-pkg-0.17.5-full.jar typecheck ERC20.tla
+
+<span class="c"># Apalache output:</span>
+<span class="c"># ...</span>
+<span class="c"># Type checker [OK]</span>
+</code></pre></div></div> <p>You should see Type checker [OK].</p> <h2 id="finding-an-exploit"> <a href="#finding-an-exploit" class="anchor-heading" aria-labelledby="finding-an-exploit"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Finding an exploit </h2> <h3 id="trace-invariants-using-seqstate"> <a href="#trace-invariants-using-seqstate" class="anchor-heading" aria-labelledby="trace-invariants-using-seqstate"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Trace Invariants using Seq(STATE) </h3> <p>We have defined the state and the allowed transitions. It is time to explore behavior using Apalache.</p> <p>Apalache lets you define <a href="https://apalache.informal.systems/docs/apalache/principles/invariants.html?highlight=invariant#trace-invariants">trace invariants</a>: boolean functions over the entire sequence of states in an execution. They let you detect system behavior that single state boolean functions would not be able to detect.</p> <p>A trace invariant should be an operator of the following form</p>
+<pre><code class="language-tla">\* @type: Seq(STATE) =&gt; Bool;
+Foo(trace) == ...
+</code></pre>
+<p>In order to use trace invariants we must define a STATE type alias in typdefs.tla. The STATE type should be a record using variable names as keys, mapping to the variable type.</p>
+<pre><code class="language-tla">(*
+
+  @typeAlias: STATE = [
+    balanceOf: ADDR -&gt; Int,
+    allowance: &lt;&lt;ADDR, ADDR&gt;&gt; -&gt; Int, 
+    pendingTransactions: Set(TX),
+    lastTx: TX,
+    nextTxId: Int
+  ];
+
+*)
+</code></pre>
+<p>It is straightforward to copy the declerations following the VARIABLES keyword that we already wrote.</p> <p>Given the alias, Foo allows us to access any state in the execution trace using sequence indexing (1-based). For example we can access the initial state with trace[1], the second state with trace[2] etc.</p> <h3 id="trace-invariant-all-fund-transfers-have-sufficient-approval"> <a href="#trace-invariant-all-fund-transfers-have-sufficient-approval" class="anchor-heading" aria-labelledby="trace-invariant-all-fund-transfers-have-sufficient-approval"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Trace Invariant: All Fund Transfers Have Sufficient Approval </h3> <p>The Ethereum API has the expected behavior that if you approve a third party to make transfers from your address, then the sum of those transfers should not exceed the value that you specified.</p> <p>We write a trace invariant that says</p> <p>“Whenever a third party makes transfers from a given address on behalf of the owner, an <em>Approve</em> transaction with a value not less than the sum of the transfers should have been submitted by the owner of the address, before all transfers included in the sum were made.”</p> <p>We can specify this criteria in TLA+</p>
+<pre><code class="language-tla">\* @type: Seq(STATE) =&gt; Bool;
+AllFundTransfersHaveSufficientApproval(trace) ==
+    \A spender, fromAddr \in ADDRESSES:
+        LET TransferIndices == {
+            i \in DOMAIN trace:
+                LET tx == trace[i].lastTx IN
+                /\ tx.tag = "transferFrom"
+                /\ ~tx.fail
+                /\ tx.fromAddr = fromAddr
+                /\ tx.sender = spender
+                /\ 0 &lt; tx.value
+        }
+        IN
+        \* the sum of all transfers from 'fromAddr' to 'toAddr'
+        LET SumOfTransfers ==
+            LET Add(sum, i) == sum + trace[i].lastTx.value IN
+            FoldSet(Add, 0, TransferIndices)
+        IN
+        \* there exists an approval for the whole transfer sum
+        LET ExistsApprovalForSumInPast ==
+          \E i \in DOMAIN trace:
+            LET approval_tx == trace[i].lastTx IN
+            /\ approval_tx.tag = "approve"
+            /\ spender = approval_tx.spender
+            /\ fromAddr = approval_tx.sender
+            \* all transfers are made after the approval
+            /\ \A j \in TransferIndices: i &lt; j
+            /\ ~approval_tx.fail
+            \* the sender of this transaction is allowing the spender
+            \* to spend at most the sum of the made transfers.
+            /\ SumOfTransfers &lt;= approval_tx.value
+        IN
+        SumOfTransfers &lt;= 0 \/ ExistsApprovalForSumInPast
+</code></pre>
+<p>There are a few things going on here.</p> <p>First of all we must check the condition for all pairs of addresses</p>
+<pre><code class="language-tla">\A spender, fromAddr \in ADDRESSES:
+    ...
+</code></pre>
+<p>For each pair we define an inline operator TransferIndices, the set of indexes into the sequence of states in which a transfer was made by <code class="language-plaintext highlighter-rouge">spender</code> from <code class="language-plaintext highlighter-rouge">fromAddr</code> to another address.</p>
+<pre><code class="language-tla">LET TransferIndices == {
+        i \in DOMAIN trace:
+            LET tx == trace[i].lastTx IN
+            /\ tx.tag = "transferFrom"
+            /\ ~tx.fail
+            /\ tx.fromAddr = fromAddr
+            /\ tx.sender = spender
+            /\ 0 &lt; tx.value
+    }
+</code></pre>
+<p>We can collect the sum of these transfers by using the FoldSet operator included in the <a href="https://github.com/informalsystems/apalache/blob/unstable/src/tla/Apalache.tla">Apalache library module</a> (EXTENDS Apalache).</p>
+<pre><code class="language-tla">LET SumOfTransfers ==
+    LET Add(sum, i) == sum + trace[i].lastTx.value IN
+    FoldSet(Add, 0, TransferIndices)
+</code></pre>
+<p>The <a href="https://github.com/informalsystems/apalache/blob/2b736c9ffd874d583de0c1e57ecd100bc251b517/src/tla/Apalache.tla#L78">FoldSet</a> operator is one of the most useful reusable operators available. The form is</p>
+<pre><code class="language-tla">FoldSet(Combiner, initialValue, inputSet)
+</code></pre>
+<p>where Combiner is an operator</p>
+<pre><code class="language-tla">Combiner(accumulatedValue, nextValue)
+</code></pre>
+<p>The value of a FoldSet call is the result of repeatedly applying Combiner to successive elements in inputSet (in unpredictable order) as well as the value accumulated so far in the process.</p> <p>Our usage SumOfTransfers sums the .value field of the lastTx variable for each state indexed by TransferIndices.</p>
+<pre><code class="language-tla">LET SumOfTransfers ==
+    LET Add(sum, i) == sum + trace[i].lastTx.value IN
+    FoldSet(Add, 0, TransferIndices)
+</code></pre>
+<p>A last component of our trace operator is ExistsApprovalForSumInPast</p>
+<pre><code class="language-tla">    LET ExistsApprovalForSumInPast ==
+        \E i \in DOMAIN trace:
+        LET approval_tx == trace[i].lastTx IN
+        /\ approval_tx.tag = "approve"
+        /\ spender = approval_tx.spender
+        /\ fromAddr = approval_tx.sender
+        \* all transfers are made after the approval
+        /\ \A j \in TransferIndices: i &lt; j
+        /\ ~approval_tx.fail
+        \* the sender of this transaction is allowing the spender
+        \* to spend at most the sum of the made transfers.
+        /\ SumOfTransfers &lt;= approval_tx.value
+</code></pre>
+<p>The operator will evaluate true if there exists an approval in the transaction history that precedes each transfer, and the approval value was not less than the sum of total transfers.</p> <p>Finally, we can put the pieces together.</p>
+<pre><code class="language-tla">AllFundTransfersHaveSufficientApproval(trace) ==
+    \A spender, fromAddr \in ADDRESSES:
+        \* ...
+        IN
+        SumOfTransfers &lt;= 0 \/ ExistsApprovalForSumInPast
+</code></pre>
+<p>The final value of AllFundTransfersHaveSufficientApproval will be <em>false</em> if and only if there is a pair of addresses with a positive SumOfTransfers and no approval for those transfers was made.</p> <p>Check the invariant</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java <span class="nt">-jar</span> apalache-pkg-0.17.5-full.jar check <span class="nt">--inv</span><span class="o">=</span>AllFundTransfersHaveSufficientApproval ERC20.tla
+
+<span class="c"># Apalache output:</span>
+<span class="c"># ...</span>
+<span class="c"># State 8: Checking 1 trace invariant(s)                            </span>
+<span class="c"># State 8: trace invariant 0 violated. Check the counterexample in: ...</span>
+<span class="c"># Found 1 error(s)</span>
+</code></pre></div></div> <p>An error!</p> <h2 id="interpreting-an-apalache-counterexample"> <a href="#interpreting-an-apalache-counterexample" class="anchor-heading" aria-labelledby="interpreting-an-apalache-counterexample"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Interpreting an Apalache counterexample </h2> <p>We should check the counterexample1.tla file (located in the _apalache-out) directory. It should contain a sequence of states similar to the following (but may not be identical)</p>
+<pre><code class="language-tla">(* Initial state *)
+State0 ==
+  allowance
+      = (((((((&lt;&lt;"addr1", "addr1"&gt;&gt; :&gt; 0 @@ &lt;&lt;"addr2", "addr1"&gt;&gt; :&gt; 0)
+                    @@ &lt;&lt;"addr3", "addr1"&gt;&gt; :&gt; 0)
+                  @@ &lt;&lt;"addr1", "addr2"&gt;&gt; :&gt; 0)
+                @@ &lt;&lt;"addr2", "addr2"&gt;&gt; :&gt; 0)
+              @@ &lt;&lt;"addr3", "addr2"&gt;&gt; :&gt; 0)
+            @@ &lt;&lt;"addr1", "addr3"&gt;&gt; :&gt; 0)
+          @@ &lt;&lt;"addr2", "addr3"&gt;&gt; :&gt; 0)
+        @@ &lt;&lt;"addr3", "addr3"&gt;&gt; :&gt; 0
+    /\ balanceOf = ("addr1" :&gt; 28 @@ "addr2" :&gt; 14) @@ "addr3" :&gt; 20
+    /\ lastTx = [fail |-&gt; FALSE, id |-&gt; 0, tag |-&gt; "None"]
+    /\ nextTxId = 0
+    /\ pendingTransactions = {}
+
+(* Transition 2 to State1 *)
+State1 ==
+  allowance
+      = (((((((&lt;&lt;"addr1", "addr1"&gt;&gt; :&gt; 0 @@ &lt;&lt;"addr2", "addr1"&gt;&gt; :&gt; 0)
+                    @@ &lt;&lt;"addr3", "addr1"&gt;&gt; :&gt; 0)
+                  @@ &lt;&lt;"addr1", "addr2"&gt;&gt; :&gt; 0)
+                @@ &lt;&lt;"addr2", "addr2"&gt;&gt; :&gt; 0)
+              @@ &lt;&lt;"addr3", "addr2"&gt;&gt; :&gt; 0)
+            @@ &lt;&lt;"addr1", "addr3"&gt;&gt; :&gt; 0)
+          @@ &lt;&lt;"addr2", "addr3"&gt;&gt; :&gt; 0)
+        @@ &lt;&lt;"addr3", "addr3"&gt;&gt; :&gt; 0
+    /\ balanceOf = ("addr1" :&gt; 28 @@ "addr2" :&gt; 14) @@ "addr3" :&gt; 20
+    /\ lastTx = [fail |-&gt; FALSE, id |-&gt; 0, tag |-&gt; "None"]
+    /\ nextTxId = 1
+    /\ pendingTransactions
+      = {[fail |-&gt; FALSE,
+        id |-&gt; 0,
+        sender |-&gt; "addr1",
+        spender |-&gt; "addr3",
+        tag |-&gt; "approve",
+        value |-&gt; 16]}
+
+(* Transition 1 to State2 *)
+State2 ==
+  allowance
+      = (((((((&lt;&lt;"addr1", "addr2"&gt;&gt; :&gt; 0 @@ &lt;&lt;"addr3", "addr1"&gt;&gt; :&gt; 0)
+                    @@ &lt;&lt;"addr2", "addr3"&gt;&gt; :&gt; 0)
+                  @@ &lt;&lt;"addr3", "addr3"&gt;&gt; :&gt; 0)
+                @@ &lt;&lt;"addr1", "addr3"&gt;&gt; :&gt; 0)
+              @@ &lt;&lt;"addr2", "addr1"&gt;&gt; :&gt; 0)
+            @@ &lt;&lt;"addr3", "addr2"&gt;&gt; :&gt; 0)
+          @@ &lt;&lt;"addr1", "addr1"&gt;&gt; :&gt; 0)
+        @@ &lt;&lt;"addr2", "addr2"&gt;&gt; :&gt; 0
+    /\ balanceOf = ("addr1" :&gt; 28 @@ "addr2" :&gt; 14) @@ "addr3" :&gt; 20
+    /\ lastTx = [fail |-&gt; FALSE, id |-&gt; 0, tag |-&gt; "None"]
+    /\ nextTxId = 2
+    /\ pendingTransactions
+      = { [fail |-&gt; FALSE,
+          fromAddr |-&gt; "addr1",
+          id |-&gt; 1,
+          sender |-&gt; "addr3",
+          tag |-&gt; "transferFrom",
+          toAddr |-&gt; "addr2",
+          value |-&gt; 6],
+        [fail |-&gt; FALSE,
+          id |-&gt; 0,
+          sender |-&gt; "addr1",
+          spender |-&gt; "addr3",
+          tag |-&gt; "approve",
+          value |-&gt; 16] }
+
+(* Transition 3 to State3 *)
+State3 ==
+  allowance
+      = (((((((&lt;&lt;"addr3", "addr2"&gt;&gt; :&gt; 0 @@ &lt;&lt;"addr2", "addr1"&gt;&gt; :&gt; 0)
+                    @@ &lt;&lt;"addr3", "addr1"&gt;&gt; :&gt; 0)
+                  @@ &lt;&lt;"addr3", "addr3"&gt;&gt; :&gt; 0)
+                @@ &lt;&lt;"addr1", "addr1"&gt;&gt; :&gt; 0)
+              @@ &lt;&lt;"addr1", "addr3"&gt;&gt; :&gt; 16)
+            @@ &lt;&lt;"addr2", "addr2"&gt;&gt; :&gt; 0)
+          @@ &lt;&lt;"addr2", "addr3"&gt;&gt; :&gt; 0)
+        @@ &lt;&lt;"addr1", "addr2"&gt;&gt; :&gt; 0
+    /\ balanceOf = ("addr1" :&gt; 28 @@ "addr2" :&gt; 14) @@ "addr3" :&gt; 20
+    /\ lastTx
+      = [fail |-&gt; FALSE,
+        id |-&gt; 0,
+        sender |-&gt; "addr1",
+        spender |-&gt; "addr3",
+        tag |-&gt; "approve",
+        value |-&gt; 16]
+    /\ nextTxId = 2
+    /\ pendingTransactions
+      = {[fail |-&gt; FALSE,
+        fromAddr |-&gt; "addr1",
+        id |-&gt; 1,
+        sender |-&gt; "addr3",
+        tag |-&gt; "transferFrom",
+        toAddr |-&gt; "addr2",
+        value |-&gt; 6]}
+
+(* Transition 6 to State4 *)
+State4 ==
+  allowance
+      = (((((((&lt;&lt;"addr1", "addr2"&gt;&gt; :&gt; 0 @@ &lt;&lt;"addr3", "addr1"&gt;&gt; :&gt; 0)
+                    @@ &lt;&lt;"addr3", "addr2"&gt;&gt; :&gt; 0)
+                  @@ &lt;&lt;"addr2", "addr1"&gt;&gt; :&gt; 0)
+                @@ &lt;&lt;"addr1", "addr3"&gt;&gt; :&gt; 10)
+              @@ &lt;&lt;"addr1", "addr1"&gt;&gt; :&gt; 0)
+            @@ &lt;&lt;"addr2", "addr2"&gt;&gt; :&gt; 0)
+          @@ &lt;&lt;"addr2", "addr3"&gt;&gt; :&gt; 0)
+        @@ &lt;&lt;"addr3", "addr3"&gt;&gt; :&gt; 0
+    /\ balanceOf = ("addr1" :&gt; 22 @@ "addr2" :&gt; 20) @@ "addr3" :&gt; 20
+    /\ lastTx
+      = [fail |-&gt; FALSE,
+        fromAddr |-&gt; "addr1",
+        id |-&gt; 1,
+        sender |-&gt; "addr3",
+        tag |-&gt; "transferFrom",
+        toAddr |-&gt; "addr2",
+        value |-&gt; 6]
+    /\ nextTxId = 2
+    /\ pendingTransactions = {}
+
+(* Transition 2 to State5 *)
+State5 ==
+  allowance
+      = (((((((&lt;&lt;"addr3", "addr2"&gt;&gt; :&gt; 0 @@ &lt;&lt;"addr2", "addr3"&gt;&gt; :&gt; 0)
+                    @@ &lt;&lt;"addr2", "addr1"&gt;&gt; :&gt; 0)
+                  @@ &lt;&lt;"addr2", "addr2"&gt;&gt; :&gt; 0)
+                @@ &lt;&lt;"addr1", "addr3"&gt;&gt; :&gt; 10)
+              @@ &lt;&lt;"addr1", "addr2"&gt;&gt; :&gt; 0)
+            @@ &lt;&lt;"addr3", "addr3"&gt;&gt; :&gt; 0)
+          @@ &lt;&lt;"addr1", "addr1"&gt;&gt; :&gt; 0)
+        @@ &lt;&lt;"addr3", "addr1"&gt;&gt; :&gt; 0
+    /\ balanceOf = ("addr1" :&gt; 22 @@ "addr2" :&gt; 20) @@ "addr3" :&gt; 20
+    /\ lastTx = [fail |-&gt; FALSE, id |-&gt; 0, tag |-&gt; "None"]
+    /\ nextTxId = 3
+    /\ pendingTransactions
+      = {[fail |-&gt; FALSE,
+        id |-&gt; 2,
+        sender |-&gt; "addr1",
+        spender |-&gt; "addr3",
+        tag |-&gt; "approve",
+        value |-&gt; 24]}
+
+(* Transition 1 to State6 *)
+State6 ==
+  allowance
+      = (((((((&lt;&lt;"addr1", "addr2"&gt;&gt; :&gt; 0 @@ &lt;&lt;"addr3", "addr1"&gt;&gt; :&gt; 0)
+                    @@ &lt;&lt;"addr3", "addr3"&gt;&gt; :&gt; 0)
+                  @@ &lt;&lt;"addr1", "addr3"&gt;&gt; :&gt; 10)
+                @@ &lt;&lt;"addr2", "addr3"&gt;&gt; :&gt; 0)
+              @@ &lt;&lt;"addr3", "addr2"&gt;&gt; :&gt; 0)
+            @@ &lt;&lt;"addr2", "addr1"&gt;&gt; :&gt; 0)
+          @@ &lt;&lt;"addr1", "addr1"&gt;&gt; :&gt; 0)
+        @@ &lt;&lt;"addr2", "addr2"&gt;&gt; :&gt; 0
+    /\ balanceOf = ("addr1" :&gt; 22 @@ "addr2" :&gt; 20) @@ "addr3" :&gt; 20
+    /\ lastTx = [fail |-&gt; FALSE, id |-&gt; 0, tag |-&gt; "None"]
+    /\ nextTxId = 4
+    /\ pendingTransactions
+      = { [fail |-&gt; FALSE,
+          fromAddr |-&gt; "addr1",
+          id |-&gt; 3,
+          sender |-&gt; "addr3",
+          tag |-&gt; "transferFrom",
+          toAddr |-&gt; "addr2",
+          value |-&gt; 20],
+        [fail |-&gt; FALSE,
+          id |-&gt; 2,
+          sender |-&gt; "addr1",
+          spender |-&gt; "addr3",
+          tag |-&gt; "approve",
+          value |-&gt; 24] }
+
+(* Transition 3 to State7 *)
+State7 ==
+  allowance
+      = (((((((&lt;&lt;"addr3", "addr1"&gt;&gt; :&gt; 0 @@ &lt;&lt;"addr1", "addr1"&gt;&gt; :&gt; 0)
+                    @@ &lt;&lt;"addr2", "addr2"&gt;&gt; :&gt; 0)
+                  @@ &lt;&lt;"addr2", "addr1"&gt;&gt; :&gt; 0)
+                @@ &lt;&lt;"addr2", "addr3"&gt;&gt; :&gt; 0)
+              @@ &lt;&lt;"addr3", "addr3"&gt;&gt; :&gt; 0)
+            @@ &lt;&lt;"addr1", "addr3"&gt;&gt; :&gt; 24)
+          @@ &lt;&lt;"addr1", "addr2"&gt;&gt; :&gt; 0)
+        @@ &lt;&lt;"addr3", "addr2"&gt;&gt; :&gt; 0
+    /\ balanceOf = ("addr1" :&gt; 22 @@ "addr2" :&gt; 20) @@ "addr3" :&gt; 20
+    /\ lastTx
+      = [fail |-&gt; FALSE,
+        id |-&gt; 2,
+        sender |-&gt; "addr1",
+        spender |-&gt; "addr3",
+        tag |-&gt; "approve",
+        value |-&gt; 24]
+    /\ nextTxId = 4
+    /\ pendingTransactions
+      = {[fail |-&gt; FALSE,
+        fromAddr |-&gt; "addr1",
+        id |-&gt; 3,
+        sender |-&gt; "addr3",
+        tag |-&gt; "transferFrom",
+        toAddr |-&gt; "addr2",
+        value |-&gt; 20]}
+
+(* Transition 6 to State8 *)
+State8 ==
+  allowance
+      = (((((((&lt;&lt;"addr2", "addr1"&gt;&gt; :&gt; 0 @@ &lt;&lt;"addr3", "addr3"&gt;&gt; :&gt; 0)
+                    @@ &lt;&lt;"addr3", "addr2"&gt;&gt; :&gt; 0)
+                  @@ &lt;&lt;"addr2", "addr3"&gt;&gt; :&gt; 0)
+                @@ &lt;&lt;"addr1", "addr3"&gt;&gt; :&gt; 4)
+              @@ &lt;&lt;"addr1", "addr2"&gt;&gt; :&gt; 0)
+            @@ &lt;&lt;"addr2", "addr2"&gt;&gt; :&gt; 0)
+          @@ &lt;&lt;"addr3", "addr1"&gt;&gt; :&gt; 0)
+        @@ &lt;&lt;"addr1", "addr1"&gt;&gt; :&gt; 0
+    /\ balanceOf = ("addr1" :&gt; 2 @@ "addr2" :&gt; 40) @@ "addr3" :&gt; 20
+    /\ lastTx
+      = [fail |-&gt; FALSE,
+        fromAddr |-&gt; "addr1",
+        id |-&gt; 3,
+        sender |-&gt; "addr3",
+        tag |-&gt; "transferFrom",
+        toAddr |-&gt; "addr2",
+        value |-&gt; 20]
+    /\ nextTxId = 4
+    /\ pendingTransactions = {}
+</code></pre>
+<p>For brevity here is a cleaned up summary:</p> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># State 0 (Init)
+    balances = [28, 14, 20]
+
+# State 1 - an approval is submitted.
+    balances = [28, 14, 20]
+    pending = {
+        addr1 approve addr3 for value 16
+    }
+
+# State 2 - a transferFrom is submitted.
+    balances = [28, 14, 20]
+    pending = {
+        addr1 approve addr3 with value 16
+        addr3 transfer 6 from addr1 to addr2
+    }
+
+# State 3 - the approval is processed.
+    allowances = {
+        addr1 approve addr3 with value 16
+    }
+    balances = [28, 14, 20]
+    pending = {
+        addr3 transfer 6 from addr1 to addr2
+    }
+
+# State 4 - the transferFrom is processed.
+    allowances = {
+        addr1 approve addr3 with value 10
+    }
+    balances = [22, 20, 20]
+
+# State 5 - an approval is submitted.
+    allowances = {
+        addr1 approve addr3 with value 10
+    }
+    balances = [22, 20, 20]
+    pending = {
+        addr1 approve addr3 with value 24
+    }
+
+# State 6 - a transferFrom is submitted.
+    allowances = {
+        addr1 approve addr3 with value 10
+    }
+    balances = [22, 20, 20]
+    pending = {
+        addr1 approve addr3 with value 24
+        addr3 transfer 20 from addr1 to addr2
+    }
+
+# State 7 - the approval is processed.
+    allowances = {
+        addr1 approve addr3 with value 24
+    }
+    balances = [22, 20, 20]
+    pending = {
+        addr3 transfer 20 from addr1 to addr2
+    }
+
+# State 8 - the transferFrom is processed.
+    allowances = {
+        addr1 approve addr3 with value 4
+    }
+    balances = [2, 40, 20]
+</code></pre></div></div> <p>The problem is that addr1 made two approvals for addr3 to transfer its funds</p> <ol> <li>approved transferring up to 16</li> <li>approved transferring up to 24</li> </ol> <p>But addr3 made two transferFroms from addr1 to addr2</p> <ol> <li>transfer 6</li> <li>transfer 20</li> </ol> <p>Both transfers succeeded with a sum of 26, however, the intention of addr1 was to approve a lifetime maximum transfer of 16, and then increase it to 24. The problem is that the first transfer happened in between the first and second approvals. The second approval <em>overwrote</em> the original value, not taking into account the transfer made in the meantime. This enabled a second transfer to withdraw too much.</p> <h2 id="wrapping-up"> <a href="#wrapping-up" class="anchor-heading" aria-labelledby="wrapping-up"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Wrapping up </h2> <h3 id="this-tutorial"> <a href="#this-tutorial" class="anchor-heading" aria-labelledby="this-tutorial"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> This tutorial </h3> <ol> <li>Described the problem being modeled</li> <li>How to declare appropriate state variables using advanced data types</li> <li>How to define appropriate initial states in Init</li> <li>How to define appropriate transitions using actions in Next</li> <li>Type checked the model</li> <li>Writing a trace invariant - including using FoldSet</li> <li>Analysed a counterexample.tla file that Apalache generated, showing a flaw in the API</li> </ol> <p>Try the next one :)</p> <h3 id="further-resources"> <a href="#further-resources" class="anchor-heading" aria-labelledby="further-resources"><svg viewbox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Further resources </h3> <ul> <li>
+<a href="https://docs.google.com/document/d/1YLPtQxZu1UAvO9cZ1O2RPXBbT0mooh4DYKjA_jp-RLM/">Description of attack scenario</a>. Written by Mikhail Vladimirov and Dmitry Khovratovich.</li> <li><a href="https://eips.ethereum.org/EIPS/eip-20">Relevant Ethereum API</a></li> <li><a href="https://github.com/informalsystems/apalache/blob/unstable/src/tla/Apalache.tla">Apalache library module</a></li> <li><a href="https://apalache.informal.systems/docs/apalache/principles/invariants.html?highlight=trace%20invariant#trace-invariants">Apalache trace invariants</a></li> </ul> <hr> <footer> <p><a href="#top" id="back-to-top">Back to top</a></p> <div class="d-flex mt-2"> <p class="text-small text-grey-dk-000 mb-0"> <a href="https://github.com/informalsystems/modelator/tree/main/jekyll/docs/tla_basics_tutorials/ethereum.md" id="edit-this-page">Edit this page on GitHub</a> </p> </div> </footer> </div> </div> <div class="search-overlay"></div> </div> </body> </html>
