@@ -10,7 +10,7 @@ from .constants import DEFAULT_APALACHE_JAR
 def parse(
     tla_file_content: str,     
     cfg_file_content: str = None, 
-    apalache_jar = None
+    apalache_jar_path = None
     ) -> Tuple[bool, str]:
     
     json_command = {}
@@ -22,18 +22,17 @@ def parse(
 
     json_command["files"] = {specName: tla_file_content}
     
-    if apalache_jar is None:
+    if apalache_jar_path is None:
         json_command["jar"] = os.path.abspath(DEFAULT_APALACHE_JAR)
     else:
-        json_command["jar"] = apalache_jar
+        json_command["jar"] = apalache_jar_path
 
     result = apalache_pure(json=json_command)
 
     if result["return_code"] == 0:
         return (True, "")
     else:
-        error = utils.extract_parse_error(result["stdout"])
-        print("error is {}".format(error))
+        error = utils.extract_parse_error(result["stdout"])        
         return (False, error)
     
 
