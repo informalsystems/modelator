@@ -26,13 +26,32 @@ def extract_parse_error(parser_output: str):
     if len(report) == 0:
         return None
     else:
-        return "\n".join(report)        
+        return "\n".join(report) 
+
+
+def extract_typecheck_error(parser_output: str):
+    report = []
+    reportActive = False
+    for line in parser_output.splitlines():
+        
+        if reportActive is True and ("Snowcat asks you to fix the types" in line or "It took me" in line):
+            break
+
+        if reportActive is True:
+            report.append(line)
+        if "Running Snowcat" in line:
+            reportActive = True       
+
+    if len(report) == 0:
+        return None
+    else:
+        return "\n".join(report)
 
 
 def wrap_apalache_command(cmd, tla_file_content, args=None):
     json_command = {}
     json_command["args"] = {}
-    json_command["args"]["cmd"] = "parse"    
+    json_command["args"]["cmd"] = cmd
 
     specName = extract_tla_module_name(tla_file_content) + ".tla"
     json_command["args"]["file"] = specName
