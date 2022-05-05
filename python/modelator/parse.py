@@ -3,8 +3,10 @@ import os
 from typing import Tuple
 from modelator_py.apalache.pure import apalache_pure
 from . import utils
+# import utils
 
 from .constants import DEFAULT_APALACHE_JAR
+# from constants import DEFAULT_APALACHE_JAR
 
 """
 The function sends the TLA+ model file (`tla_file_content`) to apalache parse command.
