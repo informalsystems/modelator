@@ -1,5 +1,4 @@
 import argparse
-import json
 import os
 from typing import Tuple
 from modelator_py.apalache.pure import apalache_pure
@@ -7,11 +6,22 @@ from . import utils
 
 from .constants import DEFAULT_APALACHE_JAR
 
+"""
+The function sends the TLA+ model file (`tla_file_content`) to apalache parse command.
+Returns (True, "") if tla_file_content parses, otherwise (False, msg), where msg is a message for why 
+the model does not parse.
+
+TODO: cfg_file_content argument is not used. Apalache only has a command for parsing .tla files
+and in its new version it does not even load .cfg files by default. Is there a need to parse .cfg files
+or shall we take all the common arguments from .cfg and make them command-line arguments?
+"""
 def parse(
     tla_file_content: str,     
-    cfg_file_content: str = None, 
-    apalache_jar_path = None
-    ) -> Tuple[bool, str]:
+    cfg_file_content: str = None
+    ) -> Tuple[bool, str]: 
+
+    if not isinstance(tla_file_content, str):
+        raise TypeError("`tla_file_content` should be string")
     
     json_command = {}
     json_command["args"] = {}
@@ -20,12 +30,8 @@ def parse(
     specName = utils.extract_tla_module_name(tla_file_content) + ".tla"
     json_command["args"]["file"] = specName
 
-    json_command["files"] = {specName: tla_file_content}
-    
-    if apalache_jar_path is None:
-        json_command["jar"] = os.path.abspath(DEFAULT_APALACHE_JAR)
-    else:
-        json_command["jar"] = apalache_jar_path
+    json_command["files"] = {specName: tla_file_content}    
+    json_command["jar"] = os.path.abspath(DEFAULT_APALACHE_JAR)
 
     result = apalache_pure(json=json_command)
 
@@ -47,5 +53,5 @@ if __name__ == "__main__":
     modelFH = open(args.model_name)
     tla_file_content = modelFH.read()
     
-    parse(tla_file_content=tla_file_content)
+    ret, msg = parse(tla_file_content=tla_file_content)
     
