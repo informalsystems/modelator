@@ -1,53 +1,40 @@
-from cmd2 import Cmd
-from modelator.parse import parse
-from importlib.resources import path
 import os
-from typing import IO
-
-class ModelatorPrompt(Cmd):
-    prompt = "modelator >> "
+from modelator.parse import parse
 
 
+
+class Modelator:    
     
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, model_file_name=None) -> None:
+        
 
-        self.model = None
-        self.model_file_name = None
+        self.model_file_name = model_file_name
+        if self.model_file_name is not None:
+            self.load(self.model_file_name)
+        
+    def __repr__(self) -> str:
+        if self.model_file_name is not None:
+            return "Modelator instance for the model {}".format(self.model_file_name)
+        else:
+            return "Modelator instance without a model (use 'load' to load a model file)"
 
 
-    def do_parse(self, inp):
-        'Parse the .tla file'
+    def load(self, file_to_load):
+        self.model_file_name = file_to_load
+        self.model = open(file_to_load).read()
+        print("Loaded file {}.\n Its content is:\n{}".format(self.model_file_name, self.model))
+    
+    def parse(self):        
         if self.model is None:
-            self.poutput("ERROR: Model is not set yet. Use command `load <model_file>.tla`")
+            print("ERROR: Model is not set yet. Use command `load <model_file>.tla`")
         else: 
             res, msg = parse(self.model)
             if res is True:
-                self.poutput("File {} successfully parsed.".format(self.model_file_name))
+                print("File {} successfully parsed.".format(self.model_file_name))
             else:
-                self.poutput("Error parsing {}: {}".format(self.model_file_name, msg))
+                print("Error parsing {}: {}".format(self.model_file_name, msg))
         
         
 
-    def do_clear(self, line):
-        os.system('cls' if os.name=='nt' else 'clear')
-
-    def do_load(self, file_to_load):
-        self.model_file_name = file_to_load
-        self.model = open(file_to_load).read()
-        self.poutput("Loaded file {}.\n Its content is:\n{}".format(self.model_file_name, self.model))
-
-
-    
-    def default(self, line: str) -> None:
-        if line == "x" or line == 'EOF':
-            return self.do_exit(line)
-        else:
-            super().default(line)
-
-    
-
-if __name__=="__main__":
-    app = ModelatorPrompt()
-    app.cmdloop()
-
+def clear():
+    os.system('cls' if os.name=='nt' else 'clear')
