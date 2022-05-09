@@ -1,5 +1,6 @@
 import os
 from modelator.parse import parse
+from modelator.typecheck import typecheck
 
 
 
@@ -7,7 +8,7 @@ class Modelator:
     
     def __init__(self, model_file_name=None) -> None:
         
-
+        self.model = None
         self.model_file_name = model_file_name
         if self.model_file_name is not None:
             self.load(self.model_file_name)
@@ -33,7 +34,16 @@ class Modelator:
                 print("File {} successfully parsed.".format(self.model_file_name))
             else:
                 print("Error parsing {}: {}".format(self.model_file_name, msg))
-        
+    
+    def typecheck(self):
+        if self.model is None:
+            print("ERROR: Model is not set yet. Use command `load <model_file>.tla`")
+        else: 
+            res, msg = typecheck(self.model)
+            if res is True:
+                print("File {} typechecks.".format(self.model_file_name))
+            else:
+                print("Error in types {}: {}".format(self.model_file_name, msg))
         
 
 def clear():
