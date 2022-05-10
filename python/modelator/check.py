@@ -14,10 +14,10 @@ def check_apalache(
     do_typecheck: bool = True) -> Tuple[bool, str, List]:
 
     if not isinstance(tla_file_content, str):
-        raise TypeError("`tla_file_content` should be string")
+        raise TypeError("`tla_file_content` should be a string")
 
     if not isinstance(cfg_file_content, str):
-        raise TypeError("`cfg_file_content` should be string")
+        raise TypeError("`cfg_file_content` should be a string")
     
     if do_parse is True:
         parsable, msg = parse(tla_file_content)
@@ -62,4 +62,4 @@ if __name__ == "__main__":
     config_file_content = configFH.read()
         
     ret, msg, cex = check_apalache(tla_file_content=tla_file_content, cfg_file_content=config_file_content)
-    print("here")
+    print("message is: {}".format(msg))
