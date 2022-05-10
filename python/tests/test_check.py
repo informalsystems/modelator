@@ -20,9 +20,32 @@ def _matchingCheckValue(samplesDirectory, expectedResult: bool, msgEmpty: bool):
             assert len(msg) > 0
 
 
-def test_check():
+def test_check_with_cfg():
     correctSamples = os.path.abspath("tests/sampleFiles/check/correct")
     _matchingCheckValue(correctSamples, True, True)
 
     flawedSamples = os.path.abspath("tests/sampleFiles/check/flawed")    
     _matchingCheckValue(flawedSamples, False, False)
+
+
+def test_check_no_cfg():
+    tla_file_content = open("tests/sampleFiles/check/Hello.tla").read()
+
+    args = {}
+    args["init"] = "InitA"
+    args["next"] = "Next"
+    args["inv"] = "Inv"
+
+    res, msg, cex = check_apalache(tla_file_content=tla_file_content, apalache_args=args)
+    assert res == False
+
+    args["init"] = "InitB"
+    res, msg, cex = check_apalache(tla_file_content=tla_file_content, apalache_args=args)
+    assert res == True
+
+    args["init"] = "InitC"
+    res, msg, cex = check_apalache(tla_file_content=tla_file_content, apalache_args=args)
+    assert res == True
+
+
+

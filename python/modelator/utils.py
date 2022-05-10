@@ -5,7 +5,7 @@ from typing import Dict
 from .constants import DEFAULT_APALACHE_JAR
 
 def extract_tla_module_name(tla_file_content: str):
-    match = re.search("-+[ ]*MODULE[ ]*(?P<moduleName>\w+)[ ]*-+", tla_file_content)
+    match = re.search(r"-+[ ]*MODULE[ ]*(?P<moduleName>\w+)[ ]*-+", tla_file_content)
     if match is None:
         return None
     return match.group('moduleName')
@@ -94,6 +94,10 @@ def wrap_apalache_command(
         config_name = tla_module_name + ".cfg"
         json_command["args"]["config"] = config_name
         json_command["files"][config_name] = cfg_file_content
+
+    if args is not None:
+        for arg in args:
+            json_command["args"][arg] = args[arg]
 
     json_command["jar"] = os.path.abspath(DEFAULT_APALACHE_JAR)
     return json_command

@@ -6,17 +6,19 @@ from modelator_py.apalache.pure import apalache_pure
 from . import utils
 from .parse import parse
 from .typecheck import typecheck
+from typing import Dict
 
 def check_apalache(
     tla_file_content: str, 
-    cfg_file_content: str,
+    cfg_file_content: str = None,
+    apalache_args: Dict = {},
     do_parse: bool = True,
     do_typecheck: bool = True) -> Tuple[bool, str, List]:
 
     if not isinstance(tla_file_content, str):
         raise TypeError("`tla_file_content` should be a string")
 
-    if not isinstance(cfg_file_content, str):
+    if cfg_file_content is not None and not isinstance(cfg_file_content, str):
         raise TypeError("`cfg_file_content` should be a string")
     
     if do_parse is True:
@@ -33,7 +35,8 @@ def check_apalache(
     json_command = utils.wrap_apalache_command(
         cmd="check", 
         tla_file_content=tla_file_content, 
-        cfg_file_content=cfg_file_content
+        cfg_file_content=cfg_file_content,
+        args=apalache_args
         )
 
     result = apalache_pure(json=json_command)
