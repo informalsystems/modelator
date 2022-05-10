@@ -2,7 +2,7 @@ import os
 from modelator.typecheck import typecheck
 
 
-def _matchingParseValue(samplesDirectory, expectedResult: bool, msgEmpty: bool):
+def _matchingTypecheckValue(samplesDirectory, expectedResult: bool, msgEmpty: bool):
     for filename in os.listdir(samplesDirectory):
         f = os.path.join(samplesDirectory, filename)
         tla_file_content = open(f).read()
@@ -14,9 +14,9 @@ def _matchingParseValue(samplesDirectory, expectedResult: bool, msgEmpty: bool):
             assert len(msg) > 0
 
 
-def test_parse():
-    correctSamples = os.path.abspath("tests/sampleFiles/correct")
-    _matchingParseValue(correctSamples, True, True)
+def test_typecheck():
+    correctSamples = os.path.abspath("tests/sampleFiles/typecheck/correct")
+    _matchingTypecheckValue(correctSamples, True, True)
 
-    flawedSamples = os.path.abspath("tests/sampleFiles/typecheck")    
-    _matchingParseValue(flawedSamples, False, False)
+    flawedSamples = os.path.abspath("tests/sampleFiles/typecheck/flawed")    
+    _matchingTypecheckValue(flawedSamples, False, False)

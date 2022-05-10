@@ -1,4 +1,4 @@
----- MODULE Hello_Hi--------
+------------ MODULE Hello -------------
 
 EXTENDS Naturals, FiniteSets, Sequences
 

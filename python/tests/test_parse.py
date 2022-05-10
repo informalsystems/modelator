@@ -18,10 +18,10 @@ def _matchingParseValue(samplesDirectory, expectedResult: bool, msgEmpty: bool):
 
 
 def test_parse():
-    correctSamples = os.path.abspath("tests/sampleFiles/correct")
+    correctSamples = os.path.abspath("tests/sampleFiles/parse/correct")
     _matchingParseValue(correctSamples, True, True)
 
-    flawedSamples = os.path.abspath("tests/sampleFiles/parse")    
+    flawedSamples = os.path.abspath("tests/sampleFiles/parse/flawed")    
     _matchingParseValue(flawedSamples, False, False)
 
 
