@@ -45,6 +45,10 @@ class Modelator:
             else:
                 print("Error in types {}: {}".format(self.model_file_name, msg))
         
-
+def exp():
+    print("check this type: samples/HelloFlawed.tla")
+    print("check this type: modelator/samples/HelloFlawed.tla")
+    print("check this type: python/modelator/samples/HelloFlawed.tla")
+    print("check this type: /Users/ivan/Documents/codebase/modelator/python/modelator/samples/HelloFlawed.tla")
 def clear():
     os.system('cls' if os.name=='nt' else 'clear')

@@ -41,4 +41,4 @@ if __name__ == "__main__":
     tla_file_content = modelFH.read()
     
     ret, msg = typecheck(tla_file_content=tla_file_content)    
-    
+    print(msg)
