@@ -16,12 +16,14 @@ def extract_apalache_counterexample(apalache_result: Dict):
     for line in cex_tla.splitlines():
         invMark = "InvariantViolation == "
         if invMark in line:
-            inv = line[len(invMark):].strip()
-    
-    msg = "Invariant violated: {}".format(inv)
-    cex_itf = json.loads(apalache_result["files"]["counterexample.itf.json"])
-    cex = cex_itf["states"]
+            msg = line[len(invMark):].strip()
+            break
 
+
+    cex_itf = json.loads(apalache_result["files"]["counterexample.itf.json"])
+    cex = cex_itf["states"]    
+
+    
     return (msg, cex)
 
 def extract_parse_error(parser_output: str):

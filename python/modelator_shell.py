@@ -1,6 +1,9 @@
 import os
 from modelator.parse import parse
 from modelator.typecheck import typecheck
+from modelator.check import check_apalache
+from modelator.utils import shell_helpers
+from modelator import constants
 
 
 
@@ -11,7 +14,17 @@ class Modelator:
         self.model_file_name = model_file_name
         self.autoload = autoload
         if self.autoload is True and self.model_file_name is not None:
-            self.model = self.load(self.model_file_name, print_info=False)
+            self.model = self.load_model(self.model_file_name, print_info=False)
+
+        self.config_args = shell_helpers.ConfigValues()
+        self.config_args[constants.INIT] = "Init"
+        self.config_args[constants.NEXT] = "Next"
+        self.config_args[constants.INVARIANT] = "Inv"
+        self.config_args[constants.APALACHE_NUM_STEPS] = 5
+        # self.config_file_name = None
+        # self.config = None
+
+    
         
     def __repr__(self) -> str:
         if self.model_file_name is not None:
@@ -19,38 +32,73 @@ class Modelator:
         else:
             return "Modelator instance without a model (use 'load' to load a model file)"
 
+    def _check_if_model_exists(self):
+        if self.model_file_name is None or (self.autoload is False and self.model is None):
+            print("ERROR: Model is not set yet. Use command `load(<model_file>.tla)`")
+            return False
+        else:
+            return True
 
-    def load(self, file_to_load, print_info=True):
+    def _load_if_needed(self):
+        if self.autoload is True:
+            self.load_model(self.model_file_name, print_info=False)
+    
+    # def load_config(self, config_file_to_load):
+    #     self.config_file_name = config_file_to_load
+    #     self.config = open(config_file_to_load).read()
+    #     print("WARNING: loading a config file resets all the values set by hand for inv, init and next!")
+    #     self.config_args = shell_helpers.ConfigValues()
+
+        
+    
+    def load_model(self, file_to_load, print_info=True):
         self.model_file_name = file_to_load
         self.model = open(file_to_load).read()
         if print_info is True:
             print("Loaded file {}.\n Its content is:\n{}".format(self.model_file_name, self.model))
     
     def parse(self):        
-        if self.model_file_name is None or (self.autoload is False and self.model is None):
-            print("ERROR: Model is not set yet. Use command `load(<model_file>.tla)`")
-        else: 
-            if self.autoload is True:
-                self.load(self.model_file_name, print_info=False)
-            res, msg = parse(self.model)            
-            if res is True:
-                print("File {} successfully parsed.".format(self.model_file_name))
-            else:
-                msg.file_path = os.path.abspath(self.model_file_name)                 
-                print(msg)
+        if self._check_if_model_exists() is False:
+            return
+        
+        self._load_if_needed()
+        res, msg = parse(self.model)            
+        if res is True:
+            print("File {} successfully parsed.".format(self.model_file_name))
+        else:
+            msg.file_path = os.path.abspath(self.model_file_name)                 
+            print(msg)
     
     def typecheck(self):
-        if self.model_file_name is None or (self.autoload is False and self.model is None):
-            print("ERROR: Model is not set yet. Use command `load(<model_file>.tla)`")
-        else: 
-            if self.autoload is True:
-                self.load(self.model_file_name, print_info=False)
-            res, msg = typecheck(self.model)
-            if res is True:
-                print("File {} typechecks.".format(self.model_file_name))
-            else:
-                msg.file_path = os.path.abspath(self.model_file_name)                
-                print(msg)
+        if self._check_if_model_exists() is False:
+            return
+        
+        self._load_if_needed()            
+        res, msg = typecheck(self.model)
+        if res is True:
+            print("File {} typechecks.".format(self.model_file_name))
+        else:
+            msg.file_path = os.path.abspath(self.model_file_name)                
+            print(msg)
+
+    def check(self):
+        if self._check_if_model_exists() is False:
+            return
+        
+        self._load_if_needed() 
+        # if self.config is not None:
+        #     res, msg, cex = check_apalache(self.model, cfg_file_content=self.config)
+        # else:
+        #     res, msg, cex = check_apalache(self.model, apalache_args=self.config_args)
+        res, msg, cex = check_apalache(self.model, apalache_args=self.config_args)
+        
+        if res is True:   
+            print("Invariant {} is never violated (after {} steps)".format(self.config_args[constants.INVARIANT], self.config_args[constants.APALACHE_NUM_STEPS]))        
+        else:
+            msg.file_path = self.model_file_name
+            if msg.error_category == constants.CHECK:
+                msg.problem_description = "Invariant {} violated.\nCounterexample is {}".format(self.config_args[constants.INVARIANT], str(cex))
+            print(msg)
         
 def exp():
     print("check this type: samples/HelloFlawed.tla")
@@ -63,5 +111,5 @@ def clear():
 
 def start():
     m = Modelator()
-    m.load('modelator/samples/HelloFlawedType.tla')
+    m.load_model('modelator/samples/Hello.tla')
     return m

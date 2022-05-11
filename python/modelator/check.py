@@ -7,13 +7,15 @@ from .utils import apalache_helpers
 from .parse import parse
 from .typecheck import typecheck
 from typing import Dict
+from .utils.ErrorMessage import ErrorMessage
+from . import constants
 
 def check_apalache(
     tla_file_content: str, 
     cfg_file_content: str = None,
     apalache_args: Dict = {},
     do_parse: bool = True,
-    do_typecheck: bool = True) -> Tuple[bool, str, List]:
+    do_typecheck: bool = True) -> Tuple[bool, ErrorMessage, List]:
 
     if not isinstance(tla_file_content, str):
         raise TypeError("`tla_file_content` should be a string")
@@ -33,7 +35,7 @@ def check_apalache(
             return (False, msg, [])
 
     json_command = apalache_helpers.wrap_apalache_command(
-        cmd="check", 
+        cmd=constants.APALACHE_CHECK, 
         tla_file_content=tla_file_content, 
         cfg_file_content=cfg_file_content,
         args=apalache_args
@@ -44,8 +46,15 @@ def check_apalache(
     if result["return_code"] == 0:
         return (True, "", [])
     else:
-        error, cex = apalache_helpers.extract_apalache_counterexample(result)        
-        return (False, error, cex)
+        inv_violated, cex = apalache_helpers.extract_apalache_counterexample(result)  
+        cex_representation = str(cex)
+        problem_desc = "Invariant {} violated.\nCounterexample is {}".format(inv_violated, cex_representation)
+        error_msg = ErrorMessage(
+            problem_description=problem_desc, 
+            error_category=constants.CHECK,
+            full_error_msg=result["stdout"]                       
+            )
+        return (False, error_msg, cex)
 
     
 
