@@ -2,7 +2,7 @@ import json
 import os
 import re
 from typing import Dict
-from .constants import DEFAULT_APALACHE_JAR
+from ..constants import DEFAULT_APALACHE_JAR
 
 def extract_tla_module_name(tla_file_content: str):
     match = re.search(r"-+[ ]*MODULE[ ]*(?P<moduleName>\w+)[ ]*-+", tla_file_content)
@@ -27,6 +27,7 @@ def extract_apalache_counterexample(apalache_result: Dict):
 def extract_parse_error(parser_output: str):
     report = []
     reportActive = False
+    line_number = None
     for line in parser_output.splitlines():
     
         if line == "Residual stack trace follows:":
@@ -34,33 +35,44 @@ def extract_parse_error(parser_output: str):
 
         if reportActive is True:
             report.append(line)
+            match = re.search(r"at line (?P<lineNumber>\d+)", line)
+            if match is not None:
+                line_number = int(match.group('lineNumber'))
+
 
         if line == "***Parse Error***":
             reportActive = True
                 
     if len(report) == 0:
-        return None
-    else:
-        return "\n".join(report) 
+        return (None, None)
+    else:        
+        return ("\n".join(report), line_number)
 
 
 def extract_typecheck_error(parser_output: str):
     report = []
     reportActive = False
+    line_number = None
     for line in parser_output.splitlines():
         
         if reportActive is True and ("Snowcat asks you to fix the types" in line or "It took me" in line):
             break
 
         if reportActive is True:
-            report.append(line)
+            match = re.search("\[\w+\.tla:(?P<lineNumber>\d+):.+\]: (?P<info>.+) E@.+", line)
+            if match is not None:
+                info = match["info"]
+                if line_number is None:
+                    line_number = match["lineNumber"]
+                
+            report.append(info)
         if "Running Snowcat" in line:
             reportActive = True       
 
     if len(report) == 0:
-        return None
+        return None, None
     else:
-        return "\n".join(report)
+        return ("\n".join(report), line_number)
 
 
 def wrap_apalache_command(

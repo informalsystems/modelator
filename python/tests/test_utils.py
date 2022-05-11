@@ -1,4 +1,4 @@
-from modelator.utils import extract_parse_error, extract_tla_module_name
+from modelator.utils.apalache_helpers import extract_parse_error, extract_tla_module_name
 def test_extract_parse_error():
     parser_output_with_error = {
         r"""

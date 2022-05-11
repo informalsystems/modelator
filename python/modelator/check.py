@@ -3,7 +3,7 @@ import argparse
 from typing import Tuple, List
 
 from modelator_py.apalache.pure import apalache_pure
-from . import utils
+from .utils import apalache_helpers
 from .parse import parse
 from .typecheck import typecheck
 from typing import Dict
@@ -32,7 +32,7 @@ def check_apalache(
         if good_types is False:
             return (False, msg, [])
 
-    json_command = utils.wrap_apalache_command(
+    json_command = apalache_helpers.wrap_apalache_command(
         cmd="check", 
         tla_file_content=tla_file_content, 
         cfg_file_content=cfg_file_content,
@@ -44,7 +44,7 @@ def check_apalache(
     if result["return_code"] == 0:
         return (True, "", [])
     else:
-        error, cex = utils.extract_apalache_counterexample(result)        
+        error, cex = apalache_helpers.extract_apalache_counterexample(result)        
         return (False, error, cex)
 
     
