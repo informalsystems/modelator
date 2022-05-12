@@ -1,6 +1,6 @@
 ------------ MODULE Hello -------------
 
-EXTENDS Naturals, FiniteSets, Sequences
+EXTENDS Naturals, FiniteSets, Sequences, HelloInv
 
 VARIABLES
     \* @type: Str;
@@ -16,15 +16,6 @@ Next ==
     /\ x' = IF x = "hello" THEN  "world" ELSE "hello"
     /\ y' = y-21
 
-Inv ==
-    ~
-    (
-        /\ x = "world"
-        /\ y = 0
-    )
-
-Inv2 == 
-    x = "hihi"
 
 
 ===========================================

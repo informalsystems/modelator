@@ -79,10 +79,11 @@ def extract_typecheck_error(parser_output: str):
 
 def wrap_apalache_command(
     cmd:str, 
-    tla_file_content:str, 
+    tla_file_name:str, 
+    files: Dict[str, str],
     cfg_file_content: str = None,
     args: Dict = None,
-    num_workers: int = 4
+    num_workers: int = 4    
     ):
 
 
@@ -98,12 +99,12 @@ def wrap_apalache_command(
     if cmd == "check":
         json_command["args"]["nworkers"] = num_workers
 
-    tla_module_name = extract_tla_module_name(tla_file_content)
-    spec_name = tla_module_name  + ".tla"
-    json_command["args"]["file"] = spec_name
+    
+    
+    json_command["args"]["file"] = tla_file_name
 
-    json_command["files"] = {spec_name: tla_file_content}   
-
+    json_command["files"] = files
+    tla_module_name = tla_file_name.split('.')[0]
     if cfg_file_content is not None:
         config_name = tla_module_name + ".cfg"
         json_command["args"]["config"] = config_name

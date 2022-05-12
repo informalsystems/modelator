@@ -1,22 +1,28 @@
 import os
 from modelator.typecheck import typecheck
+from modelator.utils import tla_helpers
 
 
-def _matchingTypecheckValue(samplesDirectory, expectedResult: bool, msgEmpty: bool):
-    for filename in os.listdir(samplesDirectory):
-        f = os.path.join(samplesDirectory, filename)
-        tla_file_content = open(f).read()
-        res, msg = typecheck(tla_file_content=tla_file_content)
+def _matchingTypecheckValue(samples, expectedResult: bool, msgEmpty: bool):
+    for test_dir, test_name in samples.items():
+        files = tla_helpers.get_auxiliary_tla_files(os.path.join(test_dir, test_name))        
+
+        res, msg = typecheck(files=files, tla_file_name=test_name)
         assert res == expectedResult
         if msgEmpty is True:
-            assert msg == ""
+            assert msg.problem_description == ""
         else:
-            assert len(msg) > 0
+            assert len(msg.problem_description) > 0
 
 
 def test_typecheck():
-    correctSamples = os.path.abspath("tests/sampleFiles/typecheck/correct")
-    _matchingTypecheckValue(correctSamples, True, True)
+    well_typed = {
+        os.path.abspath("tests/sampleFiles/typecheck/correct/dir1"): "Hello_Hi.tla"
+        }    
+    _matchingTypecheckValue(well_typed, True, True)
 
-    flawedSamples = os.path.abspath("tests/sampleFiles/typecheck/flawed")    
-    _matchingTypecheckValue(flawedSamples, False, False)
+    badly_typed = {
+        os.path.abspath("tests/sampleFiles/parse/flawed/dir1"):"HelloFlawed1.tla",
+        os.path.abspath("tests/sampleFiles/parse/flawed/dir2"): "HelloFlawed2"
+    }
+    _matchingTypecheckValue(badly_typed, False, False)

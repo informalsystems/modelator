@@ -1,8 +1,9 @@
 import os
+from typing import List
 from modelator.parse import parse
 from modelator.typecheck import typecheck
 from modelator.check import check_apalache
-from modelator.utils import shell_helpers
+from modelator.utils import shell_helpers, tla_helpers
 from modelator import constants
 
 
@@ -42,27 +43,30 @@ class Modelator:
     def _load_if_needed(self):
         if self.autoload is True:
             self.load_model(self.model_file_name, print_info=False)
-    
-    # def load_config(self, config_file_to_load):
-    #     self.config_file_name = config_file_to_load
-    #     self.config = open(config_file_to_load).read()
-    #     print("WARNING: loading a config file resets all the values set by hand for inv, init and next!")
-    #     self.config_args = shell_helpers.ConfigValues()
-
         
     
-    def load_model(self, file_to_load, print_info=True):
+    def load_model(
+        self, 
+        file_to_load: str, 
+        print_info:bool =True):
+
         self.model_file_name = file_to_load
         self.model = open(file_to_load).read()
+        self.directory = os.path.dirname(os.path.abspath(self.model_file_name))
+        
+        self.files = tla_helpers.get_auxiliary_tla_files(self.model_file_name)        
+        
         if print_info is True:
             print("Loaded file {}.\n Its content is:\n{}".format(self.model_file_name, self.model))
+        
     
     def parse(self):        
         if self._check_if_model_exists() is False:
             return
         
         self._load_if_needed()
-        res, msg = parse(self.model)            
+        
+        res, msg = parse(os.path.basename(self.model_file_name), self.files)            
         if res is True:
             print("File {} successfully parsed.".format(self.model_file_name))
         else:
@@ -74,7 +78,7 @@ class Modelator:
             return
         
         self._load_if_needed()            
-        res, msg = typecheck(self.model)
+        res, msg = typecheck(os.path.basename(self.model_file_name), self.files)
         if res is True:
             print("File {} typechecks.".format(self.model_file_name))
         else:
@@ -85,12 +89,8 @@ class Modelator:
         if self._check_if_model_exists() is False:
             return
         
-        self._load_if_needed() 
-        # if self.config is not None:
-        #     res, msg, cex = check_apalache(self.model, cfg_file_content=self.config)
-        # else:
-        #     res, msg, cex = check_apalache(self.model, apalache_args=self.config_args)
-        res, msg, cex = check_apalache(self.model, apalache_args=self.config_args)
+        self._load_if_needed()         
+        res, msg, cex = check_apalache(os.path.basename(self.model_file_name), self.files, apalache_args=self.config_args)
         
         if res is True:   
             print("Invariant {} is never violated (after {} steps)".format(self.config_args[constants.INVARIANT], self.config_args[constants.APALACHE_NUM_STEPS]))        

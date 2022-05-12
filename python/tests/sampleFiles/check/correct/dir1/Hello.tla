@@ -1,6 +1,6 @@
 ------------ MODULE Hello -------------
 
-EXTENDS Naturals, FiniteSets, Sequences
+EXTENDS Naturals, FiniteSets, Sequences, Inits
 
 VARIABLES
     \* @type: Str;

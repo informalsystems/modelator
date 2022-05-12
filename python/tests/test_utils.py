@@ -119,10 +119,10 @@ EXITCODE: ERROR (255)"""
     ]
 
     for output in parser_output_with_error:
-        assert parser_output_with_error[output].strip() == extract_parse_error(output).strip()
+        assert parser_output_with_error[output].strip() == extract_parse_error(output)[0].strip()
 
     for output in parser_output_without_error:
-        assert extract_parse_error(output) is None
+        assert extract_parse_error(output)[1] is None
 
 def test_extract_tla_module_name():
     names = {

@@ -1,32 +1,32 @@
+import imp
 import os
 from typing import AnyStr
 
 import pytest
 from modelator.parse import parse
+from modelator.utils import tla_helpers
 
 
-def _matchingParseValue(samplesDirectory, expectedResult: bool, msgEmpty: bool):
-    for filename in os.listdir(samplesDirectory):
-        f = os.path.join(samplesDirectory, filename)
-        tla_file_content = open(f).read()
-        res, msg = parse(tla_file_content=tla_file_content)
+def _matchingParseValue(samples, expectedResult: bool, msgEmpty: bool):
+    for test_dir, test_name in samples.items():
+        files = tla_helpers.get_auxiliary_tla_files(os.path.join(test_dir, test_name))        
+
+        res, msg = parse(files=files, tla_file_name=test_name)
         assert res == expectedResult
         if msgEmpty is True:
-            assert msg == ""
+            assert msg.problem_description == ""
         else:
-            assert len(msg) > 0
+            assert len(msg.problem_description) > 0
 
 
 def test_parse():
-    correctSamples = os.path.abspath("tests/sampleFiles/parse/correct")
-    _matchingParseValue(correctSamples, True, True)
+    parsable_tests = {
+        os.path.abspath("tests/sampleFiles/parse/correct/dir1"): "Hello_Hi.tla"
+        }    
+    _matchingParseValue(parsable_tests, True, True)
 
-    flawedSamples = os.path.abspath("tests/sampleFiles/parse/flawed")    
-    _matchingParseValue(flawedSamples, False, False)
-
-
-def test_parse_test_args():
-
-    # the case when an argument of a wrong type is given as tla_file_content
-    with pytest.raises(TypeError):
-        _, _ = parse(tla_file_content=[2])
+    unparsable_tests = {
+        os.path.abspath("tests/sampleFiles/parse/flawed/dir1"):"HelloFlawed1.tla",
+        os.path.abspath("tests/sampleFiles/parse/flawed/dir2"): "HelloFlawed2"
+    }
+    _matchingParseValue(unparsable_tests, False, False)
