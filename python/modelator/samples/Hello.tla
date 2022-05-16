@@ -14,7 +14,7 @@ Init ==
 
 Next ==
     /\ x' = IF x = "hello" THEN  "world" ELSE "hello"
-    /\ y' = y-21
+    /\ y' = y-22
 
 
 

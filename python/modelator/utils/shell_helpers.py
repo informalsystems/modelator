@@ -1,17 +1,17 @@
-
 from .. import constants
 
 
 class ConfigValues(dict):
     def __init__(self) -> None:
-        self.config_keys = set([
-            constants.INIT, 
-            constants.INVARIANT, 
-            constants.NEXT,
-            constants.APALACHE_NUM_STEPS])        
+        self.config_keys = set(
+            [
+                constants.INIT,
+                constants.INVARIANT,
+                constants.NEXT,
+                constants.APALACHE_NUM_STEPS,
+            ]
+        )
 
-    
-    
     # def __getitem__(self, __k: _KT) -> _VT:
     def __getitem__(self, __k):
         return super().__getitem__(__k)
@@ -22,6 +22,3 @@ class ConfigValues(dict):
             print("The allowed config values are {}".format(self.config_keys))
             return
         return super().__setitem__(__k, __v)
-
-
-

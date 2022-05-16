@@ -10,9 +10,8 @@ InitA ==
     /\ x = "hello"
     /\ y = 32
 
-InitB == 
+InitB ==
     /\ x = "ho"
     /\ y = 0
 
 ====
-

@@ -12,14 +12,14 @@ InitA ==
     /\ x = "hello"
     /\ y = 42
 
-InitB == 
+InitB ==
     /\ x = "hi"
     /\ y = 42
 
-InitC == 
+InitC ==
     /\ x = "hello"
     /\ y = 0
-    
+
 Next ==
     /\ x' = IF x = "hello" THEN "world" ELSE "hello"
     /\ y' = 42-y

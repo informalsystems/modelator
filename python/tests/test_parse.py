@@ -9,7 +9,7 @@ from modelator.utils import tla_helpers
 
 def _matchingParseValue(samples, expectedResult: bool, msgEmpty: bool):
     for test_dir, test_name in samples.items():
-        files = tla_helpers.get_auxiliary_tla_files(os.path.join(test_dir, test_name))        
+        files = tla_helpers.get_auxiliary_tla_files(os.path.join(test_dir, test_name))
 
         res, msg = parse(files=files, tla_file_name=test_name)
         assert res == expectedResult
@@ -22,11 +22,11 @@ def _matchingParseValue(samples, expectedResult: bool, msgEmpty: bool):
 def test_parse():
     parsable_tests = {
         os.path.abspath("tests/sampleFiles/parse/correct/dir1"): "Hello_Hi.tla"
-        }    
+    }
     _matchingParseValue(parsable_tests, True, True)
 
     unparsable_tests = {
-        os.path.abspath("tests/sampleFiles/parse/flawed/dir1"):"HelloFlawed1.tla",
-        os.path.abspath("tests/sampleFiles/parse/flawed/dir2"): "HelloFlawed2"
+        os.path.abspath("tests/sampleFiles/parse/flawed/dir1"): "HelloFlawed1.tla",
+        os.path.abspath("tests/sampleFiles/parse/flawed/dir2"): "HelloFlawed2",
     }
     _matchingParseValue(unparsable_tests, False, False)

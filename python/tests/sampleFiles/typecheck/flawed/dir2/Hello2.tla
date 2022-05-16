@@ -4,7 +4,7 @@ EXTENDS Naturals, FiniteSets, Sequences
 
 VARIABLES
     \* @type: Str;
-    x,    
+    x,
     y
 
 Init ==
