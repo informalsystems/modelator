@@ -2,7 +2,7 @@ from email import header
 import json
 import tabulate
 from itf import ITF
-from deepdiff import DeepDiff
+import deepdiff
 
 
 class ITFDiff:
@@ -19,13 +19,15 @@ class ITFDiff:
 
         for i in range(1, len(itfs)):
             diff_list = []
-            ddiff = DeepDiff(
+            ddiff = deepdiff.DeepDiff(
                 itfs[i - 1].itf, itfs[i].itf, ignore_order=True, view="tree"
             )
             for vs in ddiff.values():
                 for v in vs:
                     l_path = v.path(output_format="list")
-                    diff_list.append((ITFDiff.format_path(l_path), v.t1, v.t2))
+                    t1 = "-" if isinstance(v.t1, deepdiff.helper.NotPresent) else v.t1
+                    t2 = "-" if isinstance(v.t2, deepdiff.helper.NotPresent) else v.t2
+                    diff_list.append((ITFDiff.format_path(l_path), t1, t2))
             print(
                 tabulate.tabulate(
                     diff_list, headers=["path", "prev_state", "next_state"]
