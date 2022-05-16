@@ -22,13 +22,13 @@ class ITFDiff:
             ddiff = DeepDiff(
                 itfs[i - 1].itf, itfs[i].itf, ignore_order=True, view="tree"
             )
-            for k, vs in ddiff.items():
+            for vs in ddiff.values():
                 for v in vs:
                     l_path = v.path(output_format="list")
-                    diff_list.append((k, ITFDiff.format_path(l_path), v.t1, v.t2))
+                    diff_list.append((ITFDiff.format_path(l_path), v.t1, v.t2))
             print(
                 tabulate.tabulate(
-                    diff_list, headers=["type", "path", "prev_state", "next_state"]
+                    diff_list, headers=["path", "prev_state", "next_state"]
                 )
             )
             print()
