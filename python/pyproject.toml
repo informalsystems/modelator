@@ -6,10 +6,17 @@ license = "Apache-2.0"
 authors = ["Ranadeep Biswas <mail@rnbguy.at>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
+modelator-py = "^0.1.7"
+deepdiff = "^5.8.0"
+tabulate = "^0.8.9"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
+prospector = "^1.7.7"
+mypy = "^0.950"
+bandit = "^1.7.4"
+fire = "^0.4.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
