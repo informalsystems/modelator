@@ -10,11 +10,11 @@ VARIABLES
 
 Init ==
     /\ x = "hello"
-    /\ y = 63
+    /\ y = 22
 
 Next ==
     /\ x' = IF x = "hello" THEN  "world" ELSE "hello"
-    /\ y' = y-22
+    /\ y' = y-2
 
 
 

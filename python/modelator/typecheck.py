@@ -3,7 +3,7 @@ import os
 
 from typing import Dict, Tuple
 from modelator_py.apalache.pure import apalache_pure
-from .utils import apalache_helpers, tla_helpers
+from .utils import apalache_helpers, tla_helpers, modelatorpy_helpers
 from .utils.ErrorMessage import ErrorMessage
 from .parse import parse
 from . import constants
@@ -27,8 +27,8 @@ def typecheck(
         if res is False:
             return (False, msg)
 
-    json_command = apalache_helpers.wrap_apalache_command(
-        cmd=constants.APALACHE_TYPECHECK, tla_file_name=tla_file_name, files=files
+    json_command = modelatorpy_helpers.wrap_command(
+        cmd=constants.TYPECHECK_CMD, tla_file_name=tla_file_name, files=files
     )
 
     result = apalache_pure(json=json_command)

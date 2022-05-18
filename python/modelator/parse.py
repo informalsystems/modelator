@@ -6,7 +6,7 @@ from typing import Tuple
 from modelator_py.apalache.pure import apalache_pure
 
 from . import constants
-from .utils import apalache_helpers, tla_helpers
+from .utils import apalache_helpers, tla_helpers, modelatorpy_helpers
 from .utils.ErrorMessage import ErrorMessage
 
 # import utils
@@ -21,7 +21,7 @@ the model does not parse.
 
 def parse(tla_file_name: str, files: Dict[str, str]) -> Tuple[bool, ErrorMessage]:
 
-    json_command = apalache_helpers.wrap_apalache_command(
+    json_command = modelatorpy_helpers.wrap_command(
         cmd="parse", tla_file_name=tla_file_name, files=files
     )
 

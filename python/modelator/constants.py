@@ -1,14 +1,17 @@
+# model checkers
+APALACHE = "apalache"
+TLC = "tlc"
+
 DEFAULT_APALACHE_JAR = "../jars/apalache-pkg-0.25.0.jar"
-# DEFAULT_APALACHE_JAR = "../jars/apalache-pkg-0.17.5-full.jar"
-# DEFAULT_APALACHE_JAR = "../jars/apalache-pkg-0.24.0.jar"
+DEFAULT_TLC_JAR = "../jars/tla2tools-v1.8.0.jar"
 
 PARSE = "parse"
 TYPECHECK = "typecheck"
 CHECK = "check"
 
-APALACHE_PARSE = "parse"
-APALACHE_CHECK = "check"
-APALACHE_TYPECHECK = "typecheck"
+PARSE_CMD = "parse"
+CHECK_CMD = "check"
+TYPECHECK_CMD = "typecheck"
 
 INVARIANT = "inv"
 INIT = "init"
