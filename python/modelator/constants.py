@@ -13,7 +13,12 @@ PARSE_CMD = "parse"
 CHECK_CMD = "check"
 TYPECHECK_CMD = "typecheck"
 
-INVARIANT = "inv"
+DEFAULT_INVARIANTS = ["Inv"]
+DEFAULT_INIT = "Init"
+DEFAULT_NEXT = "Next"
+
 INIT = "init"
 NEXT = "next"
+INVARIANT = "inv"
 APALACHE_NUM_STEPS = "length"
+CONFIG = "config"

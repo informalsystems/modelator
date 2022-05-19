@@ -11,21 +11,29 @@ tlc = constants.TLC
 
 
 class Modelator:
-    def __init__(self, model_file_name=None, autoload=True) -> None:
+    def __init__(self, model_file_name: str = None, autoload: bool = True) -> None:
+        """
+        Constructs the modelator shell object.
+
+        Parameters
+        ----------
+            model_file_name : str
+                path to the main .tla file under inspection in the shell (absolute path, or relative to
+                `modelator_shell` file)
+            autoload : bool
+                if True, the shell will re-load the file each time an action is called.
+        """
 
         self.model_file_name = model_file_name
         self.autoload = autoload
         if self.autoload is True and self.model_file_name is not None:
-            self.model = self.load_model(self.model_file_name, print_info=False)
+            self.model = self.load(self.model_file_name)
 
-        # self.config_args = shell_helpers.ConfigValues()
-        self.config_args = {}
+        # self.init_state = None
+        # self.next = None
+        # self.property = None
 
-        self.init_state = None
-        self.next = None
-        self.invariant = None
-
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         if self.model_file_name is not None:
             return "Modelator instance for the model {}".format(self.model_file_name)
         else:
@@ -33,79 +41,34 @@ class Modelator:
                 "Modelator instance without a model (use 'load' to load a model file)"
             )
 
-    def _check_if_model_exists(self):
-        if self.model_file_name is None or (
-            self.autoload is False and self.model is None
-        ):
-            print("ERROR: Model is not set yet. Use command `load(<model_file>.tla)`")
-            return False
-        else:
-            return True
+    def __repr__(self) -> str:
+        return "{}({!r})".format(self.__class__.__name__, self.__dict__)
 
-    def _load_if_needed(self):
+    def load(self, file_to_load: str):
+        """
+        Loads the file `file_to_load` and saves it under `self.model`.
+        It also loads all other relevant files
+        (as provided by the function `tla_helpers.get_auxiliary_tla_files`) and stores them to
+        `self.files`.
 
-        if self.autoload is True:
-            self.load_model(self.model_file_name, print_info=False)
+        Parameters
+        ----------
+        file_to_load : str
+                path to the main .tla file under inspection in the shell (absolute path, or relative to
+                `modelator_shell` file)
 
-    def _set_default_basic_args(self):
-        if self.init_state is None:
-            self.init_state = "Init"
-        if self.next is None:
-            self.next = "Next"
-        if self.invariant is None:
-            self.invariant = "Inv"
-
-    def _set_apalache_args(self):
-        apalache_args = {}
-        if constants.INIT not in self.config_args:
-            apalache_args[constants.INIT] = self.init_state
-        if constants.NEXT not in self.config_args:
-            apalache_args[constants.NEXT] = self.next
-        if constants.INVARIANT not in self.config_args:
-            apalache_args[constants.INVARIANT] = self.invariant
-        if constants.APALACHE_NUM_STEPS not in self.config_args:
-            apalache_args[constants.APALACHE_NUM_STEPS] = 10
-        return apalache_args
-
-    def _set_tlc_args(self):
-        tlc_args = {}
-        basic_info = {}
-        args_config_file_name = "config_args_file.cfg"
-
-        if constants.INIT not in self.config_args:
-            basic_info[constants.INIT] = self.init_state
-        if constants.NEXT not in self.config_args:
-            basic_info[constants.NEXT] = self.next
-        if constants.INVARIANT not in self.config_args:
-            basic_info[constants.INVARIANT] = self.invariant
-
-        tlc_args["config"] = args_config_file_name
-        args_config_file = self._default_args_to_config_string()
-        self.files[args_config_file_name] = args_config_file
-
-        return tlc_args, basic_info
-
-    def _default_args_to_config_string(self):
-        return "INIT {}\nNEXT {}\n INVARIANT {}".format(
-            self.init_state, self.next, self.invariant
-        )
-
-    def load_model(self, file_to_load: str, print_info: bool = True):
+        """
 
         self.model_file_name = file_to_load
         self.model = open(file_to_load).read()
-        self.directory = os.path.dirname(os.path.abspath(self.model_file_name))
-
         self.files = tla_helpers.get_auxiliary_tla_files(self.model_file_name)
 
-        if print_info is True:
-            print(
-                "Loaded file {}.\n Its content is:\n{}".format(
-                    self.model_file_name, self.model
-                )
-            )
-
     def parse(self):
+        """
+        Parses the model (from the file `self.model_file_name`).
+        It prints the error message if the file does not parse.
+        """
+
         if self._check_if_model_exists() is False:
             return
 
@@ -119,6 +82,12 @@ class Modelator:
             print(msg)
 
     def typecheck(self):
+        """
+        Typechecks the model (from the file `self.model_file_name`).
+        Typechecking is only relevant for working with Apalache (not TLC).
+        It prints the error message if the file does not parse.
+        """
+
         if self._check_if_model_exists() is False:
             return
 
@@ -130,23 +99,63 @@ class Modelator:
             msg.file_path = os.path.abspath(self.model_file_name)
             print(msg)
 
-    def check(self, checker: str = constants.APALACHE, config_file_name: str = None):
+    def check(
+        self,
+        checker: str = constants.APALACHE,
+        config_file_name: str = None,
+        invariants: List[str] = constants.DEFAULT_INVARIANTS,
+        init_state_predicate: str = constants.DEFAULT_INIT,
+        next_state_predicate: str = constants.DEFAULT_NEXT,
+    ):
+        """
+        Checks whether the model is correct (with respect to specified invariants).
+
+        Parameteres:
+        -----------
+        checker : str
+            can be either 'apalache' or 'tlc' and determines which checker to use. Defaults to 'apalache'
+        config_file_name : str
+            A configuration file. If specified, this is where relevant information about initial state, next predicate
+            and invariants is taken from
+        invariants : List[str]
+            A list of invariants to check. Defaults to ['Inv']. Only relevant if `config_file_name` is None.
+        init_state_predicate : str
+            The name of the predicate (from the model) which defines the initial state. Defaults to 'Init'. Only relevant if `config_file_name` is None.
+        next_state_predicate : str
+            The name of the predicate (from the model) which defines state transitions. Defaults to 'Next'. Only relevant if `config_file_name` is None.
+
+        """
+
+        # check that the model on which shell is working is set
         if self._check_if_model_exists() is False:
             return
 
         self._load_if_needed()
-        self._set_default_basic_args()
+        # self._set_default_basic_args()
+
+        if config_file_name is not None:
+            assert config_file_name in self.files
+            args = {constants.CONFIG: config_file_name}
+
+        else:
+            args_config_file = self._basic_args_to_config_string(
+                init=init_state_predicate,
+                next=next_state_predicate,
+                invariants=invariants,
+            )
+            args_config_file_name = "generated_config.cfg"
+            args = {constants.CONFIG: args_config_file_name}
+            self.files[args_config_file_name] = args_config_file
 
         if checker == constants.TLC:
-            args, basic_info = self._set_tlc_args()
             res, msg, cex = check_tlc(
                 tla_file_name=os.path.basename(self.model_file_name),
                 files=self.files,
                 args=args,
             )
-        else:
+        else:  # if checker is Apalache
 
-            args = self._set_apalache_args()
+            args.update(self._set_additional_apalache_args())
             basic_info = args
             res, msg, cex = check_apalache(
                 os.path.basename(self.model_file_name),
@@ -155,18 +164,56 @@ class Modelator:
             )
 
         if res is True:
-            print(
-                "Invariant {} is never violated".format(basic_info[constants.INVARIANT])
-            )
+            print("Invariants {} hold".format(invariants))
         else:
             msg.file_path = self.model_file_name
-            if msg.error_category == constants.CHECK:
-                msg.problem_description = (
-                    "Invariant {} violated.\nCounterexample is {}".format(
-                        basic_info[constants.INVARIANT], str(cex)
-                    )
-                )
             print(msg)
+
+    def _check_if_model_exists(self):
+        if self.model_file_name is None or (
+            self.autoload is False and self.model is None
+        ):
+            print("ERROR: Model is not set yet. Use command `load(<model_file>.tla)`")
+            return False
+        else:
+            return True
+
+    def _load_if_needed(self):
+
+        if self.autoload is True:
+            self.load(self.model_file_name)
+
+    def _set_default_basic_args(self):
+        if self.init_state is None:
+            self.init_state = "Init"
+        if self.next is None:
+            self.next = "Next"
+        if self.property is None:
+            self.property = "Inv"
+
+    def _set_additional_apalache_args(self):
+        apalache_args = {}
+        apalache_args[constants.APALACHE_NUM_STEPS] = 10
+        return apalache_args
+
+    def _set_tlc_args(self):
+        tlc_args = {}
+        basic_info = {}
+        args_config_file_name = "config_args_file.cfg"
+        basic_info[constants.INIT] = self.init_state
+        basic_info[constants.NEXT] = self.next
+        basic_info[constants.INVARIANT] = self.property
+
+        tlc_args["config"] = args_config_file_name
+        args_config_file = self.basic_args_to_config_string()
+        self.files[args_config_file_name] = args_config_file
+
+        return tlc_args, basic_info
+
+    def _basic_args_to_config_string(self, init: str, next: str, invariants: str):
+        return "INIT {}\nNEXT {}\nINVARIANTS\n{}".format(
+            init, next, "  \n".join(invariants)
+        )
 
 
 def clear():
@@ -175,5 +222,5 @@ def clear():
 
 def start():
     m = Modelator()
-    m.load_model("modelator/samples/Hello.tla")
+    m.load("modelator/samples/Hello.tla")
     return m
