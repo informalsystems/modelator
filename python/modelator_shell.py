@@ -10,7 +10,7 @@ apalache = constants.APALACHE
 tlc = constants.TLC
 
 
-class Modelator:
+class ModelatorShell:
     def __init__(self, model_file_name: str = None, autoload: bool = True) -> None:
         """
         Constructs the modelator shell object.
@@ -221,6 +221,6 @@ def clear():
 
 
 def start():
-    m = Modelator()
+    m = ModelatorShell()
     m.load("modelator/samples/Hello.tla")
     return m
