@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+import json
 from typing import Any, Dict, List, Tuple
+import deepdiff
 
 
 @dataclass
@@ -138,6 +140,47 @@ class ITF:
                 return ITFSequence(data)
             case _:
                 return ITFObject(data)
+
+    @staticmethod
+    def from_itf_json(path) -> List["ITF"]:
+        with open(path) as f:
+            data = json.load(f)
+        return [ITF(state) for state in data["states"]]
+
+    @staticmethod
+    def diff(itfs: List["ITF"]):
+        def format_path(path):
+            if len(path) == 0:
+                return ""
+            match path[0]:
+                case "record":
+                    st = f".{path[1]}" + format_path(path[2:])
+                case "function":
+                    st = f"({path[1]})" + format_path(path[3:])
+                case "set":
+                    st = "{}" + format_path(path[2:])
+                case "sequence":
+                    st = f"[{path[1]}]" + format_path(path[2:])
+                case "object":
+                    st = format_path(path[1:])
+                case _:
+                    raise RuntimeError(f"{path} : no match")
+            return st
+
+        trace_diff = []
+        for i in range(1, len(itfs)):
+            current_diff = []
+            ddiff = deepdiff.DeepDiff(
+                itfs[i - 1].itf, itfs[i].itf, ignore_order=True, view="tree"
+            )
+            for vs in ddiff.values():
+                for v in vs:
+                    l_path = v.path(output_format="list")
+                    t1 = "-" if isinstance(v.t1, deepdiff.helper.NotPresent) else v.t1
+                    t2 = "-" if isinstance(v.t2, deepdiff.helper.NotPresent) else v.t2
+                    current_diff.append((format_path(l_path), t1, t2))
+            trace_diff.append(current_diff)
+        return trace_diff
 
     def __repr__(self):
         return " /\\ ".join((f"({k} = {v})" for (k, v) in self.itf.record.items()))
