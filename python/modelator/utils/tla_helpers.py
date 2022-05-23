@@ -15,3 +15,15 @@ def get_auxiliary_tla_files(model_name: str) -> Dict[str, str]:
         files[file_name] = open(os.path.join(dir, file_name)).read()
 
     return files
+
+
+def create_file(module, extends, content):
+    return f"""
+------------ MODULE {module} -------------
+
+EXTENDS {", ".join(extends)}
+
+{content}
+
+===========================================
+    """
