@@ -1,5 +1,4 @@
 import argparse
-import json
 import os
 from typing import Tuple, List
 
@@ -13,6 +12,9 @@ from .typecheck import typecheck
 from typing import Dict
 from .utils.ErrorMessage import ErrorMessage
 from . import constants
+from .itf import ITF
+
+import re
 
 
 def check_tlc(
@@ -67,6 +69,8 @@ def check_apalache(
     tla_file_name: str,
     files: Dict[str, str],
     args: Dict = None,
+    init: ITF | None = None,
+    inv: ITF | None = None,
     do_parse: bool = True,
     do_typecheck: bool = True,
     config_file_name: str = None,
@@ -88,6 +92,29 @@ def check_apalache(
 
         args["config"] = config_file_name
 
+    if init is not None or inv is not None:
+        main_module = "custom_modelator"
+        main_file = f"{main_module}.tla"
+        extends = [tla_file_name.rsplit(".", 1)[0]]
+        content = ""
+        if init is not None:
+            content = f"CustomInit == {init.__repr__()}\n"
+        if inv is not None:
+            content += f"CustomInv == ~({inv.__repr__()})\n"
+        main_file_content = tla_helpers.create_file(main_module, extends, content)
+        tla_file_name = main_file
+        files[tla_file_name] = main_file_content
+        if init is not None:
+            files[config_file_name] = re.sub(
+                "(?<=INIT )([^\n ]+)(?=\n)", "CustomInit", files[config_file_name]
+            )
+        if inv is not None:
+            files[config_file_name] = re.sub(
+                "(?<=INVARIANT )([^\n ]+)(?=\n)", "CustomInv", files[config_file_name]
+            )
+        print(files[tla_file_name])
+        print(files[config_file_name])
+
     json_command = modelatorpy_helpers.wrap_command(
         cmd=constants.CHECK_CMD,
         tla_file_name=tla_file_name,
@@ -101,7 +128,7 @@ def check_apalache(
         return (True, ErrorMessage(""), [])
     else:
         inv_violated, cex = apalache_helpers.extract_apalache_counterexample(result)
-        cex_representation = str(cex)
+        cex_representation = [ITF(state) for state in cex]
         problem_desc = "Invariant {} violated.\nCounterexample is {}".format(
             inv_violated, cex_representation
         )
@@ -110,7 +137,7 @@ def check_apalache(
             error_category=constants.CHECK,
             full_error_msg=result["stdout"],
         )
-        return (False, error_msg, cex)
+        return (False, error_msg, cex_representation)
 
 
 if __name__ == "__main__":

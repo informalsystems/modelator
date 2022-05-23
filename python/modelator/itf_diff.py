@@ -1,4 +1,3 @@
-from email import header
 import json
 import tabulate
 from itf import ITF

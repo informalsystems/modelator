@@ -125,7 +125,7 @@ class ITF:
         self.itf = ITF.parse(data)
 
     @staticmethod
-    def parse(data):
+    def parse(data) -> ITFRecord | ITFFunction | ITFSequence | ITFSet | ITFObject:
         match data:
             case dict():
                 if "#map" in data:
@@ -140,4 +140,4 @@ class ITF:
                 return ITFObject(data)
 
     def __repr__(self):
-        return self.itf.pretty()
+        return " /\\ ".join((f"({k} = {v})" for (k, v) in self.itf.record.items()))
