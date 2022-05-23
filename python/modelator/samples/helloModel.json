@@ -1,0 +1,4 @@
+{
+  "fileName": "Hello.tla",
+  "fileContent": "------------ MODULE Hello -------------\n\nEXTENDS Naturals, FiniteSets, Sequences\n\nVARIABLES\n    \\* @type: Str;\n    x,\n    \\* @type: Int;\n    y\n\nInit ==\n    /\\ x = \"hello\"\n    /\\ y = 42\n\nNext ==\n    /\\ x' = IF x = \"hello\" THEN \"world\" ELSE \"hello\"\n    /\\ y' = 42-y\n\nInv ==\n    ~\n    (\n        /\\ x = \"world\"\n        /\\ y = 0\n    )\n\n===========================================\n"
+}
