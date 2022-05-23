@@ -46,11 +46,9 @@ def check_tlc(
         return (True, ErrorMessage(""), [])
     else:
         tlc_itf_json = {"stdout": result["stdout"], "lists": True, "records": True}
-
         itf_trace_objects = tlc_itf(json=tlc_itf_json)
 
         cex = itf_trace_objects[0]["states"]
-
         inv_violated = tlc_helpers.invariant_from_stdout(result["stdout"])
 
         cex_representation = str(cex)

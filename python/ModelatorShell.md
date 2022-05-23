@@ -30,7 +30,7 @@ Was expecting "Identifier"
 Encountered "Beginning of definition" at line 11, column 1 and token ","
 ```
 
-If using shell inside VSCode editor, you can click on the specific location of the error
+If using the shell inside VSCode editor, you can click on the specific location of the error
 and it will open the place where the problem is detected.
 
 You can use the command `m.typecheck()` the same way.

@@ -1,3 +1,4 @@
+from inspect import trace
 import os
 from typing import List
 from modelator.parse import parse
@@ -5,6 +6,7 @@ from modelator.typecheck import typecheck
 from modelator.check import check_apalache, check_tlc
 from modelator.utils import shell_helpers, tla_helpers
 from modelator import constants
+import traceback
 
 apalache = constants.APALACHE
 tlc = constants.TLC
@@ -26,6 +28,7 @@ class ModelatorShell:
 
         self.model_file_name = model_file_name
         self.autoload = autoload
+        self._latest_exception = ""
         if self.autoload is True and self.model_file_name is not None:
             self.model = self.load(self.model_file_name)
 
@@ -131,7 +134,6 @@ class ModelatorShell:
             return
 
         self._load_if_needed()
-        # self._set_default_basic_args()
 
         if config_file_name is not None:
             assert config_file_name in self.files
@@ -148,26 +150,41 @@ class ModelatorShell:
             self.files[args_config_file_name] = args_config_file
 
         if checker == constants.TLC:
-            res, msg, cex = check_tlc(
-                tla_file_name=os.path.basename(self.model_file_name),
-                files=self.files,
-                args=args,
-            )
+            args.update(self._set_additional_tlc_args())
+            try:
+                res, msg, cex = check_tlc(
+                    tla_file_name=os.path.basename(self.model_file_name),
+                    files=self.files,
+                    args=args,
+                )
+            except Exception as e:
+                print("Problem running TLC: {}".format(e))
+                self._latest_exception = traceback.format_exc()
+                return
+
         else:  # if checker is Apalache
 
             args.update(self._set_additional_apalache_args())
             basic_info = args
-            res, msg, cex = check_apalache(
-                os.path.basename(self.model_file_name),
-                self.files,
-                args=args,
-            )
+            try:
+                res, msg, cex = check_apalache(
+                    os.path.basename(self.model_file_name),
+                    self.files,
+                    args=args,
+                )
+            except Exception as e:
+                print("Problem runing Apalache: {}".format(e))
+                self._latest_exception = traceback.format_exc()
+                return
 
         if res is True:
             print("Invariants {} hold".format(invariants))
         else:
             msg.file_path = self.model_file_name
             print(msg)
+
+    def stacktrace(self):
+        print(self._latest_exception)
 
     def _check_if_model_exists(self):
         if self.model_file_name is None or (
@@ -183,32 +200,14 @@ class ModelatorShell:
         if self.autoload is True:
             self.load(self.model_file_name)
 
-    def _set_default_basic_args(self):
-        if self.init_state is None:
-            self.init_state = "Init"
-        if self.next is None:
-            self.next = "Next"
-        if self.property is None:
-            self.property = "Inv"
-
     def _set_additional_apalache_args(self):
         apalache_args = {}
         apalache_args[constants.APALACHE_NUM_STEPS] = 10
         return apalache_args
 
-    def _set_tlc_args(self):
+    def _set_additional_tlc_args(self):
         tlc_args = {}
-        basic_info = {}
-        args_config_file_name = "config_args_file.cfg"
-        basic_info[constants.INIT] = self.init_state
-        basic_info[constants.NEXT] = self.next
-        basic_info[constants.INVARIANT] = self.property
-
-        tlc_args["config"] = args_config_file_name
-        args_config_file = self.basic_args_to_config_string()
-        self.files[args_config_file_name] = args_config_file
-
-        return tlc_args, basic_info
+        return tlc_args
 
     def _basic_args_to_config_string(self, init: str, next: str, invariants: str):
         return "INIT {}\nNEXT {}\nINVARIANTS\n{}".format(
