@@ -26,20 +26,6 @@ jobs:
           git config --global user.name "$GITHUB_ACTOR"
           git config --global user.email "github@actions.ci"
 
-      - name: Add local bin paths
-        run: |
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      - name: Install Rust stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-
-      - name: Install Rust-Cache for Github actions
-        uses: Swatinem/rust-cache@v1
-
       - name: Install `quickinstall`
         uses: actions-rs/cargo@v1
         with:
@@ -55,26 +41,6 @@ jobs:
       - name: Prepare release branch
         run: |
           ./scripts/prepare_release.sh
-
-      - name: Install Rust stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-
-      - name: Rust publish
-        uses: actions-rs/cargo@v1
-        with:
-          command: publish
-          args: --package modelator --dry-run
-
-      - name: Setup Go
-        uses: actions/setup-go@v2
-
-      - name: Golang publish
-        run: |
-          go list -m github.com/${{ github.repository }}
 
       - name: Setup Python
         uses: actions/setup-python@v1
