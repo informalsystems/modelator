@@ -16,5 +16,4 @@ def test_itf_diff_print(capfd, snapshot, itf_json_file):
     trace = ITF.from_itf_json(itf_json_file)
     ITF.print_diff(trace)
     out, _ = capfd.readouterr()
-    print(out)
     assert out == snapshot
