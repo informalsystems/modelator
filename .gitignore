@@ -255,3 +255,10 @@ tarpaulin-report.html
 
 trace.tla
 mc.log
+
+# Python
+/dist/
+**.pyc
+**.lock
+
+

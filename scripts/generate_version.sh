@@ -5,23 +5,16 @@ set -o xtrace
 
 [ -z $1 ] && echo "No update component provided." && exit 1
 
-# get rust-version
-LAST_RUST_VERSION=$(grep -i '^version = ' "rust/Cargo.toml" | sed 's|^version = "\([^\"]\+\)"|\1|g')
-
 # get python-version
-LAST_PYTHON_VERSION=$(grep -i '^version = ' "python/pyproject.toml" | sed 's|^version = "\([^"]\+\)"|\1|g')
-
-# get golang-version
-# skip
+LAST_PYTHON_VERSION=$(grep -i '^version = ' "pyproject.toml" | sed 's|^version = "\([^"]\+\)"|\1|g')
 
 # get last release tag
 LAST_RELEASE_VERSION=$(grep '^## v' CHANGELOG.md | head -1 | sed 's|^## v||g')
 
 echo "Python version $LAST_PYTHON_VERSION"
-echo "Rust version $LAST_RUST_VERSION"
 echo "Release version $LAST_RELEASE_VERSION"
 
-if [[ "$LAST_RELEASE_VERSION" != "$LAST_RUST_VERSION" || "$LAST_RELEASE_VERSION" != "$LAST_PYTHON_VERSION" ]]; then
+if [[ "$LAST_RELEASE_VERSION" != "$LAST_PYTHON_VERSION" ]]; then
     echo "Versions did not the match. Exiting."
     exit 2
 fi

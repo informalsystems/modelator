@@ -7,16 +7,8 @@ set -o xtrace
 
 git checkout -B "release/v${RELEASE_VERSION}"
 
-# update the versions on Rust crate
-sed -i "s|^version = \"[^\"]\+\"|version = \"${RELEASE_VERSION}\"|g" "rust/Cargo.toml"
-
-# update Cargo.lock with latest version
-cargo build
-
 # update the version on Python module
-sed -i "s|^version = \"[^\"]\+\"|version = \"${RELEASE_VERSION}\"|g" "python/pyproject.toml"
-
-# nothing to do for Go lang for now
+sed -i "s|^version = \"[^\"]\+\"|version = \"${RELEASE_VERSION}\"|g" "pyproject.toml"
 
 BODY_FILE="current_changelog"
 
