@@ -25,7 +25,7 @@ For instance, by adding a comma after the declaration of variable `x`.
 In this case, `m.parse()` should return
 
 ```
-Parse error at <path>/modelator/python/modelator/samples/Hello.tla:11:
+Parse error at <path>modelator/samples/Hello.tla:11:
 Was expecting "Identifier"
 Encountered "Beginning of definition" at line 11, column 1 and token ","
 ```
