@@ -1,4 +1,193 @@
-# name: test_itf_parse[tests/traces/itf/IBCTransferAcknowledgePacketInv_counterexample1.itf.json]
+# name: test_itf_diff_print[tests/traces/itf/IBCTransferAcknowledgePacketInv_counterexample1.itf.json]
+  '''
+  path                               prev_state    next_state
+  ---------------------------------  ------------  -------------------------------------------------------------------------------------------------------
+  .action.name                       Null          IBCTransferSendPacket
+  .action.packet                                   [ amount |-> 2, denom |-> 2, from |-> 2, id |-> 0, sourceChainId |-> 2, targetChainId |-> 1, to |-> 2 ]
+  .chains(2).bank(2)(2)              3             1
+  .chains(2).escrow(1)(2)                          2
+  .chains(2).localPackets.list(0)                  [ amount |-> 2, denom |-> 2, from |-> 2, id |-> 0, sourceChainId |-> 2, targetChainId |-> 1, to |-> 2 ]
+  .chains(2).localPackets.pending{}                0
+  .chains(2).nextPacketId            0             1
+
+  path                         prev_state             next_state
+  ---------------------------  ---------------------  --------------------------------------------------------------------------------------------------------------------------
+  .action.name                 IBCTransferSendPacket  IBCTransferReceivePacket
+  .chains(1).bank(2)(2)                               2
+  .chains(1).remotePackets(2)                         SetAsFun({<<0, [ amount |-> 2, denom |-> 2, from |-> 2, id |-> 0, sourceChainId |-> 2, targetChainId |-> 1, to |-> 2 ]>>})
+  .chains(1).supply(2)                                2
+
+  path                               prev_state                next_state
+  ---------------------------------  ------------------------  ----------------------------
+  .action.name                       IBCTransferReceivePacket  IBCTransferAcknowledgePacket
+  .chains(2).localPackets.pending{}  0
+  .chains(2).localPackets.success{}                            0
+
+
+  '''
+# ---
+# name: test_itf_diff_print[tests/traces/itf/IBCTransferAcknowledgePacketInv_counterexample2.itf.json]
+  '''
+  path                   prev_state    next_state
+  ---------------------  ------------  -------------
+  .action.amount                       2
+  .action.chainId                      1
+  .action.denom                        1
+  .action.name           Null          LocalTransfer
+  .action.source                       2
+  .action.target                       1
+  .chains(1).bank(1)(1)  3             5
+  .chains(1).bank(2)(1)  3             1
+
+  path                               prev_state     next_state
+  ---------------------------------  -------------  -------------------------------------------------------------------------------------------------------
+  .action.amount                     2
+  .action.chainId                    1
+  .action.denom                      1
+  .action.name                       LocalTransfer  IBCTransferSendPacket
+  .action.packet                                    [ amount |-> 1, denom |-> 1, from |-> 2, id |-> 0, sourceChainId |-> 1, targetChainId |-> 2, to |-> 2 ]
+  .action.source                     2
+  .action.target                     1
+  .chains(1).bank(2)(1)              1              0
+  .chains(1).escrow(2)(1)            0              1
+  .chains(1).localPackets.list(0)                   [ amount |-> 1, denom |-> 1, from |-> 2, id |-> 0, sourceChainId |-> 1, targetChainId |-> 2, to |-> 2 ]
+  .chains(1).localPackets.pending{}                 0
+  .chains(1).nextPacketId            0              1
+
+  path                               prev_state             next_state
+  ---------------------------------  ---------------------  ----------------------------
+  .action.name                       IBCTransferSendPacket  IBCTransferAcknowledgePacket
+  .chains(1).localPackets.pending{}  0
+  .chains(1).localPackets.success{}                         0
+
+
+  '''
+# ---
+# name: test_itf_diff_print[tests/traces/itf/IBCTransferTimeoutPacketInv_counterexample1.itf.json]
+  '''
+  path                               prev_state    next_state
+  ---------------------------------  ------------  -------------------------------------------------------------------------------------------------------
+  .action.name                       Null          IBCTransferSendPacket
+  .action.packet                                   [ amount |-> 1, denom |-> 1, from |-> 1, id |-> 0, sourceChainId |-> 1, targetChainId |-> 2, to |-> 2 ]
+  .chains(1).bank(1)(1)              3             2
+  .chains(1).escrow(2)(1)                          1
+  .chains(1).localPackets.list(0)                  [ amount |-> 1, denom |-> 1, from |-> 1, id |-> 0, sourceChainId |-> 1, targetChainId |-> 2, to |-> 2 ]
+  .chains(1).localPackets.pending{}                0
+  .chains(1).nextPacketId            0             1
+
+  path                   prev_state                                                                                               next_state
+  ---------------------  -------------------------------------------------------------------------------------------------------  -------------
+  .action.amount                                                                                                                  3
+  .action.chainId                                                                                                                 1
+  .action.denom                                                                                                                   1
+  .action.name           IBCTransferSendPacket                                                                                    LocalTransfer
+  .action.packet         [ amount |-> 1, denom |-> 1, from |-> 1, id |-> 0, sourceChainId |-> 1, targetChainId |-> 2, to |-> 2 ]
+  .action.source                                                                                                                  2
+  .action.target                                                                                                                  1
+  .chains(1).bank(1)(1)  2                                                                                                        5
+  .chains(1).bank(2)(1)  3                                                                                                        0
+
+  path             prev_state     next_state
+  ---------------  -------------  --------------
+  .action.amount   3
+  .action.chainId  1
+  .action.denom    1
+  .action.name     LocalTransfer  InterruptRelay
+  .action.source   2
+  .action.target   1
+  .relayerRunning  True           False
+
+  path                               prev_state      next_state
+  ---------------------------------  --------------  -------------------------------------------------------------------------------------------------------
+  .action.name                       InterruptRelay  IBCTransferTimeoutPacket
+  .action.packet                                     [ amount |-> 1, denom |-> 1, from |-> 1, id |-> 0, sourceChainId |-> 1, targetChainId |-> 2, to |-> 2 ]
+  .chains(1).bank(1)(1)              5               6
+  .chains(1).escrow(2)(1)            1               0
+  .chains(1).localPackets.expired{}                  0
+  .chains(1).localPackets.pending{}  0
+
+
+  '''
+# ---
+# name: test_itf_diff_print[tests/traces/itf/IBCTransferTimeoutPacketInv_counterexample2.itf.json]
+  '''
+  path                               prev_state    next_state
+  ---------------------------------  ------------  -------------------------------------------------------------------------------------------------------
+  .action.name                       Null          IBCTransferSendPacket
+  .action.packet                                   [ amount |-> 1, denom |-> 2, from |-> 1, id |-> 0, sourceChainId |-> 2, targetChainId |-> 1, to |-> 2 ]
+  .chains(2).bank(1)(2)              3             2
+  .chains(2).escrow(1)(2)                          1
+  .chains(2).localPackets.list(0)                  [ amount |-> 1, denom |-> 2, from |-> 1, id |-> 0, sourceChainId |-> 2, targetChainId |-> 1, to |-> 2 ]
+  .chains(2).localPackets.pending{}                0
+  .chains(2).nextPacketId            0             1
+
+  path             prev_state                                                                                               next_state
+  ---------------  -------------------------------------------------------------------------------------------------------  --------------
+  .action.name     IBCTransferSendPacket                                                                                    InterruptRelay
+  .action.packet   [ amount |-> 1, denom |-> 2, from |-> 1, id |-> 0, sourceChainId |-> 2, targetChainId |-> 1, to |-> 2 ]
+  .relayerRunning  True                                                                                                     False
+
+  path                   prev_state      next_state
+  ---------------------  --------------  -------------
+  .action.amount                         1
+  .action.chainId                        1
+  .action.denom                          1
+  .action.name           InterruptRelay  LocalTransfer
+  .action.source                         1
+  .action.target                         2
+  .chains(1).bank(1)(1)  3               2
+  .chains(1).bank(2)(1)  3               4
+
+  path                               prev_state     next_state
+  ---------------------------------  -------------  -------------------------------------------------------------------------------------------------------
+  .action.amount                     1
+  .action.chainId                    1
+  .action.denom                      1
+  .action.name                       LocalTransfer  IBCTransferTimeoutPacket
+  .action.packet                                    [ amount |-> 1, denom |-> 2, from |-> 1, id |-> 0, sourceChainId |-> 2, targetChainId |-> 1, to |-> 2 ]
+  .action.source                     1
+  .action.target                     2
+  .chains(2).bank(1)(2)              2              3
+  .chains(2).escrow(1)(2)            1              0
+  .chains(2).localPackets.expired{}                 0
+  .chains(2).localPackets.pending{}  0
+
+
+  '''
+# ---
+# name: test_itf_diff_print[tests/traces/itf/LocalTransferInv_counterexample1.itf.json]
+  '''
+  path                   prev_state    next_state
+  ---------------------  ------------  -------------
+  .action.amount                       1
+  .action.chainId                      1
+  .action.denom                        1
+  .action.name           Null          LocalTransfer
+  .action.source                       1
+  .action.target                       2
+  .chains(1).bank(1)(1)  3             2
+  .chains(1).bank(2)(1)  3             4
+
+
+  '''
+# ---
+# name: test_itf_diff_print[tests/traces/itf/LocalTransferInv_counterexample2.itf.json]
+  '''
+  path                   prev_state    next_state
+  ---------------------  ------------  -------------
+  .action.amount                       1
+  .action.chainId                      1
+  .action.denom                        1
+  .action.name           Null          LocalTransfer
+  .action.source                       1
+  .action.target                       2
+  .chains(1).bank(1)(1)  3             2
+  .chains(1).bank(2)(1)  3             4
+
+
+  '''
+# ---
+# name: test_itf_parse_and_diff[tests/traces/itf/IBCTransferAcknowledgePacketInv_counterexample1.itf.json]
   tuple(
     list([
       (action = [ name |-> "Null" ]) /\ (chains = SetAsFun({<<1, [ bank |-> SetAsFun({<<1, SetAsFun({<<1, 3>>})>>, <<2, SetAsFun({<<1, 3>>})>>}), escrow |-> SetAsFun({<<2, SetAsFun({})>>}), id |-> 1, localPackets |-> [ expired |-> {}, list |-> SetAsFun({}), pending |-> {}, success |-> {} ], nextPacketId |-> 0, remotePackets |-> SetAsFun({}), supply |-> SetAsFun({<<1, 6>>}) ]>>, <<2, [ bank |-> SetAsFun({<<1, SetAsFun({<<2, 3>>})>>, <<2, SetAsFun({<<2, 3>>})>>}), escrow |-> SetAsFun({<<1, SetAsFun({})>>}), id |-> 2, localPackets |-> [ expired |-> {}, list |-> SetAsFun({}), pending |-> {}, success |-> {} ], nextPacketId |-> 0, remotePackets |-> SetAsFun({}), supply |-> SetAsFun({<<2, 6>>}) ]>>})) /\ (outcome = [ name |-> "Success" ]) /\ (relayerRunning = True),
@@ -86,7 +275,7 @@
     ]),
   )
 # ---
-# name: test_itf_parse[tests/traces/itf/IBCTransferAcknowledgePacketInv_counterexample2.itf.json]
+# name: test_itf_parse_and_diff[tests/traces/itf/IBCTransferAcknowledgePacketInv_counterexample2.itf.json]
   tuple(
     list([
       (action = [ name |-> "Null" ]) /\ (chains = SetAsFun({<<1, [ bank |-> SetAsFun({<<1, SetAsFun({<<1, 3>>})>>, <<2, SetAsFun({<<1, 3>>})>>}), escrow |-> SetAsFun({<<2, SetAsFun({<<1, 0>>})>>}), id |-> 1, localPackets |-> [ expired |-> {}, list |-> SetAsFun({}), pending |-> {}, success |-> {} ], nextPacketId |-> 0, remotePackets |-> SetAsFun({}), supply |-> SetAsFun({<<1, 6>>}) ]>>, <<2, [ bank |-> SetAsFun({<<1, SetAsFun({<<2, 3>>})>>, <<2, SetAsFun({<<2, 3>>})>>}), escrow |-> SetAsFun({<<1, SetAsFun({<<2, 0>>})>>}), id |-> 2, localPackets |-> [ expired |-> {}, list |-> SetAsFun({}), pending |-> {}, success |-> {} ], nextPacketId |-> 0, remotePackets |-> SetAsFun({}), supply |-> SetAsFun({<<2, 6>>}) ]>>})) /\ (outcome = [ name |-> "Success" ]) /\ (relayerRunning = True),
@@ -219,7 +408,7 @@
     ]),
   )
 # ---
-# name: test_itf_parse[tests/traces/itf/IBCTransferTimeoutPacketInv_counterexample1.itf.json]
+# name: test_itf_parse_and_diff[tests/traces/itf/IBCTransferTimeoutPacketInv_counterexample1.itf.json]
   tuple(
     list([
       (action = [ name |-> "Null" ]) /\ (chains = SetAsFun({<<1, [ bank |-> SetAsFun({<<1, SetAsFun({<<1, 3>>})>>, <<2, SetAsFun({<<1, 3>>})>>}), escrow |-> SetAsFun({<<2, SetAsFun({})>>}), id |-> 1, localPackets |-> [ expired |-> {}, list |-> SetAsFun({}), pending |-> {}, success |-> {} ], nextPacketId |-> 0, remotePackets |-> SetAsFun({}), supply |-> SetAsFun({<<1, 6>>}) ]>>, <<2, [ bank |-> SetAsFun({<<1, SetAsFun({<<2, 3>>})>>, <<2, SetAsFun({<<2, 3>>})>>}), escrow |-> SetAsFun({<<1, SetAsFun({})>>}), id |-> 2, localPackets |-> [ expired |-> {}, list |-> SetAsFun({}), pending |-> {}, success |-> {} ], nextPacketId |-> 0, remotePackets |-> SetAsFun({}), supply |-> SetAsFun({<<2, 6>>}) ]>>})) /\ (outcome = [ name |-> "Success" ]) /\ (relayerRunning = True),
@@ -385,7 +574,7 @@
     ]),
   )
 # ---
-# name: test_itf_parse[tests/traces/itf/IBCTransferTimeoutPacketInv_counterexample2.itf.json]
+# name: test_itf_parse_and_diff[tests/traces/itf/IBCTransferTimeoutPacketInv_counterexample2.itf.json]
   tuple(
     list([
       (action = [ name |-> "Null" ]) /\ (chains = SetAsFun({<<1, [ bank |-> SetAsFun({<<1, SetAsFun({<<1, 3>>})>>, <<2, SetAsFun({<<1, 3>>})>>}), escrow |-> SetAsFun({<<2, SetAsFun({})>>}), id |-> 1, localPackets |-> [ expired |-> {}, list |-> SetAsFun({}), pending |-> {}, success |-> {} ], nextPacketId |-> 0, remotePackets |-> SetAsFun({}), supply |-> SetAsFun({<<1, 6>>}) ]>>, <<2, [ bank |-> SetAsFun({<<1, SetAsFun({<<2, 3>>})>>, <<2, SetAsFun({<<2, 3>>})>>}), escrow |-> SetAsFun({<<1, SetAsFun({})>>}), id |-> 2, localPackets |-> [ expired |-> {}, list |-> SetAsFun({}), pending |-> {}, success |-> {} ], nextPacketId |-> 0, remotePackets |-> SetAsFun({}), supply |-> SetAsFun({<<2, 6>>}) ]>>})) /\ (outcome = [ name |-> "Success" ]) /\ (relayerRunning = True),
@@ -551,7 +740,7 @@
     ]),
   )
 # ---
-# name: test_itf_parse[tests/traces/itf/LocalTransferInv_counterexample1.itf.json]
+# name: test_itf_parse_and_diff[tests/traces/itf/LocalTransferInv_counterexample1.itf.json]
   tuple(
     list([
       (action = [ name |-> "Null" ]) /\ (chains = SetAsFun({<<1, [ bank |-> SetAsFun({<<1, SetAsFun({<<1, 3>>})>>, <<2, SetAsFun({<<1, 3>>})>>}), escrow |-> SetAsFun({<<2, SetAsFun({})>>}), id |-> 1, localPackets |-> [ expired |-> {}, list |-> SetAsFun({}), pending |-> {}, success |-> {} ], nextPacketId |-> 0, remotePackets |-> SetAsFun({}), supply |-> SetAsFun({<<1, 6>>}) ]>>, <<2, [ bank |-> SetAsFun({<<1, SetAsFun({<<2, 3>>})>>, <<2, SetAsFun({<<2, 3>>})>>}), escrow |-> SetAsFun({<<1, SetAsFun({})>>}), id |-> 2, localPackets |-> [ expired |-> {}, list |-> SetAsFun({}), pending |-> {}, success |-> {} ], nextPacketId |-> 0, remotePackets |-> SetAsFun({}), supply |-> SetAsFun({<<2, 6>>}) ]>>})) /\ (outcome = [ name |-> "Success" ]) /\ (relayerRunning = True),
@@ -603,7 +792,7 @@
     ]),
   )
 # ---
-# name: test_itf_parse[tests/traces/itf/LocalTransferInv_counterexample2.itf.json]
+# name: test_itf_parse_and_diff[tests/traces/itf/LocalTransferInv_counterexample2.itf.json]
   tuple(
     list([
       (action = [ name |-> "Null" ]) /\ (chains = SetAsFun({<<1, [ bank |-> SetAsFun({<<1, SetAsFun({<<1, 3>>})>>, <<2, SetAsFun({<<1, 3>>})>>}), escrow |-> SetAsFun({<<2, SetAsFun({})>>}), id |-> 1, localPackets |-> [ expired |-> {}, list |-> SetAsFun({}), pending |-> {}, success |-> {} ], nextPacketId |-> 0, remotePackets |-> SetAsFun({}), supply |-> SetAsFun({<<1, 6>>}) ]>>, <<2, [ bank |-> SetAsFun({<<1, SetAsFun({<<2, 3>>})>>, <<2, SetAsFun({<<2, 3>>})>>}), escrow |-> SetAsFun({<<1, SetAsFun({})>>}), id |-> 2, localPackets |-> [ expired |-> {}, list |-> SetAsFun({}), pending |-> {}, success |-> {} ], nextPacketId |-> 0, remotePackets |-> SetAsFun({}), supply |-> SetAsFun({<<2, 6>>}) ]>>})) /\ (outcome = [ name |-> "Success" ]) /\ (relayerRunning = True),
