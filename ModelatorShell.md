@@ -13,7 +13,7 @@ Variable `m` now holds an instance of modelator.
 We get the basic info about the instance by typing into the shell `m` (more detailed) or `print(m)` (prettier).
 By typing `help(m)` or `help(ModelatorShell)`, we get the info on how to use the `ModelatorShell` class.
 
-The function `load` loads the model file (get all the info by typing `help m.load`).
+The function `load` loads the model file (get all the info by typing `help(m.load)`).
 For instance, type `m.load('modelator/samples/Hello.tla')`.
 With the file loaded, `ModelatorShell` will make sure to reload it before calling any other action.
 (This is the default behavior, can be changed by setting `m.autoload` to `False`.)
