@@ -8,15 +8,41 @@
 
 This repository contains the source code for `modelator` - a framework and tools for model-based testing.
 
-_Right now we deprecated `modelator` CLI. `modelator` is used as a python package._ To add `modelator` as a dependency, execute the following from the [Poetry](https://python-poetry.org) project directory.
+_We deprecated `modelator` support for Rust and Go. `modelator` is used as a python package._
 
+# Instruction
+
+To install `modelator` via `pip`, execute the following
+
+```sh
+# over https
+pip install git+https://github.com/informalsystems/modelator
+# or, over ssh
+pip install git+ssh://git@github.com/informalsystems/modelator
+python
+...
+>>> import modelator
 ```
-poetry add git+ssh://git@github.com/informalsystems/modelator
+
+If you are using a Poetry project, execute the following to add `modelator` as a dependency,
+
+```sh
+# over https
+poetry add git+ssh://git@github.com/informalsystems/modelator#main # `poetry` assumes `master` as default branch
+# or, over ssh
+poetry add git+https://github.com/informalsystems/modelator#main
 ```
 
 ## Contributing
 
-Coming soon!
+If you wish to contribute to `modelator`, set up the repository as follows,
+
+```
+git clone git@github.com/informalsystems/modelator
+cd modelator
+poetry install
+poetry shell
+```
 
 ## License
 
