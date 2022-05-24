@@ -53,7 +53,7 @@ class ITFFunction:
     def pretty(self) -> str:
         func_str = ", ".join(
             map(
-                lambda x: f"<<{x['key'].pretty()}, {x['value'].pretty()}>>",
+                lambda x: f"<<{x.key.pretty()}, {x.value.pretty()}>>",
                 self.function.values(),
             )
         )
