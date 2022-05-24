@@ -11,6 +11,7 @@ on:
 
 jobs:
   linting:
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -26,7 +27,7 @@ jobs:
           black . --check
           isort .
   test:
-    needs: linting
+    # needs: linting
     strategy:
       fail-fast: true
       matrix:
