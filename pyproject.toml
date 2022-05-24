@@ -7,7 +7,7 @@ authors = ["Ranadeep Biswas <mail@rnbguy.at>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-modelator-py = "^0.1.8"
+modelator-py = "^0.1.9"
 deepdiff = "^5.8.1"
 
 [tool.poetry.dev-dependencies]
