@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import json
 from typing import Any, Dict, List, Tuple
 import deepdiff
+import tabulate
 
 
 @dataclass
@@ -176,11 +177,21 @@ class ITF:
             for vs in ddiff.values():
                 for v in vs:
                     l_path = v.path(output_format="list")
-                    t1 = "-" if isinstance(v.t1, deepdiff.helper.NotPresent) else v.t1
-                    t2 = "-" if isinstance(v.t2, deepdiff.helper.NotPresent) else v.t2
+                    t1 = None if isinstance(v.t1, deepdiff.helper.NotPresent) else v.t1
+                    t2 = None if isinstance(v.t2, deepdiff.helper.NotPresent) else v.t2
                     current_diff.append((format_path(l_path), t1, t2))
-            trace_diff.append(current_diff)
+            trace_diff.append(sorted(current_diff))
         return trace_diff
+
+    @staticmethod
+    def print_diff(itfs: List["ITF"], **kargs):
+        for each_step in ITF.diff(itfs):
+            print(
+                tabulate.tabulate(
+                    each_step, headers=["path", "prev_state", "next_state"], **kargs
+                )
+            )
+            print()
 
     def __repr__(self):
         return " /\\ ".join((f"({k} = {v})" for (k, v) in self.itf.record.items()))

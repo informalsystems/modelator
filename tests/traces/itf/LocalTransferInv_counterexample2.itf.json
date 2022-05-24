@@ -1,0 +1,259 @@
+{
+  "#meta": {
+    "format": "ITF",
+    "format-description": "https://apalache.informal.systems/docs/adr/015adr-trace.html",
+    "description": "Created by Apalache on Fri May 06 15:13:49 CEST 2022"
+  },
+  "vars": ["relayerRunning", "outcome", "chains", "action"],
+  "states": [
+    {
+      "#meta": {
+        "index": 0
+      },
+      "action": {
+        "name": "Null"
+      },
+      "chains": {
+        "#map": [
+          [
+            1,
+            {
+              "bank": {
+                "#map": [
+                  [
+                    1,
+                    {
+                      "#map": [[1, 3]]
+                    }
+                  ],
+                  [
+                    2,
+                    {
+                      "#map": [[1, 3]]
+                    }
+                  ]
+                ]
+              },
+              "escrow": {
+                "#map": [
+                  [
+                    2,
+                    {
+                      "#map": []
+                    }
+                  ]
+                ]
+              },
+              "id": 1,
+              "localPackets": {
+                "expired": {
+                  "#set": []
+                },
+                "list": {
+                  "#map": []
+                },
+                "pending": {
+                  "#set": []
+                },
+                "success": {
+                  "#set": []
+                }
+              },
+              "nextPacketId": 0,
+              "remotePackets": {
+                "#map": []
+              },
+              "supply": {
+                "#map": [[1, 6]]
+              }
+            }
+          ],
+          [
+            2,
+            {
+              "bank": {
+                "#map": [
+                  [
+                    1,
+                    {
+                      "#map": [[2, 3]]
+                    }
+                  ],
+                  [
+                    2,
+                    {
+                      "#map": [[2, 3]]
+                    }
+                  ]
+                ]
+              },
+              "escrow": {
+                "#map": [
+                  [
+                    1,
+                    {
+                      "#map": []
+                    }
+                  ]
+                ]
+              },
+              "id": 2,
+              "localPackets": {
+                "expired": {
+                  "#set": []
+                },
+                "list": {
+                  "#map": []
+                },
+                "pending": {
+                  "#set": []
+                },
+                "success": {
+                  "#set": []
+                }
+              },
+              "nextPacketId": 0,
+              "remotePackets": {
+                "#map": []
+              },
+              "supply": {
+                "#map": [[2, 6]]
+              }
+            }
+          ]
+        ]
+      },
+      "outcome": {
+        "name": "Success"
+      },
+      "relayerRunning": true
+    },
+    {
+      "#meta": {
+        "index": 1
+      },
+      "action": {
+        "amount": 1,
+        "chainId": 1,
+        "denom": 1,
+        "name": "LocalTransfer",
+        "source": 1,
+        "target": 2
+      },
+      "chains": {
+        "#map": [
+          [
+            1,
+            {
+              "bank": {
+                "#map": [
+                  [
+                    1,
+                    {
+                      "#map": [[1, 2]]
+                    }
+                  ],
+                  [
+                    2,
+                    {
+                      "#map": [[1, 4]]
+                    }
+                  ]
+                ]
+              },
+              "escrow": {
+                "#map": [
+                  [
+                    2,
+                    {
+                      "#map": []
+                    }
+                  ]
+                ]
+              },
+              "id": 1,
+              "localPackets": {
+                "expired": {
+                  "#set": []
+                },
+                "list": {
+                  "#map": []
+                },
+                "pending": {
+                  "#set": []
+                },
+                "success": {
+                  "#set": []
+                }
+              },
+              "nextPacketId": 0,
+              "remotePackets": {
+                "#map": []
+              },
+              "supply": {
+                "#map": [[1, 6]]
+              }
+            }
+          ],
+          [
+            2,
+            {
+              "bank": {
+                "#map": [
+                  [
+                    1,
+                    {
+                      "#map": [[2, 3]]
+                    }
+                  ],
+                  [
+                    2,
+                    {
+                      "#map": [[2, 3]]
+                    }
+                  ]
+                ]
+              },
+              "escrow": {
+                "#map": [
+                  [
+                    1,
+                    {
+                      "#map": []
+                    }
+                  ]
+                ]
+              },
+              "id": 2,
+              "localPackets": {
+                "expired": {
+                  "#set": []
+                },
+                "list": {
+                  "#map": []
+                },
+                "pending": {
+                  "#set": []
+                },
+                "success": {
+                  "#set": []
+                }
+              },
+              "nextPacketId": 0,
+              "remotePackets": {
+                "#map": []
+              },
+              "supply": {
+                "#map": [[2, 6]]
+              }
+            }
+          ]
+        ]
+      },
+      "outcome": {
+        "name": "Success"
+      },
+      "relayerRunning": true
+    }
+  ]
+}
