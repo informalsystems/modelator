@@ -32,10 +32,6 @@ class ModelatorShell:
         if self.autoload is True and self.model_file_name is not None:
             self.model = self.load(self.model_file_name)
 
-        # self.init_state = None
-        # self.next = None
-        # self.property = None
-
     def __str__(self) -> str:
         if self.model_file_name is not None:
             return "Modelator instance for the model {}".format(self.model_file_name)

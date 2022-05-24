@@ -53,7 +53,7 @@ def check_tlc(
         cex = itf_trace_objects[0]["states"]
         inv_violated = tlc_helpers.invariant_from_stdout(result["stdout"])
 
-        cex_representation = str(cex)
+        cex_representation = [ITF(state) for state in cex]
         problem_desc = "Invariant {} violated.\nCounterexample is {}".format(
             inv_violated, cex_representation
         )
