@@ -29,7 +29,7 @@ Many of the functions from Modelator API have their counterparts in Modelator Sh
 `Model` is a Python class representing a TLA+ model. Currently the only way to obtain a model is to parse it from a TLA+ source file or text.
 
 ```python
-from modelator import parse, parse_source
+from modelator import *
 
 m = parse_model("samples/HelloWorld.tla")
 
