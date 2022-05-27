@@ -6,6 +6,18 @@ import pytest
 from pytest import FixtureRequest
 
 
+def dict_get_keypath(data, property_path=None):
+    if property_path is not None:
+        keys = property_path.split(".")
+        for key in keys:
+            match data:
+                case dict():
+                    data = data[key]
+                case list():
+                    data = data[int(key)]
+    return data
+
+
 def dummy_itf_collector(_tlapath, _cfgpath):
     return []
 
@@ -15,18 +27,19 @@ def get_args(func: Callable):
     return [param.name for param in params if param.kind == param.POSITIONAL_OR_KEYWORD]
 
 
-def itf(filepath: str):
+def itf(filepath: str, keypath="action.name"):
     def decorator(func: Callable) -> Callable:
         with open(filepath, encoding="utf-8") as f:
             trace = json.load(f)["states"]
-        step_fixtures = [f"mbt_{e['action']['name']}" for e in trace]
+        step_fixtures = [f"mbt_{dict_get_keypath(step, keypath)}" for step in trace]
 
         @pytest.mark.usefixtures(*step_fixtures)
         def wrapper(request: FixtureRequest):
             for step in trace:
-                action_name = step["action"]["name"]
                 try:
-                    step_func = request.getfixturevalue(f"mbt_{action_name}")
+                    step_func = request.getfixturevalue(
+                        f"mbt_{dict_get_keypath(step, keypath)}"
+                    )
                     kwargs = {
                         arg: step[arg] if arg in step else request.getfixturevalue(arg)
                         for arg in get_args(step_func)
