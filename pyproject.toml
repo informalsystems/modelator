@@ -12,12 +12,10 @@ deepdiff = "^5.8.1"
 tabulate = "^0.8.9"
 
 [tool.poetry.dev-dependencies]
-pytest = "^7.1.2"
-prospector = "^1.7.7"
-mypy = "^0.950"
-bandit = "^1.7.4"
 fire = "^0.4.0"
+pytest = "^7.1.2"
 syrupy = "^2.3.0"
+prospector = {extras = ["with_mypy", "with_bandit"], version = "^1.7.7"}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
