@@ -6,7 +6,7 @@ CONSTANTS
   MAX
 VARIABLES 
   \* @type: Int;
-  x,
+  x
 Init == x = 0
 Next == x <= MAX /\ x' = x + 1
 Inv  == x >= 0 /\ x<= MAX
