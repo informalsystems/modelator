@@ -69,8 +69,6 @@ def check_apalache(
     tla_file_name: str,
     files: Dict[str, str],
     args: Dict = None,
-    init: ITF | None = None,
-    inv: ITF | None = None,
     do_parse: bool = True,
     do_typecheck: bool = True,
     config_file_name: str = None,
@@ -91,29 +89,6 @@ def check_apalache(
             args = {}
 
         args["config"] = config_file_name
-
-    if init is not None or inv is not None:
-        main_module = "custom_modelator"
-        main_file = f"{main_module}.tla"
-        extends = [tla_file_name.rsplit(".", 1)[0]]
-        content = ""
-        if init is not None:
-            content = f"CustomInit == {init.__repr__()}\n"
-        if inv is not None:
-            content += f"CustomInv == ~({inv.__repr__()})\n"
-        main_file_content = tla_helpers.create_file(main_module, extends, content)
-        tla_file_name = main_file
-        files[tla_file_name] = main_file_content
-        if init is not None:
-            files[config_file_name] = re.sub(
-                "(?<=INIT )([^\n ]+)(?=\n)", "CustomInit", files[config_file_name]
-            )
-        if inv is not None:
-            files[config_file_name] = re.sub(
-                "(?<=INVARIANT )([^\n ]+)(?=\n)", "CustomInv", files[config_file_name]
-            )
-        print(files[tla_file_name])
-        print(files[config_file_name])
 
     json_command = modelatorpy_helpers.wrap_command(
         cmd=constants.CHECK_CMD,
@@ -137,7 +112,7 @@ def check_apalache(
             error_category=constants.CHECK,
             full_error_msg=result["stdout"],
         )
-        return (False, error_msg, cex_representation)
+        return (False, error_msg, cex)
 
 
 if __name__ == "__main__":
