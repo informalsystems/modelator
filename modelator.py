@@ -1,7 +1,5 @@
 # Modelator API
 
-from xmlrpc.client import Boolean
-
 class Model:
     '''
     Model is the main interface class for working with models
@@ -44,7 +42,7 @@ class Model:
 
 
     
-    def sample(self, operator, constants = None) -> Boolean:
+    def sample(self, operator, constants = None) -> bool:
         '''
         Sample a TLA+ operator (should be present in the model)
         All model constants should be instantiated, either by 
@@ -74,7 +72,7 @@ class ModelSample:
         '''
         pass
 
-    def success(self) -> Boolean:
+    def success(self) -> bool:
         '''
         Whether the sample was successful
         (interpretation depends on sample type)
