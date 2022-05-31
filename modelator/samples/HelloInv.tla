@@ -9,7 +9,7 @@ VARIABLES
 Inv ==
     ~
     (
-        /\ x = "world"
+        /\ x == "world"
         /\ y = 20
     )
 
