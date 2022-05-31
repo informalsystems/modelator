@@ -31,8 +31,13 @@ def extract_parse_error(parser_output: str):
     report = []
     reportActive = False
     line_number = None
+    file_name = None
     for line in parser_output.splitlines():
-
+        # this will trigger for every parsed file, but the last update will be before the error happens
+        if line.startswith("Parsing file "):
+            # taking only the file name, because apalache runs in a temporary directory,
+            # so all the info about absolute paths is useless
+            file_name = line[len("Parsing file ") :].split("/")[-1]
         if line == "Residual stack trace follows:":
             break
 
@@ -46,9 +51,9 @@ def extract_parse_error(parser_output: str):
             reportActive = True
 
     if len(report) == 0:
-        return (None, None)
+        return (None, None, None)
     else:
-        return ("\n".join(report), line_number)
+        return ("\n".join(report), file_name, line_number)
 
 
 def extract_typecheck_error(parser_output: str):

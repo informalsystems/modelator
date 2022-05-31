@@ -77,7 +77,6 @@ class ModelatorShell:
         if res is True:
             print("File {} successfully parsed.".format(self.model_file_name))
         else:
-            msg.file_path = os.path.abspath(self.model_file_name)
             print(msg)
 
     def typecheck(self):

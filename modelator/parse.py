@@ -30,9 +30,11 @@ def parse(tla_file_name: str, files: Dict[str, str]) -> Tuple[bool, ErrorMessage
     if result["return_code"] == 0:
         return (True, ErrorMessage(""))
     else:
-        error_description, line_number = apalache_helpers.extract_parse_error(
-            result["stdout"]
-        )
+        (
+            error_description,
+            file_name,
+            line_number,
+        ) = apalache_helpers.extract_parse_error(result["stdout"])
         return (
             False,
             ErrorMessage(
@@ -40,6 +42,7 @@ def parse(tla_file_name: str, files: Dict[str, str]) -> Tuple[bool, ErrorMessage
                 location=line_number,
                 error_category=constants.PARSE,
                 full_error_msg=result["stdout"],
+                file_path=file_name,
             ),
         )
 
