@@ -16,7 +16,6 @@ class Model:
         '''
         pass
 
-
     def instantiate(self, constants):
         '''
         Instantiates model constants, if any. The parameter should be a dict.
@@ -87,23 +86,61 @@ class Model:
         '''
         pass
 
+    def add_monitor(self, monitor):
+        '''
+        Add a monitor to track actions on this model
+        '''
+        pass
+
+    def remove_monitor(self, monitor):
+        '''
+        Removes a previously added monitor
+        '''
+        pass
+
+    def start_html_monitor(self, filename):
+        '''
+        Start monitoring model actions in HTML file.
+        '''
+
+    def stop_html_monitor(self, filename):
+        '''
+        Stop monitoring model actions in HTML file.
+        '''
+
+    def start_markdown_monitor(self, filename):
+        '''
+        Start monitoring model actions in Markdown file.
+        '''
+
+    def stop_markdown_monitor(self, filename):
+        '''
+        Stop monitoring model actions in Markdown file.
+        '''
+
 
 class ModelResult:
     '''
     A result of running some action on a set of model operators
     Different actions can have different outcomes:
-     - operator sampling is successful when a trace satisfying it can be produced.
+     - example sampling is successful when a trace satisfying it can be produced.
      - invariant checking is successful when a trace violating it can't be produced.
     '''
-    def model(self) -> Model:
+    def model(self):
         '''
-        Model on which the actions were executed
+        returns the model on which the action was executed
         '''
         pass
 
     def time(self):
         '''
-        Time when the actions were executed
+        Time when the action was executed
+        '''
+        pass
+
+    def inprogress(self):
+        '''
+        Returns the list of operators for which the action has not completed yet
         '''
         pass
 
@@ -127,12 +164,35 @@ class ModelResult:
         '''
         pass
 
+    def progress(self, operator):
+        '''
+        returns a progress measure between 0 and 1 (inclusive)
+        for any operator on which the action is executed.
+        '''
+        pass
+
 
 class Trace:
     '''
-    Trace is a sequence of model steps. 
+    Trace is a sequence of model states, each state assigning values to state variables.
     '''
 
+    def as_tla(self):
+        '''
+        Returns a list with trace states.
+        Each state is represented by a dict from variable name to a its value in TLA+ format.
+        '''
+
+    def as_tla_diff(self):
+        '''
+        Returns a list, where each element is a diff between trace states.
+        Thus, it is always 1 element less than the number of states in the trace.
+        Each diff element is a dict from a changed state component 
+        to the tuple with the old and the new value of this component.
+        '''
+        pass
+
+from modelator import *
 
 m = Model.parse_file('HourClock.tla')
 m.instantiate({
@@ -142,7 +202,7 @@ m.instantiate({
 
 result = m.sample(['ExThreeHours', 'ExFullRun'])
 for op in result.successful():
-    print(f"Example for {op}: {result.traces(op)[0]}")
+    print(f"Example for {op}: {result.traces(op)[0].as_tla()}")
 for op in result.unsuccessful():
     print(f"Sampling for {op} failed")
 
@@ -151,6 +211,50 @@ for op in result.successful():
     print(f"Invariant checking for {op} succeeded")
 for op in result.unsuccessful():
     print(f"Invariant {op} violated; counterexample: {result.traces(op)[0]}")
+
+
+class ModelMonitor:
+    '''
+    Monitor for actions done with the model 
+    '''
+
+    def on_parse_start(self, res: ModelResult):
+        pass
+
+    def on_parse_finish(self, res: ModelResult):
+        pass
+
+    def on_sample_start(self, res: ModelResult):
+        pass
+
+    def on_sample_update(self, res: ModelResult):
+        pass
+
+    def on_sample_finish(self, res: ModelResult):
+        pass
+
+    def on_check_start(self, res: ModelResult):
+        pass
+
+    def on_check_update(self, res: ModelResult):
+        pass
+
+    def on_check_finish(self, res: ModelResult):
+        pass
+
+class HtmlModelMonitor(ModelMonitor):
+    '''
+    A model monitor that stores all model action updates to HTML file
+    '''
+    def __init__(self, filename):
+        super().__init__()
+
+class MarkdownModelMonitor(ModelMonitor):
+    '''
+    A model monitor that stores all model action updates to Markdown file
+    '''
+    def __init__(self, filename):
+        super().__init__()
 
 
 class ModelShell(Model):
@@ -164,16 +268,6 @@ class ModelShell(Model):
     Additionally, `auto` methods are provided, which are auto-triggered on model updates.
     '''
 
-    @classmethod
-    def auto_parse_file(cls, file, init = 'Init', next = 'Next'):
-        '''
-        Same as `parse_file`, but it attempts to parse the file whenever it changes on the disk.
-        If the parsing is successful, further `auto` actions will be triggered.
-
-        m = Model.auto_parse_file('HourClock.tla')
-        '''
-        pass
-
     def auto_sample(self, examples = None, constants = None):
         '''
         Same as `sample`, but executed automatically on every model update.
@@ -183,6 +277,75 @@ class ModelShell(Model):
         '''
         Same as `check`, but executed automatically on every model update.
         '''
+
+
+# top-level functions from modelator.shell
+
+def start_modelator_shell():
+    '''
+    Takes control of the terminal, and overlays the status information 
+    on any model actions in it.
+    '''
+    pass
+
+def stop_modelator_shell():
+    '''
+    Releases control of the terminal, and removes all status overlays.
+    '''
+    pass
+
+def auto_parse_file(file, init = 'Init', next = 'Next'):
+    '''
+    Same as `parse_file`, but it attempts to parse the file whenever it changes on the disk.
+    If the parsing is successful, further `auto` actions will be triggered.
+    '''
+    pass
+
+def auto_evaluate_file(file, init = 'Init', next = 'Next', 
+    examples = None, invariants = None, constants = None):
+    '''
+    Combines in one call `auto_parse_file`, `auto_sample`, `auto_check`.
+    '''
+    pass
+
+def stop_auto_file(file):
+    '''
+    Stop monitoring started previously by `auto_parse_file` or  `auto_evaluate_file`.
+    '''
+    pass
+
+def start_html_monitor(filename):
+    '''
+    Starts monitoring status of all model actions in HTML file
+    '''
+    pass
+
+def stop_html_monitor(filename):
+    '''
+    Stops monitoring status of model actions in HTML file
+    '''
+    pass
+
+def start_markdown_monitor(filename):
+    '''
+    Starts monitoring status of all model actions in Markdown file
+    '''
+    pass
+
+def stop_markdown_monitor(filename):
+    '''
+    Stops monitoring status of model actions in Markdown file
+    '''
+    pass
+
+
+from modelator.shell import *
+
+start_modelator_shell()
+start_html_monitor('status.html')
+auto_evaluate_file('HourClock.tla')
+
+
 
 
 class ModelExperimental(Model):
