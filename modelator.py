@@ -1,4 +1,5 @@
 # Modelator API
+# (WIP) API documentation, not a real interface
 
 class Model:
     '''
@@ -13,6 +14,11 @@ class Model:
         Raises an exception on error.
 
         m = Model.parse_file('HourClock.tla')
+        '''
+        pass
+
+    def typecheck(self):
+        '''
         '''
         pass
 
@@ -55,7 +61,8 @@ class Model:
         '''
         pass
 
-    def check(self, invariants = None, constants = None):
+    def check(self, invariants = None, constants = None, 
+        checker = 'apalache', checker_params = None):
         '''
         Check `invariants` from the model; 
             `invariants` can be either a name of a single operator, or a list of operator names.
@@ -281,18 +288,6 @@ class ModelShell(Model):
 
 # top-level functions from modelator.shell
 
-def start_modelator_shell():
-    '''
-    Takes control of the terminal, and overlays the status information 
-    on any model actions in it.
-    '''
-    pass
-
-def stop_modelator_shell():
-    '''
-    Releases control of the terminal, and removes all status overlays.
-    '''
-    pass
 
 def auto_parse_file(file, init = 'Init', next = 'Next'):
     '''
@@ -311,6 +306,19 @@ def auto_evaluate_file(file, init = 'Init', next = 'Next',
 def stop_auto_file(file):
     '''
     Stop monitoring started previously by `auto_parse_file` or  `auto_evaluate_file`.
+    '''
+    pass
+
+def start_shell_monitor():
+    '''
+    Takes control of the terminal, and overlays the status information 
+    on any model actions in it.
+    '''
+    pass
+
+def stop_shell_monitor():
+    '''
+    Releases control of the terminal, and removes all status overlays.
     '''
     pass
 
