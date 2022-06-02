@@ -33,9 +33,10 @@ def wrap_command(
         else:
             json_command["args"]["workers"] = "auto"
 
-    json_command["args"]["file"] = tla_file_name
+    json_command["args"]["file"] = os.path.basename(tla_file_name)
 
-    json_command["files"] = files
+    # send only basenames of files to modelator-py
+    json_command["files"] = {os.path.basename(f): files[f] for f in files}
 
     if cmd == constants.CHECK_CMD:
         tla_module_name = tla_file_name.split(".")[0]

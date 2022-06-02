@@ -1,13 +1,14 @@
 import argparse
 import os
-from typing import Dict
+from typing import Dict, Optional
 
 from typing import Tuple
 from modelator_py.apalache.pure import apalache_pure
 
 from . import constants
 from .utils import apalache_helpers, tla_helpers, modelatorpy_helpers
-from .utils.ErrorMessage import ErrorMessage
+from .utils.model_exceptions import ModelParsingError
+
 
 # import utils
 
@@ -19,45 +20,25 @@ the model does not parse.
 """
 
 
-def parse(tla_file_name: str, files: Dict[str, str]) -> Tuple[bool, ErrorMessage]:
+def parse(tla_file_name: str, files: Dict[str, str]) -> Optional[ModelParsingError]:
 
     json_command = modelatorpy_helpers.wrap_command(
         cmd="parse", tla_file_name=tla_file_name, files=files
     )
 
     result = apalache_pure(json=json_command)
-
-    if result["return_code"] == 0:
-        return (True, ErrorMessage(""))
-    else:
+    if not result["return_code"] == 0:
         (
             error_description,
             file_name,
             line_number,
         ) = apalache_helpers.extract_parse_error(result["stdout"])
-        return (
-            False,
-            ErrorMessage(
-                problem_description=error_description,
-                location=line_number,
-                error_category=constants.PARSE,
-                full_error_msg=result["stdout"],
-                file_path=file_name,
-            ),
+
+        files_dir = os.path.dirname(tla_file_name)
+        print("files: {}, {}".format(files_dir, os.path.join(files_dir, file_name)))
+        raise ModelParsingError(
+            problem_description=error_description,
+            location=line_number,
+            full_error_msg=result["stdout"],
+            file_path=os.path.abspath(os.path.join(files_dir, file_name)),
         )
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("model_file")
-
-    args = parser.parse_args()
-
-    files = tla_helpers.get_auxiliary_tla_files(os.path.abspath(args.model_file))
-    model_name = os.path.basename(args.model_file)
-
-    ret, msg = parse(tla_file_name=model_name, files=files)
-    if ret is True:
-        print("successful parse")
-    else:
-        print(msg)
