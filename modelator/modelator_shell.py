@@ -5,10 +5,10 @@
 # from modelator.typecheck import typecheck
 # from modelator.check import check_apalache, check_tlc
 # from modelator.utils import shell_helpers, tla_helpers
-from modelator import constants
-
 # import traceback
 
+
+from modelator import constants
 from modelator.Model import Model
 
 constants.SHELL_ACTIVE = True

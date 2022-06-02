@@ -34,3 +34,14 @@ class ModelParsingError(ModelError):
             file_path,
             error_category=constants.PARSE,
         )
+
+
+class ModelTypecheckingError(ModelError):
+    def __init__(self, problem_description, location, full_error_msg, file_path):
+        super().__init__(
+            problem_description,
+            location,
+            full_error_msg,
+            file_path,
+            error_category=constants.TYPECHECK,
+        )
