@@ -18,6 +18,8 @@ class Status(Enum):
                 return '✅'
             case Status.failure:
                 return '❌'
+            case Status.inprogress:
+                return '⏳'
             case _:
                 return '❓'
         
@@ -46,17 +48,19 @@ class MonitorSection:
         self.start_time = time
         self.update_time = None
 
-    def create_from(name: str, res: ModelResult) -> Self:
+    @staticmethod
+    def all_entries_from(res: ModelResult):
         inprogress = [MonitorEntry(op, Status.inprogress) for op in res.inprogress()]
         successful = [MonitorEntry(op, Status.success) for op in res.successful()]
         unsuccessful = [MonitorEntry(op, Status.failure, trace=res.traces(op)) for op in res.unsuccessful()]
-        return MonitorSection(name, entries=inprogress+successful+unsuccessful, time=res.time())
+        entries = inprogress+successful+unsuccessful
+        return sorted(entries, key=lambda e: e.name)
+
+    def create_from(name: str, res: ModelResult) -> Self:
+        entries = MonitorSection.all_entries_from(res)
+        return MonitorSection(name, entries=entries, time=res.time())
 
     def update_with(self, res: ModelResult) -> Self:
-        inprogress = [MonitorEntry(op, Status.inprogress) for op in res.inprogress()]
-        successful = [MonitorEntry(op, Status.success) for op in res.successful()]
-        unsuccessful = [MonitorEntry(op, Status.failure, trace=res.traces(op)) for op in res.unsuccessful()]
-        
-        self.entries = inprogress+successful+unsuccessful
+        self.entries = MonitorSection.all_entries_from(res)
         self.update_time = res.time()
         return self
