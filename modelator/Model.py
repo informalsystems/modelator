@@ -21,7 +21,6 @@ class Model:
         # helper function which will raise a ModelParsingError exception in case of problems
         parse(tla_file_name=file_name, files=auxiliary_files)
 
-        # TODO: parse constant names from existing TLA files
         # TODO: how to handle .cfg files? They are actually necessary for TLC
 
         return Model(
@@ -51,6 +50,17 @@ class Model:
         # init and next predicates, which are obligatory for all models
         self.init_predicate = init_predicate
         self.next_predicate = next_predicate
+
+        # TODO: this only works when the model is in a single file (it will not get all the
+        # operators from all extendees)
+        self.variables, self.operators = tla_helpers.get_model_elements(
+            self.tla_file_path
+        )
+
+        assert (
+            self.init_predicate in self.operators
+            and self.next_predicate in self.operators
+        )
 
         # a dictionary file_name --> file_content, for relevant filenames
         self.files_contents = files_contents if files_contents is not None else {}
