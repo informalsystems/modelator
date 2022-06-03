@@ -6,11 +6,14 @@ class ModelResult:
      - invariant checking is successful when a trace violating it can't be produced.
     """
 
+    def __init__(self, model) -> None:
+        self.model = model
+
     def model(self):
         """
         returns the model on which the action was executed
         """
-        pass
+        return self.model
 
     def time(self):
         """
