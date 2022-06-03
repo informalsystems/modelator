@@ -55,9 +55,11 @@ class Model:
         else:
             # TODO: this only works when the model is in a single file (it will not get all the
             # operators from all extendees)
-            self.variables, self.operators = tla_helpers.get_model_elements(
-                self.tla_file_path
-            )
+            (
+                self.variables,
+                self.operators,
+                self.module_name,
+            ) = tla_helpers.get_model_elements(self.tla_file_path)
 
             # TODO: add this part once we have support for models defined in multiple files
             # if not (self.init_predicate in self.operators and self.next_predicate in self.operators):
@@ -93,7 +95,9 @@ class Model:
         else:
             # take all operators that are prefixed/suffixed with Ex
             example_predicates = [
-                op for op in self.operators if tla_helpers._default_example_criteria(op)
+                str(op)
+                for op in self.operators
+                if tla_helpers._default_example_criteria(str(op))
             ]
 
         mod_res = ModelResult(model=self, all_operators=example_predicates)
@@ -104,13 +108,21 @@ class Model:
         for example_predicate in example_predicates:
             # TODO: this whole block should probably be moved to a separate function
             # TODO: this needs to be rewritten as a separate process for each call
-            # TODO: predicates need to be negated. For now skipping (assuming that the user does it)
-            # to test basic functionality
+
+            (
+                negated_name,
+                negated_content,
+                negated_predicates,
+            ) = tla_helpers.tla_file_with_negated_predicates(
+                module_name=self.module_name, predicates=[example_predicate]
+            )
+
+            self.files_contents[negated_name] = negated_content
 
             args_config_file = tla_helpers._basic_args_to_config_string(
                 init=self.init_predicate,
                 next=self.next_predicate,
-                invariants=[example_predicate],
+                invariants=negated_predicates,
                 constants_names=sampling_constants,
             )
 
@@ -125,7 +137,7 @@ class Model:
                 args.update(checker_params)
                 try:
                     res, msg, cex = check_tlc(
-                        tla_file_name=os.path.basename(self.tla_file_path),
+                        tla_file_name=negated_name,
                         files=self.files_contents,
                         args=args,
                     )
@@ -138,7 +150,7 @@ class Model:
                 args.update(tla_helpers._set_additional_apalache_args())
                 try:
                     res, msg, cex = check_apalache(
-                        os.path.basename(self.tla_file_path),
+                        negated_name,
                         self.files_contents,
                         args=args,
                     )

@@ -1,3 +1,4 @@
+from operator import neg
 import os
 from typing import Dict, List, Tuple
 import tla as tla_parsing
@@ -21,7 +22,7 @@ def get_auxiliary_tla_files(model_name: str) -> Dict[str, str]:
 
 
 def _default_example_criteria(operator_name: str):
-    op = operator_name.str.lower()
+    op = operator_name.lower()
     return op.startswith("ex") or op.endswith("ex") or op.endswith("example")
 
 
@@ -40,6 +41,41 @@ def _set_additional_apalache_args():
     apalache_args = {}
     apalache_args[constants.APALACHE_NUM_STEPS] = 10
     return apalache_args
+
+
+def _negated_predicate(predicate_name: str):
+    return predicate_name + "_negated"
+
+
+def _clear_negation_from_predicate(predicate_name: str):
+    assert predicate_name.endswith("_negated")
+    return predicate_name[: -len("_negated")]
+
+
+def tla_file_with_negated_predicates(
+    module_name: str, predicates: List[str]
+) -> Tuple[str, str, str]:
+    negated_module_name = module_name + "__negated"
+    negated_file_name = negated_module_name + ".tla"
+    negated_predicates = []
+    header = "------------ MODULE {} -------------\n EXTENDS {}\n".format(
+        negated_module_name, module_name
+    )
+    body = []
+    for predicate in predicates:
+
+        neg_predicate = _negated_predicate(predicate)
+        negated_predicates.append(neg_predicate)
+        print(
+            "negated = {}, cleared = {}".format(
+                neg_predicate, _clear_negation_from_predicate(neg_predicate)
+            )
+        )
+        body.append("{} == ~{}".format(neg_predicate, predicate))
+    footer = "===="
+    negated_file_content = header + "\n".join(body) + "\n" + footer
+
+    return negated_file_name, negated_file_content, negated_predicates
 
 
 def get_model_elements(model_name: str) -> Tuple[List[str], List[str]]:
@@ -64,7 +100,7 @@ def get_model_elements(model_name: str) -> Tuple[List[str], List[str]]:
                 if isinstance(body_element, tla_parsing.ast.Nodes.Definition):
                     operators.append(body_element.definition.name)
 
-        return variables, operators
+        return variables, operators, tree.name
 
 
 def create_file(module, extends, content):
