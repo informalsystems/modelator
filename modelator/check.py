@@ -26,9 +26,7 @@ def check_tlc(
 ) -> Tuple[bool, ErrorMessage, List]:
 
     if do_parse is True:
-        parsable, msg = parse(tla_file_name=tla_file_name, files=files)
-        if parsable is False:
-            return (False, msg, [])
+        parse(tla_file_name=tla_file_name, files=files)
 
     if config_file_name is not None:
         if args is None:
@@ -62,7 +60,7 @@ def check_tlc(
             error_category=constants.CHECK,
             full_error_msg=result["stdout"],
         )
-        return (False, error_msg, cex)
+        return (False, error_msg, cex_representation)
 
 
 def check_apalache(
@@ -75,14 +73,10 @@ def check_apalache(
 ) -> Tuple[bool, ErrorMessage, List]:
 
     if do_parse is True:
-        parsable, msg = parse(tla_file_name=tla_file_name, files=files)
-        if parsable is False:
-            return (False, msg, [])
+        parse(tla_file_name=tla_file_name, files=files)
 
     if do_typecheck is True:
-        good_types, msg = typecheck(tla_file_name=tla_file_name, files=files)
-        if good_types is False:
-            return (False, msg, [])
+        typecheck(tla_file_name=tla_file_name, files=files)
 
     if config_file_name is not None:
         if args is None:
@@ -112,7 +106,7 @@ def check_apalache(
             error_category=constants.CHECK,
             full_error_msg=result["stdout"],
         )
-        return (False, error_msg, cex)
+        return (False, error_msg, cex_representation)
 
 
 if __name__ == "__main__":

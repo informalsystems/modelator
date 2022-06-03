@@ -25,6 +25,11 @@ class ModelError(Exception):
         return error_message
 
 
+class ModelCheckingError(ModelError):
+    def __init__(self, exc):
+        raise exc
+
+
 class ModelParsingError(ModelError):
     def __init__(self, problem_description, location, full_error_msg, file_path):
         super().__init__(

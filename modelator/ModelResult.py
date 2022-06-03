@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 class ModelResult:
     """
     A result of running some action on a set of model operators
@@ -6,38 +9,41 @@ class ModelResult:
      - invariant checking is successful when a trace violating it can't be produced.
     """
 
-    def __init__(self, model) -> None:
-        self.model = model
+    def __init__(self, model, all_operators=None) -> None:
+        self._model = model
+        self._time = datetime.now()
+        self._in_progress_operators = all_operators if all_operators is not None else []
+        self._finished_operators = []
+        self._successful = []
+        self._unsuccessful = []
+        self._traces = {}
 
     def model(self):
         """
         returns the model on which the action was executed
         """
-        return self.model
+        return self._model
 
     def time(self):
-        """
-        Time when the action was executed
-        """
-        pass
+        return self._time
 
     def inprogress(self):
         """
         Returns the list of operators for which the action has not completed yet
         """
-        pass
+        return self._in_progress_operators
 
     def successful(self):
         """
         Returns the list of operators for which the action was successful
         """
-        pass
+        return self._successful
 
     def unsuccessful(self):
         """
         Returns the list of operators for which the action was unsuccessful
         """
-        pass
+        return self._unsuccessful
 
     def traces(self, operator):
         """
@@ -45,11 +51,14 @@ class ModelResult:
         Availability depends on action type, and its success for the operator.
         If available, at least one trace is guaranteed to exist.
         """
-        pass
+        return self._traces[operator]
 
     def progress(self, operator):
         """
         returns a progress measure between 0 and 1 (inclusive)
         for any operator on which the action is executed.
         """
-        pass
+        if operator in self._finished_operators:
+            return 1
+        else:
+            return 0

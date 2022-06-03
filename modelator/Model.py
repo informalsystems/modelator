@@ -4,11 +4,18 @@ from typing import Any, Dict, List, Optional, Union
 from typing_extensions import Self
 from modelator.ModelMonitor import ModelMonitor
 from modelator.ModelResult import ModelResult
-from modelator.utils.model_exceptions import ModelParsingError, ModelTypecheckingError
+from modelator.utils.model_exceptions import (
+    ModelError,
+    ModelParsingError,
+    ModelTypecheckingError,
+    ModelCheckingError,
+)
 from modelator.utils import tla_helpers
 from modelator.parse import parse
 from modelator.typecheck import typecheck
 from modelator.utils.shell_helpers import shell
+from modelator import constants
+from modelator.check import check_apalache, check_tlc
 
 
 class Model:
@@ -66,6 +73,97 @@ class Model:
         # a helper function which will raise a ModelTypechecking exception in case types do not match
         typecheck(tla_file_name=self.tla_file_path, files=self.files_contents)
 
+    def instantiate(self, model_constants: Dict):
+        self.model_constants = model_constants
+
+    def sample(
+        self,
+        examples: List[str] = None,
+        model_constants: Dict = None,
+        checker: str = constants.APALACHE,
+        checker_params: Dict = None,
+    ) -> ModelResult:
+
+        sampling_constants = self.model_constants
+        if model_constants is not None:
+            sampling_constants.update(model_constants)
+
+        if examples is not None:
+            example_predicates = examples
+        else:
+            # take all operators that are prefixed/suffixed with Ex
+            example_predicates = [
+                op for op in self.operators if tla_helpers._default_example_criteria(op)
+            ]
+
+        mod_res = ModelResult(model=self, all_operators=example_predicates)
+
+        for monitor in self.monitors:
+            monitor.on_sample_start(res=mod_res)
+
+        for example_predicate in example_predicates:
+            # TODO: this whole block should probably be moved to a separate function
+            # TODO: this needs to be rewritten as a separate process for each call
+            # TODO: predicates need to be negated. For now skipping (assuming that the user does it)
+            # to test basic functionality
+
+            args_config_file = tla_helpers._basic_args_to_config_string(
+                init=self.init_predicate,
+                next=self.next_predicate,
+                invariants=[example_predicate],
+                constants_names=sampling_constants,
+            )
+
+            args_config_file_name = "generated_config.cfg"
+            args = {constants.CONFIG: args_config_file_name}
+            self.files_contents[args_config_file_name] = args_config_file
+
+            if checker_params is None:
+                checker_params = {}
+
+            if checker == constants.TLC:
+                args.update(checker_params)
+                try:
+                    res, msg, cex = check_tlc(
+                        tla_file_name=os.path.basename(self.tla_file_path),
+                        files=self.files_contents,
+                        args=args,
+                    )
+                except Exception as e:
+                    print("Problem running TLC: {}".format(e))
+                    raise ModelCheckingError(e)
+
+            else:  # if checker is Apalache
+
+                args.update(tla_helpers._set_additional_apalache_args())
+                try:
+                    res, msg, cex = check_apalache(
+                        os.path.basename(self.tla_file_path),
+                        self.files_contents,
+                        args=args,
+                    )
+                except Exception as e:
+                    print("Problem runing Apalache: {}".format(e))
+                    raise ModelCheckingError(e)
+
+            mod_res._finished_operators.append(example_predicate)
+            mod_res._in_progress_operators.remove(example_predicate)
+            if res is True:
+                mod_res._unsuccessful.append(example_predicate)
+            else:
+                mod_res._successful.append(example_predicate)
+
+                # in the current implementation, this will only return one trace (as a counterexample)
+                mod_res._traces[example_predicate] = cex
+
+            for monitor in self.monitors:
+                monitor.on_sample_update(res=mod_res)
+
+        for monitor in self.monitors:
+            monitor.on_sample_finish(res=mod_res)
+
+        return mod_res
+
     def __init__(
         self,
         tla_file_path: str,
@@ -85,7 +183,7 @@ class Model:
         self.files_contents = files_contents if files_contents is not None else {}
 
         # a dcitionary of constant values relevant to the model
-        self.constants = constants if constants is not None else {}
+        self.model_constants = constants if constants is not None else {}
 
         # a list of results for all checks performed on this model
         self.all_checks = []
