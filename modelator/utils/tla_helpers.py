@@ -28,7 +28,7 @@ def _default_example_criteria(operator_name: str):
 
 def _default_invariant_criteria(operator_name: str):
     op = operator_name.lower()
-    return op.startswith("ex") or op.endswith("ex") or op.endswith("example")
+    return op.startswith("inv") or op.endswith("inv") or op.endswith("invariant")
 
 
 def _basic_args_to_config_string(

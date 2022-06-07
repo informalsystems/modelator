@@ -88,7 +88,7 @@ class Model:
         checking_files_content,
         checker_params,
     ):
-
+        print("checking with {}".format(checker))
         args_config_file = tla_helpers._basic_args_to_config_string(
             init=self.init_predicate,
             next=self.next_predicate,
@@ -105,8 +105,10 @@ class Model:
             checker_params = {}
 
         if checker == CONSTANTS.TLC:
+            print("in fact it is TLC")
             check_func = check_tlc
         else:  # if checker is Apalache
+            print("in fact it is apalache")
             check_func = check_apalache
             args.update(tla_helpers._set_additional_apalache_args())
 
@@ -126,7 +128,7 @@ class Model:
         self,
         invariants: List[str] = None,
         model_constants: Dict = None,
-        checker: str = "apalache",
+        checker: str = CONSTANTS.APALACHE,
         checker_params: Dict = None,
     ):
 
@@ -137,7 +139,47 @@ class Model:
         if invariants is not None:
             invariant_predicates = invariants
         else:
-            invariant_predicates = [str(op) for op in self.operators]
+            invariant_predicates = [
+                str(op)
+                for op in self.operators
+                if tla_helpers._default_invariant_criteria(str(op))
+            ]
+
+        mod_res = ModelResult(model=self, all_operators=invariant_predicates)
+
+        for monitor in self.monitors:
+            monitor.on_check_start(res=mod_res)
+
+        for inv_predicate in invariant_predicates:
+            res, msg, cex = self._modelcheck_predicates(
+                predicates=[inv_predicate],
+                modelcheck_constants=checking_constants,
+                checker=checker,
+                tla_file_name=self.module_name,
+                checking_files_content=copy(self.files_contents),
+                checker_params=checker_params,
+            )
+
+            mod_res._finished_operators.append(inv_predicate)
+            mod_res._in_progress_operators.remove(inv_predicate)
+
+            if res is False:
+                mod_res._unsuccessful.append(inv_predicate)
+            else:
+                mod_res._successful.append(inv_predicate)
+
+                # in the current implementation, this will only return one trace (as a counterexample)
+                mod_res._traces[inv_predicate] = cex
+
+            for monitor in self.monitors:
+                monitor.on_check_update(res=mod_res)
+
+        for monitor in self.monitors:
+            monitor.on_check_finish(res=mod_res)
+
+        self.all_checks.append(mod_res)
+
+        return mod_res
 
     def sample(
         self,

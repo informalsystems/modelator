@@ -12,7 +12,9 @@ class ModelResult:
     def __init__(self, model, all_operators=None) -> None:
         self._model = model
         self._time = datetime.now()
-        self._in_progress_operators = all_operators if all_operators is not None else []
+        self._in_progress_operators = (
+            list(all_operators) if all_operators is not None else []
+        )
         self._finished_operators = []
         self._successful = []
         self._unsuccessful = []
