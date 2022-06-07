@@ -1,10 +1,10 @@
-from .. import constants
+from .. import CONSTANTS
 from modelator.utils.model_exceptions import ModelError
 
 
 def shell(func):
     def inner_func(*args, **kwargs):
-        if constants.SHELL_ACTIVE is True:
+        if CONSTANTS.SHELL_ACTIVE is True:
 
             try:
                 ret = func(*args, **kwargs)

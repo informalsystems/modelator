@@ -8,10 +8,10 @@
 # import traceback
 
 
-from modelator import constants
+from modelator import CONSTANTS
 from modelator.Model import Model
 
-constants.SHELL_ACTIVE = True
+CONSTANTS.SHELL_ACTIVE = True
 
 
 # apalache = constants.APALACHE

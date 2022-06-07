@@ -15,7 +15,7 @@ from modelator.utils import tla_helpers
 from modelator.parse import parse
 from modelator.typecheck import typecheck
 from modelator.utils.shell_helpers import shell
-from modelator import constants
+from modelator import CONSTANTS
 from modelator.check import check_apalache, check_tlc
 
 
@@ -98,13 +98,13 @@ class Model:
 
         args_config_file_name = "generated_config.cfg"
 
-        args = {constants.CONFIG: args_config_file_name}
+        args = {CONSTANTS.CONFIG: args_config_file_name}
         checking_files_content.update({args_config_file_name: args_config_file})
 
         if checker_params is None:
             checker_params = {}
 
-        if checker == constants.TLC:
+        if checker == CONSTANTS.TLC:
             check_func = check_tlc
         else:  # if checker is Apalache
             check_func = check_apalache
@@ -122,11 +122,28 @@ class Model:
 
         return res, msg, cex
 
+    def check(
+        self,
+        invariants: List[str] = None,
+        model_constants: Dict = None,
+        checker: str = "apalache",
+        checker_params: Dict = None,
+    ):
+
+        checking_constants = self.model_constants
+        if model_constants is not None:
+            checking_constants.update(model_constants)
+
+        if invariants is not None:
+            invariant_predicates = invariants
+        else:
+            invariant_predicates = [str(op) for op in self.operators]
+
     def sample(
         self,
         examples: List[str] = None,
         model_constants: Dict = None,
-        checker: str = constants.APALACHE,
+        checker: str = CONSTANTS.APALACHE,
         checker_params: Dict = None,
     ) -> ModelResult:
 

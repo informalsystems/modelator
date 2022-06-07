@@ -5,7 +5,7 @@ from typing import Dict, Optional
 from typing import Tuple
 from modelator_py.apalache.pure import apalache_pure
 
-from . import constants
+from . import CONSTANTS
 from .utils import apalache_helpers, tla_helpers, modelatorpy_helpers
 from .utils.model_exceptions import ModelParsingError
 
