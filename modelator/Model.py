@@ -15,7 +15,7 @@ from modelator.utils import tla_helpers
 from modelator.parse import parse
 from modelator.typecheck import typecheck
 from modelator.utils.shell_helpers import shell
-from modelator import CONSTANTS
+from modelator import const_values
 from modelator.check import check_apalache, check_tlc
 
 
@@ -98,13 +98,13 @@ class Model:
 
         args_config_file_name = "generated_config.cfg"
 
-        args = {CONSTANTS.CONFIG: args_config_file_name}
+        args = {const_values.CONFIG: args_config_file_name}
         checking_files_content.update({args_config_file_name: args_config_file})
 
         if checker_params is None:
             checker_params = {}
 
-        if checker == CONSTANTS.TLC:
+        if checker == const_values.TLC:
             print("in fact it is TLC")
             check_func = check_tlc
         else:  # if checker is Apalache
@@ -128,7 +128,7 @@ class Model:
         self,
         invariants: List[str] = None,
         model_constants: Dict = None,
-        checker: str = CONSTANTS.APALACHE,
+        checker: str = const_values.APALACHE,
         checker_params: Dict = None,
     ):
 
@@ -185,7 +185,7 @@ class Model:
         self,
         examples: List[str] = None,
         model_constants: Dict = None,
-        checker: str = CONSTANTS.APALACHE,
+        checker: str = const_values.APALACHE,
         checker_params: Dict = None,
     ) -> ModelResult:
 

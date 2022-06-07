@@ -11,7 +11,7 @@ from .parse import parse
 from .typecheck import typecheck
 from typing import Dict
 from .utils.ErrorMessage import ErrorMessage
-from . import CONSTANTS
+from . import const_values
 from .itf import ITF
 
 import re
@@ -34,8 +34,8 @@ def check_tlc(
         args["config"] = config_file_name
 
     json_command = modelatorpy_helpers.wrap_command(
-        cmd=CONSTANTS.CHECK_CMD,
-        checker=CONSTANTS.TLC,
+        cmd=const_values.CHECK_CMD,
+        checker=const_values.TLC,
         tla_file_name=tla_file_name,
         files=files,
         args=args,
@@ -57,7 +57,7 @@ def check_tlc(
         )
         error_msg = ErrorMessage(
             problem_description=problem_desc,
-            error_category=CONSTANTS.CHECK,
+            error_category=const_values.CHECK,
             full_error_msg=result["stdout"],
         )
         return (False, error_msg, cex_representation)
@@ -85,7 +85,7 @@ def check_apalache(
         args["config"] = config_file_name
 
     json_command = modelatorpy_helpers.wrap_command(
-        cmd=CONSTANTS.CHECK_CMD,
+        cmd=const_values.CHECK_CMD,
         tla_file_name=tla_file_name,
         files=files,
         args=args,
@@ -103,7 +103,7 @@ def check_apalache(
         )
         error_msg = ErrorMessage(
             problem_description=problem_desc,
-            error_category=CONSTANTS.CHECK,
+            error_category=const_values.CHECK,
             full_error_msg=result["stdout"],
         )
         return (False, error_msg, cex_representation)
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("model_file")
 
-    parser.add_argument("--checker", default=CONSTANTS.APALACHE)
+    parser.add_argument("--checker", default=const_values.APALACHE)
     parser.add_argument("--invariant", default="Inv")
     parser.add_argument("--init", default="Init")
     parser.add_argument("--next", default="Next")
@@ -123,16 +123,16 @@ if __name__ == "__main__":
 
     if args.config is None:
         apalache_args = {
-            CONSTANTS.INIT: args.init,
-            CONSTANTS.NEXT: args.next,
-            CONSTANTS.INVARIANT: args.invariant,
+            const_values.INIT: args.init,
+            const_values.NEXT: args.next,
+            const_values.INVARIANT: args.invariant,
         }
     else:
         apalache_args = None
     files = tla_helpers.get_auxiliary_tla_files(os.path.abspath(args.model_file))
     model_name = os.path.basename(args.model_file)
 
-    if args.checker == CONSTANTS.APALACHE:
+    if args.checker == const_values.APALACHE:
         ret, msg, cex = check_apalache(
             tla_file_name=model_name,
             files=files,

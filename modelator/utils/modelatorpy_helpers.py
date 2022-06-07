@@ -1,13 +1,13 @@
 import os
 from typing import Dict
-from .. import CONSTANTS
+from .. import const_values
 
 
 def wrap_command(
     cmd: str,
     tla_file_name: str,
     files: Dict[str, str],
-    checker: str = CONSTANTS.APALACHE,
+    checker: str = const_values.APALACHE,
     args: Dict = None,
     num_workers: int = 4,
 ):
@@ -15,10 +15,10 @@ def wrap_command(
     json_command = {}
     json_command["args"] = {}
 
-    if args is not None and cmd != CONSTANTS.CHECK_CMD:
+    if args is not None and cmd != const_values.CHECK_CMD:
         assert "config" not in args
 
-    if checker == CONSTANTS.APALACHE:
+    if checker == const_values.APALACHE:
         json_command["args"]["cmd"] = cmd
 
     # TODO: come up with a more systematic way of setting defaults when they would make more sense for an end user
@@ -26,8 +26,8 @@ def wrap_command(
 
     # this is necessary: sending an invalid argument to apalache commands will result
     # in an exception
-    if cmd == CONSTANTS.CHECK_CMD:
-        if checker == CONSTANTS.APALACHE:
+    if cmd == const_values.CHECK_CMD:
+        if checker == const_values.APALACHE:
             json_command["args"]["nworkers"] = num_workers
 
         else:
@@ -38,7 +38,7 @@ def wrap_command(
     # send only basenames of files to modelator-py
     json_command["files"] = {os.path.basename(f): files[f] for f in files}
 
-    if cmd == CONSTANTS.CHECK_CMD:
+    if cmd == const_values.CHECK_CMD:
         tla_module_name = tla_file_name.split(".")[0]
         config_file_name = tla_module_name + ".cfg"
         if config_file_name in files:
@@ -48,9 +48,9 @@ def wrap_command(
         for arg in args:
             json_command["args"][arg] = args[arg]
 
-    if checker == CONSTANTS.TLC:
-        json_command["jar"] = os.path.abspath(CONSTANTS.DEFAULT_TLC_JAR)
+    if checker == const_values.TLC:
+        json_command["jar"] = os.path.abspath(const_values.DEFAULT_TLC_JAR)
     else:
-        json_command["jar"] = os.path.abspath(CONSTANTS.DEFAULT_APALACHE_JAR)
+        json_command["jar"] = os.path.abspath(const_values.DEFAULT_APALACHE_JAR)
 
     return json_command

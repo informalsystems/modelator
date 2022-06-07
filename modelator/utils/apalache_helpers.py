@@ -2,7 +2,7 @@ import json
 import os
 import re
 from typing import Dict
-from ..CONSTANTS import DEFAULT_APALACHE_JAR
+from ..const_values import DEFAULT_APALACHE_JAR
 
 
 def extract_tla_module_name(tla_file_content: str):
