@@ -11,7 +11,7 @@ from .parse import parse
 from .typecheck import typecheck
 from typing import Dict
 from .utils.ErrorMessage import ErrorMessage
-from . import constants
+from . import CONSTANTS
 from .itf import ITF
 
 import re
@@ -26,9 +26,7 @@ def check_tlc(
 ) -> Tuple[bool, ErrorMessage, List]:
 
     if do_parse is True:
-        parsable, msg = parse(tla_file_name=tla_file_name, files=files)
-        if parsable is False:
-            return (False, msg, [])
+        parse(tla_file_name=tla_file_name, files=files)
 
     if config_file_name is not None:
         if args is None:
@@ -36,8 +34,8 @@ def check_tlc(
         args["config"] = config_file_name
 
     json_command = modelatorpy_helpers.wrap_command(
-        cmd=constants.CHECK_CMD,
-        checker=constants.TLC,
+        cmd=CONSTANTS.CHECK_CMD,
+        checker=CONSTANTS.TLC,
         tla_file_name=tla_file_name,
         files=files,
         args=args,
@@ -59,10 +57,10 @@ def check_tlc(
         )
         error_msg = ErrorMessage(
             problem_description=problem_desc,
-            error_category=constants.CHECK,
+            error_category=CONSTANTS.CHECK,
             full_error_msg=result["stdout"],
         )
-        return (False, error_msg, cex)
+        return (False, error_msg, cex_representation)
 
 
 def check_apalache(
@@ -75,14 +73,10 @@ def check_apalache(
 ) -> Tuple[bool, ErrorMessage, List]:
 
     if do_parse is True:
-        parsable, msg = parse(tla_file_name=tla_file_name, files=files)
-        if parsable is False:
-            return (False, msg, [])
+        parse(tla_file_name=tla_file_name, files=files)
 
     if do_typecheck is True:
-        good_types, msg = typecheck(tla_file_name=tla_file_name, files=files)
-        if good_types is False:
-            return (False, msg, [])
+        typecheck(tla_file_name=tla_file_name, files=files)
 
     if config_file_name is not None:
         if args is None:
@@ -91,7 +85,7 @@ def check_apalache(
         args["config"] = config_file_name
 
     json_command = modelatorpy_helpers.wrap_command(
-        cmd=constants.CHECK_CMD,
+        cmd=CONSTANTS.CHECK_CMD,
         tla_file_name=tla_file_name,
         files=files,
         args=args,
@@ -109,17 +103,17 @@ def check_apalache(
         )
         error_msg = ErrorMessage(
             problem_description=problem_desc,
-            error_category=constants.CHECK,
+            error_category=CONSTANTS.CHECK,
             full_error_msg=result["stdout"],
         )
-        return (False, error_msg, cex)
+        return (False, error_msg, cex_representation)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("model_file")
 
-    parser.add_argument("--checker", default=constants.APALACHE)
+    parser.add_argument("--checker", default=CONSTANTS.APALACHE)
     parser.add_argument("--invariant", default="Inv")
     parser.add_argument("--init", default="Init")
     parser.add_argument("--next", default="Next")
@@ -129,16 +123,16 @@ if __name__ == "__main__":
 
     if args.config is None:
         apalache_args = {
-            constants.INIT: args.init,
-            constants.NEXT: args.next,
-            constants.INVARIANT: args.invariant,
+            CONSTANTS.INIT: args.init,
+            CONSTANTS.NEXT: args.next,
+            CONSTANTS.INVARIANT: args.invariant,
         }
     else:
         apalache_args = None
     files = tla_helpers.get_auxiliary_tla_files(os.path.abspath(args.model_file))
     model_name = os.path.basename(args.model_file)
 
-    if args.checker == constants.APALACHE:
+    if args.checker == CONSTANTS.APALACHE:
         ret, msg, cex = check_apalache(
             tla_file_name=model_name,
             files=files,

@@ -1,27 +1,35 @@
------------- MODULE Hello1 -------------
+------------ MODULE HelloFull -------------
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 VARIABLES
     \* @type: Str;
     x,
-    \* @type: Str;
+    \* @type: Int;
     y
 
 Init ==
     /\ x = "hello"
-    /\ y = 42
+    /\ y = 22
 
 Next ==
-    /\ x' = IF x = "hello" THEN "world" ELSE "hello"
-    /\ y' = 42-y
+    /\ x' = IF x = "hello" THEN  "world" ELSE "hello"
+    /\ y' = y-2
 
 Inv ==
     ~
     (
         /\ x = "world"
-        /\ y = 0
+        /\ y = 20
     )
+
+Inv2 ==
+    y /= 11
+
+
+ExTest ==
+    y = 10
+
 
 
 ===========================================
