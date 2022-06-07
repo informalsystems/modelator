@@ -1,4 +1,5 @@
 import argparse
+from copy import copy
 import os
 from typing import Any, Dict, List, Optional, Union
 from typing_extensions import Self
@@ -78,6 +79,49 @@ class Model:
     def instantiate(self, model_constants: Dict):
         self.model_constants = model_constants
 
+    def _modelcheck_predicates(
+        self,
+        predicates,
+        modelcheck_constants,
+        checker,
+        tla_file_name,
+        checking_files_content,
+        checker_params,
+    ):
+
+        args_config_file = tla_helpers._basic_args_to_config_string(
+            init=self.init_predicate,
+            next=self.next_predicate,
+            invariants=predicates,
+            constants_names=modelcheck_constants,
+        )
+
+        args_config_file_name = "generated_config.cfg"
+
+        args = {constants.CONFIG: args_config_file_name}
+        checking_files_content.update({args_config_file_name: args_config_file})
+
+        if checker_params is None:
+            checker_params = {}
+
+        if checker == constants.TLC:
+            check_func = check_tlc
+        else:  # if checker is Apalache
+            check_func = check_apalache
+            args.update(tla_helpers._set_additional_apalache_args())
+
+        try:
+            res, msg, cex = check_func(
+                tla_file_name=tla_file_name,
+                files=checking_files_content,
+                args=args,
+            )
+        except Exception as e:
+            print("Problem running {}: {}".format(checker, e))
+            raise ModelCheckingError(e)
+
+        return res, msg, cex
+
     def sample(
         self,
         examples: List[str] = None,
@@ -106,7 +150,6 @@ class Model:
             monitor.on_sample_start(res=mod_res)
 
         for example_predicate in example_predicates:
-            # TODO: this whole block should probably be moved to a separate function
             # TODO: this needs to be rewritten as a separate process for each call
 
             (
@@ -117,46 +160,17 @@ class Model:
                 module_name=self.module_name, predicates=[example_predicate]
             )
 
-            self.files_contents[negated_name] = negated_content
+            sampling_files_content = copy(self.files_contents)
+            sampling_files_content.update({negated_name: negated_content})
 
-            args_config_file = tla_helpers._basic_args_to_config_string(
-                init=self.init_predicate,
-                next=self.next_predicate,
-                invariants=negated_predicates,
-                constants_names=sampling_constants,
+            res, msg, cex = self._modelcheck_predicates(
+                predicates=negated_predicates,
+                modelcheck_constants=sampling_constants,
+                checker=checker,
+                tla_file_name=negated_name,
+                checking_files_content=sampling_files_content,
+                checker_params=checker_params,
             )
-
-            args_config_file_name = "generated_config.cfg"
-            args = {constants.CONFIG: args_config_file_name}
-            self.files_contents[args_config_file_name] = args_config_file
-
-            if checker_params is None:
-                checker_params = {}
-
-            if checker == constants.TLC:
-                args.update(checker_params)
-                try:
-                    res, msg, cex = check_tlc(
-                        tla_file_name=negated_name,
-                        files=self.files_contents,
-                        args=args,
-                    )
-                except Exception as e:
-                    print("Problem running TLC: {}".format(e))
-                    raise ModelCheckingError(e)
-
-            else:  # if checker is Apalache
-
-                args.update(tla_helpers._set_additional_apalache_args())
-                try:
-                    res, msg, cex = check_apalache(
-                        negated_name,
-                        self.files_contents,
-                        args=args,
-                    )
-                except Exception as e:
-                    print("Problem runing Apalache: {}".format(e))
-                    raise ModelCheckingError(e)
 
             mod_res._finished_operators.append(example_predicate)
             mod_res._in_progress_operators.remove(example_predicate)

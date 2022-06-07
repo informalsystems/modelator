@@ -66,11 +66,6 @@ def tla_file_with_negated_predicates(
 
         neg_predicate = _negated_predicate(predicate)
         negated_predicates.append(neg_predicate)
-        print(
-            "negated = {}, cleared = {}".format(
-                neg_predicate, _clear_negation_from_predicate(neg_predicate)
-            )
-        )
         body.append("{} == ~{}".format(neg_predicate, predicate))
     footer = "===="
     negated_file_content = header + "\n".join(body) + "\n" + footer
