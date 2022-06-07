@@ -7,7 +7,7 @@ from .utils import apalache_helpers, tla_helpers, modelatorpy_helpers
 from .utils.ErrorMessage import ErrorMessage
 from modelator.utils.model_exceptions import ModelError, ModelTypecheckingError
 from .parse import parse
-from . import CONSTANTS
+from . import const_values
 
 # import utils
 
@@ -29,7 +29,7 @@ def typecheck(
     #     parse(tla_file_name=tla_file_name, files=files)
 
     json_command = modelatorpy_helpers.wrap_command(
-        cmd=CONSTANTS.TYPECHECK_CMD, tla_file_name=tla_file_name, files=files
+        cmd=const_values.TYPECHECK_CMD, tla_file_name=tla_file_name, files=files
     )
 
     result = apalache_pure(json=json_command)

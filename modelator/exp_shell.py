@@ -1,5 +1,5 @@
 from modelator.modelator_shell import *
-from modelator import CONSTANTS
+from modelator import const_values
 
 
 m = Model.parse_file("modelator/samples/HelloFull.tla")

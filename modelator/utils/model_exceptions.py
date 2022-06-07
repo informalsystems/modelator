@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from .. import CONSTANTS
+from .. import const_values
 
 
 @dataclass
@@ -37,7 +37,7 @@ class ModelParsingError(ModelError):
             location,
             full_error_msg,
             file_path,
-            error_category=CONSTANTS.PARSE,
+            error_category=const_values.PARSE,
         )
 
 
@@ -48,5 +48,5 @@ class ModelTypecheckingError(ModelError):
             location,
             full_error_msg,
             file_path,
-            error_category=CONSTANTS.TYPECHECK,
+            error_category=const_values.TYPECHECK,
         )

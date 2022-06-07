@@ -2,7 +2,7 @@ from operator import neg
 import os
 from typing import Dict, List, Tuple
 import tla as tla_parsing
-from modelator import CONSTANTS
+from modelator import const_values
 
 
 def get_auxiliary_tla_files(model_name: str) -> Dict[str, str]:
@@ -38,13 +38,13 @@ def _basic_args_to_config_string(
         init, next, "  \n".join(invariants)
     )
     if len(constants_names) > 0:
-        conf_string = conf_string + "\nCONSTANTS {}".format(" \n".join(CONSTANTS))
+        conf_string = conf_string + "\nCONSTANTS {}".format(" \n".join(const_values))
     return conf_string
 
 
 def _set_additional_apalache_args():
     apalache_args = {}
-    apalache_args[CONSTANTS.APALACHE_NUM_STEPS] = 10
+    apalache_args[const_values.APALACHE_NUM_STEPS] = 10
     return apalache_args
 
 
