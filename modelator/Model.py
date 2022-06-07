@@ -188,7 +188,15 @@ class Model:
         for monitor in self.monitors:
             monitor.on_sample_finish(res=mod_res)
 
+        self.all_samples.append(mod_res)
+
         return mod_res
+
+    def all_samples(self):
+        return self.all_samples
+
+    def last_sample(self):
+        return self.all_samples[-1]
 
     def __init__(
         self,
