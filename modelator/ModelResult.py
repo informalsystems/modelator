@@ -53,6 +53,9 @@ class ModelResult:
         """
         return self._traces[operator]
 
+    def all_traces(self):
+        return self._traces
+
     def progress(self, operator):
         """
         returns a progress measure between 0 and 1 (inclusive)
