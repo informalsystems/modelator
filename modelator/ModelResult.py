@@ -53,6 +53,9 @@ class ModelResult:
         Availability depends on action type, and its success for the operator.
         If available, at least one trace is guaranteed to exist.
         """
+        if operator not in self._traces:
+            print(f'Warning: there are no available traces for {operator}')
+            return None
         return self._traces[operator]
 
     def all_traces(self):
