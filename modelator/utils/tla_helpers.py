@@ -44,7 +44,7 @@ def _basic_args_to_config_string(
 
 def _set_additional_apalache_args():
     apalache_args = {}
-    apalache_args[const_values.APALACHE_NUM_STEPS] = 10
+    apalache_args[const_values.APALACHE_NUM_STEPS] = 8000
     return apalache_args
 
 

@@ -10,27 +10,29 @@ VARIABLES
 
 Init ==
     /\ x = "hello"
-    /\ y = 22
+    /\ y = 8400
 
 Next ==
     /\ x' = IF x = "hello" THEN  "world" ELSE "hello"
     /\ y' = y-2
 
-Inv ==
-    ~
-    (
-        /\ x = "world"
-        /\ y = 20
-    )
+\* Inv ==
+\*     ~
+\*     (
+\*         /\ x = "world"
+\*         /\ y = 20
+\*     )
 
-Inv2 ==
-    y /= 11
+Inv == y /= 8396
+Inv2 == y /= 8394
+\* Inv2 ==
+\*     y /= 11
 
 Inv3 ==
-    y = 11
+    y /= 4398
 
 Inv4 ==
-    y /= 16
+    y /= 160
 
 
 ExTest ==

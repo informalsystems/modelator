@@ -2,8 +2,12 @@ import argparse
 from copy import copy
 import os
 import threading
+
+# import multiprocess
 from typing import Any, Dict, List, Optional, Union
 from typing_extensions import Self
+
+
 from modelator.ModelMonitor import ModelMonitor
 from modelator.ModelResult import ModelResult
 from modelator.utils.model_exceptions import (
@@ -18,6 +22,7 @@ from modelator.typecheck import typecheck
 from modelator.utils.shell_helpers import shell
 from modelator import const_values
 from modelator.check import check_apalache, check_tlc
+from datetime import datetime
 
 
 class Model:
@@ -143,7 +148,8 @@ class Model:
             checking_files_content=checking_files_content,
             checker_params=checker_params,
         )
-        print("finished with {}".format(predicate))
+        print("finished with {} at time {}".format(predicate, datetime.now()))
+        self.mod_result_lock.acquire()
         mod_res._finished_operators.append(predicate)
         mod_res._in_progress_operators.remove(predicate)
 
@@ -152,7 +158,9 @@ class Model:
         else:
             mod_res._unsuccessful.append(predicate)
 
-            # in the current implementation, this will only return one trace (as a counterexample)
+        self.mod_result_lock.release()
+
+        # in the current implementation, this will only return one trace (as a counterexample)
         if len(cex) > 0:
             mod_res._traces[predicate] = cex
 
@@ -166,7 +174,7 @@ class Model:
         checker: str = const_values.APALACHE,
         checker_params: Dict = None,
     ):
-
+        self.mod_result_lock = threading.Lock()
         checking_constants = self.model_constants
         if model_constants is not None:
             checking_constants.update(model_constants)
@@ -203,11 +211,13 @@ class Model:
                     "result_considered_success": True,
                 },
             )
+            print("starting thread {} for invariant {}".format(thread, inv_predicate))
             thread.start()
             threads.append(thread)
-
+        threads.reverse()
         for thread in threads:
             thread.join()
+            print("joining thread {}".format(thread))
 
         for monitor in self.monitors:
             monitor.on_check_finish(res=mod_res)
