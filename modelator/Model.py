@@ -1,6 +1,7 @@
 import argparse
 from copy import copy
 import os
+import threading
 from typing import Any, Dict, List, Optional, Union
 from typing_extensions import Self
 from modelator.ModelMonitor import ModelMonitor
@@ -87,8 +88,7 @@ class Model:
         tla_file_name,
         checking_files_content,
         checker_params,
-    ):
-        print("checking with {}".format(checker))
+    ):        
         args_config_file = tla_helpers._basic_args_to_config_string(
             init=self.init_predicate,
             next=self.next_predicate,
@@ -104,11 +104,9 @@ class Model:
         if checker_params is None:
             checker_params = {}
 
-        if checker == const_values.TLC:
-            print("in fact it is TLC")
+        if checker == const_values.TLC:            
             check_func = check_tlc
-        else:  # if checker is Apalache
-            print("in fact it is apalache")
+        else:  # if checker is Apalache            
             check_func = check_apalache
             args.update(tla_helpers._set_additional_apalache_args())
 
@@ -123,6 +121,43 @@ class Model:
             raise ModelCheckingError(e)
 
         return res, msg, cex
+
+
+    def _check_sample_thread_worker(
+        self, 
+        predicate, 
+        modelcheck_constants, 
+        checker, 
+        tla_file_name, 
+        checking_files_content, 
+        checker_params,
+        mod_res,
+        monitor_update_functions,
+        result_considered_success: bool):
+            print("starting with {}".format(predicate))
+            res, msg, cex = self._modelcheck_predicates(
+                predicates=[predicate],
+                modelcheck_constants=modelcheck_constants,
+                checker=checker,
+                tla_file_name=tla_file_name,
+                checking_files_content=checking_files_content,
+                checker_params=checker_params,
+            )
+            print("finished with {}".format(predicate))
+            mod_res._finished_operators.append(predicate)
+            mod_res._in_progress_operators.remove(predicate)
+
+            if res is result_considered_success:
+                mod_res._unsuccessful.append(predicate)
+            else:
+                mod_res._successful.append(predicate)
+
+                # in the current implementation, this will only return one trace (as a counterexample)
+                mod_res._traces[predicate] = cex
+
+            for monitor in monitor_update_functions:
+                monitor.on_check_update(res=mod_res)
+
 
     def check(
         self,
@@ -150,35 +185,33 @@ class Model:
         for monitor in self.monitors:
             monitor.on_check_start(res=mod_res)
 
+        
+        threads = []
         for inv_predicate in invariant_predicates:
-            res, msg, cex = self._modelcheck_predicates(
-                predicates=[inv_predicate],
-                modelcheck_constants=checking_constants,
-                checker=checker,
-                tla_file_name=self.module_name,
-                checking_files_content=copy(self.files_contents),
-                checker_params=checker_params,
-            )
-
-            mod_res._finished_operators.append(inv_predicate)
-            mod_res._in_progress_operators.remove(inv_predicate)
-
-            if res is False:
-                mod_res._unsuccessful.append(inv_predicate)
-            else:
-                mod_res._successful.append(inv_predicate)
-
-                # in the current implementation, this will only return one trace (as a counterexample)
-                mod_res._traces[inv_predicate] = cex
-
-            for monitor in self.monitors:
-                monitor.on_check_update(res=mod_res)
-
+            thread = threading.Thread(
+                target = self._check_sample_thread_worker,
+                kwargs = {
+                    "predicate": inv_predicate,
+                    "modelcheck_constants": checking_constants,
+                    "checker": checker,
+                    "tla_file_name": self.module_name,
+                    "checking_files_content":copy(self.files_contents),
+                    "checker_params": checker_params,
+                    "mod_res": mod_res,
+                    "monitor_update_functions": [m.on_check_update for m in self.monitors],
+                    "result_considered_success": True
+                    }
+                )                
+            thread.start()
+            threads.append(thread)
+        
+        for thread in threads:
+            thread.join()
+            
         for monitor in self.monitors:
             monitor.on_check_finish(res=mod_res)
 
         self.all_checks.append(mod_res)
-
         return mod_res
 
     def sample(
@@ -208,41 +241,61 @@ class Model:
         for monitor in self.monitors:
             monitor.on_sample_start(res=mod_res)
 
+        # def thread_worker(example_predicate, modelcheck_constants, checker, tla_file_name, checking_files_content, checker_params):
+        #     (
+        #         negated_name,
+        #         negated_content,
+        #         negated_predicates,
+        #     ) = tla_helpers.tla_file_with_negated_predicates(
+        #         module_name=tla_file_name, predicates=[example_predicate]
+        #     )
+
+        #     sampling_files_content = checking_files_content
+        #     sampling_files_content.update({negated_name: negated_content})
+
+        #     res, msg, cex = self._modelcheck_predicates(
+        #         predicates=negated_predicates,
+        #         modelcheck_constants=modelcheck_constants,
+        #         checker=checker,
+        #         tla_file_name=negated_name,
+        #         checking_files_content=sampling_files_content,
+        #         checker_params=checker_params,
+        #     )
+
+        #     mod_res._finished_operators.append(example_predicate)
+        #     mod_res._in_progress_operators.remove(example_predicate)
+        #     if res is True:
+        #         mod_res._unsuccessful.append(example_predicate)
+        #     else:
+        #         mod_res._successful.append(example_predicate)
+
+        #         # in the current implementation, this will only return one trace (as a counterexample)
+        #         mod_res._traces[example_predicate] = cex
+
+        #     for monitor in self.monitors:
+        #         monitor.on_sample_update(res=mod_res)
+
+        threads = []
         for example_predicate in example_predicates:
-            # TODO: this needs to be rewritten as a separate process for each call
-
-            (
-                negated_name,
-                negated_content,
-                negated_predicates,
-            ) = tla_helpers.tla_file_with_negated_predicates(
-                module_name=self.module_name, predicates=[example_predicate]
-            )
-
-            sampling_files_content = copy(self.files_contents)
-            sampling_files_content.update({negated_name: negated_content})
-
-            res, msg, cex = self._modelcheck_predicates(
-                predicates=negated_predicates,
-                modelcheck_constants=sampling_constants,
-                checker=checker,
-                tla_file_name=negated_name,
-                checking_files_content=sampling_files_content,
-                checker_params=checker_params,
-            )
-
-            mod_res._finished_operators.append(example_predicate)
-            mod_res._in_progress_operators.remove(example_predicate)
-            if res is True:
-                mod_res._unsuccessful.append(example_predicate)
-            else:
-                mod_res._successful.append(example_predicate)
-
-                # in the current implementation, this will only return one trace (as a counterexample)
-                mod_res._traces[example_predicate] = cex
-
-            for monitor in self.monitors:
-                monitor.on_sample_update(res=mod_res)
+            thread = threading.Thread(
+                target = self._check_sample_thread_worker,
+                kwargs = {
+                    "predicate": example_predicate,
+                    "modelcheck_constants": sampling_constants,
+                    "checker": checker,
+                    "tla_file_name": self.module_name,
+                    "checking_files_content":copy(self.files_contents),
+                    "checker_params": checker_params,
+                    "mod_res": mod_res,
+                    "monitor_update_functions": [m.on_sample_update for m in self.monitors],
+                    "result_considered_success": False
+                    }
+                ) 
+            thread.start()
+            threads.append(thread) 
+        
+        for thread in threads:
+            thread.join()
 
         for monitor in self.monitors:
             monitor.on_sample_finish(res=mod_res)

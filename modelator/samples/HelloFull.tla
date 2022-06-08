@@ -26,6 +26,12 @@ Inv ==
 Inv2 ==
     y /= 11
 
+Inv3 ==
+    y = 11
+
+Inv4 ==
+    y /= 16
+
 
 ExTest ==
     y = 10
