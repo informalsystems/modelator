@@ -1,3 +1,6 @@
+from modelator.monitors.content import TRACE_COLUMNS
+
+
 class MarkdownWriter():
     
     def __init__(self, filename):
@@ -20,28 +23,29 @@ class MarkdownWriter():
             self.fd.flush()
 
     def _write_section(self, section):
-            self.fd.write(f'---\n')
-            self.fd.write(f'## {section.name}\n\n')
-            self.fd.write(f'- Start time: {section.start_time}\n')
-            update_time = section.update_time if section.update_time else '-'
-            self.fd.write(f'- Last update: {update_time}\n')
-            self.fd.write('\n')
-            
-            for entry in section.entries:
-                self.fd.write('### ')
-                entry.status_position = self.fd.tell()
-                self.fd.write(f'{str(entry.status)} {entry.name}\n\n')
-                if entry.trace is not None:
-                    self._write_trace(entry.trace, columns=['Variable', 'Previous value', 'Next value'])
+        time_format = '%Y-%m-%d %H:%M:%S'
+        self.fd.write(f'---\n')
+        self.fd.write(f'## {section.name}\n\n')
+        self.fd.write(f'- Start time: {section.start_time.strftime(time_format)}\n')
+        update_time = section.update_time.strftime(time_format) if section.update_time else '-'
+        self.fd.write(f'- Last update: {update_time}\n')
+        self.fd.write('\n')
+        
+        for entry in section.entries:
+            self.fd.write('### ')
+            entry.status_position = self.fd.tell()
+            self.fd.write(f'{str(entry.status)} {entry.name}\n\n')
+            if entry.trace is not None:
+                self._write_trace(entry.trace, columns=TRACE_COLUMNS)
 
     def _write_trace(self, trace, columns):
-        for t in trace:
-            self.fd.write(f'{t["name"]}\n\n')
-            for row in self._mk_table(t["transition"], columns):
+        for step in trace:
+            self.fd.write(f'{step["name"]}\n\n')
+            for row in self._make_table(step["transition"], columns):
                 self.fd.write(row)
             self.fd.write('\n\n')
 
-    def _mk_table(self, table:list[dict[str,str]], columns:list[str], column_width: int = 25):
+    def _make_table(self, table:list[dict[str,str]], columns:list[str], column_width: int = 25):
         rows = []
         
         # build header
@@ -59,5 +63,6 @@ class MarkdownWriter():
         
         return rows
 
+    @staticmethod
     def _replace_special_characters(s: str) -> str:
-        s.replace('|->', '↦')
+        return s.replace('|->', '↦')

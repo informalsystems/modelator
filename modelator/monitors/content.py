@@ -4,6 +4,8 @@ from typing_extensions import Self
 
 from modelator.ModelResult import ModelResult
 
+TRACE_COLUMNS = ['Variable', 'Previous value', 'Next value']
+
 
 class Status(Enum):
     success = 'success'
@@ -21,7 +23,17 @@ class Status(Enum):
                 return '⏳'
             case _:
                 return '❓'
-        
+    
+    def html_color(self):
+        match self:
+            case Status.success: 
+                return 'green'
+            case Status.failure:
+                return 'red'
+            case Status.inprogress:
+                return ''
+            case Status.unknown:
+                return 'yellow'
 
 class MonitorEntry:
     '''

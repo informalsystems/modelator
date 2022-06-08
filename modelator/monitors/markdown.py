@@ -82,13 +82,13 @@ test_traces = {
             'transition': [
                 {
                     "Variable": "x",
-                    "Previous": "0",
-                    "Next": "1",
+                    "Previous value": "0",
+                    "Next value": "1",
                 },
                 {
                     "Variable": "b",
-                    "Previous": "[foo |-> \"spam\"]",
-                    "Next": "[foo |-> \"spam spam\"]",
+                    "Previous value": "[foo |-> \"spam\"]",
+                    "Next value": "[foo |-> \"spam spam\"]",
                 },
             ]
         },
@@ -97,43 +97,56 @@ test_traces = {
             'transition': [
                 {
                     "Variable": "x",
-                    "Previous": "1",
-                    "Next": "2",
+                    "Previous value": "1",
+                    "Next value": "2",
                 },
                 {
                     "Variable": "b",
-                    "Previous": "[foo |-> \"spam spam\"]",
-                    "Next": "[foo |-> \"spam spam eggs\"]",
+                    "Previous value": "[foo |-> \"spam spam\"]",
+                    "Next value": "[foo |-> \"spam spam eggs\"]",
                 },
             ]
         },
     ]
 }
 
-def test_add_section(m):
+class Model():
+    tla_file_name = 'foo/bar/ModuleName.tla'
+    module_name = 'ModuleName'
+
+monitor = None
+
+def test_add_section():
     input("Press key to on_check_start")
-    res = ModelResult(None, inprogress=['Inv1', 'Inv2', 'Inv3'])
-    m.on_check_start(res)
+    res = ModelResult(model=Model())
+    res._in_progress_operators=['Inv1', 'Inv2', 'Inv3']
+    monitor.on_check_start(res)
 
     input("Press key to on_check_update")
-    res = ModelResult(None, inprogress=['Inv1'], successful=['Inv3'], unsuccessful=['Inv2'], traces=test_traces)
-    m.on_check_update(res)
+    res = ModelResult(model=Model())
+    res._in_progress_operators = ['Inv1']
+    res._successful = ['Inv3']
+    res._unsuccessful = ['Inv2']
+    res._traces = test_traces
+    monitor.on_check_update(res)
 
     input("Press key to on_check_finish")
-    res = ModelResult(None, successful=['Inv1', 'Inv3'], unsuccessful=['Inv2'], traces=test_traces)
-    m.on_check_finish(res)
-
-mon = None
+    res = ModelResult(model=monitor)
+    res._in_progress_operators = []
+    res._successful = ['Inv1', 'Inv3']
+    res._unsuccessful = ['Inv2']
+    res._traces = test_traces
+    monitor.on_check_finish(res)
 
 def test(filename):
-    global mon
-    mon = MarkdownModelMonitor(filename)
+    global monitor
+    monitor = MarkdownModelMonitor(filename)
 
     input("Press key to on_parse_start")    
-    mon.on_parse_start(ModelResult(model='ModelName'))
+    monitor.on_parse_start(ModelResult(model=Model()))
 
     input("Press key to on_parse_finish")
-    mon.on_parse_finish(ModelResult(model='ModelName'))
+    monitor.on_parse_finish(ModelResult(model=Model()))
 
-    test_add_section(mon)
-    test_add_section(mon)
+    test_add_section()
+    test_add_section()
