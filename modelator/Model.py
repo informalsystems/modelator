@@ -88,7 +88,7 @@ class Model:
         tla_file_name,
         checking_files_content,
         checker_params,
-    ):        
+    ):
         args_config_file = tla_helpers._basic_args_to_config_string(
             init=self.init_predicate,
             next=self.next_predicate,
@@ -104,9 +104,9 @@ class Model:
         if checker_params is None:
             checker_params = {}
 
-        if checker == const_values.TLC:            
+        if checker == const_values.TLC:
             check_func = check_tlc
-        else:  # if checker is Apalache            
+        else:  # if checker is Apalache
             check_func = check_apalache
             args.update(tla_helpers._set_additional_apalache_args())
 
@@ -122,42 +122,42 @@ class Model:
 
         return res, msg, cex
 
-
     def _check_sample_thread_worker(
-        self, 
-        predicate, 
-        modelcheck_constants, 
-        checker, 
-        tla_file_name, 
-        checking_files_content, 
+        self,
+        predicate,
+        modelcheck_constants,
+        checker,
+        tla_file_name,
+        checking_files_content,
         checker_params,
         mod_res,
         monitor_update_functions,
-        result_considered_success: bool):
-            print("starting with {}".format(predicate))
-            res, msg, cex = self._modelcheck_predicates(
-                predicates=[predicate],
-                modelcheck_constants=modelcheck_constants,
-                checker=checker,
-                tla_file_name=tla_file_name,
-                checking_files_content=checking_files_content,
-                checker_params=checker_params,
-            )
-            print("finished with {}".format(predicate))
-            mod_res._finished_operators.append(predicate)
-            mod_res._in_progress_operators.remove(predicate)
+        result_considered_success: bool,
+    ):
+        print("starting with {}".format(predicate))
+        res, msg, cex = self._modelcheck_predicates(
+            predicates=[predicate],
+            modelcheck_constants=modelcheck_constants,
+            checker=checker,
+            tla_file_name=tla_file_name,
+            checking_files_content=checking_files_content,
+            checker_params=checker_params,
+        )
+        print("finished with {}".format(predicate))
+        mod_res._finished_operators.append(predicate)
+        mod_res._in_progress_operators.remove(predicate)
 
-            if res is result_considered_success:
-                mod_res._unsuccessful.append(predicate)
-            else:
-                mod_res._successful.append(predicate)
+        if res is result_considered_success:
+            mod_res._successful.append(predicate)
+        else:
+            mod_res._unsuccessful.append(predicate)
 
-                # in the current implementation, this will only return one trace (as a counterexample)
-                mod_res._traces[predicate] = cex
+            # in the current implementation, this will only return one trace (as a counterexample)
+        if len(cex) > 0:
+            mod_res._traces[predicate] = cex
 
-            for monitor in monitor_update_functions:
-                monitor.on_check_update(res=mod_res)
-
+        for monitor in monitor_update_functions:
+            monitor.on_check_update(res=mod_res)
 
     def check(
         self,
@@ -185,29 +185,30 @@ class Model:
         for monitor in self.monitors:
             monitor.on_check_start(res=mod_res)
 
-        
         threads = []
         for inv_predicate in invariant_predicates:
             thread = threading.Thread(
-                target = self._check_sample_thread_worker,
-                kwargs = {
+                target=self._check_sample_thread_worker,
+                kwargs={
                     "predicate": inv_predicate,
                     "modelcheck_constants": checking_constants,
                     "checker": checker,
                     "tla_file_name": self.module_name,
-                    "checking_files_content":copy(self.files_contents),
+                    "checking_files_content": copy(self.files_contents),
                     "checker_params": checker_params,
                     "mod_res": mod_res,
-                    "monitor_update_functions": [m.on_check_update for m in self.monitors],
-                    "result_considered_success": True
-                    }
-                )                
+                    "monitor_update_functions": [
+                        m.on_check_update for m in self.monitors
+                    ],
+                    "result_considered_success": True,
+                },
+            )
             thread.start()
             threads.append(thread)
-        
+
         for thread in threads:
             thread.join()
-            
+
         for monitor in self.monitors:
             monitor.on_check_finish(res=mod_res)
 
@@ -278,22 +279,24 @@ class Model:
         threads = []
         for example_predicate in example_predicates:
             thread = threading.Thread(
-                target = self._check_sample_thread_worker,
-                kwargs = {
+                target=self._check_sample_thread_worker,
+                kwargs={
                     "predicate": example_predicate,
                     "modelcheck_constants": sampling_constants,
                     "checker": checker,
                     "tla_file_name": self.module_name,
-                    "checking_files_content":copy(self.files_contents),
+                    "checking_files_content": copy(self.files_contents),
                     "checker_params": checker_params,
                     "mod_res": mod_res,
-                    "monitor_update_functions": [m.on_sample_update for m in self.monitors],
-                    "result_considered_success": False
-                    }
-                ) 
+                    "monitor_update_functions": [
+                        m.on_sample_update for m in self.monitors
+                    ],
+                    "result_considered_success": False,
+                },
+            )
             thread.start()
-            threads.append(thread) 
-        
+            threads.append(thread)
+
         for thread in threads:
             thread.join()
 
