@@ -22,3 +22,8 @@ NEXT = "next"
 INVARIANT = "inv"
 APALACHE_NUM_STEPS = "length"
 CONFIG = "config"
+
+SHELL_ACTIVE = False
+
+
+CHECKER_TIMEOUT=60

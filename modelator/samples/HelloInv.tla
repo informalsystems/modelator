@@ -2,7 +2,7 @@
 VARIABLES
     \* @type: Str;
     x,
-    \* @type: Int;
+    \* @type: Str;
     y
 
 
