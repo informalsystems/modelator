@@ -6,7 +6,7 @@ from modelator_py.apalache.pure import apalache_pure
 from modelator_py.tlc.pure import tlc_pure
 from modelator_py.util.tlc import tlc_itf
 
-from .utils import apalache_helpers, tla_helpers, modelatorpy_helpers, tlc_helpers
+from .utils import apalache_helpers, modelator_helpers, tla_helpers, tlc_helpers
 from .parse import parse
 from .typecheck import typecheck
 from typing import Dict
@@ -33,7 +33,7 @@ def check_tlc(
             args = {}
         args["config"] = config_file_name
 
-    json_command = modelatorpy_helpers.wrap_command(
+    json_command = modelator_helpers.wrap_command(
         cmd=const_values.CHECK_CMD,
         checker=const_values.TLC,
         tla_file_name=tla_file_name,
@@ -84,7 +84,7 @@ def check_apalache(
 
         args["config"] = config_file_name
 
-    json_command = modelatorpy_helpers.wrap_command(
+    json_command = modelator_helpers.wrap_command(
         cmd=const_values.CHECK_CMD,
         tla_file_name=tla_file_name,
         files=files,
