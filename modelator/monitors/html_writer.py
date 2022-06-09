@@ -1,8 +1,9 @@
 from string import Template
-
-from modelator.monitors.content import TRACE_COLUMNS
+from typing import Any
+from modelator.itf import ITF
 
 TEMPLATES_DIR = 'modelator/monitors/templates'
+TRACE_COLUMNS = ['Variable', 'Value', 'Next value']
 
 
 class HtmlWriter():
@@ -68,18 +69,18 @@ class HtmlWriter():
             }))
         return '\n'.join(entries)
 
-    def _make_html_trace(self, trace, columns):
+    def _make_html_trace(self, trace: list["ITF"], columns: list[str]) -> str:
         with open(f'{TEMPLATES_DIR}/html_trace.html', 'r') as f:
             template = Template(f.read())
         trace_txs = []
-        for step in trace:
+        for ix, step in enumerate(ITF.diff(trace)):
             trace_txs.append(template.substitute({
-                'transition_name': step["name"],
-                'transition_variables': self._make_table(step["transition"], columns)
+                'transition_name': f'State {ix} -> State {ix + 1}',
+                'transition_variables': self._make_table(step, columns)
             }))
         return '\n'.join(trace_txs)
 
-    def _make_table(self, table:list[dict[str,str]], columns:list[str]):
+    def _make_table(self, transition:list[tuple[str,Any,Any]], columns:list[str]):
         # build header
         template_header_cell = Template('<th>$cell</th>')
         header = '\n'.join(template_header_cell.substitute({'cell': col}) for col in columns)
@@ -88,12 +89,13 @@ class HtmlWriter():
         # build body
         template_body_cell = Template('<td>$cell</td>')
         rows = []
-        for entry in table:
-            row = '\n'.join(
-                template_body_cell.substitute({'cell': HtmlWriter._replace_special_characters(v)})
-                for k, v in entry.items() if k in columns)
-            row = '<tr>' + row + '</tr>'
-            rows.append(row)
+        for (varname, value1, value2) in transition:
+            row = '\n'.join([
+                template_body_cell.substitute({'cell': varname}),
+                template_body_cell.substitute({'cell': HtmlWriter._replace_special_characters(value1)}),
+                template_body_cell.substitute({'cell': HtmlWriter._replace_special_characters(value2)}),
+                ])
+            rows.append('<tr>' + row + '</tr>')
         rows = '\n'.join(rows)
         
         with open(f'{TEMPLATES_DIR}/html_table.html', 'r') as f:
@@ -101,5 +103,8 @@ class HtmlWriter():
         return template.substitute({'header': header, 'body': rows})
 
     @staticmethod
-    def _replace_special_characters(s: str) -> str:
-        return s.replace('|->', '↦')
+    def _replace_special_characters(s: Any) -> Any:
+        if isinstance(s, str):
+            return s.replace('|->', '↦').replace('<', '&lt;').replace('>', '&gt;')
+        else:
+            return s

@@ -4,9 +4,6 @@ from typing_extensions import Self
 
 from modelator.ModelResult import ModelResult
 
-TRACE_COLUMNS = ['Variable', 'Previous value', 'Next value']
-
-
 class Status(Enum):
     success = 'success'
     failure = 'failure'
@@ -62,7 +59,7 @@ class MonitorSection:
     @staticmethod
     def all_entries_from(res: ModelResult):
         inprogress = [MonitorEntry(op, Status.inprogress) for op in res.inprogress()]
-        successful = [MonitorEntry(op, Status.success) for op in res.successful()]
+        successful = [MonitorEntry(op, Status.success, trace=res.traces(op)) for op in res.successful()]
         unsuccessful = [MonitorEntry(op, Status.failure, trace=res.traces(op)) for op in res.unsuccessful()]
         entries = inprogress+successful+unsuccessful
         return sorted(entries, key=lambda e: e.name)

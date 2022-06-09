@@ -1,18 +1,19 @@
 
 from modelator.ModelMonitor import ModelMonitor
 from modelator.ModelResult import ModelResult
+from modelator.itf import ITF
 from modelator.monitors.content import MonitorSection
-from modelator.monitors.markdown_writer import MarkdownWriter
+from modelator.monitors.html_writer import HtmlWriter
 
 
-class MarkdownModelMonitor(ModelMonitor):
+class HtmlModelMonitor(ModelMonitor):
     '''
-    A monitor that writes all model action updates to a Markdown file.
+    A monitor that writes all model action updates to an HTML file.
     '''
 
     def __init__(self, filename):
         super().__init__()
-        self.writer = MarkdownWriter(filename)
+        self.writer = HtmlWriter(filename)
         
         self.title: str = None
         self.sections: list[MonitorSection] = []
@@ -37,13 +38,13 @@ class MarkdownModelMonitor(ModelMonitor):
         self.write_file()
 
     def on_sample_update(self, res: ModelResult):
-        last_section = self.sections[-1].update_with(res)
-        self._update_last_section(last_section)
+        last_section = self.sections[-1]
+        self._set_last_section(last_section.update_with(res))
         self.write_file()
 
     def on_sample_finish(self, res: ModelResult):
-        last_section = self.sections[-1].update_with(res)
-        self._update_last_section(last_section)
+        last_section = self.sections[-1]
+        self._set_last_section(last_section.update_with(res))
         self.write_file()
 
     def on_check_start(self, res: ModelResult):
@@ -52,13 +53,13 @@ class MarkdownModelMonitor(ModelMonitor):
         self.write_file()
 
     def on_check_update(self, res: ModelResult):
-        last_section = self.sections[-1].update_with(res)
-        self._update_last_section(last_section)
+        last_section = self.sections[-1]
+        self._set_last_section(last_section.update_with(res))
         self.write_file()
 
     def on_check_finish(self, res: ModelResult):
-        last_section = self.sections[-1].update_with(res)
-        self._update_last_section(last_section)
+        last_section = self.sections[-1]
+        self._set_last_section(last_section.update_with(res))
         self.write_file()
 
     def write_file(self):
@@ -70,43 +71,16 @@ class MarkdownModelMonitor(ModelMonitor):
     def _add_section(self, section):
         self.sections.append(section)
     
-    def _update_last_section(self, section):
+    def _set_last_section(self, section):
         index = len(self.sections) - 1
         self.sections[index] = section
 
 
 test_traces = {
     'Inv2': [
-        {
-            'name': 'State 0 -> State 1',
-            'transition': [
-                {
-                    "Variable": "x",
-                    "Previous value": "0",
-                    "Next value": "1",
-                },
-                {
-                    "Variable": "b",
-                    "Previous value": "[foo |-> \"spam\"]",
-                    "Next value": "[foo |-> \"spam spam\"]",
-                },
-            ]
-        },
-        {
-            'name': 'State 1 -> State 2',
-            'transition': [
-                {
-                    "Variable": "x",
-                    "Previous value": "1",
-                    "Next value": "2",
-                },
-                {
-                    "Variable": "b",
-                    "Previous value": "[foo |-> \"spam spam\"]",
-                    "Next value": "[foo |-> \"spam spam eggs\"]",
-                },
-            ]
-        },
+        ITF({'x': 0, 'y': 1, 'f': '["foo" |-> "spam"]'}),
+        ITF({'x': 1, 'y': 1, 'f': '["foo" |-> "spam spam"]'}),
+        ITF({'x': 2, 'y': 100, 'f': '["foo" |-> "spam spam eggs"]'}),
     ]
 }
 
@@ -140,7 +114,7 @@ def test_add_section():
 
 def test(filename):
     global monitor
-    monitor = MarkdownModelMonitor(filename)
+    monitor = HtmlModelMonitor(filename)
 
     input("Press key to on_parse_start")    
     monitor.on_parse_start(ModelResult(model=Model()))

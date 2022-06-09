@@ -1,4 +1,7 @@
-from modelator.monitors.content import TRACE_COLUMNS
+from typing import Any
+from modelator.itf import ITF
+
+TRACE_COLUMNS = ['Variable', 'Value', 'Next value']
 
 
 class MarkdownWriter():
@@ -39,13 +42,13 @@ class MarkdownWriter():
                 self._write_trace(entry.trace, columns=TRACE_COLUMNS)
 
     def _write_trace(self, trace, columns):
-        for step in trace:
-            self.fd.write(f'{step["name"]}\n\n')
-            for row in self._make_table(step["transition"], columns):
+        for ix, step in enumerate(ITF.diff(trace)):
+            self.fd.write(f'State {ix} -> State {ix + 1}\n\n')
+            for row in self._make_table(step, columns):
                 self.fd.write(row)
             self.fd.write('\n\n')
 
-    def _make_table(self, table:list[dict[str,str]], columns:list[str], column_width: int = 25):
+    def _make_table(self, transition:list[tuple[str,Any,Any]], columns:list[str], column_width: int = 25):
         rows = []
         
         # build header
@@ -55,14 +58,19 @@ class MarkdownWriter():
         rows.append(f'|{separator}|\n')
         
         # build body
-        for entry in table:
-            row = '|'.join(
-                MarkdownWriter._replace_special_characters(v).center(column_width) 
-                for k, v in entry.items() if k in columns)
+        for (varname, value1, value2) in transition:
+            row = '|'.join([
+                varname.center(column_width),
+                MarkdownWriter._replace_special_characters(value1).center(column_width),
+                MarkdownWriter._replace_special_characters(value2).center(column_width),
+                ])
             rows.append(f'|{row}|\n')
         
         return rows
 
     @staticmethod
-    def _replace_special_characters(s: str) -> str:
-        return s.replace('|->', '↦')
+    def _replace_special_characters(s: Any) -> str:
+        if isinstance(s, str):
+            return s.replace('|->', '↦')
+        else:
+            return str(s)
