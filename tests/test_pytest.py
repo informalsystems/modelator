@@ -26,6 +26,6 @@ def collatz(state: Number, x):
     state.val = next_val
 
 
-@mbt("tests/models/collatz.tla", keypath="action")
+@mbt("tests/models/collatz.tla")
 def test_collatz():
     print("pass test")
