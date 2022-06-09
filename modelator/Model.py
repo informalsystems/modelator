@@ -1,9 +1,7 @@
-import argparse
 from copy import copy
-import os
 import threading
 
-# import multiprocess
+
 from typing import Any, Dict, List, Optional, Union
 from typing_extensions import Self
 
@@ -20,6 +18,7 @@ from modelator.utils import tla_helpers
 from modelator.parse import parse
 from modelator.typecheck import typecheck
 from modelator.utils.shell_helpers import shell
+from modelator.utils import modelator_helpers
 from modelator import const_values
 from modelator.check import check_apalache, check_tlc
 from datetime import datetime
@@ -122,7 +121,7 @@ class Model:
                 args=args,
             )
         except Exception as e:
-            print("Problem running {}: {}".format(checker, e))
+            self.logger.error("Problem running {}: {}".format(checker, e))
             raise ModelCheckingError(e)
 
         return res, msg, cex
@@ -139,7 +138,7 @@ class Model:
         monitor_update_functions,
         result_considered_success: bool,
     ):
-        print("starting with {}".format(predicate))
+        self.logger.debug("starting with {}".format(predicate))
         res, msg, cex = self._modelcheck_predicates(
             predicates=[predicate],
             modelcheck_constants=modelcheck_constants,
@@ -148,7 +147,8 @@ class Model:
             checking_files_content=checking_files_content,
             checker_params=checker_params,
         )
-        print("finished with {} at time {}".format(predicate, datetime.now()))
+        self.logger.debug("finished with {}".format(predicate))
+
         self.mod_result_lock.acquire()
         mod_res._finished_operators.append(predicate)
         mod_res._in_progress_operators.remove(predicate)
@@ -174,7 +174,9 @@ class Model:
         checker: str = const_values.APALACHE,
         checker_params: Dict = None,
     ):
+
         self.mod_result_lock = threading.Lock()
+
         checking_constants = self.model_constants
         if model_constants is not None:
             checking_constants.update(model_constants)
@@ -191,9 +193,11 @@ class Model:
         mod_res = ModelResult(model=self, all_operators=invariant_predicates)
 
         for monitor in self.monitors:
+            #  TODO: make monitors parallel
             monitor.on_check_start(res=mod_res)
 
         threads = []
+
         for inv_predicate in invariant_predicates:
             thread = threading.Thread(
                 target=self._check_sample_thread_worker,
@@ -211,13 +215,15 @@ class Model:
                     "result_considered_success": True,
                 },
             )
-            print("starting thread {} for invariant {}".format(thread, inv_predicate))
+            self.logger.debug(
+                "starting thread {} for invariant {}".format(thread, inv_predicate)
+            )
             thread.start()
             threads.append(thread)
         threads.reverse()
         for thread in threads:
             thread.join()
-            print("joining thread {}".format(thread))
+            self.logger.debug("joining thread {}".format(thread))
 
         for monitor in self.monitors:
             monitor.on_check_finish(res=mod_res)
@@ -330,8 +336,9 @@ class Model:
         next_predicate: str,
         files_contents: Dict[str, str] = None,
         constants: Dict[str, Any] = None,
+        loglevel: str = "debug",
     ) -> None:
-
+        self.logger = modelator_helpers.create_logger(loglevel)
         # an entry file for the tla model
         self.tla_file_path = tla_file_path
         # init and next predicates, which are obligatory for all models
