@@ -7,10 +7,10 @@ authors = ["Ranadeep Biswas <mail@rnbguy.at>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-modelator-py = "^0.1.9"
 deepdiff = "^5.8.1"
 tabulate = "^0.8.9"
 tla = {git = "git@github.com:tlaplus/tla_python.git", rev = "correct_lexing"}
+modelator-py = "^0.2.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
