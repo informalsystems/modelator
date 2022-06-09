@@ -1,4 +1,5 @@
 from datetime import datetime
+from threading import Lock
 
 
 class ModelResult:
@@ -19,6 +20,7 @@ class ModelResult:
         self._successful = []
         self._unsuccessful = []
         self._traces = {}
+        self.lock = Lock()
 
     def model(self):
         """

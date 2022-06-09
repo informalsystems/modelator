@@ -149,7 +149,7 @@ class Model:
         )
         self.logger.debug("finished with {}".format(predicate))
 
-        self.mod_result_lock.acquire()
+        mod_res.lock.acquire()
         mod_res._finished_operators.append(predicate)
         mod_res._in_progress_operators.remove(predicate)
 
@@ -158,7 +158,7 @@ class Model:
         else:
             mod_res._unsuccessful.append(predicate)
 
-        self.mod_result_lock.release()
+        mod_res.lock.release()
 
         # in the current implementation, this will only return one trace (as a counterexample)
         if len(cex) > 0:
@@ -167,6 +167,7 @@ class Model:
         for monitor in monitor_update_functions:
             monitor.on_check_update(res=mod_res)
 
+    @shell
     def check(
         self,
         invariants: List[str] = None,
@@ -174,8 +175,6 @@ class Model:
         checker: str = const_values.APALACHE,
         checker_params: Dict = None,
     ):
-
-        self.mod_result_lock = threading.Lock()
 
         checking_constants = self.model_constants
         if model_constants is not None:
@@ -231,6 +230,7 @@ class Model:
         self.all_checks.append(mod_res)
         return mod_res
 
+    @shell
     def sample(
         self,
         examples: List[str] = None,
@@ -257,40 +257,6 @@ class Model:
 
         for monitor in self.monitors:
             monitor.on_sample_start(res=mod_res)
-
-        # def thread_worker(example_predicate, modelcheck_constants, checker, tla_file_name, checking_files_content, checker_params):
-        #     (
-        #         negated_name,
-        #         negated_content,
-        #         negated_predicates,
-        #     ) = tla_helpers.tla_file_with_negated_predicates(
-        #         module_name=tla_file_name, predicates=[example_predicate]
-        #     )
-
-        #     sampling_files_content = checking_files_content
-        #     sampling_files_content.update({negated_name: negated_content})
-
-        #     res, msg, cex = self._modelcheck_predicates(
-        #         predicates=negated_predicates,
-        #         modelcheck_constants=modelcheck_constants,
-        #         checker=checker,
-        #         tla_file_name=negated_name,
-        #         checking_files_content=sampling_files_content,
-        #         checker_params=checker_params,
-        #     )
-
-        #     mod_res._finished_operators.append(example_predicate)
-        #     mod_res._in_progress_operators.remove(example_predicate)
-        #     if res is True:
-        #         mod_res._unsuccessful.append(example_predicate)
-        #     else:
-        #         mod_res._successful.append(example_predicate)
-
-        #         # in the current implementation, this will only return one trace (as a counterexample)
-        #         mod_res._traces[example_predicate] = cex
-
-        #     for monitor in self.monitors:
-        #         monitor.on_sample_update(res=mod_res)
 
         threads = []
         for example_predicate in example_predicates:
