@@ -1,4 +1,5 @@
 from copy import copy
+import os
 import threading
 
 
@@ -22,6 +23,10 @@ from modelator.utils import modelator_helpers
 from modelator import const_values
 from modelator.check import check_apalache, check_tlc
 from datetime import datetime
+
+from watchdog.observers import Observer
+from watchdog.events import FileModifiedEvent
+from watchdog.events import LoggingEventHandler, FileSystemEventHandler
 
 
 class Model:
@@ -50,6 +55,7 @@ class Model:
 
     def _parse(self) -> Optional[ModelParsingError]:
         # a helper function: if the file is not parsable
+        self.logger.debug("Parsing!!!")
         for monitor in self.monitors:
             monitor.on_parse_start(res=ModelResult(model=self))
         try:
@@ -57,6 +63,7 @@ class Model:
             self.parsable = True
         except ModelParsingError as p_error:
             self.parsable = False
+            self.last_parsing_error = p_error
             raise p_error
         else:
             # TODO: this only works when the model is in a single file (it will not get all the
@@ -77,9 +84,16 @@ class Model:
 
     @shell
     def typecheck(self) -> Optional[ModelTypecheckingError]:
+        if self.parsable is False:
+            raise self.last_parsing_error
 
+        parsing_not_needed = self.parsable is True and self.autoparse is True
         # a helper function which will raise a ModelTypechecking exception in case types do not match
-        typecheck(tla_file_name=self.tla_file_path, files=self.files_contents)
+        typecheck(
+            tla_file_name=self.tla_file_path,
+            files=self.files_contents,
+            do_parse=not parsing_not_needed,
+        )
 
     def instantiate(self, model_constants: Dict):
         self.model_constants = model_constants
@@ -137,7 +151,10 @@ class Model:
         mod_res,
         monitor_update_functions,
         result_considered_success: bool,
+        original_predicate_name: str = None,
     ):
+        if original_predicate_name is None:
+            original_predicate_name = predicate
         self.logger.debug("starting with {}".format(predicate))
         res, msg, cex = self._modelcheck_predicates(
             predicates=[predicate],
@@ -150,19 +167,19 @@ class Model:
         self.logger.debug("finished with {}".format(predicate))
 
         mod_res.lock.acquire()
-        mod_res._finished_operators.append(predicate)
-        mod_res._in_progress_operators.remove(predicate)
+        mod_res._finished_operators.append(original_predicate_name)
+        mod_res._in_progress_operators.remove(original_predicate_name)
 
         if res is result_considered_success:
-            mod_res._successful.append(predicate)
+            mod_res._successful.append(original_predicate_name)
         else:
-            mod_res._unsuccessful.append(predicate)
+            mod_res._unsuccessful.append(original_predicate_name)
 
         mod_res.lock.release()
 
         # in the current implementation, this will only return one trace (as a counterexample)
         if len(cex) > 0:
-            mod_res._traces[predicate] = cex
+            mod_res._traces[original_predicate_name] = cex
 
         for monitor in monitor_update_functions:
             monitor.on_check_update(res=mod_res)
@@ -174,8 +191,10 @@ class Model:
         model_constants: Dict = None,
         checker: str = const_values.APALACHE,
         checker_params: Dict = None,
-    ):
+    ) -> ModelResult:
 
+        if self.parsable is False:
+            raise self.last_parsing_error
         checking_constants = self.model_constants
         if model_constants is not None:
             checking_constants.update(model_constants)
@@ -239,6 +258,9 @@ class Model:
         checker_params: Dict = None,
     ) -> ModelResult:
 
+        if self.parsable is False:
+            raise self.last_parsing_error
+
         sampling_constants = self.model_constants
         if model_constants is not None:
             sampling_constants.update(model_constants)
@@ -260,14 +282,25 @@ class Model:
 
         threads = []
         for example_predicate in example_predicates:
+            (
+                negated_name,
+                negated_content,
+                negated_predicates,
+            ) = tla_helpers.tla_file_with_negated_predicates(
+                module_name=self.module_name, predicates=[example_predicate]
+            )
+            assert len(negated_predicates) == 1
+            sampling_files_content = copy(self.files_contents)
+            sampling_files_content.update({negated_name: negated_content})
             thread = threading.Thread(
                 target=self._check_sample_thread_worker,
                 kwargs={
-                    "predicate": example_predicate,
+                    "original_predicate_name": example_predicate,
+                    "predicate": negated_predicates[0],
                     "modelcheck_constants": sampling_constants,
                     "checker": checker,
-                    "tla_file_name": self.module_name,
-                    "checking_files_content": copy(self.files_contents),
+                    "tla_file_name": negated_name,
+                    "checking_files_content": sampling_files_content,
                     "checker_params": checker_params,
                     "mod_res": mod_res,
                     "monitor_update_functions": [
@@ -326,8 +359,49 @@ class Model:
         # a list of monitors which track the progress of model actions
         self.monitors: List[ModelMonitor] = []
 
+        self.autoparse = False
+
     def add_monitor(self, monitor: ModelMonitor):
         self.monitors.append(monitor)
 
     def remove_monitor(self, monitor: ModelMonitor):
         self.monitors.remove(monitor)
+
+    def auto_parse_file(self):
+        self.autoparse = True
+        self.observer = Observer()
+        # self.autohandler = AutoActions()
+        self.autohandler = LoggingEventHandler()
+        print(self.tla_file_path)
+        self.observer.schedule(
+            self.autohandler, os.path.abspath(self.tla_file_path), recursive=True
+        )
+        self.observer.start()
+
+    def stop_auto_parse(self):
+        self.observer.stop()
+        self.observer.join()
+
+        # self.logging_handler = LoggingEventHandler()
+
+
+old = 0
+
+
+class AutoActions(FileSystemEventHandler):
+    # def __init__(self, src_path):
+    #     super(AutoActions, self).__init__(src_path)
+    #     # self.model = model
+
+    def on_modified(self, event):
+        global old
+        if event.is_directory:
+            return None
+
+        statbuf = os.stat(event.src_path)
+        new = statbuf.st_mtime
+        if (new - old) > 0.5:
+            print("NEW EVENT HAPPENED")
+            # Do any action here.
+
+        old = new
