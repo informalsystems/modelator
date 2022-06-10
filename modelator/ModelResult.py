@@ -55,7 +55,7 @@ class ModelResult:
         Availability depends on action type, and its success for the operator.
         If available, at least one trace is guaranteed to exist.
         """
-        return self._traces[operator]
+        return self._traces[operator] if operator in self._traces else None
 
     def all_traces(self):
         return self._traces
