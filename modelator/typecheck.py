@@ -64,7 +64,3 @@ if __name__ == "__main__":
     model_name = os.path.basename(args.model_file)
 
     ret, msg = typecheck(tla_file_name=model_name, files=files)
-    if ret is True:
-        print("successful typechecking")
-    else:
-        print(msg)

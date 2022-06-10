@@ -1,8 +1,4 @@
 from modelator.modelator_shell import *
-from modelator import const_values
+from modelator.ModelShell import ModelShell
 
-
-m = Model.parse_file("modelator/samples/HelloFull.tla")
-# sample_res = m.sample()
-check_res = m.check(checker=const_values.APALACHE)
-# m.typecheck()
+m = ModelShell.parse_file("modelator/samples/HelloFull.tla")

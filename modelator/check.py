@@ -16,6 +16,8 @@ from .itf import ITF
 
 import re
 
+check_logger = modelator_helpers.create_logger(logger_name=__file__, loglevel="error")
+
 
 def check_tlc(
     tla_file_name: str,
@@ -96,7 +98,12 @@ def check_apalache(
     if result["return_code"] == 0:
         return (True, ErrorMessage(""), [])
     else:
-        inv_violated, cex = apalache_helpers.extract_apalache_counterexample(result)
+        try:
+            inv_violated, cex = apalache_helpers.extract_apalache_counterexample(result)
+        except:
+            check_logger.error("stdout of result is: {}".format(result["stdout"]))
+            raise
+
         cex_representation = [ITF(state) for state in cex]
         problem_desc = "Invariant {} violated.\nCounterexample is {}".format(
             inv_violated, cex_representation
@@ -145,7 +152,3 @@ if __name__ == "__main__":
             files=files,
             config_file_name=args.config,
         )
-    if ret is True:
-        print("Invariant holds")
-    else:
-        print(msg)

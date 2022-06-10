@@ -1,5 +1,5 @@
 from copy import copy
-import os
+import logging
 import threading
 
 
@@ -18,25 +18,17 @@ from modelator.utils.model_exceptions import (
 from modelator.utils import tla_helpers
 from modelator.parse import parse
 from modelator.typecheck import typecheck
-from modelator.utils.shell_helpers import shell
 from modelator.utils import modelator_helpers
 from modelator import const_values
 from modelator.check import check_apalache, check_tlc
 from datetime import datetime
 
-from watchdog.observers import Observer
-from watchdog.events import FileModifiedEvent
-from watchdog.events import LoggingEventHandler, FileSystemEventHandler
-
 
 class Model:
     @classmethod
-    @shell
     def parse_file(
         cls, file_name: str, init: str = "Init", next: str = "Next"
     ) -> Union[Self, ModelParsingError]:
-
-        # invoke callback functions for all existing monitors
 
         auxiliary_files = tla_helpers.get_auxiliary_tla_files(file_name)
 
@@ -54,8 +46,7 @@ class Model:
         return m
 
     def _parse(self) -> Optional[ModelParsingError]:
-        # a helper function: if the file is not parsable
-        self.logger.debug("Parsing!!!")
+
         for monitor in self.monitors:
             monitor.on_parse_start(res=ModelResult(model=self))
         try:
@@ -82,7 +73,6 @@ class Model:
             for monitor in self.monitors:
                 monitor.on_parse_finish(res=ModelResult(self))
 
-    @shell
     def typecheck(self) -> Optional[ModelTypecheckingError]:
         if self.parsable is False:
             raise self.last_parsing_error
@@ -184,7 +174,6 @@ class Model:
         for monitor in monitor_update_functions:
             monitor.on_check_update(res=mod_res)
 
-    @shell
     def check(
         self,
         invariants: List[str] = None,
@@ -249,7 +238,6 @@ class Model:
         self.all_checks.append(mod_res)
         return mod_res
 
-    @shell
     def sample(
         self,
         examples: List[str] = None,
@@ -328,6 +316,12 @@ class Model:
     def last_sample(self):
         return self.all_samples[-1]
 
+    def set_log_level(self, loglevel: str):
+        numeric_level = getattr(logging, loglevel.upper(), None)
+        if not isinstance(numeric_level, int):
+            raise ValueError("Invalid log level: %s" % loglevel)
+        self.logger.setLevel(numeric_level)
+
     def __init__(
         self,
         tla_file_path: str,
@@ -335,9 +329,12 @@ class Model:
         next_predicate: str,
         files_contents: Dict[str, str] = None,
         constants: Dict[str, Any] = None,
-        loglevel: str = "debug",
+        loglevel: str = "info",
     ) -> None:
-        self.logger = modelator_helpers.create_logger(loglevel)
+
+        self.logger = modelator_helpers.create_logger(
+            logger_name=__file__, loglevel=loglevel
+        )
         # an entry file for the tla model
         self.tla_file_path = tla_file_path
         # init and next predicates, which are obligatory for all models
@@ -366,42 +363,3 @@ class Model:
 
     def remove_monitor(self, monitor: ModelMonitor):
         self.monitors.remove(monitor)
-
-    def auto_parse_file(self):
-        self.autoparse = True
-        self.observer = Observer()
-        # self.autohandler = AutoActions()
-        self.autohandler = LoggingEventHandler()
-        print(self.tla_file_path)
-        self.observer.schedule(
-            self.autohandler, os.path.abspath(self.tla_file_path), recursive=True
-        )
-        self.observer.start()
-
-    def stop_auto_parse(self):
-        self.observer.stop()
-        self.observer.join()
-
-        # self.logging_handler = LoggingEventHandler()
-
-
-old = 0
-
-
-class AutoActions(FileSystemEventHandler):
-    # def __init__(self, src_path):
-    #     super(AutoActions, self).__init__(src_path)
-    #     # self.model = model
-
-    def on_modified(self, event):
-        global old
-        if event.is_directory:
-            return None
-
-        statbuf = os.stat(event.src_path)
-        new = statbuf.st_mtime
-        if (new - old) > 0.5:
-            print("NEW EVENT HAPPENED")
-            # Do any action here.
-
-        old = new
