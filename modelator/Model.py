@@ -71,7 +71,9 @@ class Model:
 
         finally:
             for monitor in self.monitors:
-                monitor.on_parse_finish(res=ModelResult(self))
+                monitor.on_parse_finish(
+                    res=ModelResult(self, parsing_error=not self.parsable)
+                )
 
     def typecheck(self) -> Optional[ModelTypecheckingError]:
         if self.parsable is False:
@@ -171,8 +173,8 @@ class Model:
         if len(cex) > 0:
             mod_res._traces[original_predicate_name] = cex
 
-        for monitor in monitor_update_functions:
-            monitor.on_check_update(res=mod_res)
+        for monitor_func in monitor_update_functions:
+            monitor_func(res=mod_res)
 
     def check(
         self,

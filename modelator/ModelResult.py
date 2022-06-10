@@ -10,7 +10,9 @@ class ModelResult:
      - invariant checking is successful when a trace violating it can't be produced.
     """
 
-    def __init__(self, model, all_operators=None) -> None:
+    def __init__(
+        self, model, all_operators=None, parsing_error=False, typing_error=False
+    ) -> None:
         self._model = model
         self._time = datetime.now()
         self._in_progress_operators = (
@@ -21,6 +23,8 @@ class ModelResult:
         self._unsuccessful = []
         self._traces = {}
         self.lock = Lock()
+        self.parsing_error = parsing_error
+        self.typing_error = typing_error
 
     def model(self):
         """
