@@ -6,7 +6,7 @@ from modelator_py.apalache.pure import apalache_pure
 from modelator_py.tlc.pure import tlc_pure
 from modelator_py.util.tlc import tlc_itf
 
-from .utils import apalache_helpers, tla_helpers, modelatorpy_helpers, tlc_helpers
+from .utils import apalache_helpers, modelator_helpers, tla_helpers, tlc_helpers
 from .parse import parse
 from .typecheck import typecheck
 from typing import Dict
@@ -15,6 +15,8 @@ from . import const_values
 from .itf import ITF
 
 import re
+
+check_logger = modelator_helpers.create_logger(logger_name=__file__, loglevel="error")
 
 
 def check_tlc(
@@ -33,7 +35,7 @@ def check_tlc(
             args = {}
         args["config"] = config_file_name
 
-    json_command = modelatorpy_helpers.wrap_command(
+    json_command = modelator_helpers.wrap_command(
         cmd=const_values.CHECK_CMD,
         checker=const_values.TLC,
         tla_file_name=tla_file_name,
@@ -84,7 +86,7 @@ def check_apalache(
 
         args["config"] = config_file_name
 
-    json_command = modelatorpy_helpers.wrap_command(
+    json_command = modelator_helpers.wrap_command(
         cmd=const_values.CHECK_CMD,
         tla_file_name=tla_file_name,
         files=files,
@@ -96,7 +98,12 @@ def check_apalache(
     if result["return_code"] == 0:
         return (True, ErrorMessage(""), [])
     else:
-        inv_violated, cex = apalache_helpers.extract_apalache_counterexample(result)
+        try:
+            inv_violated, cex = apalache_helpers.extract_apalache_counterexample(result)
+        except:
+            check_logger.error("stdout of result is: {}".format(result["stdout"]))
+            raise
+
         cex_representation = [ITF(state) for state in cex]
         problem_desc = "Invariant {} violated.\nCounterexample is {}".format(
             inv_violated, cex_representation
@@ -145,7 +152,3 @@ if __name__ == "__main__":
             files=files,
             config_file_name=args.config,
         )
-    if ret is True:
-        print("Invariant holds")
-    else:
-        print(msg)

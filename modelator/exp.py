@@ -6,7 +6,6 @@ from modelator.Model import Model
 def main():
 
     m = Model.parse_file("modelator/samples/Hello.tla")
-    print(m.variables)
     m.typecheck()
 
 

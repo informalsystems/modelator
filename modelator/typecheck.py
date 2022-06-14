@@ -3,7 +3,7 @@ import os
 
 from typing import Dict, Tuple
 from modelator_py.apalache.pure import apalache_pure
-from .utils import apalache_helpers, tla_helpers, modelatorpy_helpers
+from .utils import apalache_helpers, modelator_helpers, tla_helpers
 from .utils.ErrorMessage import ErrorMessage
 from modelator.utils.model_exceptions import ModelError, ModelTypecheckingError
 from .parse import parse
@@ -28,7 +28,7 @@ def typecheck(
     # if do_parse is True:
     #     parse(tla_file_name=tla_file_name, files=files)
 
-    json_command = modelatorpy_helpers.wrap_command(
+    json_command = modelator_helpers.wrap_command(
         cmd=const_values.TYPECHECK_CMD, tla_file_name=tla_file_name, files=files
     )
 
@@ -45,12 +45,11 @@ def typecheck(
             error_file_name = os.path.join(files_dir, extracted_file_name)
         else:
             error_file_name = tla_file_name
-
         raise ModelTypecheckingError(
             problem_description=error,
             location=line_number,
             full_error_msg=result["stdout"],
-            file_path=os.path.abspath(os.path.join(error_file_name)),
+            file_path=os.path.abspath(error_file_name),
         )
 
 
@@ -64,7 +63,3 @@ if __name__ == "__main__":
     model_name = os.path.basename(args.model_file)
 
     ret, msg = typecheck(tla_file_name=model_name, files=files)
-    if ret is True:
-        print("successful typechecking")
-    else:
-        print(msg)

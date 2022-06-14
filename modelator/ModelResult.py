@@ -1,4 +1,5 @@
 from datetime import datetime
+from threading import Lock
 
 
 class ModelResult:
@@ -9,7 +10,9 @@ class ModelResult:
      - invariant checking is successful when a trace violating it can't be produced.
     """
 
-    def __init__(self, model, all_operators=None) -> None:
+    def __init__(
+        self, model, all_operators=None, parsing_error=False, typing_error=False
+    ) -> None:
         self._model = model
         self._time = datetime.now()
         self._in_progress_operators = (
@@ -19,6 +22,9 @@ class ModelResult:
         self._successful = []
         self._unsuccessful = []
         self._traces = {}
+        self.lock = Lock()
+        self.parsing_error = parsing_error
+        self.typing_error = typing_error
 
     def model(self):
         """
@@ -53,7 +59,7 @@ class ModelResult:
         Availability depends on action type, and its success for the operator.
         If available, at least one trace is guaranteed to exist.
         """
-        return self._traces[operator]
+        return self._traces[operator] if operator in self._traces else None
 
     def all_traces(self):
         return self._traces

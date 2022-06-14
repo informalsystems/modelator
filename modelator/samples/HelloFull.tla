@@ -3,40 +3,30 @@
 EXTENDS Naturals, FiniteSets, Sequences
 
 VARIABLES
-    \* @type: Str;
-    x,
     \* @type: Int;
+    x,
+    \* @type: Str;
     y
 
 Init ==
-    /\ x = "hello"
-    /\ y = 8400
+    /\ x = 1400
+    /\ y = "hello"
 
 Next ==
-    /\ x' = IF x = "hello" THEN  "world" ELSE "hello"
-    /\ y' = y-2
+    /\ x' = x-2
+    /\ y' = "world"
 
-\* Inv ==
-\*     ~
-\*     (
-\*         /\ x = "world"
-\*         /\ y = 20
-\*     )
 
-Inv == y /= 8396
-Inv2 == y /= 8394
-\* Inv2 ==
-\*     y /= 11
+Inv ==
+    x /= 1396
 
-Inv3 ==
-    y /= 4398
+AlwaysEvenInvariant ==
+    x % 2 = 0
 
-Inv4 ==
-    y /= 160
 
 
 ExTest ==
-    y = 10
+    x = 1394
 
 
 
