@@ -308,15 +308,15 @@ class Model:
         for monitor in self.monitors:
             monitor.on_sample_finish(res=mod_res)
 
-        self.all_samples.append(mod_res)
+        self._all_samples.append(mod_res)
 
         return mod_res
 
     def all_samples(self):
-        return self.all_samples
+        return self._all_samples
 
     def last_sample(self):
-        return self.all_samples[-1]
+        return self._all_samples[-1]
 
     def set_log_level(self, loglevel: str):
         numeric_level = getattr(logging, loglevel.upper(), None)
@@ -353,7 +353,7 @@ class Model:
         self.all_checks = []
 
         # a list of results for all samples performed on this model
-        self.all_samples = []
+        self._all_samples = []
 
         # a list of monitors which track the progress of model actions
         self.monitors: List[ModelMonitor] = []

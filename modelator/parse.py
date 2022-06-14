@@ -33,7 +33,6 @@ def parse(tla_file_name: str, files: Dict[str, str]) -> Optional[ModelParsingErr
             file_name,
             line_number,
         ) = apalache_helpers.extract_parse_error(result["stdout"])
-
         files_dir = os.path.dirname(tla_file_name)
         raise ModelParsingError(
             problem_description=error_description,

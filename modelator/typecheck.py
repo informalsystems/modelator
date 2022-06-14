@@ -49,7 +49,7 @@ def typecheck(
             problem_description=error,
             location=line_number,
             full_error_msg=result["stdout"],
-            file_path=os.path.abspath(os.path.join(error_file_name)),
+            file_path=os.path.abspath(error_file_name),
         )
 
 

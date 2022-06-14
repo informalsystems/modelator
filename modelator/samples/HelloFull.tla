@@ -3,30 +3,27 @@
 EXTENDS Naturals, FiniteSets, Sequences
 
 VARIABLES
-    \* @type: Str;
-    x,
     \* @type: Int;
-    y
+    x
 
 Init ==
-    /\ x = "hello"
-    /\ y = 1400
+    x = 1400
 
 Next ==
-    /\ x' = IF x = "hello" THEN  "world" ELSE "hello"
-    /\ y' = y-2
+    x' = x-2
 
 
-Inv == y /= 1396
+Inv ==
+    x /= 1396
 
 
 AlwaysEven ==
-    y % 2 = 0
+    x % 2 = 0
 
 
 
 ExTest ==
-    y = 1394
+    x = 1394
 
 
 
