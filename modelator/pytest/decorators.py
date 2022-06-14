@@ -60,10 +60,10 @@ def itf(filepath: str, keypath=None):
     return decorator
 
 
-def mbt(tlapath: str, keypath=None):
+def mbt(tlapath: str, keypath=None, **kwargs):
     def decorator(func: Callable) -> Callable:
         m = Model.parse_file(file_name=tlapath)
-        res = m.check()
+        res = m.check(**kwargs)
         cex_itfs = res.all_traces()
 
         if keypath is None:
