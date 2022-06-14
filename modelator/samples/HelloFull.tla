@@ -10,33 +10,23 @@ VARIABLES
 
 Init ==
     /\ x = "hello"
-    /\ y = 8400
+    /\ y = 1400
 
 Next ==
     /\ x' = IF x = "hello" THEN  "world" ELSE "hello"
     /\ y' = y-2
 
-\* Inv ==
-\*     ~
-\*     (
-\*         /\ x = "world"
-\*         /\ y = 20
-\*     )
 
-Inv == y /= 8396
-Inv2 == y /= 8394
-\* Inv2 ==
-\*     y /= 11
+Inv == y /= 1396
 
-Inv3 ==
-    y /= 4398
 
-Inv4 ==
-    y /= 160
+AlwaysEven ==
+    y % 2 = 0
+
 
 
 ExTest ==
-    y = 8390
+    y = 1394
 
 
 
