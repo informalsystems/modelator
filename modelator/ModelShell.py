@@ -95,14 +95,15 @@ class ModelShell(Model):
         )
 
         self.autoload = True
-        self.load_observer = Observer()
-        self.autoloadhandler = FileSystemEventHandler()
-        self.autoloadhandler.on_modified = self._load_on_modified
-        self.old = 0
-        self.load_observer.schedule(
-            self.autoloadhandler, os.path.abspath(self.tla_file_path), recursive=True
-        )
-        self.load_observer.start()
+        self.auto_parse_file()
+        # self.load_observer = Observer()
+        # self.autoloadhandler = FileSystemEventHandler()
+        # self.autoloadhandler.on_modified = self._load_on_modified
+        # self.old = 0
+        # self.load_observer.schedule(
+        #     self.autoloadhandler, os.path.abspath(self.tla_file_path), recursive=True
+        # )
+        # self.load_observer.start()
 
     def _load_on_modified(self, event):
         if event.is_directory:

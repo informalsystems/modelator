@@ -4,20 +4,23 @@ EXTENDS Naturals, FiniteSets, Sequences
 
 VARIABLES
     \* @type: Int;
-    x
+    x,
+    \* @type: Str;
+    y
 
 Init ==
-    x = 1400
+    /\ x = 1400
+    /\ y = "hello"
 
 Next ==
-    x' = x-2
+    /\ x' = x-2
+    /\ y' = "world"
 
 
 Inv ==
     x /= 1396
 
-
-AlwaysEven ==
+AlwaysEvenInvariant ==
     x % 2 = 0
 
 
