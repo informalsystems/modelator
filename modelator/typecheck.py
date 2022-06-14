@@ -45,7 +45,6 @@ def typecheck(
             error_file_name = os.path.join(files_dir, extracted_file_name)
         else:
             error_file_name = tla_file_name
-
         raise ModelTypecheckingError(
             problem_description=error,
             location=line_number,

@@ -214,7 +214,7 @@ class Model:
                     "predicate": inv_predicate,
                     "modelcheck_constants": checking_constants,
                     "checker": checker,
-                    "tla_file_name": self.module_name,
+                    "tla_file_name": self.tla_file_path,
                     "checking_files_content": copy(self.files_contents),
                     "checker_params": checker_params,
                     "mod_res": mod_res,

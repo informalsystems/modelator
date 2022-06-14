@@ -94,6 +94,28 @@ class ModelShell(Model):
             tla_file_path, init_predicate, next_predicate, files_contents, constants
         )
 
+        self.autoload = True
+        self.load_observer = Observer()
+        self.autoloadhandler = FileSystemEventHandler()
+        self.autoloadhandler.on_modified = self._load_on_modified
+        self.old = 0
+        self.load_observer.schedule(
+            self.autoloadhandler, os.path.abspath(self.tla_file_path), recursive=True
+        )
+        self.load_observer.start()
+
+    def _load_on_modified(self, event):
+        if event.is_directory:
+            return None
+
+        statbuf = os.stat(event.src_path)
+        self.new = statbuf.st_mtime
+        if (self.new - self.old) > 0.5:
+            # this is a real event
+            self.files_contents[self.tla_file_path] = open(event.src_path).read()
+
+            self.old = self.new
+
     def auto_parse_file(self):
         self.autoparse = True
         self.observer = Observer()
