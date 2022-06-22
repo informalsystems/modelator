@@ -12,6 +12,7 @@ tabulate = "^0.8.9"
 tla = {git = "git@github.com:tlaplus/tla_python.git", rev = "correct_lexing"}
 modelator-py = "^0.2.0"
 watchdog = "^2.1.8"
+typing-extensions = "^4.2.0"
 
 [tool.poetry.dev-dependencies]
 fire = "^0.4.0"
