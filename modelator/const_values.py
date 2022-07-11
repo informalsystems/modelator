@@ -2,7 +2,7 @@
 APALACHE = "apalache"
 TLC = "tlc"
 
-DEFAULT_APALACHE_JAR = "jars/apalache-pkg-0.25.0.jar"
+DEFAULT_APALACHE_JAR = "jars/apalache.jar"
 DEFAULT_TLC_JAR = "jars/tla2tools-v1.8.0.jar"
 
 PARSE = "parse"
@@ -26,4 +26,4 @@ CONFIG = "config"
 SHELL_ACTIVE = False
 
 
-CHECKER_TIMEOUT=60
+CHECKER_TIMEOUT = 60

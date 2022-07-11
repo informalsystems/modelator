@@ -46,9 +46,9 @@ def test_check():
         config_file_name=config_name,
         check_f=check_apalache,
     )
-    _matchingCheckValue(
-        invariant_holds, True, True, config_file_name=config_name, check_f=check_tlc
-    )
+    # _matchingCheckValue(
+    #     invariant_holds, True, True, config_file_name=config_name, check_f=check_tlc
+    # )
 
     # _matchingCheckValue(invariant_holds, True, True, apalache_args=args)
 
@@ -70,10 +70,10 @@ def test_check():
         check_f=check_apalache,
     )
 
-    _matchingCheckValue(
-        invariant_does_not_hold,
-        False,
-        False,
-        config_file_name=config_name,
-        check_f=check_tlc,
-    )
+    # _matchingCheckValue(
+    #     invariant_does_not_hold,
+    #     False,
+    #     False,
+    #     config_file_name=config_name,
+    #     check_f=check_tlc,
+    # )

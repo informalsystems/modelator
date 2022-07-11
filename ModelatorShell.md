@@ -44,7 +44,7 @@ If run without arguments, it will assume the default arguments:
 - and that the checker is `apalache`
 
 We could suply each of these arguments individually, for instance
-`m.check(invariants=['Inv', 'Inv2'], checker='tlc')`.
+`m.check(invariants=['Inv', 'Inv2'], checker='apalache')`.
 The output is
 
 ```
