@@ -1,5 +1,5 @@
 ---- MODULE bingame ----
-EXTENDS Naturals
+EXTENDS Integers
 
 VARIABLES
     \* @type: Int;
@@ -17,7 +17,7 @@ Next ==
     /\ number' =
         IF action' = "AddOne" THEN number + 1 ELSE
         IF action' = "MultiplyTwo" THEN number * 2 ELSE
-        1
+        -1
 
 Inv ==
     number /= 30
