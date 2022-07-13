@@ -184,6 +184,11 @@ class Model:
         checker_params: Dict = None,
     ) -> ModelResult:
 
+        if checker is not const_values.APALACHE:
+            raise ValueError(
+                "Currently, only the Apalache checker is supported. Support for TLC coming soon"
+            )
+
         if self.parsable is False:
             raise self.last_parsing_error
         checking_constants = self.model_constants
