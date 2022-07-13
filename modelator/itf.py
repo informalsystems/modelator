@@ -1,6 +1,7 @@
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 from typing import Any, Dict, List, Tuple
+
 import deepdiff
 import tabulate
 
@@ -24,6 +25,9 @@ class ITFRecord:
     def __repr__(self):
         return self.pretty()
 
+    def to_json(self):
+        return {k: v.to_json() for k, v in self.record.items()}
+
 
 @dataclass
 class ITFFunctionEntry:
@@ -39,6 +43,9 @@ class ITFFunctionEntry:
 
     def __repr__(self):
         return self.pretty()
+
+    def to_json(self):
+        return [self.key.to_json(), self.value.to_json()]
 
 
 @dataclass
@@ -64,6 +71,9 @@ class ITFFunction:
     def __repr__(self):
         return self.pretty()
 
+    def to_json(self):
+        return {"#map": [entry.to_json() for entry in self.function.values()]}
+
 
 @dataclass
 class ITFSet:
@@ -81,6 +91,9 @@ class ITFSet:
 
     def __repr__(self):
         return self.pretty()
+
+    def to_json(self):
+        return {"#set": [elem.to_json() for elem in self.set]}
 
 
 @dataclass
@@ -100,6 +113,9 @@ class ITFSequence:
     def __repr__(self):
         return self.pretty()
 
+    def to_json(self):
+        return [elem.to_json() for elem in self.sequence]
+
 
 @dataclass
 class ITFObject:
@@ -118,6 +134,9 @@ class ITFObject:
 
     def __repr__(self):
         return self.pretty()
+
+    def to_json(self):
+        return self.object
 
 
 @dataclass
@@ -195,3 +214,6 @@ class ITF:
 
     def __repr__(self):
         return " /\\ ".join((f"({k} = {v})" for (k, v) in self.itf.record.items()))
+
+    def to_json(self):
+        return self.itf.to_json()
