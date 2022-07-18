@@ -1,3 +1,4 @@
+import subprocess
 from copy import copy
 import logging
 import threading
@@ -21,7 +22,6 @@ from modelator.typecheck import typecheck
 from modelator.utils import modelator_helpers
 from modelator import const_values
 from modelator.check import check_apalache, check_tlc
-from datetime import datetime
 
 
 class Model:
@@ -338,6 +338,8 @@ class Model:
         constants: Dict[str, Any] = None,
         loglevel: str = "info",
     ) -> None:
+
+        modelator_helpers.check_for_apalache_jar()
 
         self.logger = modelator_helpers.create_logger(
             logger_name=__file__, loglevel=loglevel

@@ -2,6 +2,36 @@ import os
 from typing import Dict
 from .. import const_values
 import logging
+import subprocess
+from urllib.request import urlopen
+import zipfile
+import io
+
+
+def check_for_apalache_jar() -> bool:
+    # check for existence of the correct Apalache jar.
+    # If it is missing, download it to const_value.DEFAULT_APALACHE_LOCATION and return False.
+    # If it is already there, do nothing and return True.
+    try:
+        download_needed = False
+        out = subprocess.run(
+            ["java", "-jar", const_values.DEFAULT_APALACHE_JAR, "version"],
+            stdout=subprocess.PIPE,
+            check=True,
+        )
+        version = out.stdout.decode("utf-8").strip()
+        if not version == const_values.DEFAULT_APALACHE_VERSION:
+            download_needed = True
+    except Exception as e:
+        download_needed = True
+    finally:
+        if download_needed is True:
+            with urlopen(const_values.APALACHE_RELEASE_URL) as zip_response:
+                with zipfile.ZipFile(io.BytesIO(zip_response.read())) as zip_file:
+                    zip_file.extractall(const_values.DEFAULT_APALACHE_LOCATION)
+                    return True
+        else:
+            return False
 
 
 def create_logger(logger_name, loglevel):

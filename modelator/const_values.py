@@ -1,8 +1,19 @@
 # model checkers
+import os
+import appdirs
+
+
 APALACHE = "apalache"
 TLC = "tlc"
 
-DEFAULT_APALACHE_JAR = "jars/apalache.jar"
+APALACHE_RELEASE_URL = (
+    "https://github.com/informalsystems/apalache/releases/download/v0.25.0/apalache.zip"
+)
+DEFAULT_APALACHE_VERSION = "0.25.0"
+DEFAULT_APALACHE_LOCATION = os.path.join(appdirs.user_data_dir(__package__), "checkers")
+DEFAULT_APALACHE_JAR = os.path.join(
+    DEFAULT_APALACHE_LOCATION, "apalache", "lib", "apalache.jar"
+)
 DEFAULT_TLC_JAR = "jars/tla2tools-v1.8.0.jar"
 
 PARSE = "parse"
