@@ -40,7 +40,8 @@ def check_for_apalache_jar(
         )
         if not version == expected_version:
             download_needed = True
-    except Exception as e:
+    except subprocess.CalledProcessError:
+        logging.debug("Error checking version of the jar")
         download_needed = True
     finally:
         if download_needed is True:
