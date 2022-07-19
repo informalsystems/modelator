@@ -30,13 +30,14 @@ def check_for_apalache_jar(
     logging.debug("checking for jar at {}".format(jar_path))
     try:
         download_needed = False
-        out = subprocess.run(
-            ["java", "-jar", jar_path, "version"],
-            stdout=subprocess.PIPE,
-            check=True,
+        version = subprocess.check_output(
+            ["java", "-jar", jar_path, "version"], text=True
+        ).strip()
+        logging.debug(
+            "Currently existing version is {} and we are looking for {}".format(
+                version, expected_version
+            )
         )
-        version = out.stdout.decode("utf-8").strip()
-        logging.debug("Currently existing version is {}".format(version))
         if not version == expected_version:
             download_needed = True
     except Exception as e:

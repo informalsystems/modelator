@@ -11,16 +11,13 @@ def test_downloading():
     test_download_path = os.path.join(
         appdirs.user_data_dir(__package__), "test", "checkers"
     )
+    subprocess.run(["rm", "-rf", test_download_path])
     subprocess.run(["mkdir", "-p", test_download_path])
     jar_path = os.path.join(test_download_path, "apalache", "lib", "apalache.jar")
 
     # first, try to run Apalache from this directory
     with pytest.raises(Exception):
-        subprocess.run(
-            ["java", "-jar", jar_path, "version"],
-            stdout=subprocess.PIPE,
-            check=True,
-        )
+        subprocess.check_output(["java", "-jar", jar_path, "version"])
 
     # then, invoke the downloading process and make sure it downloads
 
@@ -31,15 +28,13 @@ def test_downloading():
     assert downloaded_new_jar is True
 
     # now, again try to run Apalache from this directory and make sure it returns the correct version
-    out = subprocess.run(
-        ["java", "-jar", jar_path, "version"],
-        stdout=subprocess.PIPE,
-        check=True,
-    )
-    version = out.stdout.decode("utf-8").strip()
+    version = subprocess.check_output(
+        ["java", "-jar", jar_path, "version"], text=True
+    ).strip()
+
     assert version == desired_version
 
-    # knowing that we have a working version, try to download again (it is expected that now download was needed)
+    # knowing that we have a working version, try to download again (it is expected that now download is NOT needed)
     downloaded_new_jar = check_for_apalache_jar(
         download_location=test_download_path, jar_path=jar_path
     )
@@ -54,4 +49,4 @@ def test_downloading():
     assert downloaded_new_jar is True
 
     # finally, remove the intermediate directory
-    subprocess.run(["rm", "-r", test_download_path])
+    subprocess.run(["rm", "-rf", test_download_path])
