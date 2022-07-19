@@ -27,3 +27,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.plugins]
 pytest11 = { pytest-modelator = "modelator.pytest" }
+
+[tool.pytest.ini_options]
+markers = [
+    "network: marks test as running over network (deselect with '-m \"not network\"')"
+]
