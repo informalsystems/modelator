@@ -1,3 +1,4 @@
+import hashlib
 import os
 from typing import Dict
 from .. import const_values
@@ -12,6 +13,7 @@ def check_for_apalache_jar(
     download_location=const_values.DEFAULT_APALACHE_LOCATION,
     jar_path=const_values.DEFAULT_APALACHE_JAR,
     expected_version=const_values.DEFAULT_APALACHE_VERSION,
+    sha256_checksum=None,
 ) -> bool:
 
     """
@@ -22,6 +24,15 @@ def check_for_apalache_jar(
     It is meant to be used with default arguments.
     The reason that arguments exist is to enable testing.
     """
+
+    if sha256_checksum is None:
+        try:
+            sha256_checksum = const_values.APALACHE_SHA_CHECKSUMS[expected_version]
+        except KeyError:
+            raise ValueError(
+                "SHA Checksum is missing. Provide it either as an argument to\
+             `modelator_helpers.check_for_apalache_jar`, or add it to `const_values.APALACHE_SHA_CHECKSUMS`"
+            )
 
     apalache_release_url = "https://github.com/informalsystems/apalache/releases/download/v{}/apalache.zip".format(
         expected_version
@@ -46,7 +57,10 @@ def check_for_apalache_jar(
     finally:
         if download_needed is True:
             with urlopen(apalache_release_url) as zip_response:
-                with zipfile.ZipFile(io.BytesIO(zip_response.read())) as zip_file:
+                data = zip_response.read()
+
+                assert sha256_checksum == hashlib.sha256(data).hexdigest()
+                with zipfile.ZipFile(io.BytesIO(data)) as zip_file:
                     zip_file.extract(
                         member="apalache/lib/apalache.jar", path=download_location
                     )

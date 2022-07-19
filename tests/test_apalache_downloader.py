@@ -1,5 +1,6 @@
 import subprocess
 import pytest
+from modelator import const_values
 from modelator.utils.modelator_helpers import check_for_apalache_jar
 import appdirs
 import os
@@ -40,13 +41,30 @@ def test_downloading():
     )
     assert downloaded_new_jar is False
 
-    # finally, download again, but a different version (and now it should download again)
+    # download a different version, but with a wrong checksum
+    with pytest.raises(AssertionError):
+        _ = check_for_apalache_jar(
+            download_location=test_download_path,
+            jar_path=jar_path,
+            expected_version="0.25.1",
+            sha256_checksum=const_values.APALACHE_SHA_CHECKSUMS["0.25.0"],
+        )
+
+    # download again, using the proper checksum
     downloaded_new_jar = check_for_apalache_jar(
         download_location=test_download_path,
         jar_path=jar_path,
         expected_version="0.25.1",
     )
     assert downloaded_new_jar is True
+
+    # now, try to download a version for which no checksum is provided
+    with pytest.raises(ValueError):
+        _ = check_for_apalache_jar(
+            download_location=test_download_path,
+            jar_path=jar_path,
+            expected_version="0.25.2",
+        )
 
     # finally, remove the intermediate directory
     subprocess.run(["rm", "-rf", test_download_path])
