@@ -55,9 +55,8 @@ def check_for_apalache_jar(
                             expected_version, download_location
                         )
                     )
-                    return True
-        else:
-            return False
+
+        return download_needed
 
 
 def create_logger(logger_name, loglevel):
