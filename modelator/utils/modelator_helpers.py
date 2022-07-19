@@ -31,7 +31,7 @@ def check_for_apalache_jar(
     try:
         download_needed = False
         version = subprocess.check_output(
-            ["java", "-jar", jar_path, "version"], text=True
+            ["java", "-jar", jar_path, "version"], text=True, stderr=subprocess.STDOUT
         ).strip()
         logging.debug(
             "Currently existing version is {} and we are looking for {}".format(
@@ -47,7 +47,9 @@ def check_for_apalache_jar(
         if download_needed is True:
             with urlopen(apalache_release_url) as zip_response:
                 with zipfile.ZipFile(io.BytesIO(zip_response.read())) as zip_file:
-                    zip_file.extractall(download_location)
+                    zip_file.extract(
+                        member="apalache/lib/apalache.jar", path=download_location
+                    )
                     logging.debug(
                         "Downloaded version {} to location {}".format(
                             expected_version, download_location
