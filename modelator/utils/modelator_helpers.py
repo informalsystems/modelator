@@ -8,27 +8,49 @@ import zipfile
 import io
 
 
-def check_for_apalache_jar() -> bool:
-    # check for existence of the correct Apalache jar.
-    # If it is missing, download it to const_value.DEFAULT_APALACHE_LOCATION and return False.
-    # If it is already there, do nothing and return True.
+def check_for_apalache_jar(
+    download_location=const_values.DEFAULT_APALACHE_LOCATION,
+    jar_path=const_values.DEFAULT_APALACHE_JAR,
+    expected_version=const_values.DEFAULT_APALACHE_VERSION,
+) -> bool:
+
+    """
+    Checks for existence of the Apalache jar, version `expected_version`.
+    If it is missing, downloads it to `download_location` and returns False.
+    If it is already there, does nothing and returns True.
+
+    It is meant to be used with default arguments.
+    The reason that arguments exist is to enable testing.
+    """
+
+    apalache_release_url = "https://github.com/informalsystems/apalache/releases/download/v{}/apalache.zip".format(
+        expected_version
+    )
+
+    logging.debug("checking for jar at {}".format(jar_path))
     try:
         download_needed = False
         out = subprocess.run(
-            ["java", "-jar", const_values.DEFAULT_APALACHE_JAR, "version"],
+            ["java", "-jar", jar_path, "version"],
             stdout=subprocess.PIPE,
             check=True,
         )
         version = out.stdout.decode("utf-8").strip()
-        if not version == const_values.DEFAULT_APALACHE_VERSION:
+        logging.debug("Currently existing version is {}".format(version))
+        if not version == expected_version:
             download_needed = True
     except Exception as e:
         download_needed = True
     finally:
         if download_needed is True:
-            with urlopen(const_values.APALACHE_RELEASE_URL) as zip_response:
+            with urlopen(apalache_release_url) as zip_response:
                 with zipfile.ZipFile(io.BytesIO(zip_response.read())) as zip_file:
-                    zip_file.extractall(const_values.DEFAULT_APALACHE_LOCATION)
+                    zip_file.extractall(download_location)
+                    logging.debug(
+                        "Downloaded version {} to location {}".format(
+                            expected_version, download_location
+                        )
+                    )
                     return True
         else:
             return False

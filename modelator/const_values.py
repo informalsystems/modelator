@@ -6,9 +6,6 @@ import appdirs
 APALACHE = "apalache"
 TLC = "tlc"
 
-APALACHE_RELEASE_URL = (
-    "https://github.com/informalsystems/apalache/releases/download/v0.25.0/apalache.zip"
-)
 DEFAULT_APALACHE_VERSION = "0.25.0"
 DEFAULT_APALACHE_LOCATION = os.path.join(appdirs.user_data_dir(__package__), "checkers")
 DEFAULT_APALACHE_JAR = os.path.join(
