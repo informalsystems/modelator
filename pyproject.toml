@@ -9,9 +9,11 @@ authors = ["Ranadeep Biswas <mail@rnbguy.at>"]
 python = "^3.10"
 deepdiff = "^5.8.1"
 tabulate = "^0.8.9"
-modelator-py = "^0.2.0"
+modelator-py = "^0.2.1"
 watchdog = "^2.1.8"
 typing-extensions = "^4.2.0"
+wget = "^3.2"
+appdirs = "^1.4.4"
 
 [tool.poetry.dev-dependencies]
 fire = "^0.4.0"
@@ -25,3 +27,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.plugins]
 pytest11 = { pytest-modelator = "modelator.pytest" }
+
+[tool.pytest.ini_options]
+markers = [
+    "network: marks test as running over network (deselect with '-m \"not network\"')"
+]
