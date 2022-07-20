@@ -3,20 +3,28 @@ name = "modelator"
 version = "0.4.2"
 description = "Framework for Model Based Testing"
 authors = [
-    "Andrey Kuprianov <andrey@informal.systems>",
-    "Hernán Vanzetto <hernan@informal.systems>",
-    "Ivan Gavran <ivan@informal.systems>",
-    "Ranadeep Biswas <mail@rnbguy.at>",
+  "Andrey Kuprianov <andrey@informal.systems>",
+  "Hernán Vanzetto <hernan@informal.systems>",
+  "Ivan Gavran <ivan@informal.systems>",
+  "Ranadeep Biswas <mail@rnbguy.at>",
 ]
-keywords = ["testing", "model based testing", "formal method", "model checker", "tla", "apalache", "tlc"]
+keywords = [
+  "testing",
+  "model based testing",
+  "formal method",
+  "model checker",
+  "tla",
+  "apalache",
+  "tlc",
+]
 readme = "README.md"
 license = "Apache-2.0"
 repository = "https://github.com/informalsystems/atomkraft"
 include = ["LICENSE"]
 classifiers = [
-    "Topic :: Software Development :: Testing",
-    "License :: OSI Approved :: Apache Software License",
-    "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Software Development :: Testing",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3 :: Only",
 ]
 
 [tool.poetry.dependencies]
@@ -33,7 +41,7 @@ appdirs = "^1.4.4"
 fire = "^0.4.0"
 pytest = "^7.1.2"
 syrupy = "^2.3.0"
-prospector = {extras = ["with_mypy", "with_bandit"], version = "^1.7.7"}
+prospector = { extras = ["with_mypy", "with_bandit"], version = "^1.7.7" }
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "setuptools"]
@@ -44,5 +52,5 @@ pytest11 = { pytest-modelator = "modelator.pytest" }
 
 [tool.pytest.ini_options]
 markers = [
-    "network: marks test as running over network (deselect with '-m \"not network\"')"
+  "network: marks test as running over network (deselect with '-m \"not network\"')",
 ]
