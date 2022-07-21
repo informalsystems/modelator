@@ -61,14 +61,12 @@ def check_for_apalache_jar(
 
                 assert sha256_checksum == hashlib.sha256(data).hexdigest()
                 with zipfile.ZipFile(io.BytesIO(data)) as zip_file:
-                    zip_file.extract(
-                        member="apalache/lib/apalache.jar", path=download_location
-                    )
-                    logging.debug(
-                        "Downloaded version {} to location {}".format(
-                            expected_version, download_location
-                        )
-                    )
+                    jar_relative_path = "apalache/lib/apalache.jar"
+                    zip_file.extract(member=jar_relative_path, path=download_location)
+                    extracted_jar_path = f"{download_location}/{jar_relative_path}"
+                    final_jar_path = f"{os.path.dirname(extracted_jar_path)}/{const_values.DEFAULT_APALACHE_JAR_FILENAME}"
+                    os.rename(extracted_jar_path, final_jar_path)
+                    logging.debug(f"Downloaded version {expected_version} to {final_jar_path}")
 
         return download_needed
 

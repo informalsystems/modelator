@@ -244,8 +244,9 @@ log0.smt
 profile-rules.txt
 x/
 MC.out
-counterexample.json
-counterexample.tla
+violation.json
+violation.tla
+_apalache-out/
 
 # Modelator default directory
 .modelator/
