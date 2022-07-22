@@ -24,7 +24,8 @@ app = typer.Typer(
     name="modelator", 
     help="Modelator: model-based testing framework for TLA+", 
     no_args_is_help=True, 
-    add_completion=False
+    add_completion=False,
+    rich_markup_mode="rich",
 )
 
 
