@@ -1,17 +1,13 @@
-import subprocess
 from copy import copy
 import logging
 import threading
 
-
 from typing import Any, Dict, List, Optional, Union
 from typing_extensions import Self
-
 
 from modelator.ModelMonitor import ModelMonitor
 from modelator.ModelResult import ModelResult
 from modelator.utils.model_exceptions import (
-    ModelError,
     ModelParsingError,
     ModelTypecheckingError,
     ModelCheckingError,
@@ -87,13 +83,13 @@ class Model:
             do_parse=not parsing_not_needed,
         )
 
-    def instantiate(self, model_constants: Dict):
-        self.model_constants = model_constants
+    def instantiate(self, constants: Dict):
+        self.constants = constants
 
     def _modelcheck_predicates(
         self,
         predicates,
-        modelcheck_constants,
+        constants,
         checker,
         tla_file_name,
         checking_files_content,
@@ -103,16 +99,13 @@ class Model:
             init=self.init_predicate,
             next=self.next_predicate,
             invariants=predicates,
-            constants_names=modelcheck_constants,
+            constants_names=constants,
         )
 
         args_config_file_name = "generated_config.cfg"
 
         args = {const_values.CONFIG: args_config_file_name}
         checking_files_content.update({args_config_file_name: args_config_file})
-
-        if checker_params is None:
-            checker_params = {}
 
         if checker == const_values.TLC:
             check_func = check_tlc
@@ -135,7 +128,7 @@ class Model:
     def _check_sample_thread_worker(
         self,
         predicate,
-        modelcheck_constants,
+        constants,
         checker,
         tla_file_name,
         checking_files_content,
@@ -150,7 +143,7 @@ class Model:
         self.logger.debug("starting with {}".format(predicate))
         res, msg, cex = self._modelcheck_predicates(
             predicates=[predicate],
-            modelcheck_constants=modelcheck_constants,
+            constants=constants,
             checker=checker,
             tla_file_name=tla_file_name,
             checking_files_content=checking_files_content,
@@ -178,10 +171,10 @@ class Model:
 
     def check(
         self,
-        invariants: List[str] = None,
-        model_constants: Dict = None,
+        invariants: List[str] = [],
+        constants: Dict[str, Any] = {},
         checker: str = const_values.APALACHE,
-        checker_params: Dict = None,
+        checker_params: Dict[str, str] = {},
     ) -> ModelResult:
 
         if checker is not const_values.APALACHE:
@@ -191,20 +184,17 @@ class Model:
 
         if self.parsable is False:
             raise self.last_parsing_error
-        checking_constants = self.model_constants
-        if model_constants is not None:
-            checking_constants.update(model_constants)
-
-        if invariants is not None:
-            invariant_predicates = invariants
-        else:
-            invariant_predicates = [
+        
+        if invariants == []:
+            invariants = [
                 str(op)
                 for op in self.operators
                 if tla_helpers._default_invariant_criteria(str(op))
             ]
+        
+        constants = self.constants | constants
 
-        mod_res = ModelResult(model=self, all_operators=invariant_predicates)
+        mod_res = ModelResult(model=self, all_operators=invariants)
 
         for monitor in self.monitors:
             #  TODO: make monitors parallel
@@ -212,12 +202,12 @@ class Model:
 
         threads = []
 
-        for inv_predicate in invariant_predicates:
+        for invariant in invariants:
             thread = threading.Thread(
                 target=self._check_sample_thread_worker,
                 kwargs={
-                    "predicate": inv_predicate,
-                    "modelcheck_constants": checking_constants,
+                    "predicate": invariant,
+                    "constants": constants,
                     "checker": checker,
                     "tla_file_name": self.tla_file_path,
                     "checking_files_content": copy(self.files_contents),
@@ -230,7 +220,7 @@ class Model:
                 },
             )
             self.logger.debug(
-                "starting thread {} for invariant {}".format(thread, inv_predicate)
+                "starting thread {} for invariant {}".format(thread, invariant)
             )
             thread.start()
             threads.append(thread)
@@ -247,36 +237,32 @@ class Model:
 
     def sample(
         self,
-        examples: List[str] = None,
-        model_constants: Dict = None,
+        examples: List[str] = [],
+        constants: Dict[str, Any] = {},
         checker: str = const_values.APALACHE,
-        checker_params: Dict = None,
+        checker_params: Dict[str, str] = {},
     ) -> ModelResult:
 
         if self.parsable is False:
             raise self.last_parsing_error
 
-        sampling_constants = self.model_constants
-        if model_constants is not None:
-            sampling_constants.update(model_constants)
-
-        if examples is not None:
-            example_predicates = examples
-        else:
+        if examples == []:
             # take all operators that are prefixed/suffixed with Ex
-            example_predicates = [
+            examples = [
                 str(op)
                 for op in self.operators
                 if tla_helpers._default_example_criteria(str(op))
             ]
 
-        mod_res = ModelResult(model=self, all_operators=example_predicates)
+        constants = self.constants | constants
+
+        mod_res = ModelResult(model=self, all_operators=examples)
 
         for monitor in self.monitors:
             monitor.on_sample_start(res=mod_res)
 
         threads = []
-        for example_predicate in example_predicates:
+        for example_predicate in examples:
             (
                 negated_name,
                 negated_content,
@@ -292,7 +278,7 @@ class Model:
                 kwargs={
                     "original_predicate_name": example_predicate,
                     "predicate": negated_predicates[0],
-                    "modelcheck_constants": sampling_constants,
+                    "constants": constants,
                     "checker": checker,
                     "tla_file_name": negated_name,
                     "checking_files_content": sampling_files_content,
@@ -334,8 +320,8 @@ class Model:
         tla_file_path: str,
         init_predicate: str,
         next_predicate: str,
-        files_contents: Dict[str, str] = None,
-        constants: Dict[str, Any] = None,
+        files_contents: Dict[str, str] = {},
+        constants: Dict[str, Any] = {},
         loglevel: str = "info",
     ) -> None:
 
@@ -351,10 +337,10 @@ class Model:
         self.next_predicate = next_predicate
 
         # a dictionary file_name --> file_content, for relevant filenames
-        self.files_contents = files_contents if files_contents is not None else {}
+        self.files_contents = files_contents
 
         # a dcitionary of constant values relevant to the model
-        self.model_constants = constants if constants is not None else {}
+        self.constants = constants if constants is not None else {}
 
         # a list of results for all checks performed on this model
         self.all_checks = []
@@ -372,3 +358,13 @@ class Model:
 
     def remove_monitor(self, monitor: ModelMonitor):
         self.monitors.remove(monitor)
+
+    def info(self) -> str:
+        return (
+            f"· model_path: {self.tla_file_path}\n"
+            f"· init: {self.init_predicate}\n"
+            f"· next: {self.next_predicate}\n"
+            f"· constants: {self.constants}\n"
+            f"· files: {list(self.files_contents.keys())}\n"
+            f"· monitors: {self.monitors}\n"
+        )

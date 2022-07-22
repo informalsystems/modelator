@@ -251,6 +251,9 @@ _apalache-out/
 # Modelator default directory
 .modelator/
 
+# Modelator CLI
+.model.pickle
+
 # cargo tarpaulin files
 tarpaulin/
 tarpaulin-report.html
