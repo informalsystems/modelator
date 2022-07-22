@@ -359,12 +359,12 @@ class Model:
     def remove_monitor(self, monitor: ModelMonitor):
         self.monitors.remove(monitor)
 
-    def info(self) -> str:
-        return (
-            f"· model_path: {self.tla_file_path}\n"
-            f"· init: {self.init_predicate}\n"
-            f"· next: {self.next_predicate}\n"
-            f"· constants: {self.constants}\n"
-            f"· files: {list(self.files_contents.keys())}\n"
-            f"· monitors: {self.monitors}\n"
-        )
+    def info(self) -> Dict[str, str]:
+        return {
+            'model_path': self.tla_file_path,
+            'init': self.init_predicate,
+            'next': self.next_predicate,
+            'constants': self.constants,
+            'files': list(self.files_contents.keys()),
+            'monitors': self.monitors,
+        }

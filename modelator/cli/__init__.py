@@ -203,7 +203,8 @@ def info():
         print("Model file does not exist")
         return
 
-    print(model.info())
+    for k, v in model.info().items():
+        print(f"# {k}: {v}")
 
 
 @app.command()
