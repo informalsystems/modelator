@@ -50,7 +50,7 @@ class Model:
         for monitor in self.monitors:
             monitor.on_parse_start(res=ModelResult(model=self))
         try:
-            parse(tla_file_name=self.tla_file_path, files=self.files_contents)
+            parse(self.tla_file_path, self.files_contents)
             self.parsable = True
         except ModelParsingError as p_error:
             self.parsable = False

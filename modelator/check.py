@@ -14,13 +14,11 @@ from .utils.ErrorMessage import ErrorMessage
 from . import const_values
 from .itf import ITF
 
-import re
-
 check_logger = modelator_helpers.create_logger(logger_name=__file__, loglevel="error")
 
 
 def check_tlc(
-    tla_file_name: str,
+    tla_file_path: str,
     files: Dict[str, str],
     args: Dict = None,
     do_parse: bool = True,
@@ -28,7 +26,7 @@ def check_tlc(
 ) -> Tuple[bool, ErrorMessage, List]:
 
     if do_parse is True:
-        parse(tla_file_name=tla_file_name, files=files)
+        parse(tla_file_path, files)
 
     if config_file_name is not None:
         if args is None:
@@ -38,7 +36,7 @@ def check_tlc(
     json_command = modelator_helpers.wrap_command(
         cmd=const_values.CHECK_CMD,
         checker=const_values.TLC,
-        tla_file_name=tla_file_name,
+        tla_file_name=tla_file_path,
         files=files,
         args=args,
     )
@@ -66,7 +64,7 @@ def check_tlc(
 
 
 def check_apalache(
-    tla_file_name: str,
+    tla_file_path: str,
     files: Dict[str, str],
     args: Dict = None,
     do_parse: bool = True,
@@ -75,10 +73,10 @@ def check_apalache(
 ) -> Tuple[bool, ErrorMessage, List]:
 
     if do_parse is True:
-        parse(tla_file_name=tla_file_name, files=files)
+        parse(tla_file_path, files)
 
     if do_typecheck is True:
-        typecheck(tla_file_name=tla_file_name, files=files)
+        typecheck(tla_file_path, files)
 
     if config_file_name is not None:
         if args is None:
@@ -88,7 +86,7 @@ def check_apalache(
 
     json_command = modelator_helpers.wrap_command(
         cmd=const_values.CHECK_CMD,
-        tla_file_name=tla_file_name,
+        tla_file_name=tla_file_path,
         files=files,
         args=args,
     )
@@ -141,14 +139,14 @@ if __name__ == "__main__":
 
     if args.checker == const_values.APALACHE:
         ret, msg, cex = check_apalache(
-            tla_file_name=model_name,
+            tla_file_path=model_name,
             files=files,
             args=apalache_args,
             config_file_name=args.config,
         )
     else:
         ret, msg, cex = check_tlc(
-            tla_file_name=model_name,
+            tla_file_path=model_name,
             files=files,
             config_file_name=args.config,
         )
