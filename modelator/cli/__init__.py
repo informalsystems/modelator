@@ -1,11 +1,10 @@
-from pathlib import Path
-import toml
 import typer
 from typing import List, Optional
 from timeit import default_timer as timer
 
 from Model import Model
 from modelator import ModelResult
+from modelator.cli.model_config_file import load_config_file
 from modelator.cli.model_file import ModelFile
 from modelator.utils import tla_helpers
 from modelator.utils.model_exceptions import ModelError
@@ -122,50 +121,6 @@ def typecheck():
         print(e)
 
 
-def _load_config_file(config_path) -> None:
-    '''
-    Load configuration from `config_path`, or return a configuration with default values.
-    '''
-    if config_path:
-        if not Path(config_path).is_file():
-            raise FileNotFoundError("Config file not found.")
-
-        try:
-            config = toml.load(config_path)
-        except Exception as e:
-            print(f'Error while parsing toml file: {e}')
-            raise e
-
-    else:
-        config = {}
-
-    # set default values for missing keys
-    config = {
-        'Model': {}, 'Constants': {}, 'Config': {}
-        } | config
-    config['Model'] = {
-        'model_path': None, 
-        'init': 'Init', 'next': 'Next', 
-        'invariants': [], 'desired_states': [], 
-        'config_file_path': None
-        } | config['Model']
-    config['Config'] = {
-        'check_deadlock': False, 
-        'length': 100
-        } | config['Config']
-    
-    config = config | config['Model']
-    del config['Model']
-
-    config['constants'] = config['Constants']
-    del config['Constants']
-
-    config = config | config['Config']
-    del config['Config']
-
-    return config
-
-
 @app.command()
 def check(
     config_path: Optional[str] = typer.Option(None, help="Path to TOML file with the model and model checker configuration."), 
@@ -184,7 +139,7 @@ def check(
     # Dict is not supported by typer
     constants = dict([c.split("=") for c in constants])
 
-    config = _load_config_file(config_path)
+    config = load_config_file(config_path)
     model_path = config['model_path'] if model_path is None else model_path
     constants = config['constants'] if constants is None else constants
     mc_invariants = config['invariants'] if mc_invariants is None else mc_invariants
@@ -219,7 +174,7 @@ def sample(
     # Dict is not supported by typer
     constants = dict([c.split("=") for c in constants])
 
-    config = _load_config_file(config_path)
+    config = load_config_file(config_path)
     model_path = config['model_path'] if model_path is None else model_path
     constants = config['constants'] if constants is None else constants
     mc_invariants = config['desired_states'] if mc_invariants is None else mc_invariants
