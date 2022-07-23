@@ -2,7 +2,7 @@ import typer
 from typing import List, Optional
 from timeit import default_timer as timer
 
-from Model import Model
+from modelator.Model import Model
 from modelator import ModelResult
 from modelator.cli.model_config_file import load_config_file
 from modelator.cli.model_file import ModelFile
