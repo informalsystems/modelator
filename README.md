@@ -1,6 +1,6 @@
 # Modelator
 
-| ⚠️ We are working on a new and entirely reworked Modelator architecture for improved performance and interoperability. Therefore, the current version is not maintained. The reworked version will be released in Q2 2022. ⚠️ |
+| ⚠️ We are working on a new and entirely reworked Modelator architecture for improved performance and interoperability. Therefore, the current version is not maintained. The reworked version will be released in Q3 2022. ⚠️ |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
@@ -29,9 +29,9 @@ If you are using a Poetry project, execute the following to add `modelator` as a
 
 ```sh
 # over https
-poetry add git+ssh://git@github.com/informalsystems/modelator#main # `poetry` assumes `master` as default branch
+poetry add git+ssh://git@github.com/informalsystems/modelator#dev # `poetry` assumes `master` as default branch
 # or, over ssh
-poetry add git+https://github.com/informalsystems/modelator#main
+poetry add git+https://github.com/informalsystems/modelator#dev
 ```
 
 ## Contributing
@@ -47,7 +47,7 @@ poetry shell
 
 ## License
 
-Copyright © 2021 Informal Systems Inc. and modelator authors.
+Copyright © 2021-2022 Informal Systems Inc. and modelator authors.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use the files in this repository except in compliance with the License. You may obtain a copy of the License at
 
