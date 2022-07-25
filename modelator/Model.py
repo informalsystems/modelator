@@ -17,7 +17,7 @@ from modelator.parse import parse
 from modelator.typecheck import typecheck
 from modelator.utils import modelator_helpers
 from modelator import const_values
-from modelator.check import check_apalache, check_tlc
+from modelator.checker.check import check_apalache, check_tlc
 
 
 class Model:
@@ -114,7 +114,7 @@ class Model:
             args.update(tla_helpers._set_additional_apalache_args())
 
         try:
-            res, msg, cex = check_func(
+            result = check_func(
                 tla_file_name=tla_file_name,
                 files=checking_files_content,
                 args=args,
@@ -123,7 +123,7 @@ class Model:
             self.logger.error("Problem running {}: {}".format(checker, e))
             raise ModelCheckingError(e)
 
-        return res, msg, cex
+        return result
 
     def _check_sample_thread_worker(
         self,
@@ -141,7 +141,7 @@ class Model:
         if original_predicate_name is None:
             original_predicate_name = predicate
         self.logger.debug("starting with {}".format(predicate))
-        res, msg, cex = self._modelcheck_predicates(
+        check_result = self._modelcheck_predicates(
             predicates=[predicate],
             constants=constants,
             checker=checker,
@@ -155,7 +155,7 @@ class Model:
         mod_res._finished_operators.append(original_predicate_name)
         mod_res._in_progress_operators.remove(original_predicate_name)
 
-        if res is result_considered_success:
+        if check_result.is_ok is result_considered_success:
             mod_res._successful.append(original_predicate_name)
         else:
             mod_res._unsuccessful.append(original_predicate_name)
@@ -163,8 +163,8 @@ class Model:
         mod_res.lock.release()
 
         # in the current implementation, this will only return one trace (as a counterexample)
-        if len(cex) > 0:
-            mod_res._traces[original_predicate_name] = cex
+        if len(check_result.traces) > 0:
+            mod_res._traces[original_predicate_name] = check_result.traces
 
         for monitor_func in monitor_update_functions:
             monitor_func(res=mod_res)
