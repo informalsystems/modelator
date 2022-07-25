@@ -162,12 +162,12 @@ def sample(
     config_path: Optional[str] = typer.Option(None, help="Path to TOML file with the model and model checker configuration."), 
     model_path: Optional[str] = typer.Option(None, help="Path to the TLA+ model file (overwrites config file)."),
     constants: Optional[List[str]] = typer.Option(None, help="Constant definitions in the format 'key=value' (overwrites config file)."), 
-    desired_states: Optional[List[str]] = typer.Option(None, help="Model operators describing desired states in the model execution (overwrites config file)."), 
+    examples: Optional[List[str]] = typer.Option(None, help="Model operators describing desired properties in the final state of the execution (overwrites config file)."), 
 ):
     '''
-    Generate execution traces that reach the `desired_states`.
+    Generate execution traces that reach the state described by the `examples` properties.
     '''
-    mc_invariants = desired_states
+    mc_invariants = examples
     if config_path is None and mc_invariants == []:
         print("Error: either --config-path or --desired-states must be specified.")
         raise typer.Exit(code=1)
