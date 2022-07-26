@@ -18,8 +18,6 @@ def write_apalache_trace_files_to(apalache_result: Dict, traces_dir: str) -> Lis
     Path(traces_dir).mkdir(parents=True, exist_ok=True)
 
     itfs_filenames = [f for f in apalache_result['files'].keys() if f.endswith('.itf.json')]
-    # itfs_filenames = [f for f in apalache_result['files'].keys() 
-    #     if f.startswith(APALACHE_DEFAULTS["result_violation_tla_file"]) and f.endswith('.itf.json')]
     itfs_filenames.sort()
 
     trace_paths = []
