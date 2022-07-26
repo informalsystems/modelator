@@ -93,7 +93,7 @@ def check_apalache(
     result = apalache_pure(json=json_command)
 
     if traces_dir:
-        trace_paths = apalache_helpers.write_apalache_trace_files_to(result, traces_dir)
+        trace_paths = apalache_helpers.write_trace_files_to(result, traces_dir)
         for trace_path in trace_paths:
             check_logger.info(f"Wrote trace file to {trace_path}")
     else:

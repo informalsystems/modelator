@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 import re
+import time
 from typing import Dict, List
 from modelator.const_values import APALACHE_DEFAULTS
 
@@ -13,7 +14,7 @@ def extract_tla_module_name(tla_file_content: str):
     return match.group("moduleName")
 
 
-def write_apalache_trace_files_to(apalache_result: Dict, traces_dir: str) -> List[str]:
+def write_trace_files_to(apalache_result: Dict, traces_dir: str) -> List[str]:
     # create directory if it does not exist
     Path(traces_dir).mkdir(parents=True, exist_ok=True)
 
@@ -22,7 +23,11 @@ def write_apalache_trace_files_to(apalache_result: Dict, traces_dir: str) -> Lis
 
     trace_paths = []
     for filename in itfs_filenames:
-        path = os.path.join(traces_dir, filename)
+        # Build full file path, with a timestamp in its name
+        name, _, extension = filename.partition('.')
+        timestamp = time.strftime('%Y%m%d-%H%M%S')
+        new_filename = f"{name}_{timestamp}.{extension}"
+        path = os.path.join(traces_dir, new_filename)
 
         if Path(path).is_file():
             print(f"WARNING: existing file will be overwritten: {path}")
