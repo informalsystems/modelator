@@ -94,6 +94,7 @@ class Model:
         tla_file_name,
         checking_files_content,
         checker_params,
+        traces_dir,
     ):
         args_config_file = tla_helpers._basic_args_to_config_string(
             init=self.init_predicate,
@@ -118,6 +119,7 @@ class Model:
                 tla_file_name=tla_file_name,
                 files=checking_files_content,
                 args=args,
+                traces_dir=traces_dir,
             )
         except Exception as e:
             self.logger.error("Problem running {}: {}".format(checker, e))
@@ -137,6 +139,7 @@ class Model:
         monitor_update_functions,
         result_considered_success: bool,
         original_predicate_name: str = None,
+        traces_dir: Optional[str] = None,
     ):
         if original_predicate_name is None:
             original_predicate_name = predicate
@@ -148,6 +151,7 @@ class Model:
             tla_file_name=tla_file_name,
             checking_files_content=checking_files_content,
             checker_params=checker_params,
+            traces_dir=traces_dir,
         )
         self.logger.debug("finished with {}".format(predicate))
 
@@ -155,7 +159,7 @@ class Model:
         mod_res._finished_operators.append(original_predicate_name)
         mod_res._in_progress_operators.remove(original_predicate_name)
 
-        if check_result.is_ok is result_considered_success:
+        if check_result.is_ok == result_considered_success:
             mod_res._successful.append(original_predicate_name)
         else:
             mod_res._unsuccessful.append(original_predicate_name)
@@ -163,8 +167,9 @@ class Model:
         mod_res.lock.release()
 
         # in the current implementation, this will only return one trace (as a counterexample)
-        if len(check_result.traces) > 0:
+        if check_result.traces:
             mod_res._traces[original_predicate_name] = check_result.traces
+            mod_res.add_trace_paths(original_predicate_name, check_result.trace_paths)
 
         for monitor_func in monitor_update_functions:
             monitor_func(res=mod_res)
@@ -175,6 +180,7 @@ class Model:
         constants: Dict[str, Any] = {},
         checker: str = const_values.APALACHE,
         checker_params: Dict[str, str] = {},
+        traces_dir: Optional[str] = None,
     ) -> ModelResult:
 
         if checker is not const_values.APALACHE:
@@ -217,6 +223,7 @@ class Model:
                         m.on_check_update for m in self.monitors
                     ],
                     "result_considered_success": True,
+                    "traces_dir": traces_dir,
                 },
             )
             self.logger.debug(
@@ -241,6 +248,7 @@ class Model:
         constants: Dict[str, Any] = {},
         checker: str = const_values.APALACHE,
         checker_params: Dict[str, str] = {},
+        traces_dir: Optional[str] = None,
     ) -> ModelResult:
 
         if self.parsable is False:
@@ -288,6 +296,7 @@ class Model:
                         m.on_sample_update for m in self.monitors
                     ],
                     "result_considered_success": False,
+                    "traces_dir": traces_dir,
                 },
             )
             thread.start()

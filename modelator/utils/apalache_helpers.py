@@ -1,6 +1,8 @@
 import json
+import os
+from pathlib import Path
 import re
-from typing import Dict
+from typing import Dict, List
 from modelator.const_values import APALACHE_DEFAULTS
 
 
@@ -9,6 +11,29 @@ def extract_tla_module_name(tla_file_content: str):
     if match is None:
         return None
     return match.group("moduleName")
+
+
+def write_apalache_trace_files_to(apalache_result: Dict, traces_dir: str) -> List[str]:
+    # create directory if it does not exist
+    Path(traces_dir).mkdir(parents=True, exist_ok=True)
+
+    itfs_filenames = [f for f in apalache_result['files'].keys() if f.endswith('.itf.json')]
+    # itfs_filenames = [f for f in apalache_result['files'].keys() 
+    #     if f.startswith(APALACHE_DEFAULTS["result_violation_tla_file"]) and f.endswith('.itf.json')]
+    itfs_filenames.sort()
+
+    trace_paths = []
+    for filename in itfs_filenames:
+        path = os.path.join(traces_dir, filename)
+
+        if Path(path).is_file():
+            print(f"WARNING: existing file will be overwritten: {path}")
+
+        with open(path, 'w+') as f:
+            f.write(apalache_result['files'][filename])
+            trace_paths.append(path)
+
+    return trace_paths
 
 
 def extract_apalache_counterexample(apalache_result: Dict):

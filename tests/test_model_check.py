@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Dict
 from modelator.checker.check import check_apalache, check_tlc
 from modelator.utils import tla_helpers
@@ -12,18 +13,31 @@ def _matching_check_value(
     args: Dict = {},
     check_function=check_apalache,
 ):
-    files = tla_helpers.get_auxiliary_tla_files(os.path.join(test_dir, tla_file_name))
+    traces_dir = f"{test_dir}/traces"
 
+    tla_file_path = os.path.join(test_dir, tla_file_name)
+    files = tla_helpers.get_auxiliary_tla_files(tla_file_path)
     check_result = check_function(
         files=files,
         tla_file_name=tla_file_name,
         config_file_name=config_file_name,
         args=args,
+        traces_dir=traces_dir,
     )
-    print(check_result)
 
     assert check_result.is_ok == expected_result
     assert (check_result.error_msg is None) == check_result.is_ok
+    
+    assert len(check_result.trace_paths) == 2
+    trace_filenames = [os.path.basename(p) for p in check_result.trace_paths]
+    if check_result.is_ok:
+        assert all([f.startswith('example') for f in trace_filenames])
+    else:
+        assert all([f.startswith('violation') for f in trace_filenames])
+
+    # clean traces
+    [f.unlink() for f in Path(traces_dir).glob("*")] 
+    Path(traces_dir).rmdir()
 
 
 def test_check_apalache_invariant_holds():

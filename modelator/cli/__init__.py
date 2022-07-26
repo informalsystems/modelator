@@ -72,11 +72,17 @@ def _print_results(result: ModelResult):
         trace = result.traces(op)
         if trace:
             print(f"    Trace: {trace}")
+        trace_paths = result.trace_paths(op)
+        if trace_paths:
+            print(f"    Trace files: {trace_paths}")
     for op in result.unsuccessful():
         print(f"❌ {op}")
         trace = result.traces(op)
         if trace:
             print(f"    Trace: {trace}")
+        trace_paths = result.trace_paths(op)
+        if trace_paths:
+            print(f"    Trace files: {trace_paths}")
 
 
 @app.command()
@@ -146,13 +152,14 @@ def check(
     mc_invariants = config['invariants'] if mc_invariants is None else mc_invariants
     init = config['init']
     next = config['next']
+    traces_dir = config['traces_dir']
 
     model = _load_model(model_path, init, next, constants)
     if model is None:
         return    
     
     start_time = timer()
-    result = model.check(mc_invariants, constants)
+    result = model.check(mc_invariants, constants, traces_dir=traces_dir)
     _print_results(result)
     print(f"Total time: {(timer() - start_time):.2f} seconds")
 
@@ -181,13 +188,14 @@ def sample(
     mc_invariants = config['desired_states'] if mc_invariants is None else mc_invariants
     init = config['init']
     next = config['next']
+    traces_dir = config['traces_dir']
 
     model = _load_model(model_path, init, next, constants)
     if model is None:
         return    
     
     start_time = timer()
-    result = model.sample(mc_invariants, constants)
+    result = model.sample(mc_invariants, constants, traces_dir=traces_dir)
     _print_results(result)
     print(f"Total time: {(timer() - start_time):.2f} seconds")
 

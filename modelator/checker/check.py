@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 
 from modelator_py.apalache.pure import apalache_pure
@@ -21,17 +22,16 @@ check_logger = modelator_helpers.create_logger(logger_name=__file__, loglevel="e
 def check_tlc(
     tla_file_name: str,
     files: Dict[str, str],
-    args: Dict = None,
+    args: Dict = {},
     do_parse: bool = True,
     config_file_name: str = None,
+    traces_dir: Optional[str] = None,
 ) -> CheckResult:
 
     if do_parse is True:
         parse(tla_file_name=tla_file_name, files=files)
 
     if config_file_name is not None:
-        if args is None:
-            args = {}
         args["config"] = config_file_name
 
     json_command = modelator_helpers.wrap_command(
@@ -71,13 +71,14 @@ def check_apalache(
     do_parse: bool = True,
     do_typecheck: bool = True,
     config_file_name: Optional[str] = None,
+    traces_dir: Optional[str] = None,
 ) -> CheckResult:
 
     if do_parse is True:
-        parse(tla_file_name=tla_file_name, files=files)
+        parse(tla_file_name, files)
 
     if do_typecheck is True:
-        typecheck(tla_file_name=tla_file_name, files=files)
+        typecheck(tla_file_name, files)
 
     if config_file_name is not None:
         args["config"] = config_file_name
@@ -88,10 +89,18 @@ def check_apalache(
         files=files,
         args=args,
     )
+    check_logger.debug(f"command: {json.dumps(json_command, indent=4, sort_keys=True)}")
     result = apalache_pure(json=json_command)
 
+    if traces_dir:
+        trace_paths = apalache_helpers.write_apalache_trace_files_to(result, traces_dir)
+        for trace_path in trace_paths:
+            check_logger.info(f"Wrote trace file to {trace_path}")
+    else:
+        trace_paths = []
+
     if result["return_code"] == 0:
-        return CheckResult(True)
+        return CheckResult(True, trace_paths=trace_paths)
     
     try:
         inv_violated, counterexample = apalache_helpers.extract_apalache_counterexample(result)
@@ -105,7 +114,7 @@ def check_apalache(
         error_category=const_values.CHECK,
         full_error_msg=result["stdout"],
     )
-    return CheckResult(False, error_msg, trace)
+    return CheckResult(False, error_msg, trace, trace_paths)
 
 
 if __name__ == "__main__":
@@ -132,14 +141,14 @@ if __name__ == "__main__":
     model_name = os.path.basename(args.model_file)
 
     if args.checker == const_values.APALACHE:
-        ret, msg, cex = check_apalache(
+        check_result = check_apalache(
             tla_file_name=model_name,
             files=files,
             args=apalache_args,
             config_file_name=args.config,
         )
     else:
-        ret, msg, cex = check_tlc(
+        check_result = check_tlc(
             tla_file_name=model_name,
             files=files,
             config_file_name=args.config,
