@@ -9,3 +9,4 @@ desired_states = ["ExTest", "ExFail"]
 [Config]
 check_deadlock = "FALSE"
 length = 100 # called depth in TLC
+traces_dir = "modelator/samples/traces/HelloFull"

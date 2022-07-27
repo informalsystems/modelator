@@ -32,7 +32,8 @@ def load_config_file(config_path):
         } | config['Model']
     config['Config'] = {
         'check_deadlock': False, 
-        'length': 100
+        'length': 100,
+        'traces_dir': None,
         } | config['Config']
     
     config = config | config['Model']

@@ -72,11 +72,17 @@ def _print_results(result: ModelResult):
         trace = result.traces(op)
         if trace:
             print(f"    Trace: {trace}")
+        trace_paths = result.trace_paths(op)
+        if trace_paths:
+            print(f"    Trace files: {trace_paths}")
     for op in result.unsuccessful():
         print(f"❌ {op}")
         trace = result.traces(op)
         if trace:
             print(f"    Trace: {trace}")
+        trace_paths = result.trace_paths(op)
+        if trace_paths:
+            print(f"    Trace files: {trace_paths}")
 
 
 @app.command()
@@ -128,6 +134,7 @@ def check(
     model_path: Optional[str] = typer.Option(None, help="Path to the TLA+ model file (overwrites config file)."),
     constants: Optional[List[str]] = typer.Option(None, help="Constant definitions in the format 'name=value' (overwrites config file)."), 
     invariants: Optional[List[str]] = typer.Option(None, help="List of invariants to check (overwrites config file)."),  
+    traces_dir: Optional[str] = typer.Option(None, help="Path to store generated trace files (overwrites config file)."),
 ):
     '''
     Check that the invariants hold in the model, or generate a trace for a counterexample.
@@ -146,13 +153,14 @@ def check(
     mc_invariants = config['invariants'] if mc_invariants is None else mc_invariants
     init = config['init']
     next = config['next']
+    traces_dir = config['traces_dir'] if traces_dir is None else traces_dir
 
     model = _load_model(model_path, init, next, constants)
     if model is None:
         return    
     
     start_time = timer()
-    result = model.check(mc_invariants, constants)
+    result = model.check(mc_invariants, constants, traces_dir=traces_dir)
     _print_results(result)
     print(f"Total time: {(timer() - start_time):.2f} seconds")
 
@@ -163,6 +171,7 @@ def sample(
     model_path: Optional[str] = typer.Option(None, help="Path to the TLA+ model file (overwrites config file)."),
     constants: Optional[List[str]] = typer.Option(None, help="Constant definitions in the format 'key=value' (overwrites config file)."), 
     examples: Optional[List[str]] = typer.Option(None, help="Model operators describing desired properties in the final state of the execution (overwrites config file)."), 
+    traces_dir: Optional[str] = typer.Option(None, help="Path to store generated trace files (overwrites config file)."),
 ):
     '''
     Generate execution traces that reach the state described by the `examples` properties.
@@ -181,13 +190,14 @@ def sample(
     mc_invariants = config['desired_states'] if mc_invariants is None else mc_invariants
     init = config['init']
     next = config['next']
+    traces_dir = config['traces_dir'] if traces_dir is None else traces_dir
 
     model = _load_model(model_path, init, next, constants)
     if model is None:
         return    
     
     start_time = timer()
-    result = model.sample(mc_invariants, constants)
+    result = model.sample(mc_invariants, constants, traces_dir=traces_dir)
     _print_results(result)
     print(f"Total time: {(timer() - start_time):.2f} seconds")
 

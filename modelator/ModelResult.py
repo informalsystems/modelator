@@ -1,5 +1,6 @@
 from datetime import datetime
 from threading import Lock
+from typing import List
 
 
 class ModelResult:
@@ -22,6 +23,7 @@ class ModelResult:
         self._successful = []
         self._unsuccessful = []
         self._traces = {}
+        self._trace_paths = {}
         self.lock = Lock()
         self.parsing_error = parsing_error
         self.typing_error = typing_error
@@ -64,6 +66,15 @@ class ModelResult:
     def all_traces(self):
         return self._traces
 
+    def trace_paths(self, operator) -> List[str]:
+        """
+        The list of trace files associated with an operator as a result of running the checker.
+        """
+        return self._trace_paths[operator] if operator in self._trace_paths else []
+
+    def add_trace_paths(self, operator: str, trace_paths: List[str]):
+        self._trace_paths[operator] = trace_paths
+    
     def progress(self, operator):
         """
         returns a progress measure between 0 and 1 (inclusive)
