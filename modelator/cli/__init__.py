@@ -4,10 +4,10 @@ from typing import List, Optional
 from timeit import default_timer as timer
 
 from modelator.Model import Model
-from modelator import ModelResult
+from modelator import ModelResult, const_values
 from modelator.cli.model_config_file import load_config_file
 from modelator.cli.model_file import ModelFile
-from modelator.utils import tla_helpers
+from modelator.utils import tla_helpers, apalache_jar
 from modelator.utils.model_exceptions import ModelError
 
 LOG_LEVEL = None
@@ -245,17 +245,26 @@ def reset():
         print(f'Model file removed')
 
 
-# @app.command()
-# def check_apalache_jar(version = const_values.DEFAULT_APALACHE_VERSION):
-#     '''
-#     Check whether Apalache's uber jar file is installed, or download it otherwise.
-#     '''
-#     if apalache_jar.apalache_jar_exists(expected_version=version):
-#         print(f'Apalache jar file exists at {const_values.DEFAULT_APALACHE_JAR}')
-#         version = apalache_jar.apalache_jar_version()
-#         print(f'Apalache jar version: {version}')
-#     else:
-#         print(f'Apalache jar file not found; will attempt to download it...')
-#         apalache_jar.apalache_jar_download(expected_version=version)
-#         print(f'Done')
-
+@app.command()
+def check_apalache_jar(
+    version: Optional[str] = typer.Argument(const_values.DEFAULT_APALACHE_VERSION, help=f"Apalache's version."),
+):
+    """
+    Check whether Apalache's uber jar file is installed, or download it otherwise.
+    """
+    jar_path = apalache_jar.apalache_jar_build_path(const_values.DEFAULT_CHECKERS_LOCATION, version)
+    if apalache_jar.apalache_jar_exists(jar_path, version):
+        print(f"Apalache jar file exists at {jar_path}")
+        existing_version = apalache_jar.apalache_jar_version(jar_path)
+        print(f"Apalache jar version: {existing_version}")
+    else:
+        print(f"Apalache jar file not found at {jar_path}")
+        print(f"Will attempt to download version {version}...")
+        try:
+            apalache_jar.apalache_jar_download(
+                download_location=const_values.DEFAULT_CHECKERS_LOCATION,
+                expected_version=version)
+            print("Done ✅")
+            print(f"Apalache jar file: {jar_path}")
+        except ValueError as e:
+            print(f"ERROR: {e}")
