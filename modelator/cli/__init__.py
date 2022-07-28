@@ -1,3 +1,4 @@
+from pathlib import Path
 import typer
 from typing import List, Optional
 from timeit import default_timer as timer
@@ -41,7 +42,7 @@ def _create_and_parse_model(model_path: str, init='Init', next='Next', constants
     try:
         model = Model(model_path, init, next, constants=constants)
     except ValueError:
-        print("❌ ERROR: file not found")
+        print("ERROR: file not found ❌")
         return
 
     model.files_contents = tla_helpers.get_auxiliary_tla_files(model_path)
@@ -86,24 +87,42 @@ def _print_results(result: ModelResult):
 
 
 @app.command()
-def load(model_path: Optional[str] = typer.Argument(None, help="Path to TLA+ model file (if empty, will reload current model).")):
+def load(
+    path: str = typer.Argument(..., help="Path to TLA+ model file or to TOML configuration file."),
+):
     '''
     Load a TLA+ model file and parses it.
-    If no model path is provided, reload the current model, if any.
     '''
+    if not Path(path).is_file():
+        print("ERROR: file does not exist")
+        return
+
     if ModelFile.exists():
         print('WARNING: a model already exists and it will be overwritten')
-
-    if model_path is None:
-        # reload current model
-        model = ModelFile.load(LOG_LEVEL)
-        if model is None:
-            print("Model file does not exist")
-            return
-        
-        model_path = model.tla_file_path
+    
+    if Path(path).suffix == '.toml':
+        config = load_config_file(path)
+        model_path = config['model_path']
 
     print(f"Loading {model_path}... ")
+    model = _create_and_parse_model(model_path)
+    ModelFile.save(model)
+    print('Loading OK ✅')
+
+
+@app.command()
+def reload():
+    '''
+    Reload current model, if any.
+    '''
+    model = ModelFile.load(LOG_LEVEL)
+    if model is None:
+        print("ERROR: model not loaded; run `modelator load` first")
+        return
+    
+    model_path = model.tla_file_path
+    
+    print(f"Reloading {model_path}... ")
     model = _create_and_parse_model(model_path)
     ModelFile.save(model)
     print('Loading OK ✅')
@@ -141,7 +160,7 @@ def check(
     '''
     mc_invariants = invariants
     if config_path is None and mc_invariants == []:
-        print("Error: either --config-path or --invariants must be specified.")
+        print("ERROR: either --config-path or --invariants must be specified.")
         raise typer.Exit(code=1)
 
     # Dict is not supported by typer
@@ -178,7 +197,7 @@ def sample(
     '''
     mc_invariants = examples
     if config_path is None and mc_invariants == []:
-        print("Error: either --config-path or --desired-states must be specified.")
+        print("ERROR: either --config-path or --desired-states must be specified.")
         raise typer.Exit(code=1)
 
     # Dict is not supported by typer
