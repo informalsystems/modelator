@@ -4,7 +4,7 @@ model_path = "modelator/samples/HelloFull.tla"
 init = "Init"
 # next = "Next"
 invariants = ["Inv", "AlwaysEvenInvariant"]
-desired_states = ["ExTest", "ExFail"]
+examples = ["ExTest", "ExFail"]
 
 [Config]
 check_deadlock = "FALSE"
