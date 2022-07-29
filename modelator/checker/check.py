@@ -7,12 +7,7 @@ from modelator_py.tlc.pure import tlc_pure
 from modelator_py.util.tlc import tlc_itf
 from modelator.checker.CheckResult import CheckResult
 
-from modelator.utils import (
-    apalache_helpers,
-    modelator_helpers,
-    tla_helpers,
-    tlc_helpers,
-)
+from modelator.utils import apalache_helpers, modelator_helpers, tla_helpers, tlc_helpers
 from ..parse import parse
 from ..typecheck import typecheck
 from typing import Dict, Optional
@@ -50,10 +45,12 @@ def check_tlc(
     result = tlc_pure(json=json_command)
     if result["return_code"] == 0:
         return CheckResult(True)
-
-    itf_trace_objects = tlc_itf(
-        json={"stdout": result["stdout"], "lists": True, "records": True}
-    )
+    
+    itf_trace_objects = tlc_itf(json={
+        "stdout": result["stdout"], 
+        "lists": True, 
+        "records": True
+        })
 
     counterexample = itf_trace_objects[0]["states"]
     inv_violated = tlc_helpers.invariant_from_stdout(result["stdout"])
@@ -104,15 +101,11 @@ def check_apalache(
 
     if result["return_code"] == 0:
         return CheckResult(True, trace_paths=trace_paths)
-
+    
     try:
-        inv_violated, counterexample = apalache_helpers.extract_apalache_counterexample(
-            result
-        )
+        inv_violated, counterexample = apalache_helpers.extract_apalache_counterexample(result)
     except:
-        check_logger.error(
-            f"Could not extract counterexample from Apalache output: {result['stdout']}"
-        )
+        check_logger.error(f"Could not extract counterexample from Apalache output: {result['stdout']}")
         raise
 
     trace = [ITF(state) for state in counterexample]

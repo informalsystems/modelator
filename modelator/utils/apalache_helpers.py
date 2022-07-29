@@ -18,24 +18,22 @@ def write_trace_files_to(apalache_result: Dict, traces_dir: str) -> List[str]:
     # create directory if it does not exist
     Path(traces_dir).mkdir(parents=True, exist_ok=True)
 
-    itfs_filenames = [
-        f for f in apalache_result["files"].keys() if f.endswith(".itf.json")
-    ]
+    itfs_filenames = [f for f in apalache_result['files'].keys() if f.endswith('.itf.json')]
     itfs_filenames.sort()
 
     trace_paths = []
     for filename in itfs_filenames:
         # Build full file path, with a timestamp in its name
-        name, _, extension = filename.partition(".")
-        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        name, _, extension = filename.partition('.')
+        timestamp = time.strftime('%Y%m%d-%H%M%S')
         new_filename = f"{name}_{timestamp}.{extension}"
         path = os.path.join(traces_dir, new_filename)
 
         if Path(path).is_file():
             print(f"WARNING: existing file will be overwritten: {path}")
 
-        with open(path, "w+") as f:
-            f.write(apalache_result["files"][filename])
+        with open(path, 'w+') as f:
+            f.write(apalache_result['files'][filename])
             trace_paths.append(path)
 
     return trace_paths
@@ -50,9 +48,7 @@ def extract_apalache_counterexample(apalache_result: Dict):
             msg = line[len(invMark) :].strip()
             break
 
-    cex_itf = json.loads(
-        apalache_result["files"][APALACHE_DEFAULTS["result_violation_itf_file"]]
-    )
+    cex_itf = json.loads(apalache_result["files"][APALACHE_DEFAULTS["result_violation_itf_file"]])
     cex = cex_itf["states"]
 
     return (msg, cex)
