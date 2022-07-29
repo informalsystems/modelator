@@ -1,7 +1,7 @@
 # model checkers
 import os
-import appdirs
 
+import appdirs
 
 APALACHE = "apalache"
 TLC = "tlc"

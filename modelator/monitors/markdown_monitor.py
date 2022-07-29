@@ -1,6 +1,6 @@
+from modelator.itf import ITF
 from modelator.ModelMonitor import ModelMonitor
 from modelator.ModelResult import ModelResult
-from modelator.itf import ITF
 from modelator.monitors.content import MonitorSection
 from modelator.monitors.markdown_writer import MarkdownWriter
 

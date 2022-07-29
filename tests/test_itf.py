@@ -1,4 +1,5 @@
 import glob
+
 import pytest
 
 from modelator.itf import ITF

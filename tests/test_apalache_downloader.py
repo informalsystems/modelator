@@ -1,9 +1,11 @@
+import os
 import subprocess
+
+import appdirs
 import pytest
+
 from modelator import const_values
 from modelator.utils.modelator_helpers import check_for_apalache_jar
-import appdirs
-import os
 
 
 @pytest.mark.network
@@ -14,7 +16,12 @@ def test_downloading():
     )
     subprocess.run(["rm", "-rf", test_download_path])
     subprocess.run(["mkdir", "-p", test_download_path])
-    jar_path = os.path.join(test_download_path, "apalache", "lib", const_values.DEFAULT_APALACHE_JAR_FILENAME)
+    jar_path = os.path.join(
+        test_download_path,
+        "apalache",
+        "lib",
+        const_values.DEFAULT_APALACHE_JAR_FILENAME,
+    )
 
     # first, try to run Apalache from this directory
     with pytest.raises(Exception):
@@ -24,7 +31,9 @@ def test_downloading():
 
     desired_version = "0.25.10"
     downloaded_new_jar = check_for_apalache_jar(
-        download_location=test_download_path, jar_path=jar_path, expected_version=desired_version
+        download_location=test_download_path,
+        jar_path=jar_path,
+        expected_version=desired_version,
     )
     assert downloaded_new_jar is True
 
@@ -37,7 +46,9 @@ def test_downloading():
 
     # knowing that we have a working version, try to download again (it is expected that now download is NOT needed)
     downloaded_new_jar = check_for_apalache_jar(
-        download_location=test_download_path, jar_path=jar_path, expected_version=desired_version
+        download_location=test_download_path,
+        jar_path=jar_path,
+        expected_version=desired_version,
     )
     assert downloaded_new_jar is False
 

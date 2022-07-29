@@ -1,7 +1,9 @@
-from operator import neg
 import os
+from operator import neg
 from typing import Dict, List, Tuple
+
 import modelator_py.util.tla as tla_parsing
+
 from modelator import const_values
 
 

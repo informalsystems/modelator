@@ -74,7 +74,7 @@ class ModelResult:
 
     def add_trace_paths(self, operator: str, trace_paths: List[str]):
         self._trace_paths[operator] = trace_paths
-    
+
     def progress(self, operator):
         """
         returns a progress measure between 0 and 1 (inclusive)

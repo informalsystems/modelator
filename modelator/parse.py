@@ -1,13 +1,11 @@
 import os
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
-from typing import Tuple
 from modelator_py.apalache.pure import apalache_pure
 
 from . import const_values
 from .utils import apalache_helpers, modelator_helpers, tla_helpers
 from .utils.model_exceptions import ModelParsingError
-
 
 # import utils
 

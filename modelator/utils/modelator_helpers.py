@@ -1,12 +1,13 @@
 import hashlib
-import os
-from typing import Dict
-from .. import const_values
-import logging
-import subprocess
-from urllib.request import urlopen
-import zipfile
 import io
+import logging
+import os
+import subprocess
+import zipfile
+from typing import Dict
+from urllib.request import urlopen
+
+from .. import const_values
 
 
 def check_for_apalache_jar(
@@ -66,7 +67,9 @@ def check_for_apalache_jar(
                     extracted_jar_path = f"{download_location}/{jar_relative_path}"
                     final_jar_path = f"{os.path.dirname(extracted_jar_path)}/{const_values.DEFAULT_APALACHE_JAR_FILENAME}"
                     os.rename(extracted_jar_path, final_jar_path)
-                    logging.debug(f"Downloaded version {expected_version} to {final_jar_path}")
+                    logging.debug(
+                        f"Downloaded version {expected_version} to {final_jar_path}"
+                    )
 
         return download_needed
 

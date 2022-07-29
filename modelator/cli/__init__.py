@@ -1,12 +1,13 @@
 from pathlib import Path
-import typer
-from typing import List, Optional
 from timeit import default_timer as timer
+from typing import List, Optional
 
-from modelator.Model import Model
+import typer
+
 from modelator import ModelResult
 from modelator.cli.model_config_file import load_config_file
 from modelator.cli.model_file import ModelFile
+from modelator.Model import Model
 from modelator.utils import tla_helpers
 from modelator.utils.model_exceptions import ModelError
 
@@ -15,16 +16,16 @@ LOG_LEVEL = None
 
 def set_log_level_callback(level: str):
     if not level:
-        return    
+        return
     global LOG_LEVEL
     LOG_LEVEL = level
     print(f"Log level set to {level}")
 
 
 app = typer.Typer(
-    name="modelator", 
-    help="Modelator: model-based testing framework for TLA+", 
-    no_args_is_help=True, 
+    name="modelator",
+    help="Modelator: model-based testing framework for TLA+",
+    no_args_is_help=True,
     add_completion=False,
     rich_markup_mode="rich",
 )
@@ -38,7 +39,7 @@ def common(
     pass
 
 
-def _create_and_parse_model(model_path: str, init='Init', next='Next', constants={}):
+def _create_and_parse_model(model_path: str, init="Init", next="Next", constants={}):
     try:
         model = Model(model_path, init, next, constants=constants)
     except ValueError:
@@ -51,7 +52,9 @@ def _create_and_parse_model(model_path: str, init='Init', next='Next', constants
     return model
 
 
-def _load_model(model_path: Optional[str], init='Init', next='Next', constants={}) -> Optional[Model]:
+def _load_model(
+    model_path: Optional[str], init="Init", next="Next", constants={}
+) -> Optional[Model]:
     global LOG_LEVEL
     if model_path is None:
         model = ModelFile.load(LOG_LEVEL)
@@ -88,76 +91,89 @@ def _print_results(result: ModelResult):
 
 @app.command()
 def load(
-    path: str = typer.Argument(..., help="Path to TLA+ model file or to TOML configuration file."),
+    path: str = typer.Argument(
+        ..., help="Path to TLA+ model file or to TOML configuration file."
+    ),
 ):
-    '''
+    """
     Load a TLA+ model file and parses it.
-    '''
+    """
     if not Path(path).is_file():
         print("ERROR: file does not exist")
         return
 
     if ModelFile.exists():
-        print('WARNING: a model already exists and it will be overwritten')
-    
-    if Path(path).suffix == '.toml':
+        print("WARNING: a model already exists and it will be overwritten")
+
+    if Path(path).suffix == ".toml":
         config = load_config_file(path)
-        model_path = config['model_path']
+        model_path = config["model_path"]
 
     print(f"Loading {model_path}... ")
     model = _create_and_parse_model(model_path)
     ModelFile.save(model)
-    print('Loading OK ✅')
+    print("Loading OK ✅")
 
 
 @app.command()
 def reload():
-    '''
+    """
     Reload current model, if any.
-    '''
+    """
     model = ModelFile.load(LOG_LEVEL)
     if model is None:
         print("ERROR: model not loaded; run `modelator load` first")
         return
-    
+
     model_path = model.tla_file_path
-    
+
     print(f"Reloading {model_path}... ")
     model = _create_and_parse_model(model_path)
     ModelFile.save(model)
-    print('Loading OK ✅')
+    print("Loading OK ✅")
 
 
 @app.command()
 def typecheck():
-    '''
+    """
     Type check the loaded model, if available.
-    '''
+    """
     global LOG_LEVEL
     model = ModelFile.load(LOG_LEVEL)
     if model is None:
         print("Model file does not exist")
         return
-    
+
     try:
         model.typecheck()
-        print('Type checking OK ✅')
+        print("Type checking OK ✅")
     except ModelError as e:
-        print('Type checking error 💥')
+        print("Type checking error 💥")
         print(e)
 
 
 @app.command()
 def check(
-    config_path: Optional[str] = typer.Option(None, help="Path to TOML file with the model and model checker configuration."), 
-    model_path: Optional[str] = typer.Option(None, help="Path to the TLA+ model file (overwrites config file)."),
-    constants: Optional[List[str]] = typer.Option(None, help="Constant definitions in the format 'name=value' (overwrites config file)."), 
-    invariants: Optional[List[str]] = typer.Option(None, help="List of invariants to check (overwrites config file)."),  
-    traces_dir: Optional[str] = typer.Option(None, help="Path to store generated trace files (overwrites config file)."),
+    config_path: Optional[str] = typer.Option(
+        None, help="Path to TOML file with the model and model checker configuration."
+    ),
+    model_path: Optional[str] = typer.Option(
+        None, help="Path to the TLA+ model file (overwrites config file)."
+    ),
+    constants: Optional[List[str]] = typer.Option(
+        None,
+        help="Constant definitions in the format 'name=value' (overwrites config file).",
+    ),
+    invariants: Optional[List[str]] = typer.Option(
+        None, help="List of invariants to check (overwrites config file)."
+    ),
+    traces_dir: Optional[str] = typer.Option(
+        None, help="Path to store generated trace files (overwrites config file)."
+    ),
 ):
-    '''
+    """
     Check that the invariants hold in the model, or generate a trace for a counterexample.
-    '''
+    """
     mc_invariants = invariants
     if config_path is None and mc_invariants == []:
         print("ERROR: either --config-path or --invariants must be specified.")
@@ -167,17 +183,17 @@ def check(
     constants = dict([c.split("=") for c in constants])
 
     config = load_config_file(config_path)
-    model_path = config['model_path'] if model_path is None else model_path
-    constants = config['constants'] if constants is None else constants
-    mc_invariants = config['invariants'] if mc_invariants is None else mc_invariants
-    init = config['init']
-    next = config['next']
-    traces_dir = config['traces_dir'] if traces_dir is None else traces_dir
+    model_path = config["model_path"] if model_path is None else model_path
+    constants = config["constants"] if constants is None else constants
+    mc_invariants = config["invariants"] if mc_invariants is None else mc_invariants
+    init = config["init"]
+    next = config["next"]
+    traces_dir = config["traces_dir"] if traces_dir is None else traces_dir
 
     model = _load_model(model_path, init, next, constants)
     if model is None:
-        return    
-    
+        return
+
     start_time = timer()
     result = model.check(mc_invariants, constants, traces_dir=traces_dir)
     _print_results(result)
@@ -186,15 +202,27 @@ def check(
 
 @app.command()
 def sample(
-    config_path: Optional[str] = typer.Option(None, help="Path to TOML file with the model and model checker configuration."), 
-    model_path: Optional[str] = typer.Option(None, help="Path to the TLA+ model file (overwrites config file)."),
-    constants: Optional[List[str]] = typer.Option(None, help="Constant definitions in the format 'key=value' (overwrites config file)."), 
-    examples: Optional[List[str]] = typer.Option(None, help="Model operators describing desired properties in the final state of the execution (overwrites config file)."), 
-    traces_dir: Optional[str] = typer.Option(None, help="Path to store generated trace files (overwrites config file)."),
+    config_path: Optional[str] = typer.Option(
+        None, help="Path to TOML file with the model and model checker configuration."
+    ),
+    model_path: Optional[str] = typer.Option(
+        None, help="Path to the TLA+ model file (overwrites config file)."
+    ),
+    constants: Optional[List[str]] = typer.Option(
+        None,
+        help="Constant definitions in the format 'key=value' (overwrites config file).",
+    ),
+    examples: Optional[List[str]] = typer.Option(
+        None,
+        help="Model operators describing desired properties in the final state of the execution (overwrites config file).",
+    ),
+    traces_dir: Optional[str] = typer.Option(
+        None, help="Path to store generated trace files (overwrites config file)."
+    ),
 ):
-    '''
+    """
     Generate execution traces that reach the state described by the `examples` properties.
-    '''
+    """
     mc_invariants = examples
     if config_path is None and mc_invariants == []:
         print("ERROR: either --config-path or --desired-states must be specified.")
@@ -204,17 +232,17 @@ def sample(
     constants = dict([c.split("=") for c in constants])
 
     config = load_config_file(config_path)
-    model_path = config['model_path'] if model_path is None else model_path
-    constants = config['constants'] if constants is None else constants
-    mc_invariants = config['desired_states'] if mc_invariants is None else mc_invariants
-    init = config['init']
-    next = config['next']
-    traces_dir = config['traces_dir'] if traces_dir is None else traces_dir
+    model_path = config["model_path"] if model_path is None else model_path
+    constants = config["constants"] if constants is None else constants
+    mc_invariants = config["desired_states"] if mc_invariants is None else mc_invariants
+    init = config["init"]
+    next = config["next"]
+    traces_dir = config["traces_dir"] if traces_dir is None else traces_dir
 
     model = _load_model(model_path, init, next, constants)
     if model is None:
-        return    
-    
+        return
+
     start_time = timer()
     result = model.sample(mc_invariants, constants, traces_dir=traces_dir)
     _print_results(result)
@@ -223,9 +251,9 @@ def sample(
 
 @app.command()
 def info():
-    '''
+    """
     Display information on the loaded model, if available.
-    '''
+    """
     global LOG_LEVEL
     model = ModelFile.load(LOG_LEVEL)
     if model is None:
@@ -238,11 +266,11 @@ def info():
 
 @app.command()
 def reset():
-    '''
+    """
     Removes any loaded model.
-    '''
+    """
     if ModelFile.clean():
-        print(f'Model file removed')
+        print(f"Model file removed")
 
 
 # @app.command()
@@ -258,4 +286,3 @@ def reset():
 #         print(f'Apalache jar file not found; will attempt to download it...')
 #         apalache_jar.apalache_jar_download(expected_version=version)
 #         print(f'Done')
-
