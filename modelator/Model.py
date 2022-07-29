@@ -1,23 +1,22 @@
-from copy import copy
 import logging
 import threading
-
+from copy import copy
 from typing import Any, Dict, List, Optional, Union
+
 from typing_extensions import Self
 
-from modelator.ModelMonitor import ModelMonitor
-from modelator.ModelResult import ModelResult
-from modelator.utils.model_exceptions import (
-    ModelParsingError,
-    ModelTypecheckingError,
-    ModelCheckingError,
-)
-from modelator.utils import tla_helpers
-from modelator.parse import parse
-from modelator.typecheck import typecheck
-from modelator.utils import modelator_helpers
 from modelator import const_values
 from modelator.checker.check import check_apalache, check_tlc
+from modelator.ModelMonitor import ModelMonitor
+from modelator.ModelResult import ModelResult
+from modelator.parse import parse
+from modelator.typecheck import typecheck
+from modelator.utils import modelator_helpers, tla_helpers
+from modelator.utils.model_exceptions import (
+    ModelCheckingError,
+    ModelParsingError,
+    ModelTypecheckingError,
+)
 
 
 class Model:
@@ -190,14 +189,14 @@ class Model:
 
         if self.parsable is False:
             raise self.last_parsing_error
-        
+
         if invariants == []:
             invariants = [
                 str(op)
                 for op in self.operators
                 if tla_helpers._default_invariant_criteria(str(op))
             ]
-        
+
         constants = self.constants | constants
 
         mod_res = ModelResult(model=self, all_operators=invariants)
@@ -367,10 +366,10 @@ class Model:
 
     def info(self) -> Dict[str, str]:
         return {
-            'model_path': self.tla_file_path,
-            'init': self.init_predicate,
-            'next': self.next_predicate,
-            'constants': self.constants,
-            'files': list(self.files_contents.keys()),
-            'monitors': self.monitors,
+            "model_path": self.tla_file_path,
+            "init": self.init_predicate,
+            "next": self.next_predicate,
+            "constants": self.constants,
+            "files": list(self.files_contents.keys()),
+            "monitors": self.monitors,
         }

@@ -1,7 +1,7 @@
 # model checkers
 import os
-import appdirs
 
+import appdirs
 
 APALACHE = "apalache"
 TLC = "tlc"
@@ -27,8 +27,10 @@ APALACHE_DEFAULTS = {
     "result_violation_itf_file": "violation.itf.json",
 }
 
+
 def apalache_release_url(expected_version):
     return f"https://github.com/informalsystems/apalache/releases/download/v{expected_version}/apalache.zip"
+
 
 DEFAULT_TLC_JAR = "jars/tla2tools-v1.8.0.jar"
 

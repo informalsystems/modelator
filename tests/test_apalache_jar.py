@@ -1,10 +1,16 @@
-import appdirs
 import os
-import pytest
 import subprocess
 import uuid
+
+import appdirs
+import pytest
+
 from modelator import const_values
-from modelator.utils.apalache_jar import apalache_jar_exists, apalache_jar_download, apalache_jar_version
+from modelator.utils.apalache_jar import (
+    apalache_jar_download,
+    apalache_jar_exists,
+    apalache_jar_version,
+)
 
 
 def _setup_temp_dir(expected_version: str):
@@ -17,7 +23,9 @@ def _setup_temp_dir(expected_version: str):
     )
     subprocess.run(["rm", "-rf", test_download_dir])
     subprocess.run(["mkdir", "-p", test_download_dir])
-    jar_path = os.path.join(test_download_dir, "apalache", "lib", f"apalache-{expected_version}.jar")
+    jar_path = os.path.join(
+        test_download_dir, "apalache", "lib", f"apalache-{expected_version}.jar"
+    )
 
     return test_download_dir, jar_path
 
@@ -57,7 +65,9 @@ def test_download_wrong_checksum():
     wrong_expected_checksum = const_values.APALACHE_SHA_CHECKSUMS["0.25.0"]
 
     with pytest.raises(AssertionError):
-        apalache_jar_download(test_download_dir, expected_version, wrong_expected_checksum)
+        apalache_jar_download(
+            test_download_dir, expected_version, wrong_expected_checksum
+        )
     assert not apalache_jar_exists(jar_path, expected_version)
 
     _clean_dir(test_download_dir)
@@ -69,7 +79,9 @@ def test_download_different_version():
     test_download_dir, jar_path = _setup_temp_dir(expected_version)
     correct_expected_checksum = const_values.APALACHE_SHA_CHECKSUMS[expected_version]
 
-    apalache_jar_download(test_download_dir, expected_version, correct_expected_checksum)
+    apalache_jar_download(
+        test_download_dir, expected_version, correct_expected_checksum
+    )
     assert apalache_jar_exists(jar_path, expected_version)
 
     version = apalache_jar_version(jar_path)

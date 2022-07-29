@@ -6,6 +6,7 @@ import subprocess
 import zipfile
 from pathlib import Path
 from urllib.request import urlopen
+
 from .. import const_values
 
 
@@ -18,7 +19,7 @@ def apalache_jar_build_path(checkers_dir: str, version: str) -> str:
     )
 
 
-def apalache_jar_version(jar_path = const_values.DEFAULT_APALACHE_JAR) -> str:
+def apalache_jar_version(jar_path=const_values.DEFAULT_APALACHE_JAR) -> str:
     """
     Return the version of the `jar_path`.
     """
@@ -73,7 +74,7 @@ def apalache_jar_download(
             )
 
     release_url = const_values.apalache_release_url(expected_version)
-    
+
     logging.debug(f"Downloading {release_url} to {download_location}...")
     with urlopen(release_url) as zip_response:
         data = zip_response.read()
@@ -83,8 +84,9 @@ def apalache_jar_download(
             jar_relative_path = "apalache/lib/apalache.jar"
             zip_file.extract(member=jar_relative_path, path=download_location)
             extracted_jar_path = f"{download_location}/{jar_relative_path}"
-            
-            final_jar_path = apalache_jar_build_path(download_location, expected_version)            
+
+            final_jar_path = apalache_jar_build_path(
+                download_location, expected_version
+            )
             os.rename(extracted_jar_path, final_jar_path)
             logging.debug(f"Downloaded version {expected_version} to {final_jar_path}")
-

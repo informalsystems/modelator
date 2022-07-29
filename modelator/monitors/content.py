@@ -4,41 +4,44 @@ from typing_extensions import Self
 
 from modelator.ModelResult import ModelResult
 
+
 class Status(Enum):
-    success = 'success'
-    failure = 'failure'
-    inprogress = 'inprogress'
-    unknown = 'unknown'
+    success = "success"
+    failure = "failure"
+    inprogress = "inprogress"
+    unknown = "unknown"
 
     def __str__(self):
         match self:
-            case Status.success: 
-                return '✅'
+            case Status.success:
+                return "✅"
             case Status.failure:
-                return '❌'
+                return "❌"
             case Status.inprogress:
-                return '⏳'
+                return "⏳"
             case _:
-                return '❓'
-    
+                return "❓"
+
     def html_color(self):
         match self:
-            case Status.success: 
-                return 'green'
+            case Status.success:
+                return "green"
             case Status.failure:
-                return 'red'
+                return "red"
             case Status.inprogress:
-                return ''
+                return ""
             case Status.unknown:
-                return 'yellow'
+                return "yellow"
+
 
 class MonitorEntry:
-    '''
+    """
     An entry in a section.
-    '''
+    """
+
     status_position: int = None
-    
-    def __init__(self, name: str, status: Status=None, trace=None):
+
+    def __init__(self, name: str, status: Status = None, trace=None):
         self.name = name
         self.status = status
         self.trace = trace
@@ -46,10 +49,12 @@ class MonitorEntry:
     def set_status_position(self, position):
         self.status_position = position
 
+
 class MonitorSection:
-    '''
+    """
     A section is either a Sample or an Invariant.
-    '''
+    """
+
     def __init__(self, name: str, entries: list[MonitorEntry], time: datetime):
         self.name = name
         self.entries = entries
@@ -59,9 +64,15 @@ class MonitorSection:
     @staticmethod
     def all_entries_from(res: ModelResult):
         inprogress = [MonitorEntry(op, Status.inprogress) for op in res.inprogress()]
-        successful = [MonitorEntry(op, Status.success, trace=res.traces(op)) for op in res.successful()]
-        unsuccessful = [MonitorEntry(op, Status.failure, trace=res.traces(op)) for op in res.unsuccessful()]
-        entries = inprogress+successful+unsuccessful
+        successful = [
+            MonitorEntry(op, Status.success, trace=res.traces(op))
+            for op in res.successful()
+        ]
+        unsuccessful = [
+            MonitorEntry(op, Status.failure, trace=res.traces(op))
+            for op in res.unsuccessful()
+        ]
+        entries = inprogress + successful + unsuccessful
         return sorted(entries, key=lambda e: e.name)
 
     def create_from(name: str, res: ModelResult) -> Self:

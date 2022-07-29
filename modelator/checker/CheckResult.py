@@ -3,9 +3,10 @@ from tomlkit import boolean
 
 
 class CheckResult:
-
-    def __init__(self, is_ok: boolean, 
-        error_msg: Optional[str] = None, 
+    def __init__(
+        self,
+        is_ok: boolean,
+        error_msg: Optional[str] = None,
         traces: List[str] = [],
         trace_paths: List[str] = [],
     ) -> None:
