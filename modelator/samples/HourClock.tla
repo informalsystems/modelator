@@ -1,7 +1,7 @@
 ----- MODULE HourClock -----
 
 EXTENDS Naturals, Sequences
-VARIABLES 
+VARIABLES
   \* @typeAlias: STATE = [ hr: Int ];
   \* @type: Int;
   hr

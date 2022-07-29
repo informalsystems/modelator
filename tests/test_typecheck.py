@@ -1,9 +1,10 @@
 import os
 
 import pytest
+
+from modelator.Model import Model
 from modelator.typecheck import typecheck
 from modelator.utils import tla_helpers
-from modelator.Model import Model
 from modelator.utils.model_exceptions import ModelTypecheckingError
 
 

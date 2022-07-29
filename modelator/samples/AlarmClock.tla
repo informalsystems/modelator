@@ -2,7 +2,7 @@
 
 EXTENDS Naturals, Sequences
 
-VARIABLES 
+VARIABLES
   \* @typeAlias: STATE = [ hr: Int, alarmHr: Int, alarmOn: Bool ];
   \* @type: Int;
   hr,
@@ -11,10 +11,10 @@ VARIABLES
   \* @type: Bool;
   alarmOn
 
-Init == 
+Init ==
     /\ hr \in (1 .. 12)
     /\ alarmHr \in (1..12)
-    /\ alarmOn = FALSE 
+    /\ alarmOn = FALSE
 AdvanceHour ==
     /\ hr' = IF hr /= 12 THEN hr + 1 ELSE 1
     /\ UNCHANGED <<alarmHr, alarmOn>>
