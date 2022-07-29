@@ -1,4 +1,5 @@
 from pathlib import Path
+import typer
 from timeit import default_timer as timer
 from typing import List, Optional
 
@@ -131,6 +132,24 @@ def reload():
     model = _create_and_parse_model(model_path)
     ModelFile.save(model)
     print("Loading OK ✅")
+
+
+@app.command()
+def reload():
+    '''
+    Reload current model, if any.
+    '''
+    model = ModelFile.load(LOG_LEVEL)
+    if model is None:
+        print("ERROR: model not loaded; run `modelator load` first")
+        return
+    
+    model_path = model.tla_file_path
+    
+    print(f"Reloading {model_path}... ")
+    model = _create_and_parse_model(model_path)
+    ModelFile.save(model)
+    print('Loading OK ✅')
 
 
 @app.command()
