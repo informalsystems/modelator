@@ -234,7 +234,7 @@ def sample(
     config = load_config_file(config_path)
     model_path = config["model_path"] if model_path is None else model_path
     constants = config["constants"] if constants is None else constants
-    mc_invariants = config["desired_states"] if mc_invariants is None else mc_invariants
+    mc_invariants = config["examples"] if mc_invariants is None else mc_invariants
     init = config["init"]
     next = config["next"]
     traces_dir = config["traces_dir"] if traces_dir is None else traces_dir

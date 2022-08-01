@@ -28,7 +28,7 @@ def load_config_file(config_path):
         "init": "Init",
         "next": "Next",
         "invariants": [],
-        "desired_states": [],
+        "examples": [],
         "config_file_path": None,
     } | config["Model"]
     config["Config"] = {
