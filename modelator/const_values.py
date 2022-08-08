@@ -7,11 +7,12 @@ APALACHE = "apalache"
 TLC = "tlc"
 
 DEFAULT_APALACHE_VERSION = "0.25.10"
-DEFAULT_APALACHE_LOCATION = os.path.join(appdirs.user_data_dir(__package__), "checkers")
+DEFAULT_CHECKERS_LOCATION = os.path.join(appdirs.user_data_dir(__package__), "checkers")
+DEFAULT_APALACHE_LOCATION = os.path.join(DEFAULT_CHECKERS_LOCATION, "apalache")
+
 DEFAULT_APALACHE_JAR_FILENAME = f"apalache-{DEFAULT_APALACHE_VERSION}.jar"
 DEFAULT_APALACHE_JAR = os.path.join(
     DEFAULT_APALACHE_LOCATION,
-    "apalache",
     "lib",
     DEFAULT_APALACHE_JAR_FILENAME,
 )
@@ -25,6 +26,11 @@ APALACHE_DEFAULTS = {
     "result_violation_tla_file": "violation.tla",
     "result_violation_itf_file": "violation.itf.json",
 }
+
+
+def apalache_release_url(expected_version):
+    return f"https://github.com/informalsystems/apalache/releases/download/v{expected_version}/apalache.zip"
+
 
 DEFAULT_TLC_JAR = "jars/tla2tools-v1.8.0.jar"
 

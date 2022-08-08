@@ -1,77 +1,7 @@
-import hashlib
-import io
-import logging
 import os
-import subprocess
-import zipfile
 from typing import Dict
-from urllib.request import urlopen
-
 from .. import const_values
-
-
-def check_for_apalache_jar(
-    download_location=const_values.DEFAULT_APALACHE_LOCATION,
-    jar_path=const_values.DEFAULT_APALACHE_JAR,
-    expected_version=const_values.DEFAULT_APALACHE_VERSION,
-    sha256_checksum=None,
-) -> bool:
-
-    """
-    Checks for existence of the Apalache jar, version `expected_version`.
-    If it is missing, downloads it to `download_location` and returns False.
-    If it is already there, does nothing and returns True.
-
-    It is meant to be used with default arguments.
-    The reason that arguments exist is to enable testing.
-    """
-
-    if sha256_checksum is None:
-        try:
-            sha256_checksum = const_values.APALACHE_SHA_CHECKSUMS[expected_version]
-        except KeyError:
-            raise ValueError(
-                "SHA Checksum is missing. Provide it either as an argument to\
-             `modelator_helpers.check_for_apalache_jar`, or add it to `const_values.APALACHE_SHA_CHECKSUMS`"
-            )
-
-    apalache_release_url = "https://github.com/informalsystems/apalache/releases/download/v{}/apalache.zip".format(
-        expected_version
-    )
-
-    logging.debug("checking for jar at {}".format(jar_path))
-    try:
-        download_needed = False
-        version = subprocess.check_output(
-            ["java", "-jar", jar_path, "version"], text=True, stderr=subprocess.STDOUT
-        ).strip()
-        logging.debug(
-            "Currently existing version is {} and we are looking for {}".format(
-                version, expected_version
-            )
-        )
-        if not version == expected_version:
-            download_needed = True
-    except subprocess.CalledProcessError:
-        logging.debug("Error checking version of the jar")
-        download_needed = True
-    finally:
-        if download_needed is True:
-            with urlopen(apalache_release_url) as zip_response:
-                data = zip_response.read()
-
-                assert sha256_checksum == hashlib.sha256(data).hexdigest()
-                with zipfile.ZipFile(io.BytesIO(data)) as zip_file:
-                    jar_relative_path = "apalache/lib/apalache.jar"
-                    zip_file.extract(member=jar_relative_path, path=download_location)
-                    extracted_jar_path = f"{download_location}/{jar_relative_path}"
-                    final_jar_path = f"{os.path.dirname(extracted_jar_path)}/{const_values.DEFAULT_APALACHE_JAR_FILENAME}"
-                    os.rename(extracted_jar_path, final_jar_path)
-                    logging.debug(
-                        f"Downloaded version {expected_version} to {final_jar_path}"
-                    )
-
-        return download_needed
+import logging
 
 
 def create_logger(logger_name, loglevel):
