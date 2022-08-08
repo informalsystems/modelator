@@ -1,5 +1,6 @@
 import os
 from typing import Dict
+
 from modelator.check import check_apalache
 from modelator.utils import tla_helpers
 

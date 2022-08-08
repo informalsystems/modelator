@@ -1,4 +1,5 @@
 import pytest
+
 from modelator.Model import Model
 from modelator.utils.model_exceptions import ModelParsingError
 
