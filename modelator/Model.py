@@ -332,9 +332,6 @@ class Model:
         constants: Dict[str, Any] = {},
         loglevel: str = "info",
     ) -> None:
-
-        modelator_helpers.check_for_apalache_jar()
-
         self.logger = modelator_helpers.create_logger(
             logger_name=__file__, loglevel=loglevel
         )
