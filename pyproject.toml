@@ -49,6 +49,9 @@ prospector = { extras = ["with_mypy", "with_bandit"], version = "^1.7.7" }
 requires = ["poetry-core>=1.0.0", "setuptools"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.poetry.scripts]
+modelator = "modelator.cli:app"
+
 [tool.poetry.plugins]
 pytest11 = { pytest-modelator = "modelator.pytest" }
 
