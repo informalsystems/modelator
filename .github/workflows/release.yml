@@ -2,7 +2,7 @@ name: Release
 
 on:
   pull_request:
-    branches: [main]
+    branches: [dev]
     types: [closed]
 
 jobs:
@@ -37,7 +37,7 @@ jobs:
         run: |
           echo "RELEASE_VERSION=`sed 's/^\[RELEASE\] v//g' <<< "${{ github.event.pull_request.title }}"`" >> $GITHUB_ENV
 
-      - name: Tag on main and make a Github release
+      - name: Tag and make a Github release
         run: ./scripts/github_release.sh
 
       - name: Setup Python

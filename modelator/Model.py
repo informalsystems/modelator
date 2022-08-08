@@ -1,27 +1,22 @@
-import subprocess
-from copy import copy
 import logging
 import threading
-
-
+from copy import copy
 from typing import Any, Dict, List, Optional, Union
+
 from typing_extensions import Self
 
-
+from modelator import const_values
+from modelator.checker.check import check_apalache, check_tlc
 from modelator.ModelMonitor import ModelMonitor
 from modelator.ModelResult import ModelResult
-from modelator.utils.model_exceptions import (
-    ModelError,
-    ModelParsingError,
-    ModelTypecheckingError,
-    ModelCheckingError,
-)
-from modelator.utils import tla_helpers
 from modelator.parse import parse
 from modelator.typecheck import typecheck
-from modelator.utils import modelator_helpers
-from modelator import const_values
-from modelator.check import check_apalache, check_tlc
+from modelator.utils import modelator_helpers, tla_helpers
+from modelator.utils.model_exceptions import (
+    ModelCheckingError,
+    ModelParsingError,
+    ModelTypecheckingError,
+)
 
 
 class Model:
@@ -87,32 +82,30 @@ class Model:
             do_parse=not parsing_not_needed,
         )
 
-    def instantiate(self, model_constants: Dict):
-        self.model_constants = model_constants
+    def instantiate(self, constants: Dict):
+        self.constants = constants
 
     def _modelcheck_predicates(
         self,
         predicates,
-        modelcheck_constants,
+        constants,
         checker,
-        tla_file_name,
+        tla_file_path,
         checking_files_content,
         checker_params,
+        traces_dir,
     ):
         args_config_file = tla_helpers._basic_args_to_config_string(
             init=self.init_predicate,
             next=self.next_predicate,
             invariants=predicates,
-            constants_names=modelcheck_constants,
+            constants_names=constants,
         )
 
         args_config_file_name = "generated_config.cfg"
 
         args = {const_values.CONFIG: args_config_file_name}
         checking_files_content.update({args_config_file_name: args_config_file})
-
-        if checker_params is None:
-            checker_params = {}
 
         if checker == const_values.TLC:
             check_func = check_tlc
@@ -121,21 +114,22 @@ class Model:
             args.update(tla_helpers._set_additional_apalache_args())
 
         try:
-            res, msg, cex = check_func(
-                tla_file_name=tla_file_name,
+            result = check_func(
+                tla_file_path=tla_file_path,
                 files=checking_files_content,
                 args=args,
+                traces_dir=traces_dir,
             )
         except Exception as e:
             self.logger.error("Problem running {}: {}".format(checker, e))
             raise ModelCheckingError(e)
 
-        return res, msg, cex
+        return result
 
     def _check_sample_thread_worker(
         self,
         predicate,
-        modelcheck_constants,
+        constants,
         checker,
         tla_file_name,
         checking_files_content,
@@ -144,17 +138,19 @@ class Model:
         monitor_update_functions,
         result_considered_success: bool,
         original_predicate_name: str = None,
+        traces_dir: Optional[str] = None,
     ):
         if original_predicate_name is None:
             original_predicate_name = predicate
         self.logger.debug("starting with {}".format(predicate))
-        res, msg, cex = self._modelcheck_predicates(
+        check_result = self._modelcheck_predicates(
             predicates=[predicate],
-            modelcheck_constants=modelcheck_constants,
+            constants=constants,
             checker=checker,
-            tla_file_name=tla_file_name,
+            tla_file_path=tla_file_name,
             checking_files_content=checking_files_content,
             checker_params=checker_params,
+            traces_dir=traces_dir,
         )
         self.logger.debug("finished with {}".format(predicate))
 
@@ -162,7 +158,7 @@ class Model:
         mod_res._finished_operators.append(original_predicate_name)
         mod_res._in_progress_operators.remove(original_predicate_name)
 
-        if res is result_considered_success:
+        if check_result.is_ok == result_considered_success:
             mod_res._successful.append(original_predicate_name)
         else:
             mod_res._unsuccessful.append(original_predicate_name)
@@ -170,18 +166,20 @@ class Model:
         mod_res.lock.release()
 
         # in the current implementation, this will only return one trace (as a counterexample)
-        if len(cex) > 0:
-            mod_res._traces[original_predicate_name] = cex
+        if check_result.traces:
+            mod_res._traces[original_predicate_name] = check_result.traces
+            mod_res.add_trace_paths(original_predicate_name, check_result.trace_paths)
 
         for monitor_func in monitor_update_functions:
             monitor_func(res=mod_res)
 
     def check(
         self,
-        invariants: List[str] = None,
-        model_constants: Dict = None,
+        invariants: List[str] = [],
+        constants: Dict[str, Any] = {},
         checker: str = const_values.APALACHE,
-        checker_params: Dict = None,
+        checker_params: Dict[str, str] = {},
+        traces_dir: Optional[str] = None,
     ) -> ModelResult:
 
         if checker is not const_values.APALACHE:
@@ -191,20 +189,17 @@ class Model:
 
         if self.parsable is False:
             raise self.last_parsing_error
-        checking_constants = self.model_constants
-        if model_constants is not None:
-            checking_constants.update(model_constants)
 
-        if invariants is not None:
-            invariant_predicates = invariants
-        else:
-            invariant_predicates = [
+        if invariants == []:
+            invariants = [
                 str(op)
                 for op in self.operators
                 if tla_helpers._default_invariant_criteria(str(op))
             ]
 
-        mod_res = ModelResult(model=self, all_operators=invariant_predicates)
+        constants = self.constants | constants
+
+        mod_res = ModelResult(model=self, all_operators=invariants)
 
         for monitor in self.monitors:
             #  TODO: make monitors parallel
@@ -212,12 +207,12 @@ class Model:
 
         threads = []
 
-        for inv_predicate in invariant_predicates:
+        for invariant in invariants:
             thread = threading.Thread(
                 target=self._check_sample_thread_worker,
                 kwargs={
-                    "predicate": inv_predicate,
-                    "modelcheck_constants": checking_constants,
+                    "predicate": invariant,
+                    "constants": constants,
                     "checker": checker,
                     "tla_file_name": self.tla_file_path,
                     "checking_files_content": copy(self.files_contents),
@@ -227,10 +222,11 @@ class Model:
                         m.on_check_update for m in self.monitors
                     ],
                     "result_considered_success": True,
+                    "traces_dir": traces_dir,
                 },
             )
             self.logger.debug(
-                "starting thread {} for invariant {}".format(thread, inv_predicate)
+                "starting thread {} for invariant {}".format(thread, invariant)
             )
             thread.start()
             threads.append(thread)
@@ -247,36 +243,33 @@ class Model:
 
     def sample(
         self,
-        examples: List[str] = None,
-        model_constants: Dict = None,
+        examples: List[str] = [],
+        constants: Dict[str, Any] = {},
         checker: str = const_values.APALACHE,
-        checker_params: Dict = None,
+        checker_params: Dict[str, str] = {},
+        traces_dir: Optional[str] = None,
     ) -> ModelResult:
 
         if self.parsable is False:
             raise self.last_parsing_error
 
-        sampling_constants = self.model_constants
-        if model_constants is not None:
-            sampling_constants.update(model_constants)
-
-        if examples is not None:
-            example_predicates = examples
-        else:
+        if examples == []:
             # take all operators that are prefixed/suffixed with Ex
-            example_predicates = [
+            examples = [
                 str(op)
                 for op in self.operators
                 if tla_helpers._default_example_criteria(str(op))
             ]
 
-        mod_res = ModelResult(model=self, all_operators=example_predicates)
+        constants = self.constants | constants
+
+        mod_res = ModelResult(model=self, all_operators=examples)
 
         for monitor in self.monitors:
             monitor.on_sample_start(res=mod_res)
 
         threads = []
-        for example_predicate in example_predicates:
+        for example_predicate in examples:
             (
                 negated_name,
                 negated_content,
@@ -292,7 +285,7 @@ class Model:
                 kwargs={
                     "original_predicate_name": example_predicate,
                     "predicate": negated_predicates[0],
-                    "modelcheck_constants": sampling_constants,
+                    "constants": constants,
                     "checker": checker,
                     "tla_file_name": negated_name,
                     "checking_files_content": sampling_files_content,
@@ -302,6 +295,7 @@ class Model:
                         m.on_sample_update for m in self.monitors
                     ],
                     "result_considered_success": False,
+                    "traces_dir": traces_dir,
                 },
             )
             thread.start()
@@ -334,8 +328,8 @@ class Model:
         tla_file_path: str,
         init_predicate: str,
         next_predicate: str,
-        files_contents: Dict[str, str] = None,
-        constants: Dict[str, Any] = None,
+        files_contents: Dict[str, str] = {},
+        constants: Dict[str, Any] = {},
         loglevel: str = "info",
     ) -> None:
 
@@ -351,10 +345,10 @@ class Model:
         self.next_predicate = next_predicate
 
         # a dictionary file_name --> file_content, for relevant filenames
-        self.files_contents = files_contents if files_contents is not None else {}
+        self.files_contents = files_contents
 
         # a dcitionary of constant values relevant to the model
-        self.model_constants = constants if constants is not None else {}
+        self.constants = constants if constants is not None else {}
 
         # a list of results for all checks performed on this model
         self.all_checks = []
@@ -372,3 +366,13 @@ class Model:
 
     def remove_monitor(self, monitor: ModelMonitor):
         self.monitors.remove(monitor)
+
+    def info(self) -> Dict[str, str]:
+        return {
+            "model_path": self.tla_file_path,
+            "init": self.init_predicate,
+            "next": self.next_predicate,
+            "constants": self.constants,
+            "files": list(self.files_contents.keys()),
+            "monitors": self.monitors,
+        }

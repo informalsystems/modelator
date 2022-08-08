@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "modelator"
-version = "0.4.2"
+version = "0.5.1"
 description = "Framework for Model Based Testing"
 authors = [
   "Andrey Kuprianov <andrey@informal.systems>",
@@ -35,6 +35,9 @@ watchdog = "^2.1.8"
 typing-extensions = "^4.2.0"
 wget = "^3.2"
 appdirs = "^1.4.4"
+toml = "^0.10.2"
+typer = {extras = ["all"], version = "^0.6.1"}
+rich = "^12.5.1"
 
 [tool.poetry.dev-dependencies]
 fire = "^0.4.0"

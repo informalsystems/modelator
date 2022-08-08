@@ -4,7 +4,7 @@ EXTENDS Naturals
 CONSTANTS
   \* @type: Int;
   MAX
-VARIABLES 
+VARIABLES
   \* @type: Int;
   x
 Init == x = 0

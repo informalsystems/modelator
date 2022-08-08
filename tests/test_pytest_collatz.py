@@ -7,23 +7,26 @@ from modelator.pytest.decorators import mbt, step
 
 @dataclass
 class Number:
-    val: int
+    val: int | None
 
 
 @pytest.fixture
 def state() -> Number:
-    return Number(20)
+    return Number(None)
 
 
 @step()
 def collatz(state: Number, x):
-    n = state.val
-    if n % 2 == 0:
-        next_val = n // 2
+    if state.val is None:
+        state.val = x
     else:
-        next_val = 1 + n * 3
-    assert next_val == x
-    state.val = next_val
+        n = state.val
+        if n % 2 == 0:
+            next_val = n // 2
+        else:
+            next_val = 1 + n * 3
+        assert next_val == x
+        state.val = next_val
 
 
 @mbt("tests/models/collatz.tla")

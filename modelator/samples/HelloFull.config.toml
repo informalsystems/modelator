@@ -1,0 +1,12 @@
+[Model]
+# name = "HelloFull"
+model_path = "modelator/samples/HelloFull.tla"
+init = "Init"
+# next = "Next"
+invariants = ["Inv", "AlwaysEvenInvariant"]
+examples = ["ExTest", "ExFail"]
+
+[Config]
+check_deadlock = "FALSE"
+length = 100 # called depth in TLC
+traces_dir = "modelator/samples/traces/HelloFull"
