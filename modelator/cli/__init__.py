@@ -1,5 +1,4 @@
 from pathlib import Path
-import typer
 from timeit import default_timer as timer
 from typing import List, Optional
 
@@ -292,14 +291,24 @@ def reset():
         print(f"Model file removed")
 
 
-@app.command()
-def check_apalache_jar(
+app_apalache = typer.Typer(
+    name="apalache",
+    help="Apalache JAR",
+    no_args_is_help=True,
+    add_completion=False,
+    rich_markup_mode="rich",
+)
+app.add_typer(app_apalache, name="apalache")
+
+
+@app_apalache.command()
+def check(
     version: Optional[str] = typer.Argument(
         const_values.DEFAULT_APALACHE_VERSION, help=f"Apalache's version."
     ),
 ):
     """
-    Check whether Apalache's uber jar file is installed, or download it otherwise.
+    Check which version of Apalache is installed.
     """
     jar_path = apalache_jar.apalache_jar_build_path(
         const_values.DEFAULT_CHECKERS_LOCATION, version
@@ -310,13 +319,27 @@ def check_apalache_jar(
         print(f"Apalache jar version: {existing_version}")
     else:
         print(f"Apalache jar file not found at {jar_path}")
-        print(f"Will attempt to download version {version}...")
-        try:
-            apalache_jar.apalache_jar_download(
-                download_location=const_values.DEFAULT_CHECKERS_LOCATION,
-                expected_version=version,
-            )
-            print("Done ✅")
-            print(f"Apalache jar file: {jar_path}")
-        except ValueError as e:
-            print(f"ERROR: {e}")
+
+
+@app_apalache.command()
+def get(
+    version: Optional[str] = typer.Argument(
+        const_values.DEFAULT_APALACHE_VERSION, help=f"Apalache's version."
+    ),
+):
+    """
+    Download Apalache jar file.
+    """
+    jar_path = apalache_jar.apalache_jar_build_path(
+        const_values.DEFAULT_CHECKERS_LOCATION, version
+    )
+    print(f"Downloading Apalache version {version}")
+    try:
+        apalache_jar.apalache_jar_download(
+            download_location=const_values.DEFAULT_CHECKERS_LOCATION,
+            expected_version=version,
+        )
+        print("Done ✅")
+        print(f"Apalache jar file: {jar_path}")
+    except ValueError as e:
+        print(f"ERROR: {e}")
