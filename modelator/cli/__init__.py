@@ -189,6 +189,9 @@ def check(
     traces_dir: Optional[str] = typer.Option(
         None, help="Path to store generated trace files (overwrites config file)."
     ),
+    params: Optional[List[str]] = typer.Option(
+        None, help="Extra parameters to be passed to the model-checker."
+    ),
 ):
     """
     Check that the invariants hold in the model, or generate a trace for a counterexample.
@@ -200,21 +203,25 @@ def check(
 
     # Dict is not supported by typer
     constants = dict([c.split("=") for c in constants])
+    params = dict([p.split("=") for p in params])
 
     config = load_config_file(config_path)
-    model_path = config["model_path"] if model_path is None else model_path
-    constants = config["constants"] if constants is None else constants
-    mc_invariants = config["invariants"] if mc_invariants is None else mc_invariants
+    model_path = model_path if model_path else config["model_path"]
+    constants = constants if constants else config["constants"]
+    mc_invariants = mc_invariants if mc_invariants else config["invariants"]
+    traces_dir = traces_dir if traces_dir else config["traces_dir"]
     init = config["init"]
     next = config["next"]
-    traces_dir = config["traces_dir"] if traces_dir is None else traces_dir
+    
+    # Note that the `params` may contain fields not available in the configuration.
+    params = params | config["params"]
 
     model = _load_model(model_path, init, next, constants)
     if model is None:
         return
 
     start_time = timer()
-    result = model.check(mc_invariants, constants, traces_dir=traces_dir)
+    result = model.check(mc_invariants, constants, checker_params=params, traces_dir=traces_dir)
     _print_results(result)
     print(f"Total time: {(timer() - start_time):.2f} seconds")
 
@@ -249,21 +256,25 @@ def sample(
 
     # Dict is not supported by typer
     constants = dict([c.split("=") for c in constants])
+    params = dict([p.split("=") for p in params])
 
     config = load_config_file(config_path)
-    model_path = config["model_path"] if model_path is None else model_path
-    constants = config["constants"] if constants is None else constants
-    mc_invariants = config["examples"] if mc_invariants is None else mc_invariants
+    model_path = model_path if model_path else config["model_path"]
+    constants = constants if constants else config["constants"]
+    mc_invariants = mc_invariants if mc_invariants else config["invariants"]
+    traces_dir = traces_dir if traces_dir else config["traces_dir"]
     init = config["init"]
     next = config["next"]
-    traces_dir = config["traces_dir"] if traces_dir is None else traces_dir
+
+    # Note that the `params` may contain fields not available in the configuration.
+    params = params | config["params"]
 
     model = _load_model(model_path, init, next, constants)
     if model is None:
         return
 
     start_time = timer()
-    result = model.sample(mc_invariants, constants, traces_dir=traces_dir)
+    result = model.sample(mc_invariants, constants, checker_params=params, traces_dir=traces_dir)
     _print_results(result)
     print(f"Total time: {(timer() - start_time):.2f} seconds")
 

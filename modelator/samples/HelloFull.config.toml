@@ -7,6 +7,27 @@ invariants = ["Inv", "AlwaysEvenInvariant"]
 examples = ["ExTest", "ExFail"]
 
 [Config]
-check_deadlock = "FALSE"
-length = 100 # called depth in TLC
+# location for the generated trace files
 traces_dir = "modelator/samples/traces/HelloFull"
+
+[Checker]
+# the name of an operator that initializes CONSTANTS, default: None
+# cinit = "CInit"
+
+# configuration file in TLC format
+# config = "path/to/config.cfg" 
+
+# maximal number of Next steps, Apalache default: 10; called depth in TLC
+length = 100 
+
+# do not stop on first error, but produce up to a given number of counterexamples (fine tune with --view), default: 1
+# max_error = 5 
+
+# do not check for deadlocks, default: false; called check_deadlock in TLC
+# no_deadlock = false
+
+# save an example trace for each simulated run, default: false
+save_runs = false
+
+# the state view to use with --max-error=n, default: transition index
+view = "View" 

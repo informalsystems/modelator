@@ -3,6 +3,62 @@ from pathlib import Path
 import toml
 
 
+def _model_checker_params():
+    """
+    The list of model-checker parameters.
+    """
+    return [
+        "cinit",
+        "config",
+        "no_deadlock",
+        "length",
+        "max_error",
+        "save_runs",
+        "view",
+    ]
+
+
+def _set_default_values(config):
+    """
+    Set default values for missing keys in the configuration.
+    """
+    config = {"Model": {}, "Constants": {}, "Config": {}, "Checker": {}} | config
+    
+    config["Model"] = {
+        "model_path": None,
+        "init": "Init",
+        "next": "Next",
+        "invariants": [],
+        "examples": [],
+        "config_file_path": None,
+    } | config["Model"]
+    
+    config["Config"] = {
+        "traces_dir": None,
+    } | config["Config"]
+
+    default_params = dict([(p, None) for p in _model_checker_params()])
+    config["Checker"] = default_params | config["Checker"]
+    
+    return config
+
+
+def _flatten(config):
+    """
+    Flatten nested dictionaries.
+    """
+    config = config | config["Model"]
+    del config["Model"]
+
+    config["constants"] = config["Constants"]
+    del config["Constants"]
+
+    config = config | config["Config"]
+    del config["Config"]
+
+    return config
+
+
 def load_config_file(config_path):
     """
     Load model and model checker configuration from `config_path`, or return a
@@ -21,29 +77,12 @@ def load_config_file(config_path):
     else:
         config = {}
 
-    # set default values for missing keys
-    config = {"Model": {}, "Constants": {}, "Config": {}} | config
-    config["Model"] = {
-        "model_path": None,
-        "init": "Init",
-        "next": "Next",
-        "invariants": [],
-        "examples": [],
-        "config_file_path": None,
-    } | config["Model"]
-    config["Config"] = {
-        "check_deadlock": False,
-        "length": 100,
-        "traces_dir": None,
-    } | config["Config"]
+    config = _set_default_values(config)
 
-    config = config | config["Model"]
-    del config["Model"]
+    # use the same key name as in the CLI commands
+    config["params"] = config["Checker"]
+    del config["Checker"]
 
-    config["constants"] = config["Constants"]
-    del config["Constants"]
-
-    config = config | config["Config"]
-    del config["Config"]
+    config = _flatten(config)
 
     return config
