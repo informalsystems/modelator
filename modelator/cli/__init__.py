@@ -109,6 +109,8 @@ def load(
     if Path(path).suffix == ".toml":
         config = load_config_file(path)
         model_path = config["model_path"]
+    else:
+        model_path = path
 
     print(f"Loading {model_path}... ")
     model = _create_and_parse_model(model_path)
