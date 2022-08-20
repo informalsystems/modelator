@@ -104,7 +104,11 @@ def load(
         return
 
     if ModelFile.exists():
-        print("WARNING: a model already exists and it will be overwritten")
+        typer.confirm(
+            "A model is already loaded and it will be overwritten."
+            "Are you sure you want to continue?",
+            abort=True,
+        )
 
     if Path(path).suffix == ".toml":
         config = load_config_file(path)
