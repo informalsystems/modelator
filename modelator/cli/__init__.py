@@ -110,6 +110,8 @@ def load(
             abort=True,
         )
 
+    model_path = path
+    # if path corresponds to a config file, use model_path from the config
     if Path(path).suffix == ".toml":
         config = load_config_file(path)
         model_path = config["model_path"]
