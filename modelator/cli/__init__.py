@@ -177,36 +177,7 @@ def typecheck():
         print(e)
 
 
-@app.command()
-def check(
-    config_path: Optional[str] = typer.Option(
-        None, help="Path to TOML file with the model and model checker configuration."
-    ),
-    model_path: Optional[str] = typer.Option(
-        None, help="Path to the TLA+ model file (overwrites config file)."
-    ),
-    constants: Optional[List[str]] = typer.Option(
-        None,
-        help="Constant definitions in the format 'name=value' (overwrites config file).",
-    ),
-    invariants: Optional[List[str]] = typer.Option(
-        None, help="List of invariants to check (overwrites config file)."
-    ),
-    traces_dir: Optional[str] = typer.Option(
-        None, help="Path to store generated trace files (overwrites config file)."
-    ),
-    params: Optional[List[str]] = typer.Option(
-        None, help="Extra parameters to be passed to the model-checker."
-    ),
-):
-    """
-    Check that the invariants hold in the model, or generate a trace for a counterexample.
-    """
-    mc_invariants = invariants
-    if config_path is None and mc_invariants == []:
-        print("ERROR: either --config-path or --invariants must be specified.")
-        raise typer.Exit(code=1)
-
+def _run_checker(mode, mc_invariants, config_path, model_path, constants, traces_dir, params):
     # Dict is not supported by typer
     constants = dict([c.split("=") for c in constants])
     params = dict([p.split("=") for p in params])
@@ -226,10 +197,50 @@ def check(
     if model is None:
         return
 
+    if mode == "check":
+        handler = model.check
+    elif mode == "sample":
+        handler = model.sample
+    else:
+        raise ValueError("Unknown checker mode")
+
     start_time = timer()
-    result = model.check(mc_invariants, constants, checker_params=params, traces_dir=traces_dir)
+    result = handler(mc_invariants, constants, checker_params=params, traces_dir=traces_dir)
     _print_results(result)
     print(f"Total time: {(timer() - start_time):.2f} seconds")
+
+
+@app.command()
+def check(
+    config_path: Optional[str] = typer.Option(
+        None, help="Path to TOML file with the model and model checker configuration."
+    ),
+    model_path: Optional[str] = typer.Option(
+        None, help="Path to the TLA+ model file (overwrites config file)."
+    ),
+    constants: Optional[List[str]] = typer.Option(
+        None,
+        help="Constant definitions in the format 'name=value' (overwrites config file).",
+    ),
+    invariants: Optional[List[str]] = typer.Option(
+        None, help="List of invariants to check (overwrites config file)."
+    ),
+    params: Optional[List[str]] = typer.Option(
+        None, help="Extra parameters to be passed to the model-checker."
+    ),
+    traces_dir: Optional[str] = typer.Option(
+        None, help="Path to store generated trace files (overwrites config file)."
+    ),
+):
+    """
+    Check that the invariants hold in the model, or generate a trace for a counterexample.
+    """
+    mc_invariants = invariants
+    if config_path is None and mc_invariants == []:
+        print("ERROR: either --config-path or --invariants must be specified.")
+        raise typer.Exit(code=1)
+
+    _run_checker("check", mc_invariants, config_path, model_path, constants, traces_dir, params)
 
 
 @app.command()
@@ -248,6 +259,9 @@ def sample(
         None,
         help="Model operators describing desired properties in the final state of the execution (overwrites config file).",
     ),
+    params: Optional[List[str]] = typer.Option(
+        None, help="Extra parameters to be passed to the model-checker."
+    ),
     traces_dir: Optional[str] = typer.Option(
         None, help="Path to store generated trace files (overwrites config file)."
     ),
@@ -257,32 +271,10 @@ def sample(
     """
     mc_invariants = examples
     if config_path is None and mc_invariants == []:
-        print("ERROR: either --config-path or --desired-states must be specified.")
+        print("ERROR: either --config-path or --examples must be specified.")
         raise typer.Exit(code=1)
 
-    # Dict is not supported by typer
-    constants = dict([c.split("=") for c in constants])
-    params = dict([p.split("=") for p in params])
-
-    config = load_config_file(config_path)
-    model_path = model_path if model_path else config["model_path"]
-    constants = constants if constants else config["constants"]
-    mc_invariants = mc_invariants if mc_invariants else config["invariants"]
-    traces_dir = traces_dir if traces_dir else config["traces_dir"]
-    init = config["init"]
-    next = config["next"]
-
-    # Note that the `params` may contain fields not available in the configuration.
-    params = params | config["params"]
-
-    model = _load_model(model_path, init, next, constants)
-    if model is None:
-        return
-
-    start_time = timer()
-    result = model.sample(mc_invariants, constants, checker_params=params, traces_dir=traces_dir)
-    _print_results(result)
-    print(f"Total time: {(timer() - start_time):.2f} seconds")
+    _run_checker("sample", mc_invariants, config_path, model_path, constants, traces_dir, params)
 
 
 @app.command()
