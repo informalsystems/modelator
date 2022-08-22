@@ -1,5 +1,4 @@
 [Model]
-# name = "HelloFull"
 model_path = "model/Test1.tla"
 init = "Init"
 # next = "Next"
