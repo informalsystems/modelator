@@ -3,7 +3,8 @@ VARIABLE
     \* @type: Str;
     x
 Init == x = "a"
+InitB == x = "b"
 Next == UNCHANGED x
 Inv == x = "a"
-Inv2 == x # "b"
+InvB == x = "b"
 ======================

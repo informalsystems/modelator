@@ -5,10 +5,10 @@ $ modelator reset
 ...
 ```
 
-Load model and configuration from a toml file:
+Load a model and a configuration from a toml file:
 
 ```sh
-$ modelator load model/Test1.config.toml
+$ modelator load model/Test1.tla --config model/Test1.config.toml
 ...
 Loading OK ✅
 ...
@@ -24,9 +24,9 @@ Model:
 - module_name: Test1
 - monitors: []
 - next: Next
-- operators: ['Init', 'Next', 'Inv', 'Inv2']
+- operators: ['Init', 'InitB', 'Next', 'Inv', 'InvB']
 - variables: ['x']
-Config:
+Config at model/Test1.config.toml:
 - config_file_path: None
 - constants: {}
 - examples: []
@@ -55,7 +55,7 @@ $ modelator check
 Run `check` on the loaded model overriding the property to check and passing some setting to the checker:
 
 ```sh
-$ modelator check --invariants Inv2 --params "length=3"
+$ modelator check --invariants InvB --params init=InitB;length=3
 ...
 ✅ Inv2
 ...
@@ -68,7 +68,7 @@ $ modelator check --invariants=NonExistingProperty
 ...
 ERROR: NonExistingProperty not defined in the model
 ...
-[1]
+[3]
 ```
 
 Clean the generated files after the test:

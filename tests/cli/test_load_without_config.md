@@ -24,7 +24,7 @@ Model:
 - module_name: Test1
 - monitors: []
 - next: Next
-- operators: ['Init', 'Next', 'Inv', 'Inv2']
+- operators: ['Init', 'InitB', 'Next', 'Inv', 'InvB']
 - variables: ['x']
 ```
 
@@ -38,7 +38,7 @@ Run `check` on the loaded model without specifying any property to check:
 ```sh
 $ modelator check
 ...
-[1]
+[2]
 ```
 
 Run `check` on the loaded model specifying a property to check:
@@ -57,7 +57,7 @@ $ modelator check --invariants=NonExistingProperty
 ...
 ERROR: NonExistingProperty not defined in the model
 ...
-[1]
+[3]
 ```
 
 Clean the generated files after the test:
