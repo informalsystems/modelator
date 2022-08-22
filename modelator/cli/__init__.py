@@ -1,5 +1,6 @@
 from pathlib import Path
 from timeit import default_timer as timer
+import typer
 from typing import Dict, List, Optional, Tuple
 
 from modelator import ModelResult, const_values
