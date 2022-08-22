@@ -1,14 +1,12 @@
 First make sure that there is no model loaded:
-
 ```sh
 $ modelator reset
 ...
 ```
 
-Load model from a TLA+ file:
-
+Load model and configuration from a toml file:
 ```sh
-$ modelator load model/Test1.tla
+$ modelator load model/Test1.config.toml
 ...
 Loading OK ✅
 ...
@@ -26,6 +24,16 @@ Model:
 - next: Next
 - operators: ['Init', 'Next', 'Inv']
 - variables: ['x']
+Config:
+- config_file_path: None
+- constants: {}
+- examples: []
+- init: Init
+- invariants: ['Inv']
+- model_path: model/Test1.tla
+- next: Next
+- params: {'cinit': None, 'config': None, 'no_deadlock': True, 'length': 20, 'max_error': None, 'save_runs': False, 'view': None}
+- traces_dir: traces/Test1
 ```
 
 ```sh
@@ -33,35 +41,15 @@ $ modelator typecheck
 Type checking OK ✅
 ```
 
-Run `check` on the loaded model without specifying any property to check:
-
+Run `check` on the loaded model:
 ```sh
 $ modelator check
-...
-[1]
-```
-
-Run `check` on the loaded model specifying a property to check:
-
-```sh
-$ modelator check --invariants=Inv
 ...
 ✅ Inv
 ...
 ```
 
-Running `check` on a property that is not defined in the model will fail:
-
-```sh
-$ modelator check --invariants=NonExistingProperty
-...
-ERROR: NonExistingProperty not defined in the model
-...
-[1]
-```
-
 Clean the generated files after the test:
-
 ```sh
 $ modelator reset
 Model file removed
