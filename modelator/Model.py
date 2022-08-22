@@ -367,6 +367,9 @@ class Model:
     def info(self) -> Dict[str, str]:
         return {
             "model_path": self.tla_file_path,
+            "module_name": self.module_name,
+            "variables": self.variables,
+            "operators": self.operators,
             "init": self.init_predicate,
             "next": self.next_predicate,
             "constants": self.constants,

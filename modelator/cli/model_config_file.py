@@ -22,7 +22,7 @@ def _set_default_values(config):
     """
     Set default values for missing keys in the configuration.
     """
-    config = {"Model": {}, "Constants": {}, "Config": {}, "Checker": {}} | config
+    config = {"Model": {}, "Constants": {}, "Config": {}, "Checker": {}}| config
     
     config["Model"] = {
         "model_path": None,
@@ -64,6 +64,7 @@ def load_config_file(config_path):
     Load model and model checker configuration from `config_path`, or return a
     configuration with default values.
     """
+    config = {}
     if config_path:
         if not Path(config_path).is_file():
             raise FileNotFoundError("Config file not found.")
@@ -73,9 +74,6 @@ def load_config_file(config_path):
         except Exception as e:
             print(f"Error while parsing toml file: {e}")
             raise e
-
-    else:
-        config = {}
 
     config = _set_default_values(config)
 

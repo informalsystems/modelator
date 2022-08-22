@@ -1,9 +1,7 @@
 from pathlib import Path
 import typer
 from timeit import default_timer as timer
-from typing import List, Optional
-
-import typer
+from typing import Dict, List, Optional, Tuple
 
 from modelator import ModelResult, const_values
 from modelator.cli.model_config_file import load_config_file
@@ -55,21 +53,22 @@ def _create_and_parse_model(model_path: str, init="Init", next="Next", constants
 
 def _load_model(
     model_path: Optional[str], init="Init", next="Next", constants={}
-) -> Optional[Model]:
+) -> Tuple[Optional[Model], Optional[Dict]]:
     global LOG_LEVEL
+    config = None
     if model_path is None:
-        model = ModelFile.load(LOG_LEVEL)
+        model, config = ModelFile.load(LOG_LEVEL)
         if model is None:
             print("Model file does not exist")
-            return None
+            return None, None
     else:
         model = _create_and_parse_model(model_path, init, next, constants)
 
-    return model
+    return model, config
 
 
 def _print_results(result: ModelResult):
-    print("Check results:")
+    print("Results:")
     for op in result.inprogress():
         print(f"⏳ {op}")
     for op in result.successful():
@@ -110,6 +109,7 @@ def load(
             abort=True,
         )
 
+    config = None
     model_path = path
     # if path corresponds to a config file, use model_path from the config
     if Path(path).suffix == ".toml":
@@ -118,7 +118,7 @@ def load(
 
     print(f"Loading {model_path}... ")
     model = _create_and_parse_model(model_path)
-    ModelFile.save(model)
+    ModelFile.save(model, config)
     print("Loading OK ✅")
 
 
@@ -127,7 +127,7 @@ def reload():
     """
     Reload current model, if any.
     """
-    model = ModelFile.load(LOG_LEVEL)
+    model, config = ModelFile.load(LOG_LEVEL)
     if model is None:
         print("ERROR: model not loaded; run `modelator load` first")
         return
@@ -136,7 +136,7 @@ def reload():
 
     print(f"Reloading {model_path}... ")
     model = _create_and_parse_model(model_path)
-    ModelFile.save(model)
+    ModelFile.save(model, config)
     print("Loading OK ✅")
 
 
@@ -145,7 +145,7 @@ def reload():
     """
     Reload current model, if any.
     """
-    model = ModelFile.load(LOG_LEVEL)
+    model, config = ModelFile.load(LOG_LEVEL)
     if model is None:
         print("ERROR: model not loaded; run `modelator load` first")
         return
@@ -154,7 +154,7 @@ def reload():
 
     print(f"Reloading {model_path}... ")
     model = _create_and_parse_model(model_path)
-    ModelFile.save(model)
+    ModelFile.save(model, config)
     print("Loading OK ✅")
 
 
@@ -164,7 +164,7 @@ def typecheck():
     Type check the loaded model, if available.
     """
     global LOG_LEVEL
-    model = ModelFile.load(LOG_LEVEL)
+    model, _ = ModelFile.load(LOG_LEVEL)
     if model is None:
         print("Model file does not exist")
         return
@@ -177,35 +177,73 @@ def typecheck():
         print(e)
 
 
-def _run_checker(mode, mc_invariants, config_path, model_path, constants, traces_dir, params):
-    # Dict is not supported by typer
+def _run_checker(mode, properties, config_path, model_path, constants, params, traces_dir):
+    if mode == "check":
+        properties_config_name = "invariants"
+    elif mode == "sample":
+        properties_config_name = "examples"
+    else:
+        raise ValueError("Unknown checker mode")
+
+    # Convert lists to dicts
     constants = dict([c.split("=") for c in constants])
     params = dict([p.split("=") for p in params])
 
     config = load_config_file(config_path)
-    model_path = model_path if model_path else config["model_path"]
-    constants = constants if constants else config["constants"]
-    mc_invariants = mc_invariants if mc_invariants else config["invariants"]
-    traces_dir = traces_dir if traces_dir else config["traces_dir"]
-    init = config["init"]
-    next = config["next"]
+
+    # Overwrite configuration with parameters
+    if model_path:
+        config["model_path"] = model_path
+    if constants:
+        config["constants"] = constants    
+    if properties:
+        config[properties_config_name] = properties
+    if traces_dir:
+        config["traces_dir"] = traces_dir
     
     # Note that the `params` may contain fields not available in the configuration.
-    params = params | config["params"]
+    config["params"] = params | config["params"]
 
-    model = _load_model(model_path, init, next, constants)
-    if model is None:
-        return
+    model = None
+    if model_path:
+        model = _create_and_parse_model(model_path, config["init"], config["next"], config["constants"])
+
+    if not model:
+        model, saved_config = ModelFile.load(LOG_LEVEL)
+        if saved_config:
+            config = config | saved_config
+
+    if not model or not config[properties_config_name]:
+        print("ERROR: could not find a model and a configuration with properties to check; either:")
+        print("- specify a path to a config file with --config-path, or")
+        print("- load a model from a config file with `load <path/to/config/file>`, or")
+        print("- load a model from a TLA+ file and specify --invariants")
+        if config['model_path']:
+            print(f"\nPath to model file: {config['model_path']}")
+        raise typer.Exit(code=1)
+
+    diff = set(config[properties_config_name]) - set(model.operators)
+    if diff:
+        print("ERROR: {} not defined in the model".format(", ".join(diff)))
+        raise typer.Exit(code=1)
 
     if mode == "check":
         handler = model.check
+        action = "Checking"
     elif mode == "sample":
         handler = model.sample
+        action = "Sampling"
     else:
         raise ValueError("Unknown checker mode")
 
     start_time = timer()
-    result = handler(mc_invariants, constants, checker_params=params, traces_dir=traces_dir)
+    print("{} {}... ".format(action, ", ".join(config[properties_config_name])))
+    result = handler(
+        config[properties_config_name], 
+        constants=config["constants"], 
+        checker_params=config["params"], 
+        traces_dir=config["traces_dir"]
+    )
     _print_results(result)
     print(f"Total time: {(timer() - start_time):.2f} seconds")
 
@@ -235,12 +273,7 @@ def check(
     """
     Check that the invariants hold in the model, or generate a trace for a counterexample.
     """
-    mc_invariants = invariants
-    if config_path is None and mc_invariants == []:
-        print("ERROR: either --config-path or --invariants must be specified.")
-        raise typer.Exit(code=1)
-
-    _run_checker("check", mc_invariants, config_path, model_path, constants, traces_dir, params)
+    _run_checker("check", invariants, config_path, model_path, constants, params, traces_dir)
 
 
 @app.command()
@@ -269,12 +302,7 @@ def sample(
     """
     Generate execution traces that reach the state described by the `examples` properties.
     """
-    mc_invariants = examples
-    if config_path is None and mc_invariants == []:
-        print("ERROR: either --config-path or --examples must be specified.")
-        raise typer.Exit(code=1)
-
-    _run_checker("sample", mc_invariants, config_path, model_path, constants, traces_dir, params)
+    _run_checker("sample", examples, config_path, model_path, constants, params, traces_dir)
 
 
 @app.command()
@@ -283,13 +311,19 @@ def info():
     Display information on the loaded model, if available.
     """
     global LOG_LEVEL
-    model = ModelFile.load(LOG_LEVEL)
+    model, config = ModelFile.load(LOG_LEVEL)
     if model is None:
         print("Model file does not exist")
         return
 
-    for k, v in model.info().items():
-        print(f"# {k}: {v}")
+    print("Model:")
+    for k, v in sorted(model.info().items()):
+        print(f"- {k}: {v}")
+
+    if config:
+        print("Config:")
+        for k, v in sorted(config.items()):
+            print(f"- {k}: {v}")
 
 
 @app.command()
