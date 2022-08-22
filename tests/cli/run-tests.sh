@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# See https://sipb.mit.edu/doc/safe-shell/
+set -eu -o pipefail
+
 MDX=ocaml-mdx
 
 if ! command -v $MDX &> /dev/null; then
