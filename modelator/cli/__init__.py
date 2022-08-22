@@ -173,18 +173,20 @@ def _run_checker(mode, properties, config_path, model_path, constants, params, t
 
     config = load_config_file(config_path)
 
-    # Overwrite configuration with parameters
+    # Overwrite configuration with passed arguments
+    config_from_arguments = {}
     if model_path:
-        config["model_path"] = model_path
+        config_from_arguments["model_path"] = model_path
     if constants:
-        config["constants"] = constants    
+        config_from_arguments["constants"] = constants    
     if properties:
-        config[properties_config_name] = properties
+        config_from_arguments[properties_config_name] = properties
     if traces_dir:
-        config["traces_dir"] = traces_dir
+        config_from_arguments["traces_dir"] = traces_dir
+    config = config | config_from_arguments
     
     # Note that the `params` may contain fields not available in the configuration.
-    config["params"] = params | config["params"]
+    config["params"] = config["params"] | params
 
     model = None
     if model_path:
@@ -193,7 +195,7 @@ def _run_checker(mode, properties, config_path, model_path, constants, params, t
     if not model:
         model, saved_config = ModelFile.load(LOG_LEVEL)
         if saved_config:
-            config = config | saved_config
+            config = config | saved_config | config_from_arguments
 
     if not model or not config[properties_config_name]:
         print("ERROR: could not find a model and a configuration with properties to check; either:")

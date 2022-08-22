@@ -24,7 +24,7 @@ Model:
 - module_name: Test1
 - monitors: []
 - next: Next
-- operators: ['Init', 'Next', 'Inv']
+- operators: ['Init', 'Next', 'Inv', 'Inv2']
 - variables: ['x']
 ```
 
@@ -50,7 +50,7 @@ $ modelator check --invariants=Inv
 ...
 ```
 
-Running `check` on a property that is not defined in the model will fail:
+Running `check` on a property that is not defined in the model should fail:
 
 ```sh
 $ modelator check --invariants=NonExistingProperty

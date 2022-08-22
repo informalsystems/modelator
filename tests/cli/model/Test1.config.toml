@@ -17,7 +17,7 @@ traces_dir = "traces/Test1"
 # config = "path/to/config.cfg"
 
 # maximal number of Next steps, Apalache default: 10; called depth in TLC
-length = 20
+length = 5
 
 # do not stop on first error, but produce up to a given number of counterexamples (fine tune with --view), default: 1
 # max_error = 5
