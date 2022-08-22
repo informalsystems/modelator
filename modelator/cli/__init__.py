@@ -75,11 +75,11 @@ def _print_results(result: ModelResult):
 
 @app.command()
 def load(
-    path: str = typer.Argument(
-        ..., help="Path to a TLA+ model file."
-    ),
+    path: str = typer.Argument(..., help="Path to a TLA+ model file."),
     config_path: Optional[str] = typer.Option(
-        None, "--config", help="Path to a TOML configuration file.",
+        None,
+        "--config",
+        help="Path to a TOML configuration file.",
     ),
 ):
     """
@@ -155,9 +155,7 @@ def typecheck():
 )
 def check(
     # ctx: typer.Context,
-    model_path: Optional[str] = typer.Option(
-        None, help="Path to the TLA+ model file."
-    ),
+    model_path: Optional[str] = typer.Option(None, help="Path to the TLA+ model file."),
     config_path: Optional[str] = typer.Option(
         None, help="Path to TOML file with model and model checker configurations."
     ),
@@ -169,7 +167,8 @@ def check(
         None, help="List of invariants to check (overwrites config file)."
     ),
     params: Optional[List[str]] = typer.Option(
-        None, help="Extra parameters to be passed to the model-checker (overwrites config file)."
+        None,
+        help="Extra parameters to be passed to the model-checker (overwrites config file).",
     ),
     traces_dir: Optional[str] = typer.Option(
         None, help="Path to store generated trace files (overwrites config file)."
@@ -188,9 +187,7 @@ def check(
 
 @app.command()
 def sample(
-    model_path: Optional[str] = typer.Option(
-        None, help="Path to the TLA+ model file."
-    ),
+    model_path: Optional[str] = typer.Option(None, help="Path to the TLA+ model file."),
     config_path: Optional[str] = typer.Option(
         None, help="Path to TOML file with model and model checker configurations."
     ),
@@ -203,7 +200,8 @@ def sample(
         help="Model operators describing desired properties in the final state of the execution (overwrites config file).",
     ),
     params: Optional[List[str]] = typer.Option(
-        None, help="Extra parameters to be passed to the model-checker (overwrites config file)."
+        None,
+        help="Extra parameters to be passed to the model-checker (overwrites config file).",
     ),
     traces_dir: Optional[str] = typer.Option(
         None, help="Path to store generated trace files (overwrites config file)."
@@ -280,7 +278,9 @@ def _load_model_with_params(
 
     if not config[properties_config_name]:
         print("ERROR: could not find properties to check; either:")
-        print("- load a configuration together with a model `load <path/to/model/file> --config <path/to/config/file>`, or")
+        print(
+            "- load a configuration together with a model `load <path/to/model/file> --config <path/to/config/file>`, or"
+        )
         print("- provide a path to a config file with --config-path, or")
         print("- provide a list of properties to check with --invariants")
         raise typer.Exit(code=2)
