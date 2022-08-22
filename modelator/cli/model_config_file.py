@@ -3,10 +3,7 @@ from pathlib import Path
 import toml
 
 
-def _model_checker_params():
-    """
-    List of model-checker parameters that we support.
-    """
+def _supported_apalache_parameters():
     return [
         "cinit",
         "config",
@@ -22,7 +19,7 @@ def _set_default_values(config):
     """
     Set default values for missing keys in the configuration.
     """
-    config = {"Model": {}, "Constants": {}, "Config": {}, "Checker": {}} | config
+    config = {"Model": {}, "Constants": {}, "Config": {}, "Apalache": {}} | config
 
     config["Model"] = {
         "model_path": None,
@@ -37,8 +34,8 @@ def _set_default_values(config):
         "traces_dir": None,
     } | config["Config"]
 
-    default_params = dict([(p, None) for p in _model_checker_params()])
-    config["Checker"] = default_params | config["Checker"]
+    default_apalache_params = dict([(p, None) for p in _supported_apalache_parameters()])
+    config["Apalache"] = default_apalache_params | config["Apalache"]
 
     return config
 
@@ -78,8 +75,8 @@ def load_config_file(config_path):
     config = _set_default_values(config)
 
     # use the same key name as in the CLI commands
-    config["params"] = config["Checker"]
-    del config["Checker"]
+    config["params"] = config["Apalache"]
+    del config["Apalache"]
 
     config = _flatten(config)
 

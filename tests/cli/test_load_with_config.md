@@ -55,9 +55,9 @@ $ modelator check
 Run `check` on the loaded model overriding the property to check and passing some setting to the checker:
 
 ```sh
-$ modelator check --invariants InvB --params init=InitB;length=3
+$ modelator check --invariants InvB --init=InitB --params length=3
 ...
-✅ Inv2
+✅ InvB
 ...
 ```
 
