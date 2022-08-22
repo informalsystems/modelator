@@ -34,7 +34,9 @@ def _set_default_values(config):
         "traces_dir": None,
     } | config["Config"]
 
-    default_apalache_params = dict([(p, None) for p in _supported_apalache_parameters()])
+    default_apalache_params = dict(
+        [(p, None) for p in _supported_apalache_parameters()]
+    )
     config["Apalache"] = default_apalache_params | config["Apalache"]
 
     return config
