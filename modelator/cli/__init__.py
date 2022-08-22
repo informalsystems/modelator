@@ -159,7 +159,70 @@ def typecheck():
         print(e)
 
 
-def _run_checker(mode, properties, config_path, model_path, constants, params, traces_dir):
+@app.command()
+def check(
+    config_path: Optional[str] = typer.Option(
+        None, help="Path to TOML file with the model and model checker configuration."
+    ),
+    model_path: Optional[str] = typer.Option(
+        None, help="Path to the TLA+ model file (overwrites config file)."
+    ),
+    constants: Optional[List[str]] = typer.Option(
+        None,
+        help="Constant definitions in the format 'name=value' (overwrites config file).",
+    ),
+    invariants: Optional[List[str]] = typer.Option(
+        None, help="List of invariants to check (overwrites config file)."
+    ),
+    params: Optional[List[str]] = typer.Option(
+        None, help="Extra parameters to be passed to the model-checker."
+    ),
+    traces_dir: Optional[str] = typer.Option(
+        None, help="Path to store generated trace files (overwrites config file)."
+    ),
+):
+    """
+    Check that the invariants hold in the model, or generate a trace for a counterexample.
+    """
+    model, config = _load_model_with_params("check", invariants, config_path, model_path, constants, params, traces_dir)
+    _run_cheker("check", model, config)
+
+
+@app.command()
+def sample(
+    config_path: Optional[str] = typer.Option(
+        None, help="Path to TOML file with the model and model checker configuration."
+    ),
+    model_path: Optional[str] = typer.Option(
+        None, help="Path to the TLA+ model file (overwrites config file)."
+    ),
+    constants: Optional[List[str]] = typer.Option(
+        None,
+        help="Constant definitions in the format 'key=value' (overwrites config file).",
+    ),
+    examples: Optional[List[str]] = typer.Option(
+        None,
+        help="Model operators describing desired properties in the final state of the execution (overwrites config file).",
+    ),
+    params: Optional[List[str]] = typer.Option(
+        None, help="Extra parameters to be passed to the model-checker."
+    ),
+    traces_dir: Optional[str] = typer.Option(
+        None, help="Path to store generated trace files (overwrites config file)."
+    ),
+):
+    """
+    Generate execution traces that reach the state described by the `examples` properties.
+    """
+    model, config = _load_model_with_params("sample", examples, config_path, model_path, constants, params, traces_dir)
+    _run_cheker("sample", model, config)
+
+
+def _load_model_with_params(mode, properties, config_path, model_path, constants, params, traces_dir):
+    """
+    Load a model from the given configuration file, or model path, or from pickle file. 
+    Merge the configuration with the given parameters.
+    """
     if mode == "check":
         properties_config_name = "invariants"
     elif mode == "sample":
@@ -211,12 +274,21 @@ def _run_checker(mode, properties, config_path, model_path, constants, params, t
         print("ERROR: {} not defined in the model".format(", ".join(diff)))
         raise typer.Exit(code=1)
 
+    return model, config
+
+
+def _run_cheker(mode, model, config):
+    """
+    Run the model checker given a model and a configuration.
+    """
     if mode == "check":
         handler = model.check
         action = "Checking"
+        properties_config_name = "invariants"
     elif mode == "sample":
         handler = model.sample
         action = "Sampling"
+        properties_config_name = "examples"
     else:
         raise ValueError("Unknown checker mode")
 
@@ -226,67 +298,11 @@ def _run_checker(mode, properties, config_path, model_path, constants, params, t
         config[properties_config_name], 
         constants=config["constants"], 
         checker_params=config["params"], 
-        traces_dir=config["traces_dir"]
+        traces_dir=config["traces_dir"],
+        params=config["params"],
     )
     _print_results(result)
     print(f"Total time: {(timer() - start_time):.2f} seconds")
-
-
-@app.command()
-def check(
-    config_path: Optional[str] = typer.Option(
-        None, help="Path to TOML file with the model and model checker configuration."
-    ),
-    model_path: Optional[str] = typer.Option(
-        None, help="Path to the TLA+ model file (overwrites config file)."
-    ),
-    constants: Optional[List[str]] = typer.Option(
-        None,
-        help="Constant definitions in the format 'name=value' (overwrites config file).",
-    ),
-    invariants: Optional[List[str]] = typer.Option(
-        None, help="List of invariants to check (overwrites config file)."
-    ),
-    params: Optional[List[str]] = typer.Option(
-        None, help="Extra parameters to be passed to the model-checker."
-    ),
-    traces_dir: Optional[str] = typer.Option(
-        None, help="Path to store generated trace files (overwrites config file)."
-    ),
-):
-    """
-    Check that the invariants hold in the model, or generate a trace for a counterexample.
-    """
-    _run_checker("check", invariants, config_path, model_path, constants, params, traces_dir)
-
-
-@app.command()
-def sample(
-    config_path: Optional[str] = typer.Option(
-        None, help="Path to TOML file with the model and model checker configuration."
-    ),
-    model_path: Optional[str] = typer.Option(
-        None, help="Path to the TLA+ model file (overwrites config file)."
-    ),
-    constants: Optional[List[str]] = typer.Option(
-        None,
-        help="Constant definitions in the format 'key=value' (overwrites config file).",
-    ),
-    examples: Optional[List[str]] = typer.Option(
-        None,
-        help="Model operators describing desired properties in the final state of the execution (overwrites config file).",
-    ),
-    params: Optional[List[str]] = typer.Option(
-        None, help="Extra parameters to be passed to the model-checker."
-    ),
-    traces_dir: Optional[str] = typer.Option(
-        None, help="Path to store generated trace files (overwrites config file)."
-    ),
-):
-    """
-    Generate execution traces that reach the state described by the `examples` properties.
-    """
-    _run_checker("sample", examples, config_path, model_path, constants, params, traces_dir)
 
 
 @app.command()
