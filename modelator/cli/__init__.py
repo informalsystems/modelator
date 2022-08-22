@@ -302,23 +302,25 @@ app.add_typer(app_apalache, name="apalache")
 
 
 @app_apalache.command()
-def check(
+def info(
     version: Optional[str] = typer.Argument(
         const_values.DEFAULT_APALACHE_VERSION, help=f"Apalache's version."
     ),
 ):
     """
-    Check which version of Apalache is installed.
+    Display whether Apalache is installed and information about it.
     """
+    print(f"Default location for JAR file: {const_values.DEFAULT_CHECKERS_LOCATION}")
+    print(f"Looking for version: {version}")
     jar_path = apalache_jar.apalache_jar_build_path(
         const_values.DEFAULT_CHECKERS_LOCATION, version
     )
+    print(f"Looking for file: {jar_path}")
     if apalache_jar.apalache_jar_exists(jar_path, version):
-        print(f"Apalache jar file exists at {jar_path}")
         existing_version = apalache_jar.apalache_jar_version(jar_path)
-        print(f"Apalache jar version: {existing_version}")
+        print(f"Apalache JAR file exists and its version is {existing_version}")
     else:
-        print(f"Apalache jar file not found at {jar_path}")
+        print(f"Apalache JAR file not found")
 
 
 @app_apalache.command()
