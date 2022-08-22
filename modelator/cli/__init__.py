@@ -115,26 +115,10 @@ def load(
     if Path(path).suffix == ".toml":
         config = load_config_file(path)
         model_path = config["model_path"]
+    else:
+        model_path = path
 
     print(f"Loading {model_path}... ")
-    model = _create_and_parse_model(model_path)
-    ModelFile.save(model, config)
-    print("Loading OK ✅")
-
-
-@app.command()
-def reload():
-    """
-    Reload current model, if any.
-    """
-    model, config = ModelFile.load(LOG_LEVEL)
-    if model is None:
-        print("ERROR: model not loaded; run `modelator load` first")
-        return
-
-    model_path = model.tla_file_path
-
-    print(f"Reloading {model_path}... ")
     model = _create_and_parse_model(model_path)
     ModelFile.save(model, config)
     print("Loading OK ✅")
