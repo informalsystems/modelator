@@ -222,6 +222,13 @@ def sample(
     _run_cheker("sample", model, config)
 
 
+def _parse_list_of_assignments(list: List[str]) -> Dict[str, str]:
+    try:
+        return dict([c.split("=") for c in list])
+    except ValueError:
+        print(f"ERROR: cannot parse {list} as a ;-separated list of assignments")
+        raise typer.Exit(code=1)
+
 def _load_model_with_params(
     mode, properties, config_path, model_path, constants, params, traces_dir
 ):
@@ -237,8 +244,8 @@ def _load_model_with_params(
         raise ValueError("Unknown checker mode")
 
     # Convert lists to dicts
-    constants = dict([c.split("=") for c in constants])
-    params = dict([p.split("=") for p in params])
+    constants = _parse_list_of_assignments(constants)
+    params = _parse_list_of_assignments(params)
 
     config = load_config_file(config_path)
 
