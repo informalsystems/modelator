@@ -5,7 +5,7 @@ import toml
 
 def _model_checker_params():
     """
-    The list of model-checker parameters.
+    List of model-checker parameters that we support.
     """
     return [
         "cinit",
