@@ -1,10 +1,12 @@
 First make sure that there is no model loaded:
+
 ```sh
 $ modelator reset
 ...
 ```
 
 Load model and configuration from a toml file:
+
 ```sh
 $ modelator load model/Test1.config.toml
 ...
@@ -42,6 +44,7 @@ Type checking OK ✅
 ```
 
 Run `check` on the loaded model:
+
 ```sh
 $ modelator check
 ...
@@ -50,6 +53,7 @@ $ modelator check
 ```
 
 Run `check` on the loaded model overriding the property to check and passing some setting to the checker:
+
 ```sh
 $ modelator check --invariants Inv2 --params "length=3"
 ...
@@ -68,6 +72,7 @@ ERROR: NonExistingProperty not defined in the model
 ```
 
 Clean the generated files after the test:
+
 ```sh
 $ modelator reset
 Model file removed

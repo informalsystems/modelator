@@ -30,11 +30,11 @@ class ModelFile:
             return model, config
 
     @staticmethod
-    def save(model, config = None):
+    def save(model, config=None):
         """
         Save serialized model object to a file
         """
-        data = { "model": model, "config": config }
+        data = {"model": model, "config": config}
         with open(MODEL_FILE_NAME, "wb") as f:
             pickle.dump(data, f)
 

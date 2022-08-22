@@ -15,13 +15,13 @@ traces_dir = "modelator/samples/traces/HelloFull"
 # cinit = "CInit"
 
 # configuration file in TLC format
-# config = "path/to/config.cfg" 
+# config = "path/to/config.cfg"
 
 # maximal number of Next steps, Apalache default: 10; called depth in TLC
-length = 100 
+length = 100
 
 # do not stop on first error, but produce up to a given number of counterexamples (fine tune with --view), default: 1
-# max_error = 5 
+# max_error = 5
 
 # do not check for deadlocks, default: false; called check_deadlock in TLC
 # no_deadlock = false
@@ -30,4 +30,4 @@ length = 100
 save_runs = false
 
 # the state view to use with --max-error=n, default: transition index
-view = "View" 
+view = "View"

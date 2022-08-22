@@ -184,7 +184,9 @@ def check(
     """
     Check that the invariants hold in the model, or generate a trace for a counterexample.
     """
-    model, config = _load_model_with_params("check", invariants, config_path, model_path, constants, params, traces_dir)
+    model, config = _load_model_with_params(
+        "check", invariants, config_path, model_path, constants, params, traces_dir
+    )
     _run_cheker("check", model, config)
 
 
@@ -214,13 +216,17 @@ def sample(
     """
     Generate execution traces that reach the state described by the `examples` properties.
     """
-    model, config = _load_model_with_params("sample", examples, config_path, model_path, constants, params, traces_dir)
+    model, config = _load_model_with_params(
+        "sample", examples, config_path, model_path, constants, params, traces_dir
+    )
     _run_cheker("sample", model, config)
 
 
-def _load_model_with_params(mode, properties, config_path, model_path, constants, params, traces_dir):
+def _load_model_with_params(
+    mode, properties, config_path, model_path, constants, params, traces_dir
+):
     """
-    Load a model from the given configuration file, or model path, or from pickle file. 
+    Load a model from the given configuration file, or model path, or from pickle file.
     Merge the configuration with the given parameters.
     """
     if mode == "check":
@@ -241,19 +247,21 @@ def _load_model_with_params(mode, properties, config_path, model_path, constants
     if model_path:
         config_from_arguments["model_path"] = model_path
     if constants:
-        config_from_arguments["constants"] = constants    
+        config_from_arguments["constants"] = constants
     if properties:
         config_from_arguments[properties_config_name] = properties
     if traces_dir:
         config_from_arguments["traces_dir"] = traces_dir
     config = config | config_from_arguments
-    
+
     # Note that the `params` may contain fields not available in the configuration.
     config["params"] = config["params"] | params
 
     model = None
     if model_path:
-        model = _create_and_parse_model(model_path, config["init"], config["next"], config["constants"])
+        model = _create_and_parse_model(
+            model_path, config["init"], config["next"], config["constants"]
+        )
 
     if not model:
         model, saved_config = ModelFile.load(LOG_LEVEL)
@@ -261,11 +269,13 @@ def _load_model_with_params(mode, properties, config_path, model_path, constants
             config = config | saved_config | config_from_arguments
 
     if not model or not config[properties_config_name]:
-        print("ERROR: could not find a model and a configuration with properties to check; either:")
+        print(
+            "ERROR: could not find a model and a configuration with properties to check; either:"
+        )
         print("- specify a path to a config file with --config-path, or")
         print("- load a model from a config file with `load <path/to/config/file>`, or")
         print("- load a model from a TLA+ file and specify --invariants")
-        if config['model_path']:
+        if config["model_path"]:
             print(f"\nPath to model file: {config['model_path']}")
         raise typer.Exit(code=1)
 
@@ -295,9 +305,9 @@ def _run_cheker(mode, model, config):
     start_time = timer()
     print("{} {}... ".format(action, ", ".join(config[properties_config_name])))
     result = handler(
-        config[properties_config_name], 
-        constants=config["constants"], 
-        checker_params=config["params"], 
+        config[properties_config_name],
+        constants=config["constants"],
+        checker_params=config["params"],
         traces_dir=config["traces_dir"],
         params=config["params"],
     )

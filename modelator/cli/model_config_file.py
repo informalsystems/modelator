@@ -22,8 +22,8 @@ def _set_default_values(config):
     """
     Set default values for missing keys in the configuration.
     """
-    config = {"Model": {}, "Constants": {}, "Config": {}, "Checker": {}}| config
-    
+    config = {"Model": {}, "Constants": {}, "Config": {}, "Checker": {}} | config
+
     config["Model"] = {
         "model_path": None,
         "init": "Init",
@@ -32,14 +32,14 @@ def _set_default_values(config):
         "examples": [],
         "config_file_path": None,
     } | config["Model"]
-    
+
     config["Config"] = {
         "traces_dir": None,
     } | config["Config"]
 
     default_params = dict([(p, None) for p in _model_checker_params()])
     config["Checker"] = default_params | config["Checker"]
-    
+
     return config
 
 
