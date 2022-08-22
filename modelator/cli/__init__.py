@@ -229,6 +229,7 @@ def _parse_list_of_assignments(list: List[str]) -> Dict[str, str]:
         print(f"ERROR: cannot parse {list} as a ;-separated list of assignments")
         raise typer.Exit(code=1)
 
+
 def _load_model_with_params(
     mode, properties, config_path, model_path, constants, params, traces_dir
 ):
@@ -316,7 +317,6 @@ def _run_cheker(mode, model, config):
         constants=config["constants"],
         checker_params=config["params"],
         traces_dir=config["traces_dir"],
-        params=config["params"],
     )
     _print_results(result)
     print(f"Total time: {(timer() - start_time):.2f} seconds")
