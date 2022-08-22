@@ -1,0 +1,33 @@
+[Model]
+# name = "HelloFull"
+model_path = "model/Test1.tla"
+init = "Init"
+# next = "Next"
+invariants = ["Inv"]
+# examples = ["ExTest", "ExFail"]
+
+[Config]
+# location for the generated trace files
+traces_dir = "traces/Test1"
+
+[Checker]
+# the name of an operator that initializes CONSTANTS, default: None
+# cinit = "CInit"
+
+# configuration file in TLC format
+# config = "path/to/config.cfg"
+
+# maximal number of Next steps, Apalache default: 10; called depth in TLC
+length = 20
+
+# do not stop on first error, but produce up to a given number of counterexamples (fine tune with --view), default: 1
+# max_error = 5
+
+# do not check for deadlocks, default: false; called check_deadlock in TLC
+no_deadlock = true
+
+# save an example trace for each simulated run, default: false
+save_runs = false
+
+# the state view to use with --max-error=n, default: transition index
+# view = "View"
