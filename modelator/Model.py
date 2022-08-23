@@ -104,7 +104,7 @@ class Model:
 
         args_config_file_name = "generated_config.cfg"
 
-        args = {const_values.CONFIG: args_config_file_name}
+        args = {const_values.CONFIG: args_config_file_name} | checker_params
         checking_files_content.update({args_config_file_name: args_config_file})
 
         if checker == const_values.TLC:
