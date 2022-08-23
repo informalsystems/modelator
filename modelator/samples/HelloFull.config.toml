@@ -1,6 +1,4 @@
 [Model]
-# name = "HelloFull"
-model_path = "modelator/samples/HelloFull.tla"
 init = "Init"
 # next = "Next"
 invariants = ["Inv", "AlwaysEvenInvariant"]
@@ -25,9 +23,6 @@ length = 100
 
 # do not check for deadlocks; default: false
 # no_deadlock = false
-
-# save an example trace for each simulated run, default: false
-save_runs = false
 
 # the state view to use with --max-error=n, default: transition index
 view = "View"

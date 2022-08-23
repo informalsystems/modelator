@@ -159,10 +159,10 @@ def typecheck():
 
 
 @app.command(
-    # context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
 )
 def check(
-    # ctx: typer.Context,
+    ctx: typer.Context,
     model_path: Optional[str] = typer.Option(None, help="Path to the TLA+ model file."),
     config_path: Optional[str] = typer.Option(
         None, help="Path to TOML file with model and model checker configurations."
@@ -186,10 +186,11 @@ def check(
 ):
     """
     Check that the invariants hold in the model, or generate a trace for a counterexample.
+
+    If extra options are provided, they will be passed directly to the model-checker, 
+    overwriting values in the config file.
     """
-    # for extra_arg in ctx.args:
-    #     print(f"Got extra arg: {extra_arg}")
-    model, config = _load_model_with_params(
+    model, config = _load_model_with_arguments(
         "check",
         invariants,
         model_path,
@@ -197,14 +198,17 @@ def check(
         init,
         next,
         constants,
-        params,
         traces_dir,
+        ctx.args
     )
     _run_cheker("check", model, config)
 
 
-@app.command()
+@app.command(
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
+)
 def sample(
+    ctx: typer.Context,
     model_path: Optional[str] = typer.Option(None, help="Path to the TLA+ model file."),
     config_path: Optional[str] = typer.Option(
         None, help="Path to TOML file with model and model checker configurations."
@@ -219,18 +223,17 @@ def sample(
         None,
         help="Model operators describing desired properties in the final state of the execution (overwrites config file).",
     ),
-    params: Optional[List[str]] = typer.Option(
-        None,
-        help="Extra parameters to be passed to the model-checker (overwrites config file).",
-    ),
     traces_dir: Optional[str] = typer.Option(
         None, help="Path to store generated trace files (overwrites config file)."
     ),
 ):
     """
     Generate execution traces that reach the state described by the `examples` properties.
+
+    If extra options are provided, they will be passed directly to the model-checker, 
+    overwriting values in the config file.
     """
-    model, config = _load_model_with_params(
+    model, config = _load_model_with_arguments(
         "sample",
         examples,
         model_path,
@@ -238,8 +241,8 @@ def sample(
         init,
         next,
         constants,
-        params,
         traces_dir,
+        ctx.args
     )
     _run_cheker("sample", model, config)
 
@@ -252,24 +255,18 @@ def _parse_list_of_assignments(list: List[str]) -> Dict[str, str]:
         raise typer.Exit(code=1)
 
 
-def _load_model_with_params(
-    mode, properties, model_path, config_path, init, next, constants, params, traces_dir
+def _load_config_and_merge_arguments(
+    config_path, properties_config_name, properties, init, next, constants, traces_dir, extra_args
 ):
     """
-    Load a model from the given configuration file, or model path, or from pickle file.
-    Merge the configuration with the given parameters.
+    Load a config file and merge it with the given arguments.
     """
-    if mode == "check":
-        properties_config_name = "invariants"
-    elif mode == "sample":
-        properties_config_name = "examples"
-    else:
-        raise ValueError("Unknown checker mode")
-
     # Convert lists to dicts
     constants = _parse_list_of_assignments(constants)
-    params = _parse_list_of_assignments(params)
+    extra_args = [arg[2:] for arg in extra_args if arg.startswith("--")]
+    extra_args = _parse_list_of_assignments(extra_args)
 
+    # Load config file
     try:
         config = load_config_file(config_path)
     except FileNotFoundError:
@@ -290,17 +287,39 @@ def _load_model_with_params(
         config_from_arguments["traces_dir"] = traces_dir
     config = config | config_from_arguments
 
-    # Note that the `params` may contain fields not available in the configuration.
-    config["params"] = config["params"] | params
+    # Update model-cheker arguments. Note that `extra_args` may contain any
+    # field name, even some not supported in the configuration file.
+    config["params"] = config["params"] | extra_args
+
+    return config, config_from_arguments
+
+
+def _load_model_with_arguments(
+    mode, properties, model_path, config_path, init, next, constants, traces_dir, extra_args
+):
+    """
+    Load a model from the given configuration file, or model path, or from pickle file.
+    Merge the configuration with the given parameters.
+    """
+    if mode == "check":
+        properties_config_name = "invariants"
+    elif mode == "sample":
+        properties_config_name = "examples"
+    else:
+        raise ValueError("Unknown checker mode")
+
+    config, config_from_arguments = _load_config_and_merge_arguments(
+        config_path, properties_config_name, properties, init, next, constants, traces_dir, extra_args)
 
     model = None
-    # load a model from a given path
+    
+    # Load a model from a given path...
     if model_path:
         model = _create_and_parse_model(
             model_path, config["init"], config["next"], config["constants"]
         )
 
-    # or load a model saved in a pickle file
+    # or load a model saved in a pickle file.
     if not model:
         model, saved_config, _ = ModelFile.load(LOG_LEVEL)
         if saved_config:
@@ -315,12 +334,14 @@ def _load_model_with_params(
     if not config[properties_config_name]:
         print("ERROR: could not find properties to check; either:")
         print(
-            "- load a configuration together with a model `load <path/to/model/file> --config <path/to/config/file>`, or"
+            "- load a configuration together with a model " 
+            "`load <path/to/model/file> --config <path/to/config/file>`, or"
         )
         print("- provide a path to a config file with --config-path, or")
         print("- provide a list of properties to check with --invariants")
         raise typer.Exit(code=2)
 
+    # Check that the properties are defined in the model
     diff = set(config[properties_config_name]) - set(model.operators)
     if diff:
         print("ERROR: {} not defined in the model".format(", ".join(diff)))
@@ -333,7 +354,6 @@ def _run_cheker(mode, model, config):
     """
     Run the model checker given a model and a configuration.
     """
-    print(config["init"])
     model.init_predicate = config["init"]
     model.next_predicate = config["next"]
 
