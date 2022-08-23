@@ -102,7 +102,11 @@ def load(
     config = None
     if config_path:
         print(f"Loading {config_path}... ")
-        config = load_config_file(config_path)
+        try:
+            config = load_config_file(config_path)
+        except FileNotFoundError:
+            print(f"ERROR: config file not found")
+            raise typer.Exit(code=4)
 
     ModelFile.save(model, config, config_path)
     print("Loading OK ✅")
@@ -125,7 +129,11 @@ def reload():
 
     if config_path:
         print(f"Loading {config_path}... ")
-        config = load_config_file(config_path)
+        try:
+            config = load_config_file(config_path)
+        except FileNotFoundError:
+            print(f"ERROR: config file not found")
+            raise typer.Exit(code=4)
 
     ModelFile.save(model, config, config_path)
     print("Loading OK ✅")
@@ -262,7 +270,11 @@ def _load_model_with_params(
     constants = _parse_list_of_assignments(constants)
     params = _parse_list_of_assignments(params)
 
-    config = load_config_file(config_path)
+    try:
+        config = load_config_file(config_path)
+    except FileNotFoundError:
+        print(f"ERROR: config file not found")
+        raise typer.Exit(code=4)
 
     # Overwrite configuration with passed arguments
     config_from_arguments = {}
