@@ -47,7 +47,7 @@ Run `check` on the loaded model:
 ```sh
 $ modelator check
 ...
-✅ Inv
+- Inv OK ✅
 ...
 ```
 
@@ -56,7 +56,7 @@ Run `check` on the loaded model overriding the property to check and passing som
 ```sh
 $ modelator check --invariants InvB --init=InitB --params length=3
 ...
-✅ InvB
+- InvB OK ✅
 ...
 ```
 

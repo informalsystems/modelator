@@ -54,9 +54,9 @@ def _create_and_parse_model(model_path: str, init="Init", next="Next", constants
 def _print_results(result: ModelResult):
     print("Results:")
     for op in result.inprogress():
-        print(f"⏳ {op}")
+        print(f"- {op} ⏳")
     for op in result.successful():
-        print(f"✅ {op}")
+        print(f"- {op} OK ✅")
         trace = result.traces(op)
         if trace:
             print(f"    Trace: {trace}")
@@ -64,7 +64,7 @@ def _print_results(result: ModelResult):
         if trace_paths:
             print(f"    Trace files: {trace_paths}")
     for op in result.unsuccessful():
-        print(f"❌ {op}")
+        print(f"- {op} FAILED ❌")
         trace = result.traces(op)
         if trace:
             print(f"    Trace: {trace}")

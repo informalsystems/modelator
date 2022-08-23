@@ -54,7 +54,7 @@ Run `check` on the loaded model specifying a property to check:
 ```sh
 $ modelator check --invariants=Inv
 ...
-✅ Inv
+- Inv OK ✅
 ...
 ```
 

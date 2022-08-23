@@ -50,7 +50,7 @@ Run `check` on the loaded model reading the `invariants` and `cinit` from the co
 ```sh
 $ modelator check --config-path model/Test2.config.toml
 ...
-✅ Inv
+- Inv OK ✅
 ...
 ```
 
@@ -59,7 +59,7 @@ Run `check` on the loaded model overriding the property to check and passing som
 ```sh
 $ modelator check --invariants Inv --cinit=ConstInit
 ...
-✅ Inv
+- Inv OK ✅
 ...
 ```
 
