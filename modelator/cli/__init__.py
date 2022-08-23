@@ -187,7 +187,7 @@ def check(
     """
     Check that the invariants hold in the model, or generate a trace for a counterexample.
 
-    If extra options are provided, they will be passed directly to the model-checker, 
+    If extra options are provided, they will be passed directly to the model-checker,
     overwriting values in the config file.
     """
     model, config = _load_model_with_arguments(
@@ -199,7 +199,7 @@ def check(
         next,
         constants,
         traces_dir,
-        ctx.args
+        ctx.args,
     )
     _run_cheker("check", model, config)
 
@@ -230,7 +230,7 @@ def sample(
     """
     Generate execution traces that reach the state described by the `examples` properties.
 
-    If extra options are provided, they will be passed directly to the model-checker, 
+    If extra options are provided, they will be passed directly to the model-checker,
     overwriting values in the config file.
     """
     model, config = _load_model_with_arguments(
@@ -242,7 +242,7 @@ def sample(
         next,
         constants,
         traces_dir,
-        ctx.args
+        ctx.args,
     )
     _run_cheker("sample", model, config)
 
@@ -256,7 +256,14 @@ def _parse_list_of_assignments(list: List[str]) -> Dict[str, str]:
 
 
 def _load_config_and_merge_arguments(
-    config_path, properties_config_name, properties, init, next, constants, traces_dir, extra_args
+    config_path,
+    properties_config_name,
+    properties,
+    init,
+    next,
+    constants,
+    traces_dir,
+    extra_args,
 ):
     """
     Load a config file and merge it with the given arguments.
@@ -295,7 +302,15 @@ def _load_config_and_merge_arguments(
 
 
 def _load_model_with_arguments(
-    mode, properties, model_path, config_path, init, next, constants, traces_dir, extra_args
+    mode,
+    properties,
+    model_path,
+    config_path,
+    init,
+    next,
+    constants,
+    traces_dir,
+    extra_args,
 ):
     """
     Load a model from the given configuration file, or model path, or from pickle file.
@@ -309,10 +324,18 @@ def _load_model_with_arguments(
         raise ValueError("Unknown checker mode")
 
     config, config_from_arguments = _load_config_and_merge_arguments(
-        config_path, properties_config_name, properties, init, next, constants, traces_dir, extra_args)
+        config_path,
+        properties_config_name,
+        properties,
+        init,
+        next,
+        constants,
+        traces_dir,
+        extra_args,
+    )
 
     model = None
-    
+
     # Load a model from a given path...
     if model_path:
         model = _create_and_parse_model(
@@ -334,7 +357,7 @@ def _load_model_with_arguments(
     if not config[properties_config_name]:
         print("ERROR: could not find properties to check; either:")
         print(
-            "- load a configuration together with a model " 
+            "- load a configuration together with a model "
             "`load <path/to/model/file> --config <path/to/config/file>`, or"
         )
         print("- provide a path to a config file with --config-path, or")

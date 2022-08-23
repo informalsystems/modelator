@@ -1,16 +1,15 @@
 [Model]
-init = "Init"
+# init = "Init"
 # next = "Next"
 invariants = ["Inv"]
-# examples = ["ExTest", "ExFail"]
 
 [Config]
 # location for the generated trace files
-traces_dir = "traces/Test1"
+traces_dir = "traces/Test2"
 
 [Apalache]
 # the name of an operator that initializes CONSTANTS, default: None
-# cinit = "CInit"
+cinit = "ConstInit"
 
 # configuration file in TLC format
 # config = "path/to/config.cfg"
@@ -22,7 +21,7 @@ length = 5
 # max_error = 5
 
 # do not check for deadlocks; default: false
-no_deadlock = true
+# no_deadlock = true
 
 # the state view to use with --max-error=n, default: transition index
 # view = "View"

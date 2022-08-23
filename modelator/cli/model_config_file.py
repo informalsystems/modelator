@@ -34,23 +34,17 @@ def _supported_apalache_parameters():
     return [
         # the name of an operator that initializes CONSTANTS, default: None
         "cinit",
-        
         # configuration file in TLC format
         "config",
-        
         # maximal number of Next steps; default: 10
         "length",
-        
         # do not stop on first error, but produce up to a given number of counterexamples (fine tune with --view), default: 1
         "max_error",
-        
         # do not check for deadlocks; default: false
         "no_deadlock",
-        
         # save an example trace for each simulated run, default: false
         # not supported by modelator-py
         # "save_runs",
-        
         # the state view to use with --max-error=n, default: transition index
         "view",
     ]

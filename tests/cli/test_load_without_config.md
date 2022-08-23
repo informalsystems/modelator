@@ -41,6 +41,14 @@ $ modelator check
 [2]
 ```
 
+Run `check` with a non existing config file should fail:
+
+```sh
+$ modelator check --config-path non-existing-file
+ERROR: config file not found
+[4]
+```
+
 Run `check` on the loaded model specifying a property to check:
 
 ```sh

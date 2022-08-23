@@ -32,9 +32,8 @@ Config at model/Test1.config.toml:
 - examples: []
 - init: Init
 - invariants: ['Inv']
-- model_path: model/Test1.tla
 - next: Next
-- params: {'cinit': None, 'config': None, 'no_deadlock': True, 'length': 5, 'max_error': None, 'save_runs': False, 'view': None}
+- params: {'cinit': None, 'config': None, 'length': 5, 'max_error': None, 'no_deadlock': True, 'view': None}
 - traces_dir: traces/Test1
 ```
 
