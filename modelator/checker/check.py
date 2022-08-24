@@ -25,7 +25,7 @@ check_logger = modelator_helpers.create_logger(logger_name=__file__, loglevel="e
 
 
 def check_tlc(
-    tla_file_path: str,
+    tla_file_name: str,
     files: Dict[str, str],
     args: Dict = {},
     do_parse: bool = True,
@@ -34,7 +34,7 @@ def check_tlc(
 ) -> CheckResult:
 
     if do_parse is True:
-        parse(tla_file_path, files)
+        parse(tla_file_name=tla_file_name, files=files)
 
     if config_file_name is not None:
         args["config"] = config_file_name
@@ -42,7 +42,7 @@ def check_tlc(
     json_command = modelator_helpers.wrap_command(
         cmd=const_values.CHECK_CMD,
         checker=const_values.TLC,
-        tla_file_name=tla_file_path,
+        tla_file_name=tla_file_name,
         files=files,
         args=args,
     )
@@ -68,7 +68,7 @@ def check_tlc(
 
 
 def check_apalache(
-    tla_file_path: str,
+    tla_file_name: str,
     files: Dict[str, str],
     args: Dict = {},
     do_parse: bool = True,
@@ -78,17 +78,17 @@ def check_apalache(
 ) -> CheckResult:
 
     if do_parse is True:
-        parse(tla_file_path, files)
+        parse(tla_file_name, files)
 
     if do_typecheck is True:
-        typecheck(tla_file_path, files)
+        typecheck(tla_file_name, files)
 
     if config_file_name is not None:
         args["config"] = config_file_name
 
     json_command = modelator_helpers.wrap_command(
         cmd=const_values.CHECK_CMD,
-        tla_file_name=tla_file_path,
+        tla_file_name=tla_file_name,
         files=files,
         args=args,
     )
@@ -149,14 +149,14 @@ if __name__ == "__main__":
 
     if args.checker == const_values.APALACHE:
         check_result = check_apalache(
-            tla_file_path=model_name,
+            tla_file_name=model_name,
             files=files,
             args=apalache_args,
             config_file_name=args.config,
         )
     else:
         check_result = check_tlc(
-            tla_file_path=model_name,
+            tla_file_name=model_name,
             files=files,
             config_file_name=args.config,
         )

@@ -1,34 +1,37 @@
-import json
 import os
-from typing import Dict
+from typing import Dict, Optional, Tuple
+
 from modelator_py.apalache.pure import apalache_pure
 
-from .utils import apalache_helpers, modelator_helpers
-from .utils.model_exceptions import ModelError, ModelParsingError
+from . import const_values
+from .utils import apalache_helpers, modelator_helpers, tla_helpers
+from .utils.model_exceptions import ModelParsingError
+
+# import utils
 
 
-def parse(tla_file_path: str, files: Dict[str, str]):
-    """
-    Parse the TLA+ model in `tla_file_path` with Apalache. If it fails, raise an
-    exception.
-    """
+"""
+The function sends the TLA+ model file (`tla_file_content`) to apalache parse command.
+Returns (True, "") if tla_file_content parses, otherwise (False, msg), where msg is a message for why
+the model does not parse.
+"""
 
-    json_command = modelator_helpers.wrap_command("parse", tla_file_path, files)
+
+def parse(tla_file_name: str, files: Dict[str, str]) -> Optional[ModelParsingError]:
+
+    json_command = modelator_helpers.wrap_command(
+        cmd="parse", tla_file_name=tla_file_name, files=files
+    )
+
     result = apalache_pure(json=json_command)
 
-    if result["return_code"] != 0:
+    if not result["return_code"] == 0:
         (
             error_description,
             file_name,
             line_number,
         ) = apalache_helpers.extract_parse_error(result["stdout"])
-        if file_name is None:
-            print("parse command: " + json.dumps(json_command, sort_keys=True, indent=4))
-            print("Apalache output:\n" + result["stdout"])
-            raise ModelError("Could not extract parsing error from Apalache output")
-
-        files_dir = os.path.dirname(tla_file_path)
-
+        files_dir = os.path.dirname(tla_file_name)
         raise ModelParsingError(
             problem_description=error_description,
             location=line_number,

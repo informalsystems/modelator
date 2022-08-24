@@ -45,7 +45,7 @@ class Model:
         for monitor in self.monitors:
             monitor.on_parse_start(res=ModelResult(model=self))
         try:
-            parse(self.tla_file_path, self.files_contents)
+            parse(tla_file_name=self.tla_file_path, files=self.files_contents)
             self.parsable = True
         except ModelParsingError as p_error:
             self.parsable = False
@@ -90,7 +90,7 @@ class Model:
         predicates,
         constants,
         checker,
-        tla_file_path,
+        tla_file_name,
         checking_files_content,
         checker_params,
         traces_dir,
@@ -115,7 +115,7 @@ class Model:
 
         try:
             result = check_func(
-                tla_file_path=tla_file_path,
+                tla_file_name=tla_file_name,
                 files=checking_files_content,
                 args=args,
                 traces_dir=traces_dir,
@@ -147,7 +147,7 @@ class Model:
             predicates=[predicate],
             constants=constants,
             checker=checker,
-            tla_file_path=tla_file_name,
+            tla_file_name=tla_file_name,
             checking_files_content=checking_files_content,
             checker_params=checker_params,
             traces_dir=traces_dir,

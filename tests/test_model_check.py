@@ -20,7 +20,7 @@ def _matching_check_value(
     files = tla_helpers.get_auxiliary_tla_files(tla_file_path)
     check_result = check_function(
         files=files,
-        tla_file_path=tla_file_path,
+        tla_file_name=tla_file_name,
         config_file_name=config_file_name,
         args=args,
         traces_dir=traces_dir,
