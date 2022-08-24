@@ -181,7 +181,7 @@ def check(
         help="Extra parameters to be passed to the model-checker (overwrites config file).",
     ),
     traces_dir: Optional[str] = typer.Option(
-        const_values.DEFAULT_TRACES_DIR, 
+        const_values.DEFAULT_TRACES_DIR,
         help="Path to store generated trace files (overwrites config file).",
     ),
 ):
@@ -225,7 +225,7 @@ def sample(
         help="Model operators describing desired properties in the final state of the execution (overwrites config file).",
     ),
     traces_dir: Optional[str] = typer.Option(
-        const_values.DEFAULT_TRACES_DIR, 
+        const_values.DEFAULT_TRACES_DIR,
         help="Path to store generated trace files (overwrites config file).",
     ),
 ):
@@ -351,19 +351,21 @@ def _load_model_with_arguments(
             config = config | saved_config | config_from_arguments
 
     if not model:
-        print("ERROR: could not find a model; either:")
-        print("- load a model with `load <path/to/model/file>`, or")
-        print("- provide a path to a model file with --model-path")
+        print(
+            "ERROR: could not find a model; either:\n"
+            "- load a model with `load <path/to/model/file>`, or\n"
+            "- provide a path to a model file with --model-path\n"
+        )
         raise typer.Exit(code=1)
 
     if not config[properties_config_name]:
-        print("ERROR: could not find properties to check; either:")
         print(
+            "ERROR: could not find properties to check; either:\n"
             "- load a configuration together with a model "
-            "`load <path/to/model/file> --config <path/to/config/file>`, or"
+            "`load <path/to/model/file> --config <path/to/config/file>`, or\n"
+            "- provide a path to a config file with --config-path, or\n"
+            f"- provide a list of properties to check with --{properties_config_name}\n"
         )
-        print("- provide a path to a config file with --config-path, or")
-        print("- provide a list of properties to check with --invariants")
         raise typer.Exit(code=2)
 
     # Check that the properties are defined in the model
