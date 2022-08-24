@@ -30,7 +30,7 @@ class ModelFile:
                 model = data["model"]
                 config = data["config"]
                 config_path = data["config_path"]
-            except KeyError as e:
+            except KeyError | TypeError as e:
                 print(f"Error in saved file: {e}")
                 return None, None, None
 
