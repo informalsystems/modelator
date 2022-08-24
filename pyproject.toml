@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "modelator"
-version = "0.5.2"
+version = "0.6.0"
 description = "Framework for Model Based Testing"
 authors = [
   "Andrey Kuprianov <andrey@informal.systems>",
