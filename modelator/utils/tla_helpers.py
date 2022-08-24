@@ -44,19 +44,8 @@ def _basic_args_to_config_string(
     return conf_string
 
 
-def _set_additional_apalache_args():
-    apalache_args = {}
-    apalache_args[const_values.APALACHE_NUM_STEPS] = 1000
-    return apalache_args
-
-
 def _negated_predicate(predicate_name: str):
     return predicate_name + "_negated"
-
-
-def _clear_negation_from_predicate(predicate_name: str):
-    assert predicate_name.endswith("_negated")
-    return predicate_name[: -len("_negated")]
 
 
 def tla_file_with_negated_predicates(
