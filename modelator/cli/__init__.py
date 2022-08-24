@@ -176,10 +176,6 @@ def check(
     invariants: Optional[List[str]] = typer.Option(
         None, help="List of invariants to check (overwrites config file)."
     ),
-    params: Optional[List[str]] = typer.Option(
-        None,
-        help="Extra parameters to be passed to the model-checker (overwrites config file).",
-    ),
     traces_dir: Optional[str] = typer.Option(
         const_values.DEFAULT_TRACES_DIR,
         help="Path to store generated trace files (overwrites config file).",
