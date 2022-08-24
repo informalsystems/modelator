@@ -181,7 +181,8 @@ def check(
         help="Extra parameters to be passed to the model-checker (overwrites config file).",
     ),
     traces_dir: Optional[str] = typer.Option(
-        None, help="Path to store generated trace files (overwrites config file)."
+        const_values.DEFAULT_TRACES_DIR, 
+        help="Path to store generated trace files (overwrites config file).",
     ),
 ):
     """
@@ -224,7 +225,8 @@ def sample(
         help="Model operators describing desired properties in the final state of the execution (overwrites config file).",
     ),
     traces_dir: Optional[str] = typer.Option(
-        None, help="Path to store generated trace files (overwrites config file)."
+        const_values.DEFAULT_TRACES_DIR, 
+        help="Path to store generated trace files (overwrites config file).",
     ),
 ):
     """
