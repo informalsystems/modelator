@@ -111,7 +111,6 @@ class Model:
             check_func = check_tlc
         else:  # if checker is Apalache
             check_func = check_apalache
-            args.update(tla_helpers._set_additional_apalache_args())
 
         try:
             result = check_func(
