@@ -202,7 +202,7 @@ def check(
         traces_dir,
         ctx.args,
     )
-    _run_cheker("check", model, config)
+    _run_checker("check", model, config)
 
 
 @app.command(
@@ -246,7 +246,7 @@ def sample(
         traces_dir,
         ctx.args,
     )
-    _run_cheker("sample", model, config)
+    _run_checker("sample", model, config)
 
 
 def _parse_list_of_assignments(list: List[str]) -> Dict[str, str]:
@@ -377,7 +377,7 @@ def _load_model_with_arguments(
     return model, config
 
 
-def _run_cheker(mode, model, config):
+def _run_checker(mode, model, config):
     """
     Run the model checker given a model and a configuration.
     """
