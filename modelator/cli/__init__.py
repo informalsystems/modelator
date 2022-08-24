@@ -1,5 +1,4 @@
 from pathlib import Path
-import typer
 from timeit import default_timer as timer
 from typing import List, Optional
 
@@ -109,26 +108,10 @@ def load(
     if Path(path).suffix == ".toml":
         config = load_config_file(path)
         model_path = config["model_path"]
+    else:
+        model_path = path
 
     print(f"Loading {model_path}... ")
-    model = _create_and_parse_model(model_path)
-    ModelFile.save(model)
-    print("Loading OK ✅")
-
-
-@app.command()
-def reload():
-    """
-    Reload current model, if any.
-    """
-    model = ModelFile.load(LOG_LEVEL)
-    if model is None:
-        print("ERROR: model not loaded; run `modelator load` first")
-        return
-
-    model_path = model.tla_file_path
-
-    print(f"Reloading {model_path}... ")
     model = _create_and_parse_model(model_path)
     ModelFile.save(model)
     print("Loading OK ✅")
@@ -292,31 +275,57 @@ def reset():
         print(f"Model file removed")
 
 
-@app.command()
-def check_apalache_jar(
+app_apalache = typer.Typer(
+    name="apalache",
+    help="Apalache: check whether the JAR file is locally available or download it.",
+    no_args_is_help=True,
+    add_completion=False,
+    rich_markup_mode="rich",
+)
+app.add_typer(app_apalache, name="apalache")
+
+
+@app_apalache.command()
+def info(
     version: Optional[str] = typer.Argument(
         const_values.DEFAULT_APALACHE_VERSION, help=f"Apalache's version."
     ),
 ):
     """
-    Check whether Apalache's uber jar file is installed, or download it otherwise.
+    Display whether Apalache is installed and information about it.
+    """
+    print(f"Default location for JAR file: {const_values.DEFAULT_CHECKERS_LOCATION}")
+    print(f"Looking for version: {version}")
+    jar_path = apalache_jar.apalache_jar_build_path(
+        const_values.DEFAULT_CHECKERS_LOCATION, version
+    )
+    print(f"Looking for file: {jar_path}")
+    if apalache_jar.apalache_jar_exists(jar_path, version):
+        existing_version = apalache_jar.apalache_jar_version(jar_path)
+        print(f"Apalache JAR file exists and its version is {existing_version}")
+    else:
+        print(f"Apalache JAR file not found")
+
+
+@app_apalache.command()
+def get(
+    version: Optional[str] = typer.Argument(
+        const_values.DEFAULT_APALACHE_VERSION, help=f"Apalache's version."
+    ),
+):
+    """
+    Download Apalache jar file.
     """
     jar_path = apalache_jar.apalache_jar_build_path(
         const_values.DEFAULT_CHECKERS_LOCATION, version
     )
-    if apalache_jar.apalache_jar_exists(jar_path, version):
-        print(f"Apalache jar file exists at {jar_path}")
-        existing_version = apalache_jar.apalache_jar_version(jar_path)
-        print(f"Apalache jar version: {existing_version}")
-    else:
-        print(f"Apalache jar file not found at {jar_path}")
-        print(f"Will attempt to download version {version}...")
-        try:
-            apalache_jar.apalache_jar_download(
-                download_location=const_values.DEFAULT_CHECKERS_LOCATION,
-                expected_version=version,
-            )
-            print("Done ✅")
-            print(f"Apalache jar file: {jar_path}")
-        except ValueError as e:
-            print(f"ERROR: {e}")
+    print(f"Downloading Apalache version {version}")
+    try:
+        apalache_jar.apalache_jar_download(
+            download_location=const_values.DEFAULT_CHECKERS_LOCATION,
+            expected_version=version,
+        )
+        print("Done ✅")
+        print(f"Apalache jar file: {jar_path}")
+    except ValueError as e:
+        print(f"ERROR: {e}")

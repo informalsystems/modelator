@@ -10,9 +10,31 @@ from inspect import signature
 from typing import Callable
 
 import pytest
+from munch import munchify
+from pyrsistent import freeze
 from pytest import FixtureRequest
 
 from modelator.Model import Model
+
+
+def sanitize_itf(obj):
+    match obj:
+        case dict():
+            if "#map" in obj:
+                return {
+                    freeze(sanitize_itf(k)): sanitize_itf(v) for (k, v) in obj["#map"]
+                }
+            if "#set" in obj:
+                return {freeze(sanitize_itf(e)) for e in obj["#set"]}
+            return {
+                sanitize_itf(k): sanitize_itf(v)
+                for (k, v) in obj.items()
+                if not k.startswith("#")
+            }
+        case list():
+            return [sanitize_itf(e) for e in obj]
+        case _:
+            return obj
 
 
 def dict_get_keypath(data, property_path=None):
@@ -50,7 +72,7 @@ def itf(filepath: str, keypath=None):
 
     def decorator(func: Callable) -> Callable:
         with open(filepath, encoding="utf-8") as f:
-            trace = json.load(f)["states"]
+            trace = munchify(sanitize_itf(json.load(f)["states"]))
 
         # step_fixtures are the fixtures tagged to ITF steps
         if keypath is None:
