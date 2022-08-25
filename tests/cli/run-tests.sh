@@ -4,6 +4,8 @@
 set -eu -o pipefail
 
 MDX=ocaml-mdx
+TRACES_DIR="./traces/"
+MD_FILES="${1:-*.md}"
 
 if ! command -v $MDX &> /dev/null; then
     echo "$MDX could not be found"
@@ -26,9 +28,11 @@ test_file() {
     fi
 }
 
-for MD_FILE in *.md; do
+for MD_FILE in $MD_FILES; do
     test_file $MD_FILE
 done
+
+rm -rdf $TRACES_DIR
 
 if (( $SCRIPT_EXIT_CODE != 0 )); then
     echo "Some tests failed"

@@ -1,8 +1,7 @@
 from pathlib import Path
 from timeit import default_timer as timer
-from typing import List, Optional
-
 import typer
+from typing import Dict, List, Optional
 
 from modelator import ModelResult, const_values
 from modelator.cli.model_config_file import load_config_file
@@ -52,28 +51,13 @@ def _create_and_parse_model(model_path: str, init="Init", next="Next", constants
     return model
 
 
-def _load_model(
-    model_path: Optional[str], init="Init", next="Next", constants={}
-) -> Optional[Model]:
-    global LOG_LEVEL
-    if model_path is None:
-        model = ModelFile.load(LOG_LEVEL)
-        if model is None:
-            print("Model file does not exist")
-            return None
-    else:
-        model = _create_and_parse_model(model_path, init, next, constants)
-
-    return model
-
-
 def _print_results(result: ModelResult):
     indent = " " * 4
     print("Results:")
     for op in result.inprogress():
-        print(f"⏳ {op}")
+        print(f"- {op} ⏳")
     for op in result.successful():
-        print(f"✅ {op}")
+        print(f"- {op} OK ✅")
         trace = result.traces(op)
         if trace:
             print(f"{indent}Trace: {trace}")
@@ -81,7 +65,7 @@ def _print_results(result: ModelResult):
         if trace_paths:
             print(f"{indent}Trace files: {trace_paths}")
     for op in result.unsuccessful():
-        print(f"❌ {op}")
+        print(f"- {op} FAILED ❌")
         if result.operator_errors[op]:
             error_msg = str(result.operator_errors[op]).replace("\n", f"{indent}\n")
             print(indent + error_msg)
@@ -95,8 +79,11 @@ def _print_results(result: ModelResult):
 
 @app.command()
 def load(
-    path: str = typer.Argument(
-        ..., help="Path to TLA+ model file or to TOML configuration file."
+    path: str = typer.Argument(..., help="Path to a TLA+ model file."),
+    config_path: Optional[str] = typer.Option(
+        None,
+        "--config",
+        help="Path to a TOML configuration file.",
     ),
 ):
     """
@@ -107,26 +94,34 @@ def load(
         return
 
     if ModelFile.exists():
-        print("WARNING: a model already exists and it will be overwritten")
+        typer.confirm(
+            "A model is already loaded and it will be overwritten. "
+            "Are you sure you want to continue?",
+            abort=True,
+        )
 
-    if Path(path).suffix == ".toml":
-        config = load_config_file(path)
-        model_path = config["model_path"]
-    else:
-        model_path = path
+    print(f"Loading {path}... ")
+    model = _create_and_parse_model(path)
 
-    print(f"Loading {model_path}... ")
-    model = _create_and_parse_model(model_path)
-    ModelFile.save(model)
+    config = None
+    if config_path:
+        print(f"Loading {config_path}... ")
+        try:
+            config = load_config_file(config_path)
+        except FileNotFoundError:
+            print(f"ERROR: config file not found")
+            raise typer.Exit(code=4)
+
+    ModelFile.save(model, config, config_path)
     print("Loading OK ✅")
 
 
 @app.command()
 def reload():
     """
-    Reload current model, if any.
+    Reload model and configuration files, if any.
     """
-    model = ModelFile.load(LOG_LEVEL)
+    model, config, config_path = ModelFile.load(LOG_LEVEL)
     if model is None:
         print("ERROR: model not loaded; run `modelator load` first")
         return
@@ -135,7 +130,16 @@ def reload():
 
     print(f"Reloading {model_path}... ")
     model = _create_and_parse_model(model_path)
-    ModelFile.save(model)
+
+    if config_path:
+        print(f"Loading {config_path}... ")
+        try:
+            config = load_config_file(config_path)
+        except FileNotFoundError:
+            print(f"ERROR: config file not found")
+            raise typer.Exit(code=4)
+
+    ModelFile.save(model, config, config_path)
     print("Loading OK ✅")
 
 
@@ -145,7 +149,7 @@ def typecheck():
     Type check the loaded model, if available.
     """
     global LOG_LEVEL
-    model = ModelFile.load(LOG_LEVEL)
+    model, _, _ = ModelFile.load(LOG_LEVEL)
     if model is None:
         print("Model file does not exist")
         return
@@ -158,14 +162,17 @@ def typecheck():
         print(e)
 
 
-@app.command()
+@app.command(
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
+)
 def check(
+    ctx: typer.Context,
+    model_path: Optional[str] = typer.Option(None, help="Path to the TLA+ model file."),
     config_path: Optional[str] = typer.Option(
-        None, help="Path to TOML file with the model and model checker configuration."
+        None, help="Path to TOML file with model and model checker configurations."
     ),
-    model_path: Optional[str] = typer.Option(
-        None, help="Path to the TLA+ model file (overwrites config file)."
-    ),
+    init: Optional[str] = typer.Option(None, help="Model's init predicate."),
+    next: Optional[str] = typer.Option(None, help="Model's next predicate."),
     constants: Optional[List[str]] = typer.Option(
         None,
         help="Constant definitions in the format 'name=value' (overwrites config file).",
@@ -174,46 +181,41 @@ def check(
         None, help="List of invariants to check (overwrites config file)."
     ),
     traces_dir: Optional[str] = typer.Option(
-        None, help="Path to store generated trace files (overwrites config file)."
+        const_values.DEFAULT_TRACES_DIR,
+        help="Path to store generated trace files (overwrites config file).",
     ),
 ):
     """
     Check that the invariants hold in the model, or generate a trace for a counterexample.
+
+    If extra options are provided, they will be passed directly to the model-checker,
+    overwriting values in the config file.
     """
-    mc_invariants = invariants
-    if config_path is None and mc_invariants == []:
-        print("ERROR: either --config-path or --invariants must be specified.")
-        raise typer.Exit(code=1)
-
-    # Dict is not supported by typer
-    constants = dict([c.split("=") for c in constants])
-
-    config = load_config_file(config_path)
-    model_path = config["model_path"] if model_path is None else model_path
-    constants = config["constants"] if constants is None else constants
-    mc_invariants = config["invariants"] if mc_invariants is None else mc_invariants
-    init = config["init"]
-    next = config["next"]
-    traces_dir = config["traces_dir"] if traces_dir is None else traces_dir
-
-    model = _load_model(model_path, init, next, constants)
-    if model is None:
-        return
-
-    start_time = timer()
-    result = model.check(mc_invariants, constants, traces_dir=traces_dir)
-    _print_results(result)
-    print(f"Total time: {(timer() - start_time):.2f} seconds")
+    model, config = _load_model_with_arguments(
+        "check",
+        invariants,
+        model_path,
+        config_path,
+        init,
+        next,
+        constants,
+        traces_dir,
+        ctx.args,
+    )
+    _run_checker("check", model, config)
 
 
-@app.command()
+@app.command(
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
+)
 def sample(
+    ctx: typer.Context,
+    model_path: Optional[str] = typer.Option(None, help="Path to the TLA+ model file."),
     config_path: Optional[str] = typer.Option(
-        None, help="Path to TOML file with the model and model checker configuration."
+        None, help="Path to TOML file with model and model checker configurations."
     ),
-    model_path: Optional[str] = typer.Option(
-        None, help="Path to the TLA+ model file (overwrites config file)."
-    ),
+    init: Optional[str] = typer.Option(None, help="Model's init predicate."),
+    next: Optional[str] = typer.Option(None, help="Model's next predicate."),
     constants: Optional[List[str]] = typer.Option(
         None,
         help="Constant definitions in the format 'key=value' (overwrites config file).",
@@ -223,34 +225,187 @@ def sample(
         help="Model operators describing desired properties in the final state of the execution (overwrites config file).",
     ),
     traces_dir: Optional[str] = typer.Option(
-        None, help="Path to store generated trace files (overwrites config file)."
+        const_values.DEFAULT_TRACES_DIR,
+        help="Path to store generated trace files (overwrites config file).",
     ),
 ):
     """
     Generate execution traces that reach the state described by the `examples` properties.
+
+    If extra options are provided, they will be passed directly to the model-checker,
+    overwriting values in the config file.
     """
-    mc_invariants = examples
-    if config_path is None and mc_invariants == []:
-        print("ERROR: either --config-path or --desired-states must be specified.")
+    model, config = _load_model_with_arguments(
+        "sample",
+        examples,
+        model_path,
+        config_path,
+        init,
+        next,
+        constants,
+        traces_dir,
+        ctx.args,
+    )
+    _run_checker("sample", model, config)
+
+
+def _parse_list_of_assignments(list: List[str]) -> Dict[str, str]:
+    try:
+        return dict([c.split("=") for c in list])
+    except ValueError:
+        print(f"ERROR: cannot parse {list} as a ;-separated list of assignments")
         raise typer.Exit(code=1)
 
-    # Dict is not supported by typer
-    constants = dict([c.split("=") for c in constants])
 
-    config = load_config_file(config_path)
-    model_path = config["model_path"] if model_path is None else model_path
-    constants = config["constants"] if constants is None else constants
-    mc_invariants = config["examples"] if mc_invariants is None else mc_invariants
-    init = config["init"]
-    next = config["next"]
-    traces_dir = config["traces_dir"] if traces_dir is None else traces_dir
+def _load_config_and_merge_arguments(
+    config_path,
+    properties_config_name,
+    properties,
+    init,
+    next,
+    constants,
+    traces_dir,
+    extra_args,
+):
+    """
+    Load a config file and merge it with the given arguments.
+    """
+    # Convert lists to dicts
+    constants = _parse_list_of_assignments(constants)
+    extra_args = [arg[2:] for arg in extra_args if arg.startswith("--")]
+    extra_args = _parse_list_of_assignments(extra_args)
 
-    model = _load_model(model_path, init, next, constants)
-    if model is None:
-        return
+    # Load config file
+    try:
+        config = load_config_file(config_path)
+    except FileNotFoundError:
+        print(f"ERROR: config file not found")
+        raise typer.Exit(code=4)
+
+    # Overwrite configuration with passed arguments
+    config_from_arguments = {}
+    if init:
+        config_from_arguments["init"] = init
+    if next:
+        config_from_arguments["next"] = next
+    if constants:
+        config_from_arguments["constants"] = constants
+    if properties:
+        config_from_arguments[properties_config_name] = properties
+    if traces_dir:
+        config_from_arguments["traces_dir"] = traces_dir
+    config |= config_from_arguments
+
+    # Update model-cheker arguments. Note that `extra_args` may contain any
+    # field name, even some not supported in the toml configuration file.
+    if extra_args:
+        config["params"] |= extra_args
+        config_from_arguments["params"] = extra_args
+
+    return config, config_from_arguments
+
+
+def _load_model_with_arguments(
+    mode,
+    properties,
+    model_path,
+    config_path,
+    init,
+    next,
+    constants,
+    traces_dir,
+    extra_args,
+):
+    """
+    Load a model from the given configuration file, or model path, or from pickle file.
+    Merge the configuration with the given parameters.
+    """
+    if mode == "check":
+        properties_config_name = "invariants"
+    elif mode == "sample":
+        properties_config_name = "examples"
+    else:
+        raise ValueError("Unknown checker mode")
+
+    config, config_from_arguments = _load_config_and_merge_arguments(
+        config_path,
+        properties_config_name,
+        properties,
+        init,
+        next,
+        constants,
+        traces_dir,
+        extra_args,
+    )
+
+    model = None
+
+    # Load a model from a given path...
+    if model_path:
+        model = _create_and_parse_model(
+            model_path, config["init"], config["next"], config["constants"]
+        )
+
+    # or load a model saved in a pickle file.
+    if not model:
+        model, saved_config, _ = ModelFile.load(LOG_LEVEL)
+        if saved_config:
+            config |= saved_config
+            config |= config_from_arguments
+
+    if not model:
+        print(
+            "ERROR: could not find a model; either:\n"
+            "- load a model with `load <path/to/model/file>`, or\n"
+            "- provide a path to a model file with --model-path\n"
+        )
+        raise typer.Exit(code=1)
+
+    if not config[properties_config_name]:
+        print(
+            "ERROR: could not find properties to check; either:\n"
+            "- load a configuration together with a model "
+            "`load <path/to/model/file> --config <path/to/config/file>`, or\n"
+            "- provide a path to a config file with --config-path, or\n"
+            f"- provide a list of properties to check with --{properties_config_name}\n"
+        )
+        raise typer.Exit(code=2)
+
+    # Check that the properties are defined in the model
+    diff = set(config[properties_config_name]) - set(model.operators)
+    if diff:
+        print("ERROR: {} not defined in the model".format(", ".join(diff)))
+        raise typer.Exit(code=3)
+
+    return model, config
+
+
+def _run_checker(mode, model, config):
+    """
+    Run the model checker given a model and a configuration.
+    """
+    model.init_predicate = config["init"]
+    model.next_predicate = config["next"]
+
+    if mode == "check":
+        handler = model.check
+        action = "Checking"
+        properties_config_name = "invariants"
+    elif mode == "sample":
+        handler = model.sample
+        action = "Sampling"
+        properties_config_name = "examples"
+    else:
+        raise ValueError("Unknown checker mode")
 
     start_time = timer()
-    result = model.sample(mc_invariants, constants, traces_dir=traces_dir)
+    print("{} {}... ".format(action, ", ".join(config[properties_config_name])))
+    result = handler(
+        config[properties_config_name],
+        constants=config["constants"],
+        checker_params=config["params"],
+        traces_dir=config["traces_dir"],
+    )
     _print_results(result)
     print(f"Total time: {(timer() - start_time):.2f} seconds")
 
@@ -261,13 +416,19 @@ def info():
     Display information on the loaded model, if available.
     """
     global LOG_LEVEL
-    model = ModelFile.load(LOG_LEVEL)
+    model, config, config_path = ModelFile.load(LOG_LEVEL)
     if model is None:
         print("Model file does not exist")
         return
 
-    for k, v in model.info().items():
-        print(f"# {k}: {v}")
+    print("Model:")
+    for k, v in sorted(model.info().items()):
+        print(f"- {k}: {v}")
+
+    if config:
+        print(f"Config at {config_path}:")
+        for k, v in sorted(config.items()):
+            print(f"- {k}: {v}")
 
 
 @app.command()

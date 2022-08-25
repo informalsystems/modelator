@@ -24,8 +24,8 @@ with an error message:
 
 ```sh
 $ modelator check --invariants Inv
-Results:
-❌ Inv
+...
+- Inv FAILED ❌
     A constant in the model is not initialized
 ...
 ```
@@ -46,7 +46,8 @@ should fail:
 ```sh
 $ modelator check --invariants Inv --constants X=AnUndefinedIdentifier
 ...
-❌ Inv
+- Inv FAILED ❌
+    A constant in the model is not initialized
 ...
 ```
 

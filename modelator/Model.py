@@ -104,14 +104,13 @@ class Model:
 
         args_config_file_name = "generated_config.cfg"
 
-        args = {const_values.CONFIG: args_config_file_name}
+        args = {const_values.CONFIG: args_config_file_name} | checker_params
         checking_files_content.update({args_config_file_name: args_config_file})
 
         if checker == const_values.TLC:
             check_func = check_tlc
         else:  # if checker is Apalache
             check_func = check_apalache
-            args.update(tla_helpers._set_additional_apalache_args())
 
         try:
             result = check_func(
@@ -368,6 +367,9 @@ class Model:
     def info(self) -> Dict[str, str]:
         return {
             "model_path": self.tla_file_path,
+            "module_name": self.module_name,
+            "variables": self.variables,
+            "operators": self.operators,
             "init": self.init_predicate,
             "next": self.next_predicate,
             "constants": self.constants,

@@ -1,28 +1,27 @@
 [Model]
-init = "Init"
+# init = "Init"
 # next = "Next"
-invariants = ["Inv", "AlwaysEvenInvariant"]
-examples = ["ExTest", "ExFail"]
+invariants = ["Inv"]
 
 [Config]
 # location for the generated trace files
-traces_dir = "modelator/samples/traces/HelloFull"
+traces_dir = "traces/Test2"
 
 [Apalache]
 # the name of an operator that initializes CONSTANTS, default: None
-# cinit = "CInit"
+cinit = "ConstInit"
 
 # configuration file in TLC format
 # config = "path/to/config.cfg"
 
 # maximal number of Next steps; default: 10
-length = 100
+length = 5
 
 # do not stop on first error, but produce up to a given number of counterexamples (fine tune with --view), default: 1
 # max_error = 5
 
 # do not check for deadlocks; default: false
-# no_deadlock = false
+# no_deadlock = true
 
 # the state view to use with --max-error=n, default: transition index
-view = "View"
+# view = "View"
