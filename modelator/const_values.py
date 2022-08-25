@@ -45,6 +45,7 @@ TYPECHECK_CMD = "typecheck"
 DEFAULT_INVARIANTS = ["Inv"]
 DEFAULT_INIT = "Init"
 DEFAULT_NEXT = "Next"
+DEFAULT_TRACES_DIR = "./traces/"
 
 INIT = "init"
 NEXT = "next"
