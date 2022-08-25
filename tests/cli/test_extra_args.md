@@ -5,14 +5,18 @@ $ modelator reset
 ...
 ```
 
-Load a model:
+Load a model and type check it:
 
 ```sh
 $ modelator load model/Test2.tla
 ...
 Loading OK ✅
 ...
+$ modelator typecheck
+Type checking OK ✅
 ```
+
+Check the output of `info`:
 
 ```sh
 $ modelator info
@@ -28,12 +32,7 @@ Model:
 - variables: ['x']
 ```
 
-```sh
-$ modelator typecheck
-Type checking OK ✅
-```
-
-Run `check` on the loaded model, without initializing constants:
+Running `check` on the loaded model, without initializing constants, should fail:
 
 ```sh
 $ modelator check --invariants Inv
@@ -43,7 +42,8 @@ $ modelator check --invariants Inv
 ...
 ```
 
-Run `check` on the loaded model reading the `invariants` and `cinit` from the config file:
+Running `check` on the loaded model, while reading `invariants` and `cinit` from
+the config file, should succeed:
 
 ```sh
 $ modelator check --config-path model/Test2.config.toml
@@ -52,7 +52,8 @@ $ modelator check --config-path model/Test2.config.toml
 ...
 ```
 
-Run `check` on the loaded model overriding the property to check and passing some setting to the checker:
+Running `check` on the loaded model overriding the property to check and passing
+some setting to the checker should succeed:
 
 ```sh
 $ modelator check --invariants Inv --cinit=ConstInit --length=2
@@ -61,7 +62,7 @@ $ modelator check --invariants Inv --cinit=ConstInit --length=2
 ...
 ```
 
-Clean the generated files after the test:
+Finally, clean the generated files after the test:
 
 ```sh
 $ modelator reset

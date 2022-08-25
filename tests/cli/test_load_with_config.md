@@ -12,7 +12,11 @@ $ modelator load model/Test1.tla --config model/Test1.config.toml
 ...
 Loading OK ✅
 ...
+$ modelator typecheck
+Type checking OK ✅
 ```
+
+Check the output of `info`:
 
 ```sh
 $ modelator info
@@ -37,12 +41,7 @@ Config at model/Test1.config.toml:
 - traces_dir: traces/Test1
 ```
 
-```sh
-$ modelator typecheck
-Type checking OK ✅
-```
-
-Run `check` on the loaded model:
+Running `check` on the loaded model should succeed:
 
 ```sh
 $ modelator check
@@ -51,7 +50,8 @@ $ modelator check
 ...
 ```
 
-Run `check` on the loaded model overriding the property to check and passing some setting to the checker:
+Running `check` on the loaded model, while overriding the property to check and
+passing some setting to the checker, should succeed:
 
 ```sh
 $ modelator check --invariants InvB --init=InitB --length=3
@@ -70,7 +70,7 @@ ERROR: NonExistingProperty not defined in the model
 [3]
 ```
 
-Clean the generated files after the test:
+Finally, clean the generated files after the test:
 
 ```sh
 $ modelator reset

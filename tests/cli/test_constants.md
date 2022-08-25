@@ -5,21 +5,17 @@ $ modelator reset
 ...
 ```
 
-Load a model:
+Load a model and type check it:
 
 ```sh
 $ modelator load model/Test2.tla
 ...
 Loading OK ✅
-...
-```
-
-```sh
 $ modelator typecheck
 Type checking OK ✅
 ```
 
-Run `check` on the loaded model, without initializing constants, should fail
+Running `check` on the loaded model, without initializing constants, should fail
 with an error message:
 
 ```sh
@@ -30,7 +26,7 @@ $ modelator check --invariants Inv
 ...
 ```
 
-Run `check` on the loaded model passing `invariants` and valid `constants`
+Running `check` on the loaded model passing `invariants` and valid `constants`
 should succeed:
 
 ```sh
@@ -40,7 +36,7 @@ $ modelator check --invariants Inv --constants X=InstanceX
 ...
 ```
 
-Run `check` on the loaded model passing `invariants` and invalid `constants`
+Running `check` on the loaded model passing `invariants` and invalid `constants`
 should fail:
 
 ```sh
@@ -51,7 +47,7 @@ $ modelator check --invariants Inv --constants X=AnUndefinedIdentifier
 ...
 ```
 
-Clean the generated files after the test:
+Finally, clean the generated files after the test:
 
 ```sh
 $ modelator reset
