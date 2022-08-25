@@ -26,11 +26,8 @@ def write_trace_files_to(apalache_result: Dict, traces_dir: str) -> List[str]:
 
     trace_paths = []
     for filename in itfs_filenames:
-        # Build full file path, with a timestamp in its name
-        name, _, extension = filename.partition(".")
-        timestamp = time.strftime("%Y%m%d-%H%M%S")
-        new_filename = f"{name}_{timestamp}.{extension}"
-        path = os.path.join(traces_dir, new_filename)
+
+        path = os.path.join(traces_dir, filename)
 
         if Path(path).is_file():
             print(f"WARNING: existing file will be overwritten: {path}")

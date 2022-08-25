@@ -95,12 +95,9 @@ def check_apalache(
     check_logger.debug(f"command: {json.dumps(json_command, indent=4, sort_keys=True)}")
     result = apalache_pure(json=json_command)
 
-    if traces_dir:
-        trace_paths = apalache_helpers.write_trace_files_to(result, traces_dir)
-        for trace_path in trace_paths:
-            check_logger.info(f"Wrote trace file to {trace_path}")
-    else:
-        trace_paths = []
+    trace_paths = apalache_helpers.write_trace_files_to(result, traces_dir)
+    for trace_path in trace_paths:
+        check_logger.info(f"Wrote trace file to {trace_path}")
 
     if result["return_code"] == 0:
         return CheckResult(True, trace_paths=trace_paths)
