@@ -290,11 +290,13 @@ def _load_config_and_merge_arguments(
         config_from_arguments[properties_config_name] = properties
     if traces_dir:
         config_from_arguments["traces_dir"] = traces_dir
-    config = config | config_from_arguments
+    config |= config_from_arguments
 
     # Update model-cheker arguments. Note that `extra_args` may contain any
-    # field name, even some not supported in the configuration file.
-    config["params"] = config["params"] | extra_args
+    # field name, even some not supported in the toml configuration file.
+    if extra_args:
+        config["params"] |= extra_args
+        config_from_arguments["params"] = extra_args
 
     return config, config_from_arguments
 
@@ -344,7 +346,8 @@ def _load_model_with_arguments(
     if not model:
         model, saved_config, _ = ModelFile.load(LOG_LEVEL)
         if saved_config:
-            config = config | saved_config | config_from_arguments
+            config |= saved_config
+            config |= config_from_arguments
 
     if not model:
         print(
