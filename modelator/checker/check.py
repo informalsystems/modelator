@@ -1,5 +1,4 @@
 import argparse
-import json
 import os
 from typing import Dict, Optional
 
@@ -97,8 +96,14 @@ def check_apalache(
         files=files,
         args=args,
     )
-    check_logger.debug(f"command: {json.dumps(json_command, indent=4, sort_keys=True)}")
+    check_logger.debug(f"command jar: {json_command['jar']}")
+    check_logger.debug(f"command args: {json_command['args']}")
+    check_logger.debug(f"command files: {json_command['files'].keys()}")
+
     result = apalache_pure(json=json_command)
+    check_logger.debug(f"result return_code: {result['return_code']}")
+    check_logger.debug(f"result shell_cmd: {result['shell_cmd']}")
+    check_logger.debug(f"result files: {result['files'].keys()}")
 
     if traces_dir:
         trace_paths = apalache_helpers.write_trace_files_to(result, traces_dir)

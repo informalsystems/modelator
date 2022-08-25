@@ -36,7 +36,7 @@ should succeed:
 ```sh
 $ modelator check --invariants Inv --constants X=InstanceX
 ...
-✅ Inv
+- Inv OK ✅
 ...
 ```
 
@@ -47,7 +47,7 @@ should fail:
 $ modelator check --invariants Inv --constants X=AnUndefinedIdentifier
 ...
 - Inv FAILED ❌
-    A constant in the model is not initialized
+    Configuration error:
 ...
 ```
 
