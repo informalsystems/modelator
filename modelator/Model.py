@@ -95,11 +95,11 @@ class Model:
         checker_params,
         traces_dir,
     ):
-        args_config_file = tla_helpers._basic_args_to_config_string(
+        args_config_file = tla_helpers.build_config_file_content(
             init=self.init_predicate,
             next=self.next_predicate,
             invariants=predicates,
-            constants_names=constants,
+            constants=constants,
         )
 
         args_config_file_name = "generated_config.cfg"
@@ -162,6 +162,7 @@ class Model:
             mod_res._successful.append(original_predicate_name)
         else:
             mod_res._unsuccessful.append(original_predicate_name)
+            mod_res.operator_errors[original_predicate_name] = check_result.error_msg
 
         mod_res.lock.release()
 

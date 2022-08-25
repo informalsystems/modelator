@@ -8,20 +8,25 @@ from modelator_py.tlc.pure import tlc_pure
 from modelator_py.util.tlc import tlc_itf
 
 from modelator.checker.CheckResult import CheckResult
+from modelator.const_values import APALACHE_DEFAULTS, APALACHE_STDOUT
+from modelator import const_values
 from modelator.utils import (
     apalache_helpers,
-    modelator_helpers,
     tla_helpers,
     tlc_helpers,
 )
+from modelator.utils.modelator_helpers import (
+    create_logger,
+    extract_line_with,
+    wrap_command,
+)
 
-from .. import const_values
 from ..itf import ITF
 from ..parse import parse
 from ..typecheck import typecheck
 from ..utils.ErrorMessage import ErrorMessage
 
-check_logger = modelator_helpers.create_logger(logger_name=__file__, loglevel="error")
+check_logger = create_logger(logger_name=__file__, loglevel="error")
 
 
 def check_tlc(
@@ -39,7 +44,7 @@ def check_tlc(
     if config_file_name is not None:
         args["config"] = config_file_name
 
-    json_command = modelator_helpers.wrap_command(
+    json_command = wrap_command(
         cmd=const_values.CHECK_CMD,
         checker=const_values.TLC,
         tla_file_name=tla_file_name,
@@ -86,7 +91,7 @@ def check_apalache(
     if config_file_name is not None:
         args["config"] = config_file_name
 
-    json_command = modelator_helpers.wrap_command(
+    json_command = wrap_command(
         cmd=const_values.CHECK_CMD,
         tla_file_name=tla_file_name,
         files=files,
@@ -105,10 +110,20 @@ def check_apalache(
     if result["return_code"] == 0:
         return CheckResult(True, trace_paths=trace_paths)
 
-    try:
-        inv_violated, counterexample = apalache_helpers.extract_apalache_counterexample(
-            result
+    if APALACHE_STDOUT["CONSTANTS_NOT_INITIALIZED"] in result["stdout"]:
+        return CheckResult(
+            False, ErrorMessage("A constant in the model is not initialized")
         )
+
+    config_error = extract_line_with(APALACHE_STDOUT["CONFIG_ERROR"], result["stdout"])
+    if config_error:
+        return CheckResult(
+            False, ErrorMessage(config_error, error_category="Configuration")
+        )
+
+    try:
+        cex_tla = result["files"][APALACHE_DEFAULTS["result_violation_tla_file"]]
+        inv_violated, counterexample = apalache_helpers.extract_counterexample(cex_tla)
     except:
         check_logger.error(
             f"Could not extract counterexample from Apalache output: {result['stdout']}"

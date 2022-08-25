@@ -68,25 +68,29 @@ def _load_model(
 
 
 def _print_results(result: ModelResult):
-    print("Check results:")
+    indent = " " * 4
+    print("Results:")
     for op in result.inprogress():
         print(f"⏳ {op}")
     for op in result.successful():
         print(f"✅ {op}")
         trace = result.traces(op)
         if trace:
-            print(f"    Trace: {trace}")
+            print(f"{indent}Trace: {trace}")
         trace_paths = result.trace_paths(op)
         if trace_paths:
-            print(f"    Trace files: {trace_paths}")
+            print(f"{indent}Trace files: {trace_paths}")
     for op in result.unsuccessful():
         print(f"❌ {op}")
+        if result.operator_errors[op]:
+            error_msg = str(result.operator_errors[op]).replace("\n", f"{indent}\n")
+            print(indent + error_msg)
         trace = result.traces(op)
         if trace:
-            print(f"    Trace: {trace}")
+            print(f"{indent}Trace: {trace}")
         trace_paths = result.trace_paths(op)
         if trace_paths:
-            print(f"    Trace files: {trace_paths}")
+            print(f"{indent}Trace files: {trace_paths}")
 
 
 @app.command()

@@ -41,7 +41,8 @@ Running `check` on a property that is not defined in the model will fail:
 ```sh
 $ modelator check --invariants=NonExistingProperty
 ...
-EXITCODE: ERROR (255)
+❌ NonExistingProperty
+    Configuration error:
 ...
 ```
 

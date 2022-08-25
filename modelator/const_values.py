@@ -27,6 +27,12 @@ APALACHE_DEFAULTS = {
     "result_violation_itf_file": "violation.itf.json",
 }
 
+APALACHE_STDOUT = {
+    "CONSTANTS_NOT_INITIALIZED": "CONSTANTS are not initialized",
+    "CONFIG_ERROR": "Configuration error",
+    "INVARIANT_VIOLATION": "InvariantViolation == ",
+}
+
 
 def apalache_release_url(expected_version):
     return f"https://github.com/informalsystems/apalache/releases/download/v{expected_version}/apalache.zip"

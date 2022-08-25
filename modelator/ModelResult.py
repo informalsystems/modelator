@@ -27,6 +27,7 @@ class ModelResult:
         self.lock = Lock()
         self.parsing_error = parsing_error
         self.typing_error = typing_error
+        self.operator_errors = {}
 
     def model(self):
         """
