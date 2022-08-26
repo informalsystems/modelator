@@ -42,19 +42,19 @@ class ModelResult:
         """
         Returns the list of operators for which the action has not completed yet
         """
-        return self._in_progress_operators
+        return sorted(self._in_progress_operators)
 
     def successful(self):
         """
         Returns the list of operators for which the action was successful
         """
-        return self._successful
+        return sorted(self._successful)
 
     def unsuccessful(self):
         """
         Returns the list of operators for which the action was unsuccessful
         """
-        return self._unsuccessful
+        return sorted(self._unsuccessful)
 
     def traces(self, operator):
         """

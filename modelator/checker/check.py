@@ -25,7 +25,7 @@ from ..parse import parse
 from ..typecheck import typecheck
 from ..utils.ErrorMessage import ErrorMessage
 
-check_logger = create_logger(logger_name=__file__, loglevel="debug")
+check_logger = create_logger(logger_name=__file__, loglevel="error")
 
 
 def check_tlc(
@@ -33,15 +33,11 @@ def check_tlc(
     files: Dict[str, str],
     args: Dict = {},
     do_parse: bool = True,
-    config_file_name: str = None,
     traces_dir: Optional[str] = None,
 ) -> CheckResult:
 
     if do_parse is True:
         parse(tla_file_name=tla_file_name, files=files)
-
-    if config_file_name is not None:
-        args["config"] = config_file_name
 
     json_command = wrap_command(
         cmd=const_values.CHECK_CMD,
@@ -77,18 +73,19 @@ def check_apalache(
     args: Dict = {},
     do_parse: bool = True,
     do_typecheck: bool = True,
-    config_file_name: Optional[str] = None,
     traces_dir: Optional[str] = None,
 ) -> CheckResult:
+    check_logger.debug(f"# check_apalache")
+    check_logger.debug(f"- tla_file_name: {tla_file_name}")
+    check_logger.debug(f"- files: {list(files.keys())}")
+    check_logger.debug(f"- args: {args}")
+    check_logger.debug(f"- traces_dir: {traces_dir}")
 
     if do_parse is True:
         parse(tla_file_name, files)
 
     if do_typecheck is True:
         typecheck(tla_file_name, files)
-
-    if config_file_name is not None:
-        args["config"] = config_file_name
 
     json_command = wrap_command(
         cmd=const_values.CHECK_CMD,
@@ -99,9 +96,9 @@ def check_apalache(
     check_logger.debug(f"command jar: {json_command['jar']}")
     check_logger.debug(f"command args: {json_command['args']}")
     check_logger.debug(f"command files: {json_command['files'].keys()}")
-    if "generated_config.cfg" in json_command["files"]:
+    if json_command["args"][const_values.CONFIG] in json_command["files"]:
         check_logger.debug(
-            f"command config: {json_command['files']['generated_config.cfg']}"
+            f"command config: {json_command['files'][json_command['args'][const_values.CONFIG]]}"
         )
 
     result = apalache_pure(json=json_command)

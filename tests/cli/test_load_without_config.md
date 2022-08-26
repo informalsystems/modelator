@@ -27,7 +27,7 @@ Model:
 - module_name: Test1
 - monitors: []
 - next: Next
-- operators: ['Init', 'InitB', 'Next', 'Inv', 'InvB']
+- operators: ['Init', 'InitB', 'Next', 'Inv', 'InvB', 'InvC']
 - variables: ['x']
 ```
 
@@ -64,6 +64,16 @@ $ modelator check --invariants=InvB
 ...
 - InvB FAILED ❌
     Check error:
+...
+```
+
+Running `check` trying to prove two properties:
+
+```sh
+$ modelator check --invariants Inv,InvC
+...
+- Inv OK ✅
+- InvC OK ✅
 ...
 ```
 

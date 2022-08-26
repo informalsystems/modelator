@@ -44,7 +44,7 @@ def wrap_command(
     json_command["args"] = {}
 
     if args is not None and cmd != const_values.CHECK_CMD:
-        assert "config" not in args
+        assert const_values.CONFIG not in args
 
     if checker == const_values.APALACHE:
         json_command["args"]["cmd"] = cmd
@@ -70,7 +70,7 @@ def wrap_command(
         tla_module_name = tla_file_name.split(".")[0]
         config_file_name = tla_module_name + ".cfg"
         if config_file_name in files:
-            json_command["args"]["config"] = config_file_name
+            json_command["args"][const_values.CONFIG] = config_file_name
 
     if args is not None:
         for arg in args:

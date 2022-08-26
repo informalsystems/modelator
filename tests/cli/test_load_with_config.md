@@ -29,7 +29,7 @@ Model:
 - module_name: Test1
 - monitors: []
 - next: Next
-- operators: ['Init', 'InitB', 'Next', 'Inv', 'InvB']
+- operators: ['Init', 'InitB', 'Next', 'Inv', 'InvB', 'InvC']
 - variables: ['x']
 Config at model/Test1.config.toml:
 - config_file_path: None

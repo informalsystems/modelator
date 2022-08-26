@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
+from modelator import const_values
 
 from modelator.checker.check import check_apalache, check_tlc
 from modelator.utils import tla_helpers
@@ -10,7 +11,7 @@ def _matching_check_value(
     test_dir: str,
     tla_file_name: str,
     expected_result: bool,
-    config_file_name: str = None,
+    config_file_name: Optional[str] = None,
     args: Dict = {},
     check_function=check_apalache,
 ):
@@ -18,10 +19,15 @@ def _matching_check_value(
 
     tla_file_path = os.path.join(test_dir, tla_file_name)
     files = tla_helpers.get_auxiliary_tla_files(tla_file_path)
+    if config_file_name:
+        config_file_path = os.path.join(test_dir, config_file_name)
+        with open(config_file_path, "r") as f:
+            args[const_values.CONFIG] = config_file_name
+            files[config_file_name] = f.read()
+
     check_result = check_function(
         files=files,
         tla_file_name=tla_file_name,
-        config_file_name=config_file_name,
         args=args,
         traces_dir=traces_dir,
     )

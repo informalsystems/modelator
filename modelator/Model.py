@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 import threading
 from copy import copy
 from typing import Any, Dict, List, Optional, Union
@@ -91,22 +92,22 @@ class Model:
         constants,
         checker,
         tla_file_name,
-        checking_files_content,
+        files,
         checker_params,
         traces_dir,
     ):
         args = checker_params
         if const_values.CONFIG not in args or not args[const_values.CONFIG]:
-            config_file_name = "generated_config.cfg"
+            args[const_values.CONFIG] = Path(tla_file_name).name.replace(".tla", ".cfg")
+
+        if args[const_values.CONFIG] not in files:
             config_file_content = tla_helpers.build_config_file_content(
                 init=self.init_predicate,
                 next=self.next_predicate,
                 invariants=predicates,
                 constants=constants,
             )
-
-            args[const_values.CONFIG] = config_file_name
-            checking_files_content[config_file_name] = config_file_content
+            files[args[const_values.CONFIG]] = config_file_content
 
         if checker == const_values.TLC:
             check_func = check_tlc
@@ -114,12 +115,7 @@ class Model:
             check_func = check_apalache
 
         try:
-            result = check_func(
-                tla_file_name=tla_file_name,
-                files=checking_files_content,
-                args=args,
-                traces_dir=traces_dir,
-            )
+            result = check_func(tla_file_name, files, args, traces_dir)
         except Exception as e:
             self.logger.error("Problem running {}: {}".format(checker, e))
             raise ModelCheckingError(e)
@@ -142,13 +138,16 @@ class Model:
     ):
         if original_predicate_name is None:
             original_predicate_name = predicate
+        if traces_dir:
+            traces_dir += "/" + predicate
+
         self.logger.debug("starting with {}".format(predicate))
         check_result = self._modelcheck_predicates(
             predicates=[predicate],
             constants=constants,
             checker=checker,
             tla_file_name=tla_file_name,
-            checking_files_content=checking_files_content,
+            files=checking_files_content,
             checker_params=checker_params,
             traces_dir=traces_dir,
         )
