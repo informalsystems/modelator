@@ -487,6 +487,13 @@ def get(
     jar_path = apalache_jar.apalache_jar_build_path(
         const_values.DEFAULT_CHECKERS_LOCATION, version
     )
+    if apalache_jar.apalache_jar_exists(jar_path, version):
+        typer.confirm(
+            f"Apalache version {version} already exists at {jar_path}\n"
+            "Do you want to download it again?",
+            abort=True,
+        )
+
     print(f"Downloading Apalache version {version}")
     try:
         apalache_jar.apalache_jar_download(
