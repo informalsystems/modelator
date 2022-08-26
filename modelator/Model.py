@@ -95,17 +95,18 @@ class Model:
         checker_params,
         traces_dir,
     ):
-        args_config_file = tla_helpers._basic_args_to_config_string(
-            init=self.init_predicate,
-            next=self.next_predicate,
-            invariants=predicates,
-            constants_names=constants,
-        )
+        args = checker_params
+        if const_values.CONFIG not in args or not args[const_values.CONFIG]:
+            config_file_name = "generated_config.cfg"
+            config_file_content = tla_helpers.build_config_file_content(
+                init=self.init_predicate,
+                next=self.next_predicate,
+                invariants=predicates,
+                constants=constants,
+            )
 
-        args_config_file_name = "generated_config.cfg"
-
-        args = {const_values.CONFIG: args_config_file_name} | checker_params
-        checking_files_content.update({args_config_file_name: args_config_file})
+            args[const_values.CONFIG] = config_file_name
+            checking_files_content[config_file_name] = config_file_content
 
         if checker == const_values.TLC:
             check_func = check_tlc

@@ -4,7 +4,8 @@ import re
 from pathlib import Path
 from typing import Dict, List
 
-from modelator.const_values import APALACHE_DEFAULTS
+from modelator.const_values import APALACHE_DEFAULTS, APALACHE_STDOUT
+from modelator.utils.modelator_helpers import extract_line_with
 
 
 def extract_tla_module_name(tla_file_content: str):
@@ -38,21 +39,16 @@ def write_trace_files_to(apalache_result: Dict, traces_dir: str) -> List[str]:
     return trace_paths
 
 
-def extract_apalache_counterexample(apalache_result: Dict):
-    cex_tla = apalache_result["files"][APALACHE_DEFAULTS["result_violation_tla_file"]]
-    msg = ""
-    for line in cex_tla.splitlines():
-        invMark = "InvariantViolation == "
-        if invMark in line:
-            msg = line[len(invMark) :].strip()
-            break
-
-    cex_itf = json.loads(
-        apalache_result["files"][APALACHE_DEFAULTS["result_violation_itf_file"]]
+def extract_counterexample(files: Dict[str, str]):
+    cex_tla_content = files[APALACHE_DEFAULTS["result_violation_tla_file"]]
+    violated_invariant = extract_line_with(
+        APALACHE_STDOUT["INVARIANT_VIOLATION"], cex_tla_content
     )
-    cex = cex_itf["states"]
 
-    return (msg, cex)
+    itf_file_content = files[APALACHE_DEFAULTS["result_violation_itf_file"]]
+    counterexample = json.loads(itf_file_content)["states"]
+
+    return (violated_invariant, counterexample)
 
 
 def extract_parse_error(parser_output: str):
