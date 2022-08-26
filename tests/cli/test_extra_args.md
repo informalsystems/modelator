@@ -1,3 +1,5 @@
+# Tests on passing extra arguments to the model checker
+
 First make sure that there is no model loaded:
 
 ```sh
@@ -5,31 +7,12 @@ $ modelator reset
 ...
 ```
 
-Load a model and type check it:
+Load a model:
 
 ```sh
 $ modelator load model/Test2.tla
 ...
 Loading OK ✅
-...
-$ modelator typecheck
-Type checking OK ✅
-```
-
-Check the output of `info`:
-
-```sh
-$ modelator info
-Model:
-- constants: {}
-...
-- init: Init
-- model_path: model/Test2.tla
-- module_name: Test2
-- monitors: []
-- next: Next
-- operators: ['Init', 'Next', 'Inv', 'InstanceX', 'ConstInit']
-- variables: ['x']
 ```
 
 Running `check` on the loaded model, without initializing constants, should fail:

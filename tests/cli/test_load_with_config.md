@@ -1,3 +1,5 @@
+# Tests on loading a model from a TLA+ file and a configuration from a TOML file
+
 First make sure that there is no model loaded:
 
 ```sh
@@ -11,7 +13,6 @@ Load a model and a configuration from a toml file:
 $ modelator load model/Test1.tla --config model/Test1.config.toml
 ...
 Loading OK ✅
-...
 $ modelator typecheck
 Type checking OK ✅
 ```

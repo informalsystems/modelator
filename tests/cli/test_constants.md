@@ -1,18 +1,18 @@
-First make sure that there is no model loaded:
+# Tests on instantiation of model constants
+
+First, make sure that there is no model loaded:
 
 ```sh
 $ modelator reset
 ...
 ```
 
-Load a model and type check it:
+Load a model that declares some constant:
 
 ```sh
 $ modelator load model/Test2.tla
 ...
 Loading OK ✅
-$ modelator typecheck
-Type checking OK ✅
 ```
 
 Running `check` on the loaded model, without initializing constants, should fail

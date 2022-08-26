@@ -5,7 +5,7 @@ import time
 from pathlib import Path
 from typing import Dict, List
 
-from modelator.const_values import APALACHE_STDOUT
+from modelator.const_values import APALACHE_DEFAULTS, APALACHE_STDOUT
 from modelator.utils.modelator_helpers import extract_line_with
 
 
@@ -43,15 +43,16 @@ def write_trace_files_to(apalache_result: Dict, traces_dir: str) -> List[str]:
     return trace_paths
 
 
-def extract_counterexample(tla_content: str):
-    msg = extract_line_with(APALACHE_STDOUT["INVARIANT_VIOLATION"], tla_content)
-    if not msg:
-        msg = ""
+def extract_counterexample(files: Dict[str, str]):
+    cex_tla_content = files[APALACHE_DEFAULTS["result_violation_tla_file"]]
+    violated_invariant = extract_line_with(
+        APALACHE_STDOUT["INVARIANT_VIOLATION"], cex_tla_content
+    )
 
-    cex_itf = json.loads(tla_content)
-    cex = cex_itf["states"]
+    itf_file_content = files[APALACHE_DEFAULTS["result_violation_itf_file"]]
+    counterexample = json.loads(itf_file_content)["states"]
 
-    return (msg, cex)
+    return (violated_invariant, counterexample)
 
 
 def extract_parse_error(parser_output: str):

@@ -7,7 +7,7 @@ from modelator_py.tlc.pure import tlc_pure
 from modelator_py.util.tlc import tlc_itf
 
 from modelator.checker.CheckResult import CheckResult
-from modelator.const_values import APALACHE_DEFAULTS, APALACHE_STDOUT
+from modelator.const_values import APALACHE_STDOUT
 from modelator import const_values
 from modelator.utils import (
     apalache_helpers,
@@ -25,7 +25,7 @@ from ..parse import parse
 from ..typecheck import typecheck
 from ..utils.ErrorMessage import ErrorMessage
 
-check_logger = create_logger(logger_name=__file__, loglevel="error")
+check_logger = create_logger(logger_name=__file__, loglevel="debug")
 
 
 def check_tlc(
@@ -99,11 +99,16 @@ def check_apalache(
     check_logger.debug(f"command jar: {json_command['jar']}")
     check_logger.debug(f"command args: {json_command['args']}")
     check_logger.debug(f"command files: {json_command['files'].keys()}")
+    if "generated_config.cfg" in json_command["files"]:
+        check_logger.debug(
+            f"command config: {json_command['files']['generated_config.cfg']}"
+        )
 
     result = apalache_pure(json=json_command)
     check_logger.debug(f"result return_code: {result['return_code']}")
     check_logger.debug(f"result shell_cmd: {result['shell_cmd']}")
     check_logger.debug(f"result files: {result['files'].keys()}")
+    check_logger.debug(f"result stdout: {result['stdout']}")
 
     if traces_dir:
         trace_paths = apalache_helpers.write_trace_files_to(result, traces_dir)
@@ -127,8 +132,9 @@ def check_apalache(
         )
 
     try:
-        cex_tla = result["files"][APALACHE_DEFAULTS["result_violation_tla_file"]]
-        inv_violated, counterexample = apalache_helpers.extract_counterexample(cex_tla)
+        inv_violated, counterexample = apalache_helpers.extract_counterexample(
+            result["files"]
+        )
     except:
         check_logger.error(
             f"Could not extract counterexample from Apalache output: {result['stdout']}"

@@ -73,8 +73,11 @@ Running `check` trying to prove two properties:
 $ modelator check --invariants Inv,InvB
 ...
 - Inv OK ✅
+...
 - InvB FAILED ❌
-    Check error:
+    Configuration error:
+ (see the manual): TLC config file not found: generated_config.cfg E@10:21:10.200
+Total time: 3.18 seconds
 ...
 ```
 
