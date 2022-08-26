@@ -96,7 +96,7 @@ class Model:
         traces_dir,
     ):
         args = checker_params
-        if not args[const_values.CONFIG]:
+        if const_values.CONFIG not in args:
             config_file_name = "generated_config.cfg"
             config_file_content = tla_helpers.build_config_file_content(
                 init=self.init_predicate,
