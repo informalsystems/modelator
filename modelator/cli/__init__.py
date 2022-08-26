@@ -1,4 +1,6 @@
+import os
 from pathlib import Path
+import time
 from timeit import default_timer as timer
 import typer
 from typing import Dict, List, Optional
@@ -189,7 +191,7 @@ def check(
         help="Comma-separated list of invariants to check (overwrites config file).",
     ),
     traces_dir: Optional[str] = typer.Option(
-        const_values.DEFAULT_TRACES_DIR,
+        default=None,
         help="Path to store generated trace files (overwrites config file).",
     ),
 ):
@@ -199,6 +201,11 @@ def check(
     If extra options are provided, they will be passed directly to the model-checker,
     overwriting values in the config file.
     """
+
+    if traces_dir is None:
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        traces_dir = os.path.join(const_values.DEFAULT_TRACES_DIR, timestamp)
+
     model, config = _load_model_with_arguments(
         "check",
         invariants,
