@@ -128,7 +128,7 @@ class Model:
         constants,
         checker,
         tla_file_name,
-        checking_files_content,
+        files,
         checker_params,
         mod_res,
         monitor_update_functions,
@@ -147,7 +147,7 @@ class Model:
             constants=constants,
             checker=checker,
             tla_file_name=tla_file_name,
-            files=checking_files_content,
+            files=files,
             checker_params=checker_params,
             traces_dir=traces_dir,
         )
@@ -215,7 +215,7 @@ class Model:
                     "constants": constants,
                     "checker": checker,
                     "tla_file_name": self.tla_file_path,
-                    "checking_files_content": copy(self.files_contents),
+                    "files": copy(self.files_contents),
                     "checker_params": checker_params,
                     "mod_res": mod_res,
                     "monitor_update_functions": [
@@ -288,7 +288,7 @@ class Model:
                     "constants": constants,
                     "checker": checker,
                     "tla_file_name": negated_name,
-                    "checking_files_content": sampling_files_content,
+                    "files": sampling_files_content,
                     "checker_params": checker_params,
                     "mod_res": mod_res,
                     "monitor_update_functions": [
