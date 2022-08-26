@@ -1,5 +1,6 @@
 import os
-from typing import Dict
+import re
+from typing import Dict, Optional
 from .. import const_values
 import logging
 
@@ -81,3 +82,14 @@ def wrap_command(
         json_command["jar"] = os.path.abspath(const_values.DEFAULT_APALACHE_JAR)
 
     return json_command
+
+
+def extract_line_with(prefix, text) -> Optional[str]:
+    """
+    Extract from text the line that starts with the given prefix, without
+    including the prefix.
+    """
+    try:
+        return re.search(f"^{prefix}(.*)$", text, re.MULTILINE).group(1)
+    except AttributeError:
+        return None

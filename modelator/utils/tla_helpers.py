@@ -33,15 +33,16 @@ def _default_invariant_criteria(operator_name: str):
     return op.startswith("inv") or op.endswith("inv") or op.endswith("invariant")
 
 
-def _basic_args_to_config_string(
-    init: str, next: str, invariants: List[str], constants_names: List[str]
+def build_config_file_content(
+    init: str, next: str, invariants: List[str], constants: Dict[str, str]
 ):
-    conf_string: str = "INIT {}\nNEXT {}\nINVARIANTS {}".format(
-        init, next, "  \n".join(invariants)
-    )
-    if len(constants_names) > 0:
-        conf_string = conf_string + "\nCONSTANTS {}".format(" \n".join(const_values))
-    return conf_string
+    invariants_string = "  \n".join(invariants)
+    config_string = f"INIT {init}\nNEXT {next}\nINVARIANTS {invariants_string}"
+    if constants:
+        constants_string = "  \n".join([f"{k} <- {v}" for k, v in constants.items()])
+        config_string += f"\nCONSTANTS {constants_string}"
+
+    return config_string
 
 
 def _negated_predicate(predicate_name: str):
