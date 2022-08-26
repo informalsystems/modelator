@@ -85,3 +85,35 @@ class ModelResult:
             return 1
         else:
             return 0
+
+    def print(self):
+        indent = " " * 4
+        print("Results:")
+        for op in self.inprogress():
+            print(f"- {op} ⏳")
+
+        for op in self.successful():
+            print(f"- {op} OK ✅")
+
+            trace = self.traces(op)
+            if trace:
+                print(f"{indent}Trace: {trace}")
+
+            trace_paths = self.trace_paths(op)
+            if trace_paths:
+                print(f"{indent}Trace files: {trace_paths}")
+
+        for op in self.unsuccessful():
+            print(f"- {op} FAILED ❌")
+
+            if self.operator_errors[op]:
+                error_msg = str(self.operator_errors[op]).replace("\n", f"{indent}\n")
+                print(indent + error_msg)
+
+            trace = self.traces(op)
+            if trace:
+                print(f"{indent}Trace: {trace}")
+
+            trace_paths = self.trace_paths(op)
+            if trace_paths:
+                print(f"{indent}Trace files: {trace_paths}")

@@ -53,39 +53,6 @@ def _create_and_parse_model(model_path: str, init="Init", next="Next", constants
     return model
 
 
-def _print_results(result: ModelResult):
-    indent = " " * 4
-    print("Results:")
-    for op in result.inprogress():
-        print(f"- {op} ⏳")
-
-    for op in result.successful():
-        print(f"- {op} OK ✅")
-
-        trace = result.traces(op)
-        if trace:
-            print(f"{indent}Trace: {trace}")
-
-        trace_paths = result.trace_paths(op)
-        if trace_paths:
-            print(f"{indent}Trace files: {trace_paths}")
-
-    for op in result.unsuccessful():
-        print(f"- {op} FAILED ❌")
-
-        if result.operator_errors[op]:
-            error_msg = str(result.operator_errors[op]).replace("\n", f"{indent}\n")
-            print(indent + error_msg)
-
-        trace = result.traces(op)
-        if trace:
-            print(f"{indent}Trace: {trace}")
-
-        trace_paths = result.trace_paths(op)
-        if trace_paths:
-            print(f"{indent}Trace files: {trace_paths}")
-
-
 @app.command()
 def load(
     path: str = typer.Argument(..., help="Path to a TLA+ model file."),
@@ -201,11 +168,6 @@ def check(
     If extra options are provided, they will be passed directly to the model-checker,
     overwriting values in the config file.
     """
-
-    if traces_dir is None:
-        timestamp = time.strftime("%Y%m%d-%H%M%S")
-        traces_dir = os.path.join(const_values.DEFAULT_TRACES_DIR, timestamp)
-
     model, config = _load_model_with_arguments(
         "check",
         invariants,
@@ -356,6 +318,10 @@ def _load_model_with_arguments(
     else:
         raise ValueError("Unknown checker mode")
 
+    if traces_dir is None:
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        traces_dir = os.path.join(const_values.DEFAULT_TRACES_DIR, timestamp)
+
     config, config_from_arguments = _load_config_and_merge_arguments(
         config_path,
         properties_config_name,
@@ -429,13 +395,13 @@ def _run_checker(mode, model, config):
 
     start_time = timer()
     print("{} {}... ".format(action, ", ".join(config[properties_config_name])))
-    result = handler(
+    result: ModelResult = handler(
         config[properties_config_name],
         constants=config["constants"],
         checker_params=config["params"],
         traces_dir=config["traces_dir"],
     )
-    _print_results(result)
+    result.print()
     print(f"Total time: {(timer() - start_time):.2f} seconds")
 
 
