@@ -106,7 +106,9 @@ def check_apalache(
         return CheckResult(True, trace_paths=trace_paths)
 
     try:
-        inv_violated, counterexample = apalache_helpers.extract_counterexample(result)
+        inv_violated, counterexample = apalache_helpers.extract_counterexample(
+            result["files"]
+        )
     except:
         check_logger.error(
             f"Could not extract counterexample from Apalache output: {result['stdout']}"
