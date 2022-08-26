@@ -139,7 +139,7 @@ class Model:
         if original_predicate_name is None:
             original_predicate_name = predicate
         if traces_dir:
-            traces_dir += "/" + predicate
+            traces_dir += "/" + original_predicate_name
 
         self.logger.debug("starting with {}".format(predicate))
         check_result = self._modelcheck_predicates(
