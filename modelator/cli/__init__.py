@@ -1,3 +1,4 @@
+import importlib.metadata
 import os
 from pathlib import Path
 import time
@@ -441,6 +442,15 @@ def reset():
     """
     if ModelFile.clean():
         print(f"Model file removed")
+
+
+@app.command()
+def version():
+    """
+    Prints current version of Modelator.
+    """
+    __version__ = importlib.metadata.version("modelator")
+    print(f"Modelator v{__version__}")
 
 
 app_apalache = typer.Typer(
