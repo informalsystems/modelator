@@ -179,7 +179,7 @@ def check(
         None, help="List of invariants to check (overwrites config file)."
     ),
     traces_dir: Optional[str] = typer.Option(
-        default=None,
+        None,
         help="Path to store generated trace files (overwrites config file).",
     ),
 ):
@@ -223,7 +223,7 @@ def sample(
         help="Model operators describing desired properties in the final state of the execution (overwrites config file).",
     ),
     traces_dir: Optional[str] = typer.Option(
-        const_values.DEFAULT_TRACES_DIR,
+        None,
         help="Path to store generated trace files (overwrites config file).",
     ),
 ):
@@ -325,7 +325,7 @@ def _load_model_with_arguments(
     else:
         raise ValueError("Unknown checker mode")
 
-    if traces_dir is None:
+    if not traces_dir:
         timestamp = time.strftime("%Y%m%d-%H%M%S")
         traces_dir = os.path.join(const_values.DEFAULT_TRACES_DIR, timestamp)
 
