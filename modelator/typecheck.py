@@ -1,18 +1,14 @@
 import argparse
 import os
-from typing import Dict, Tuple
 
+from typing import Dict
 from modelator_py.apalache.pure import apalache_pure
-
+from .utils import apalache_helpers, modelator_helpers, tla_helpers
 from modelator.utils.model_exceptions import ModelError, ModelTypecheckingError
-
 from . import const_values
 from .parse import parse
 from .utils import apalache_helpers, modelator_helpers, tla_helpers
 from .utils.ErrorMessage import ErrorMessage
-
-# import utils
-
 
 """
 The function sends the TLA+ model file (`tla_file_content`) to apalache Snowcat typechecker.

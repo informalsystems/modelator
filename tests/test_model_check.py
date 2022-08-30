@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from typing import Dict
 
-from modelator.checker.check import check_apalache, check_tlc
+from modelator.checker.check import check_apalache
 from modelator.utils import tla_helpers
 
 
