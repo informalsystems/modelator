@@ -53,28 +53,6 @@ def _create_and_parse_model(model_path: str, init="Init", next="Next", constants
     return model
 
 
-def _print_results(result: ModelResult):
-    print("Results:")
-    for op in result.inprogress():
-        print(f"- {op} ⏳")
-    for op in result.successful():
-        print(f"- {op} OK ✅")
-        trace = result.traces(op)
-        if trace:
-            print(f"    Trace: {trace}")
-        trace_paths = result.trace_paths(op)
-        if trace_paths:
-            print(f"    Trace files: {trace_paths}")
-    for op in result.unsuccessful():
-        print(f"- {op} FAILED ❌")
-        trace = result.traces(op)
-        if trace:
-            print(f"    Trace: {trace}")
-        trace_paths = result.trace_paths(op)
-        if trace_paths:
-            print(f"    Trace files: {trace_paths}")
-
-
 @app.command()
 def load(
     path: str = typer.Argument(..., help="Path to a TLA+ model file."),
@@ -403,13 +381,13 @@ def _run_checker(mode, model, config):
 
     start_time = timer()
     print("{} {}... ".format(action, ", ".join(config[properties_config_name])))
-    result = handler(
+    result: ModelResult = handler(
         config[properties_config_name],
         constants=config["constants"],
         checker_params=config["params"],
         traces_dir=config["traces_dir"],
     )
-    _print_results(result)
+    print(f"Results:\n{result}")
     print(f"Total time: {(timer() - start_time):.2f} seconds")
 
 

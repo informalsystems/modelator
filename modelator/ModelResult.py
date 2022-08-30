@@ -1,4 +1,5 @@
 from datetime import datetime
+from io import StringIO
 from threading import Lock
 from typing import List
 
@@ -27,6 +28,7 @@ class ModelResult:
         self.lock = Lock()
         self.parsing_error = parsing_error
         self.typing_error = typing_error
+        self.operator_errors = {}
 
     def model(self):
         """
@@ -84,3 +86,40 @@ class ModelResult:
             return 1
         else:
             return 0
+
+    def __str__(self):
+        indent = " " * 4
+        s = StringIO()
+
+        for op in self.inprogress():
+            s.write(f"- {op} ⏳\n")
+
+        for op in self.successful():
+            s.write(f"- {op} OK ✅\n")
+
+            trace = self.traces(op)
+            if trace:
+                s.write(f"{indent}Trace: {trace}\n")
+
+            trace_paths = self.trace_paths(op)
+            if trace_paths:
+                s.write(f"{indent}Trace files: {trace_paths}\n")
+
+        for op in self.unsuccessful():
+            s.write(f"- {op} FAILED ❌\n")
+
+            if self.operator_errors[op]:
+                s.write(indent)
+                s.write(str(self.operator_errors[op]).replace("\n", f"{indent}\n"))
+
+            trace = self.traces(op)
+            if trace:
+                s.write(f"{indent}Trace: {trace}\n")
+
+            trace_paths = self.trace_paths(op)
+            if trace_paths:
+                s.write(f"{indent}Trace files: {trace_paths}\n")
+
+        string = s.getvalue()
+        s.close()
+        return string
