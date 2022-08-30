@@ -1,3 +1,1 @@
-import importlib.metadata
-
-__version__ = importlib.metadata.version("modelator")
+__version__ = "0.6.1"
