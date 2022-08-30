@@ -401,7 +401,7 @@ def _run_checker(mode, model, config):
         checker_params=config["params"],
         traces_dir=config["traces_dir"],
     )
-    result.print()
+    print(f"Results:\n{result}")
     print(f"Total time: {(timer() - start_time):.2f} seconds")
 
 

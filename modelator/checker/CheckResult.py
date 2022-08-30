@@ -1,5 +1,4 @@
 from typing import List, Optional
-
 from tomlkit import boolean
 
 from modelator.utils.ErrorMessage import ErrorMessage

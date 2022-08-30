@@ -1,4 +1,5 @@
 from datetime import datetime
+from io import StringIO
 from threading import Lock
 from typing import List
 
@@ -86,34 +87,39 @@ class ModelResult:
         else:
             return 0
 
-    def print(self):
+    def __str__(self):
         indent = " " * 4
-        print("Results:")
+        s = StringIO()
+
         for op in self.inprogress():
-            print(f"- {op} ⏳")
+            s.write(f"- {op} ⏳\n")
 
         for op in self.successful():
-            print(f"- {op} OK ✅")
+            s.write(f"- {op} OK ✅\n")
 
             trace = self.traces(op)
             if trace:
-                print(f"{indent}Trace: {trace}")
+                s.write(f"{indent}Trace: {trace}\n")
 
             trace_paths = self.trace_paths(op)
             if trace_paths:
-                print(f"{indent}Trace files: {trace_paths}")
+                s.write(f"{indent}Trace files: {trace_paths}\n")
 
         for op in self.unsuccessful():
-            print(f"- {op} FAILED ❌")
+            s.write(f"- {op} FAILED ❌\n")
 
             if self.operator_errors[op]:
-                error_msg = str(self.operator_errors[op]).replace("\n", f"{indent}\n")
-                print(indent + error_msg)
+                s.write(indent)
+                s.write(str(self.operator_errors[op]).replace("\n", f"{indent}\n"))
 
             trace = self.traces(op)
             if trace:
-                print(f"{indent}Trace: {trace}")
+                s.write(f"{indent}Trace: {trace}\n")
 
             trace_paths = self.trace_paths(op)
             if trace_paths:
-                print(f"{indent}Trace files: {trace_paths}")
+                s.write(f"{indent}Trace files: {trace_paths}\n")
+
+        string = s.getvalue()
+        s.close()
+        return string
