@@ -23,10 +23,3 @@ $ modelator load
 ...
 [2]
 ```
-
-Test version number:
-
-```sh
-$ modelator version
-Modelator v0.6.1
-```

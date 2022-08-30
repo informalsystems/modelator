@@ -6,6 +6,7 @@ from timeit import default_timer as timer
 import typer
 from typing import Dict, List, Optional
 
+from modelator import __version__
 from modelator import ModelResult, const_values
 from modelator.cli.model_config_file import load_config_file
 from modelator.cli.model_file import ModelFile
@@ -447,10 +448,9 @@ def reset():
 @app.command()
 def version():
     """
-    Prints current version of Modelator.
+    Print current version of Modelator.
     """
-    __version__ = importlib.metadata.version("modelator")
-    print(f"Modelator v{__version__}")
+    print(f"modelator {__version__}")
 
 
 app_apalache = typer.Typer(
