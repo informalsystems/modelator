@@ -33,7 +33,7 @@ $ modelator sample --model-path model/Test3.tla --examples ThreeSteps
 ...
 ```
 
-Check that the number and length of the generated trace files is as expected:
+Check that the number and length of the generated trace files are as expected:
 
 ```sh
 $ ./traces_num_generated.sh
@@ -51,7 +51,7 @@ $ modelator sample --model-path model/Test3.tla --examples ThreeSteps --max_erro
 ...
 ```
 
-Check that the number and length of the generated trace files is as expected:
+Check that the number and length of the generated trace files are as expected:
 
 ```sh
 $ ./traces_num_generated.sh

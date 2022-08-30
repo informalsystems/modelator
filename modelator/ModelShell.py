@@ -32,7 +32,7 @@ class ModelShell(Model):
         )
         # a member function which will raise a ModelParsingError exception in case of problems
         try:
-            m._parse()
+            m.parse()
         except ModelError as e:
             print(e)
         except Exception as e:
@@ -134,7 +134,7 @@ class ModelShell(Model):
             # this is a real event
             self.files_contents[self.tla_file_path] = open(event.src_path).read()
             try:
-                self._parse()
+                self.parse()
             except ModelError as e:
                 self.parsable = False
                 print(e)

@@ -11,7 +11,7 @@ from modelator.cli.model_config_file import load_config_file
 from modelator.cli.model_file import ModelFile
 from modelator.Model import Model
 from modelator.utils import apalache_jar, tla_helpers
-from modelator.utils.model_exceptions import ModelError
+from modelator.utils.model_exceptions import ModelParsingError, ModelTypecheckingError
 
 LOG_LEVEL = None
 
@@ -49,31 +49,44 @@ def _create_and_parse_model(model_path: str, init="Init", next="Next", constants
         return
 
     model.files_contents = tla_helpers.get_auxiliary_tla_files(model_path)
-    model._parse()
+
+    try:
+        model.parse()
+    except ModelParsingError as e:
+        print("Parsing error 💥")
+        print(e)
+        raise typer.Exit(code=5)
 
     return model
 
 
 def _print_results(result: ModelResult):
     print("Results:")
-    for op in result.inprogress():
-        print(f"- {op} ⏳")
-    for op in result.successful():
-        print(f"- {op} OK ✅")
-        trace = result.traces(op)
-        if trace:
-            print(f"    Trace: {trace}")
-        trace_paths = result.trace_paths(op)
-        if trace_paths:
-            print(f"    Trace files: {trace_paths}")
-    for op in result.unsuccessful():
-        print(f"- {op} FAILED ❌")
-        trace = result.traces(op)
-        if trace:
-            print(f"    Trace: {trace}")
-        trace_paths = result.trace_paths(op)
-        if trace_paths:
-            print(f"    Trace files: {trace_paths}")
+    if result.parsing_error:
+        print("Parsing error 💥")
+        print(result.parsing_error)
+    elif result.typing_error:
+        print("Type checking error 💥")
+        print(result.typing_error)
+    else:
+        for op in result.inprogress():
+            print(f"- {op} ⏳")
+        for op in result.successful():
+            print(f"- {op} OK ✅")
+            trace = result.traces(op)
+            if trace:
+                print(f"    Trace: {trace}")
+            trace_paths = result.trace_paths(op)
+            if trace_paths:
+                print(f"    Trace files: {trace_paths}")
+        for op in result.unsuccessful():
+            print(f"- {op} FAILED ❌")
+            trace = result.traces(op)
+            if trace:
+                print(f"    Trace: {trace}")
+            trace_paths = result.trace_paths(op)
+            if trace_paths:
+                print(f"    Trace files: {trace_paths}")
 
 
 @app.command()
@@ -156,9 +169,10 @@ def typecheck():
     try:
         model.typecheck()
         print("Type checking OK ✅")
-    except ModelError as e:
+    except ModelTypecheckingError as e:
         print("Type checking error 💥")
         print(e)
+        raise typer.Exit(code=6)
 
 
 @app.command(
