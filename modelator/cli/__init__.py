@@ -5,6 +5,7 @@ from timeit import default_timer as timer
 import typer
 from typing import Dict, List, Optional
 
+from modelator import __version__
 from modelator import ModelResult, const_values
 from modelator.cli.model_config_file import load_config_file
 from modelator.cli.model_file import ModelFile
@@ -193,7 +194,7 @@ def check(
         None, help="List of invariants to check (overwrites config file)."
     ),
     traces_dir: Optional[str] = typer.Option(
-        default=None,
+        None,
         help="Path to store generated trace files (overwrites config file).",
     ),
 ):
@@ -203,11 +204,6 @@ def check(
     If extra options are provided, they will be passed directly to the model-checker,
     overwriting values in the config file.
     """
-
-    if traces_dir is None:
-        timestamp = time.strftime("%Y%m%d-%H%M%S")
-        traces_dir = os.path.join(const_values.DEFAULT_TRACES_DIR, timestamp)
-
     model, config = _load_model_with_arguments(
         "check",
         invariants,
@@ -242,7 +238,7 @@ def sample(
         help="Model operators describing desired properties in the final state of the execution (overwrites config file).",
     ),
     traces_dir: Optional[str] = typer.Option(
-        const_values.DEFAULT_TRACES_DIR,
+        None,
         help="Path to store generated trace files (overwrites config file).",
     ),
 ):
@@ -343,6 +339,10 @@ def _load_model_with_arguments(
         properties_config_name = "examples"
     else:
         raise ValueError("Unknown checker mode")
+
+    if not traces_dir:
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        traces_dir = os.path.join(const_values.DEFAULT_TRACES_DIR, timestamp)
 
     config, config_from_arguments = _load_config_and_merge_arguments(
         config_path,
@@ -457,6 +457,14 @@ def reset():
         print(f"Model file removed")
 
 
+@app.command()
+def version():
+    """
+    Print current version of Modelator.
+    """
+    print(f"modelator {__version__}")
+
+
 app_apalache = typer.Typer(
     name="apalache",
     help="Apalache: check whether the JAR file is locally available or download it.",
@@ -501,6 +509,13 @@ def get(
     jar_path = apalache_jar.apalache_jar_build_path(
         const_values.DEFAULT_CHECKERS_LOCATION, version
     )
+    if apalache_jar.apalache_jar_exists(jar_path, version):
+        typer.confirm(
+            f"Apalache version {version} already exists at {jar_path}\n"
+            "Do you want to download it again?",
+            abort=True,
+        )
+
     print(f"Downloading Apalache version {version}")
     try:
         apalache_jar.apalache_jar_download(

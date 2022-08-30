@@ -1,6 +1,5 @@
 import os
 from typing import Dict
-
 from modelator_py.apalache.pure import apalache_pure
 from modelator import const_values
 from modelator.utils.apalache_helpers import extract_typecheck_error
@@ -13,7 +12,6 @@ def typecheck(tla_file_name: str, files: Dict[str, str]):
     Call Apalache's typechecker. Return nothing if ok, otherwise raise a
     ModelParsingError.
     """
-
     json_command = wrap_command(const_values.TYPECHECK_CMD, tla_file_name, files)
     result = apalache_pure(json=json_command)
 
