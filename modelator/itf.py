@@ -255,13 +255,18 @@ class ITF:
         def md_sanitize(x: str) -> str:
             return x.replace("|", "\\|")
 
-        st = ""
+        st = "# ITF"
+        if diff:
+            st += "-Diff"
+        st += " Markdown\n\n"
+
         for (i, e_step_dict) in enumerate(ITF.flatten(itfs, diff)):
-            st += "<details open>\n\n"
             if diff:
-                st += f"<summary>Step {i+1} to Step {i+2}</summary>\n\n"
+                st += f"## Step {i+1} to Step {i+2}\n\n"
             else:
-                st += f"<summary>Step {i+1}</summary>\n\n"
+                st += f"## Step {i+1}\n\n"
+            st += "<details open>\n\n"
+            st += "<summary>Variables</summary>\n\n"
             for (root_key, li) in e_step_dict.items():
                 if diff:
                     st += "<details open>\n\n"

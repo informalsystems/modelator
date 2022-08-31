@@ -414,10 +414,8 @@ def _run_checker(mode, model, config):
     for itf_json_file in Path(config["traces_dir"]).glob("**/*.itf.json"):
         itf_trace = ITF.from_itf_json(itf_json_file)
         with open(itf_json_file.with_suffix(".md"), "w", encoding="utf-8") as f:
-            f.write("# ITF Trace Markdown\n\n")
             f.write(ITF.markdown(itf_trace, diff=False))
         with open(itf_json_file.with_suffix(".diff.md"), "w", encoding="utf-8") as f:
-            f.write("# ITF Trace-Diff Markdown\n\n")
             f.write(ITF.markdown(itf_trace, diff=True))
 
     print(f"Results:\n{result}")
