@@ -113,7 +113,7 @@ class Model:
             check_func = check_apalache
 
         try:
-            result = check_func(tla_file_name, files, args, traces_dir)
+            result = check_func(tla_file_name, files, args, traces_dir=traces_dir)
         except ModelParsingError as e:
             raise e
         except ModelTypecheckingError as e:
@@ -167,14 +167,14 @@ class Model:
                 mod_res._unsuccessful.append(original_predicate_name)
                 mod_res.operator_errors[original_predicate_name] = check_result.error_msg
 
-            mod_res.lock.release()
-
             # in the current implementation, this will only return one trace (as a counterexample)
             if check_result.traces:
                 mod_res._traces[original_predicate_name] = check_result.traces
                 mod_res.add_trace_paths(
                     original_predicate_name, check_result.trace_paths
                 )
+
+            mod_res.lock.release()
 
         except ModelParsingError as e:
             mod_res.lock.acquire()
