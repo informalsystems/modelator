@@ -3,13 +3,20 @@
 # See https://sipb.mit.edu/doc/safe-shell/
 set -eu -o pipefail
 
-TRACES_DIR="${1:-traces}"
+[ $# -eq 0 ] && echo "Usage: $0 <PROPERTY_NAME> [<TRACES_DIR>]" && exit 1
+
+PROPERTY_NAME="$1"
+TRACES_DIR="${2:-traces}"
+
+DIR="$TRACES_DIR"
+[ ! -d "$DIR" ] && echo "Directory $DIR does not exist" && exit 1
 
 TIMESTAMP_SUBDIR=$(ls -rt $TRACES_DIR | tail -1)
-DIR=$TRACES_DIR/$TIMESTAMP_SUBDIR
+DIR="$DIR/$TIMESTAMP_SUBDIR/$PROPERTY_NAME"
+[ ! -d "$DIR" ] && echo "Directory $DIR does not exist" && exit 1
 
 # Return the number of files in the directory
 # - tail -n+2 for discarding the first file (violation.itf.json)
 # - xargs for trimming whitespace
-TRACE_FILES=$(ls -rt $DIR | tail -n+2 | wc -l | xargs)
-echo $TRACE_FILES
+NUM_TRACE_FILES=$(ls -rt $DIR | tail -n+2 | wc -l | xargs)
+echo $NUM_TRACE_FILES

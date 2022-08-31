@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 import threading
 from copy import copy
 from typing import Any, Dict, List, Optional, Union
@@ -65,17 +66,11 @@ class Model:
 
         finally:
             for monitor in self.monitors:
-                monitor.on_parse_finish(
-                    res=ModelResult(self, parsing_error=not self.parsed_ok)
-                )
+                monitor.on_parse_finish(res=ModelResult(self, parsing_error=None))
 
     def typecheck(self):
         if not self.parsed_ok:
             raise self.last_parsing_error
-
-        if not (self.parsed_ok and self.autoparse):
-            # do_parse
-            pass
 
         # will raise ModelTypecheckingError if types do not match
         typecheck(self.tla_file_path, self.files_contents)
@@ -89,22 +84,22 @@ class Model:
         constants,
         checker,
         tla_file_name,
-        checking_files_content,
+        files,
         checker_params,
         traces_dir,
     ):
         args = checker_params
         if const_values.CONFIG not in args or not args[const_values.CONFIG]:
-            config_file_name = "generated_config.cfg"
+            args[const_values.CONFIG] = Path(tla_file_name).name.replace(".tla", ".cfg")
+
+        if args[const_values.CONFIG] not in files:
             config_file_content = tla_helpers.build_config_file_content(
                 init=self.init_predicate,
                 next=self.next_predicate,
                 invariants=predicates,
                 constants=constants,
             )
-
-            args[const_values.CONFIG] = config_file_name
-            checking_files_content[config_file_name] = config_file_content
+            files[args[const_values.CONFIG]] = config_file_content
 
         if checker == const_values.TLC:
             check_func = check_tlc
@@ -112,12 +107,7 @@ class Model:
             check_func = check_apalache
 
         try:
-            result = check_func(
-                tla_file_name=tla_file_name,
-                files=checking_files_content,
-                args=args,
-                traces_dir=traces_dir,
-            )
+            result = check_func(tla_file_name, files, args, traces_dir=traces_dir)
         except ModelParsingError as e:
             raise e
         except ModelTypecheckingError as e:
@@ -134,16 +124,19 @@ class Model:
         constants,
         checker,
         tla_file_name,
-        checking_files_content,
+        files,
         checker_params,
         mod_res,
         monitor_update_functions,
         result_considered_success: bool,
-        original_predicate_name: str = None,
+        original_predicate: str = None,
         traces_dir: Optional[str] = None,
     ):
-        if original_predicate_name is None:
-            original_predicate_name = predicate
+        if not original_predicate:
+            original_predicate = predicate
+
+        if traces_dir:
+            traces_dir += "/" + original_predicate
 
         try:
             self.logger.debug("starting with {}".format(predicate))
@@ -152,29 +145,29 @@ class Model:
                 constants=constants,
                 checker=checker,
                 tla_file_name=tla_file_name,
-                checking_files_content=checking_files_content,
+                files=files,
                 checker_params=checker_params,
                 traces_dir=traces_dir,
             )
             self.logger.debug("finished with {}".format(predicate))
 
             mod_res.lock.acquire()
-            mod_res._finished_operators.append(original_predicate_name)
-            mod_res._in_progress_operators.remove(original_predicate_name)
+            mod_res._finished_operators.append(original_predicate)
+            mod_res._in_progress_operators.remove(original_predicate)
 
             if check_result.is_ok == result_considered_success:
-                mod_res._successful.append(original_predicate_name)
+                mod_res._successful.append(original_predicate)
             else:
-                mod_res._unsuccessful.append(original_predicate_name)
-
-            mod_res.lock.release()
+                mod_res._unsuccessful.append(original_predicate)
+                mod_res.operator_errors[original_predicate] = check_result.error_msg
 
             # in the current implementation, this will only return one trace (as a counterexample)
             if check_result.traces:
-                mod_res._traces[original_predicate_name] = check_result.traces
-                mod_res.add_trace_paths(
-                    original_predicate_name, check_result.trace_paths
-                )
+                mod_res._traces[original_predicate] = check_result.traces
+            if check_result.trace_paths:
+                mod_res.add_trace_paths(original_predicate, check_result.trace_paths)
+
+            mod_res.lock.release()
 
         except ModelParsingError as e:
             mod_res.lock.acquire()
@@ -231,7 +224,7 @@ class Model:
                     "constants": constants,
                     "checker": checker,
                     "tla_file_name": self.tla_file_path,
-                    "checking_files_content": copy(self.files_contents),
+                    "files": copy(self.files_contents),
                     "checker_params": checker_params,
                     "mod_res": mod_res,
                     "monitor_update_functions": [
@@ -299,12 +292,12 @@ class Model:
             thread = threading.Thread(
                 target=self._check_sample_thread_worker,
                 kwargs={
-                    "original_predicate_name": example_predicate,
+                    "original_predicate": example_predicate,
                     "predicate": negated_predicates[0],
                     "constants": constants,
                     "checker": checker,
                     "tla_file_name": negated_name,
-                    "checking_files_content": sampling_files_content,
+                    "files": sampling_files_content,
                     "checker_params": checker_params,
                     "mod_res": mod_res,
                     "monitor_update_functions": [

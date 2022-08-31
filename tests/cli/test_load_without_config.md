@@ -1,3 +1,5 @@
+# Tests on loading a model from a TLA+ file
+
 First make sure that there is no model loaded:
 
 ```sh
@@ -11,7 +13,8 @@ Load model from a TLA+ file:
 $ modelator load model/Test1.tla
 ...
 Loading OK ✅
-...
+$ modelator typecheck
+Type checking OK ✅
 ```
 
 ```sh
@@ -24,16 +27,12 @@ Model:
 - module_name: Test1
 - monitors: []
 - next: Next
-- operators: ['Init', 'InitB', 'Next', 'Inv', 'InvB']
+- operators: ['Init', 'InitB', 'Next', 'Inv', 'InvB', 'InvC']
 - variables: ['x']
 ```
 
-```sh
-$ modelator typecheck
-Type checking OK ✅
-```
-
-Run `check` on the loaded model without specifying any property to check:
+Running `check` on the loaded model without specifying any property to check
+should fail:
 
 ```sh
 $ modelator check
@@ -41,7 +40,7 @@ $ modelator check
 [2]
 ```
 
-Run `check` with a non existing config file should fail:
+Running `check` with a non existing config file should fail:
 
 ```sh
 $ modelator check --config-path non-existing-file
@@ -49,12 +48,45 @@ ERROR: config file not found
 [4]
 ```
 
-Run `check` on the loaded model specifying a property to check:
+Running `check` trying to prove a property that is an invariant should succeed:
 
 ```sh
 $ modelator check --invariants=Inv
 ...
 - Inv OK ✅
+...
+```
+
+Running `check` trying to prove a property that is not an invariant should fail:
+
+```sh
+$ modelator check --invariants=InvB
+...
+- InvB FAILED ❌
+    Check error:
+...
+```
+
+Running `check` trying to prove two properties:
+
+```sh
+$ modelator check --invariants Inv,InvC
+...
+- Inv OK ✅
+...
+- InvC OK ✅
+...
+```
+
+Running `check` trying to prove two properties:
+
+```sh
+$ modelator check --invariants Inv,InvB
+...
+- Inv OK ✅
+...
+- InvB FAILED ❌
+    Check error:
 ...
 ```
 
@@ -68,7 +100,7 @@ ERROR: NonExistingProperty not defined in the model
 [3]
 ```
 
-Clean the generated files after the test:
+Finally, clean the generated files after the test:
 
 ```sh
 $ modelator reset

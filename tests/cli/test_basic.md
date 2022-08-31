@@ -5,7 +5,7 @@ $ modelator reset
 ...
 ```
 
-Commands when there is no model loaded will print a message:
+Commands that should print a message when there is no model loaded:
 
 ```sh
 $ modelator info

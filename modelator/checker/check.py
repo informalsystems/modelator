@@ -1,6 +1,3 @@
-import argparse
-import json
-import os
 from typing import Dict, Optional
 
 from modelator_py.apalache.pure import apalache_pure
@@ -8,20 +5,24 @@ from modelator_py.tlc.pure import tlc_pure
 from modelator_py.util.tlc import tlc_itf
 
 from modelator.checker.CheckResult import CheckResult
+from modelator.const_values import APALACHE_STDOUT
+from modelator import const_values
 from modelator.utils import (
     apalache_helpers,
-    modelator_helpers,
-    tla_helpers,
     tlc_helpers,
 )
+from modelator.utils.modelator_helpers import (
+    create_logger,
+    extract_line_with,
+    wrap_command,
+)
 
-from .. import const_values
 from ..itf import ITF
 from ..parse import parse
 from ..typecheck import typecheck
 from ..utils.ErrorMessage import ErrorMessage
 
-check_logger = modelator_helpers.create_logger(logger_name=__file__, loglevel="error")
+check_logger = create_logger(logger_name=__file__, loglevel="error")
 
 
 def check_tlc(
@@ -29,17 +30,13 @@ def check_tlc(
     files: Dict[str, str],
     args: Dict = {},
     do_parse: bool = True,
-    config_file_name: str = None,
     traces_dir: Optional[str] = None,
 ) -> CheckResult:
 
     if do_parse is True:
         parse(tla_file_name=tla_file_name, files=files)
 
-    if config_file_name is not None:
-        args["config"] = config_file_name
-
-    json_command = modelator_helpers.wrap_command(
+    json_command = wrap_command(
         cmd=const_values.CHECK_CMD,
         checker=const_values.TLC,
         tla_file_name=tla_file_name,
@@ -73,9 +70,13 @@ def check_apalache(
     args: Dict = {},
     do_parse: bool = True,
     do_typecheck: bool = True,
-    config_file_name: Optional[str] = None,
     traces_dir: Optional[str] = None,
 ) -> CheckResult:
+    check_logger.debug(f"# check_apalache")
+    check_logger.debug(f"- tla_file_name: {tla_file_name}")
+    check_logger.debug(f"- files: {list(files.keys())}")
+    check_logger.debug(f"- args: {args}")
+    check_logger.debug(f"- traces_dir: {traces_dir}")
 
     if do_parse is True:
         parse(tla_file_name, files)
@@ -83,17 +84,25 @@ def check_apalache(
     if do_typecheck is True:
         typecheck(tla_file_name, files)
 
-    if config_file_name is not None:
-        args["config"] = config_file_name
-
-    json_command = modelator_helpers.wrap_command(
+    json_command = wrap_command(
         cmd=const_values.CHECK_CMD,
         tla_file_name=tla_file_name,
         files=files,
         args=args,
     )
-    check_logger.debug(f"command: {json.dumps(json_command, indent=4, sort_keys=True)}")
+    check_logger.debug(f"command jar: {json_command['jar']}")
+    check_logger.debug(f"command args: {json_command['args']}")
+    check_logger.debug(f"command files: {list(json_command['files'].keys())}")
+    if json_command["args"][const_values.CONFIG] in json_command["files"]:
+        check_logger.debug(
+            f"command config: {json_command['files'][json_command['args'][const_values.CONFIG]]}"
+        )
+
     result = apalache_pure(json=json_command)
+    check_logger.debug(f"result return_code: {result['return_code']}")
+    check_logger.debug(f"result shell_cmd: {result['shell_cmd']}")
+    check_logger.debug(f"result files: {list(result['files'].keys())}")
+    check_logger.debug(f"result stdout: {result['stdout']}")
 
     if traces_dir:
         trace_paths = apalache_helpers.write_trace_files_to(result, traces_dir)
@@ -104,6 +113,17 @@ def check_apalache(
 
     if result["return_code"] == 0:
         return CheckResult(True, trace_paths=trace_paths)
+
+    if APALACHE_STDOUT["CONSTANTS_NOT_INITIALIZED"] in result["stdout"]:
+        return CheckResult(
+            False, ErrorMessage("A constant in the model is not initialized")
+        )
+
+    config_error = extract_line_with(APALACHE_STDOUT["CONFIG_ERROR"], result["stdout"])
+    if config_error:
+        return CheckResult(
+            False, ErrorMessage(config_error, error_category="Configuration")
+        )
 
     try:
         inv_violated, counterexample = apalache_helpers.extract_counterexample(
@@ -117,46 +137,8 @@ def check_apalache(
 
     trace = [ITF(state) for state in counterexample]
     error_msg = ErrorMessage(
-        problem_description=f"Invariant {inv_violated} violated.\nCounterexample is {trace}",
+        problem_description=f"Invariant {inv_violated} violated",
         error_category=const_values.CHECK,
         full_error_msg=result["stdout"],
     )
     return CheckResult(False, error_msg, trace, trace_paths)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("model_file")
-
-    parser.add_argument("--checker", default=const_values.APALACHE)
-    parser.add_argument("--invariant", default="Inv")
-    parser.add_argument("--init", default="Init")
-    parser.add_argument("--next", default="Next")
-    parser.add_argument("--config", default=None)
-
-    args = parser.parse_args()
-
-    apalache_args = {}
-    if args.config is None:
-        apalache_args = {
-            const_values.INIT: args.init,
-            const_values.NEXT: args.next,
-            const_values.INVARIANT: args.invariant,
-        }
-
-    files = tla_helpers.get_auxiliary_tla_files(os.path.abspath(args.model_file))
-    model_name = os.path.basename(args.model_file)
-
-    if args.checker == const_values.APALACHE:
-        check_result = check_apalache(
-            tla_file_name=model_name,
-            files=files,
-            args=apalache_args,
-            config_file_name=args.config,
-        )
-    else:
-        check_result = check_tlc(
-            tla_file_name=model_name,
-            files=files,
-            config_file_name=args.config,
-        )

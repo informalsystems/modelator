@@ -60,35 +60,6 @@ def _create_and_parse_model(model_path: str, init="Init", next="Next", constants
     return model
 
 
-def _print_results(result: ModelResult):
-    print("Results:")
-    if result.parsing_error:
-        print("Parsing error 💥")
-        print(result.parsing_error)
-    elif result.typing_error:
-        print("Type checking error 💥")
-        print(result.typing_error)
-    else:
-        for op in result.inprogress():
-            print(f"- {op} ⏳")
-        for op in result.successful():
-            print(f"- {op} OK ✅")
-            trace = result.traces(op)
-            if trace:
-                print(f"    Trace: {trace}")
-            trace_paths = result.trace_paths(op)
-            if trace_paths:
-                print(f"    Trace files: {trace_paths}")
-        for op in result.unsuccessful():
-            print(f"- {op} FAILED ❌")
-            trace = result.traces(op)
-            if trace:
-                print(f"    Trace: {trace}")
-            trace_paths = result.trace_paths(op)
-            if trace_paths:
-                print(f"    Trace files: {trace_paths}")
-
-
 @app.command()
 def load(
     path: str = typer.Argument(..., help="Path to a TLA+ model file."),
@@ -186,12 +157,13 @@ def check(
     ),
     init: Optional[str] = typer.Option(None, help="Model's init predicate."),
     next: Optional[str] = typer.Option(None, help="Model's next predicate."),
-    constants: Optional[List[str]] = typer.Option(
+    constants: Optional[str] = typer.Option(
         None,
-        help="Constant definitions in the format 'name=value' (overwrites config file).",
+        help="Comma-separated list of constant definitions in the format 'name=value' (overwrites config file).",
     ),
-    invariants: Optional[List[str]] = typer.Option(
-        None, help="List of invariants to check (overwrites config file)."
+    invariants: Optional[str] = typer.Option(
+        None,
+        help="Comma-separated list of invariants to check (overwrites config file).",
     ),
     traces_dir: Optional[str] = typer.Option(
         None,
@@ -229,13 +201,13 @@ def sample(
     ),
     init: Optional[str] = typer.Option(None, help="Model's init predicate."),
     next: Optional[str] = typer.Option(None, help="Model's next predicate."),
-    constants: Optional[List[str]] = typer.Option(
+    constants: Optional[str] = typer.Option(
         None,
-        help="Constant definitions in the format 'key=value' (overwrites config file).",
+        help="Comma-separated list of constant definitions in the format 'name=value' (overwrites config file).",
     ),
-    examples: Optional[List[str]] = typer.Option(
+    examples: Optional[str] = typer.Option(
         None,
-        help="Model operators describing desired properties in the final state of the execution (overwrites config file).",
+        help="Comma-separated list of model predicates describing desired properties in the final state of the execution (overwrites config file).",
     ),
     traces_dir: Optional[str] = typer.Option(
         None,
@@ -262,11 +234,21 @@ def sample(
     _run_checker("sample", model, config)
 
 
+def _parse_list(s: Optional[str]) -> List[str]:
+    if s is None:
+        return []
+    try:
+        return list(s.split(","))
+    except ValueError:
+        print(f"ERROR: cannot parse {s} as a comma-separated list of assignments")
+        raise typer.Exit(code=1)
+
+
 def _parse_list_of_assignments(list: List[str]) -> Dict[str, str]:
     try:
         return dict([c.split("=") for c in list])
     except ValueError:
-        print(f"ERROR: cannot parse {list} as a ;-separated list of assignments")
+        print(f"ERROR: cannot parse {list} as a list of assignments")
         raise typer.Exit(code=1)
 
 
@@ -283,8 +265,12 @@ def _load_config_and_merge_arguments(
     """
     Load a config file and merge it with the given arguments.
     """
-    # Convert lists to dicts
+    # Convert strings to lists and dicts
+    properties = _parse_list(properties)
+
+    constants = _parse_list(constants)
     constants = _parse_list_of_assignments(constants)
+
     extra_args = [arg[2:] for arg in extra_args if arg.startswith("--")]
     extra_args = _parse_list_of_assignments(extra_args)
 
@@ -417,13 +403,13 @@ def _run_checker(mode, model, config):
 
     start_time = timer()
     print("{} {}... ".format(action, ", ".join(config[properties_config_name])))
-    result = handler(
+    result: ModelResult = handler(
         config[properties_config_name],
         constants=config["constants"],
         checker_params=config["params"],
         traces_dir=config["traces_dir"],
     )
-    _print_results(result)
+    print(f"Results:\n{result}")
     print(f"Total time: {(timer() - start_time):.2f} seconds")
 
 

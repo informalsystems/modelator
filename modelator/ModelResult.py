@@ -1,6 +1,7 @@
 from datetime import datetime
+from io import StringIO
 from threading import Lock
-from typing import List
+from typing import List, Optional
 
 
 class ModelResult:
@@ -12,7 +13,11 @@ class ModelResult:
     """
 
     def __init__(
-        self, model, all_operators=None, parsing_error=False, typing_error=False
+        self,
+        model,
+        all_operators=None,
+        parsing_error: Optional[str] = None,
+        typing_error: Optional[str] = None,
     ) -> None:
         self._model = model
         self._time = datetime.now()
@@ -27,6 +32,7 @@ class ModelResult:
         self.lock = Lock()
         self.parsing_error = parsing_error
         self.typing_error = typing_error
+        self.operator_errors = {}
 
     def model(self):
         """
@@ -41,19 +47,19 @@ class ModelResult:
         """
         Returns the list of operators for which the action has not completed yet
         """
-        return self._in_progress_operators
+        return sorted(self._in_progress_operators)
 
     def successful(self):
         """
         Returns the list of operators for which the action was successful
         """
-        return self._successful
+        return sorted(self._successful)
 
     def unsuccessful(self):
         """
         Returns the list of operators for which the action was unsuccessful
         """
-        return self._unsuccessful
+        return sorted(self._unsuccessful)
 
     def traces(self, operator):
         """
@@ -84,3 +90,44 @@ class ModelResult:
             return 1
         else:
             return 0
+
+    def _write_traces(self, s, indent, op):
+        trace = self.traces(op)
+        if trace:
+            s.write(f"{indent}Trace: {trace}\n")
+
+        trace_paths = self.trace_paths(op)
+        if trace_paths:
+            s.write(f"{indent}Trace files: {' '.join(trace_paths)}\n")
+
+    def __str__(self):
+        indent = " " * 4
+        s = StringIO()
+
+        if self.parsing_error:
+            s.write(f"Parsing error 💥\n")
+            s.write(f"{indent}{self.parsing_error}\n")
+        elif self.typing_error:
+            s.write(f"Type checking error 💥\n")
+            s.write(f"{indent}{self.typing_error}\n")
+        else:
+            for op in self.inprogress():
+                s.write(f"- {op} ⏳\n")
+
+            for op in self.successful():
+                s.write(f"- {op} OK ✅\n")
+
+                self._write_traces(s, indent, op)
+
+            for op in self.unsuccessful():
+                s.write(f"- {op} FAILED ❌\n")
+
+                if op in self.operator_errors and self.operator_errors[op]:
+                    error = str(self.operator_errors[op]).replace("\n", f"{indent}\n")
+                    s.write(f"{indent}{error}\n")
+
+                self._write_traces(s, indent, op)
+
+        string = s.getvalue()
+        s.close()
+        return string

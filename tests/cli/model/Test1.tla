@@ -7,4 +7,5 @@ InitB == x = "b"
 Next == UNCHANGED x
 Inv == x = "a"
 InvB == x = "b"
+InvC == x # "b"
 ======================

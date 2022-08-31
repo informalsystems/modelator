@@ -1,3 +1,5 @@
+# Tests on passing extra arguments to the model checker
+
 First make sure that there is no model loaded:
 
 ```sh
@@ -11,41 +13,20 @@ Load a model:
 $ modelator load model/Test2.tla
 ...
 Loading OK ✅
-...
 ```
 
-```sh
-$ modelator info
-Model:
-- constants: {}
-...
-- init: Init
-- model_path: model/Test2.tla
-- module_name: Test2
-- monitors: []
-- next: Next
-- operators: ['Init', 'Next', 'Inv', 'InstanceX', 'ConstInit']
-- variables: ['x']
-```
-
-```sh
-$ modelator typecheck
-Type checking OK ✅
-```
-
-TODO: Modelator should return an error message; here it just throws an exception.
-Run `check` on the loaded model, without initializing constants:
+Running `check` on the loaded model, without initializing constants, should fail:
 
 ```sh
 $ modelator check --invariants Inv
 ...
-EXITCODE: ERROR (255)
-...
-KeyError: 'violation.tla'
+- Inv FAILED ❌
+    A constant in the model is not initialized
 ...
 ```
 
-Run `check` on the loaded model reading the `invariants` and `cinit` from the config file:
+Running `check` on the loaded model, while reading `invariants` and `cinit` from
+the config file, should succeed:
 
 ```sh
 $ modelator check --config-path model/Test2.config.toml
@@ -54,7 +35,8 @@ $ modelator check --config-path model/Test2.config.toml
 ...
 ```
 
-Run `check` on the loaded model overriding the property to check and passing some setting to the checker:
+Running `check` on the loaded model overriding the property to check and passing
+some setting to the checker should succeed:
 
 ```sh
 $ modelator check --invariants Inv --cinit=ConstInit --length=2
@@ -63,7 +45,7 @@ $ modelator check --invariants Inv --cinit=ConstInit --length=2
 ...
 ```
 
-Clean the generated files after the test:
+Finally, clean the generated files after the test:
 
 ```sh
 $ modelator reset

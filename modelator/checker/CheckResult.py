@@ -1,13 +1,14 @@
 from typing import List, Optional
-
 from tomlkit import boolean
+
+from modelator.utils.ErrorMessage import ErrorMessage
 
 
 class CheckResult:
     def __init__(
         self,
         is_ok: boolean,
-        error_msg: Optional[str] = None,
+        error_msg: Optional[ErrorMessage] = None,
         traces: List[str] = [],
         trace_paths: List[str] = [],
     ) -> None:
