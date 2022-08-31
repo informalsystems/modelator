@@ -257,14 +257,14 @@ class ITF:
 
         st = ""
         for (i, e_step_dict) in enumerate(ITF.flatten(itfs, diff)):
-            st += "<details>\n\n"
+            st += "<details open>\n\n"
             if diff:
                 st += f"<summary>Step {i+1} to Step {i+2}</summary>\n\n"
             else:
                 st += f"<summary>Step {i+1}</summary>\n\n"
             for (root_key, li) in e_step_dict.items():
                 if diff:
-                    st += "<details>\n\n"
+                    st += "<details open>\n\n"
                     st += f"<summary>{root_key}</summary>\n\n"
                     st += "\n|KeyPath|Old|New|\n"
                     st += "|-|-|-|\n"
