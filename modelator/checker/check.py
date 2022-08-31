@@ -137,7 +137,7 @@ def check_apalache(
 
     trace = [ITF(state) for state in counterexample]
     error_msg = ErrorMessage(
-        problem_description=f"Invariant {inv_violated} violated.\nCounterexample is {trace}",
+        problem_description=f"Invariant {inv_violated} violated",
         error_category=const_values.CHECK,
         full_error_msg=result["stdout"],
     )

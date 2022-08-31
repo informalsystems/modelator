@@ -91,6 +91,15 @@ class ModelResult:
         else:
             return 0
 
+    def _write_traces(self, s, indent, op):
+        trace = self.traces(op)
+        if trace:
+            s.write(f"{indent}Trace: {trace}\n")
+
+        trace_paths = self.trace_paths(op)
+        if trace_paths:
+            s.write(f"{indent}Trace files: {' '.join(trace_paths)}\n")
+
     def __str__(self):
         indent = " " * 4
         s = StringIO()
@@ -108,28 +117,16 @@ class ModelResult:
             for op in self.successful():
                 s.write(f"- {op} OK ✅\n")
 
-                trace = self.traces(op)
-                if trace:
-                    s.write(f"{indent}Trace: {trace}\n")
-
-                trace_paths = self.trace_paths(op)
-                if trace_paths:
-                    s.write(f"{indent}Trace files: {trace_paths}\n")
+                self._write_traces(s, indent, op)
 
             for op in self.unsuccessful():
                 s.write(f"- {op} FAILED ❌\n")
 
                 if op in self.operator_errors and self.operator_errors[op]:
-                    s.write(indent)
-                    s.write(str(self.operator_errors[op]).replace("\n", f"{indent}\n"))
+                    error = str(self.operator_errors[op]).replace("\n", f"{indent}\n")
+                    s.write(f"{indent}{error}\n")
 
-                trace = self.traces(op)
-                if trace:
-                    s.write(f"{indent}Trace: {trace}\n")
-
-                trace_paths = self.trace_paths(op)
-                if trace_paths:
-                    s.write(f"{indent}Trace files: {trace_paths}\n")
+                self._write_traces(s, indent, op)
 
         string = s.getvalue()
         s.close()

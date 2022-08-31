@@ -164,6 +164,7 @@ class Model:
             # in the current implementation, this will only return one trace (as a counterexample)
             if check_result.traces:
                 mod_res._traces[original_predicate] = check_result.traces
+            if check_result.trace_paths:
                 mod_res.add_trace_paths(original_predicate, check_result.trace_paths)
 
             mod_res.lock.release()
