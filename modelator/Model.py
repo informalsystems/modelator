@@ -291,7 +291,7 @@ class Model:
             thread = threading.Thread(
                 target=self._check_sample_thread_worker,
                 kwargs={
-                    "original_predicate_name": example_predicate,
+                    "original_predicate": example_predicate,
                     "predicate": negated_predicates[0],
                     "constants": constants,
                     "checker": checker,
