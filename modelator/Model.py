@@ -165,6 +165,7 @@ class Model:
                 mod_res._successful.append(original_predicate_name)
             else:
                 mod_res._unsuccessful.append(original_predicate_name)
+                mod_res.operator_errors[original_predicate_name] = check_result.error_msg
 
             mod_res.lock.release()
 

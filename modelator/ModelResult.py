@@ -108,7 +108,7 @@ class ModelResult:
         for op in self.unsuccessful():
             s.write(f"- {op} FAILED ❌\n")
 
-            if self.operator_errors[op]:
+            if op in self.operator_errors and self.operator_errors[op]:
                 s.write(indent)
                 s.write(str(self.operator_errors[op]).replace("\n", f"{indent}\n"))
 
