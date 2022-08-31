@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict, Optional
 from modelator import const_values
 
-from modelator.checker.check import check_apalache, check_tlc
+from modelator.checker.check import check_apalache
 from modelator.utils import tla_helpers
 
 

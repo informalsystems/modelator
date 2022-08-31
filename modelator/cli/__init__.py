@@ -5,12 +5,13 @@ from timeit import default_timer as timer
 import typer
 from typing import Dict, List, Optional
 
+from modelator import __version__
 from modelator import ModelResult, const_values
 from modelator.cli.model_config_file import load_config_file
 from modelator.cli.model_file import ModelFile
 from modelator.Model import Model
 from modelator.utils import apalache_jar, tla_helpers
-from modelator.utils.model_exceptions import ModelError
+from modelator.utils.model_exceptions import ModelParsingError, ModelTypecheckingError
 
 LOG_LEVEL = None
 
@@ -48,7 +49,13 @@ def _create_and_parse_model(model_path: str, init="Init", next="Next", constants
         return
 
     model.files_contents = tla_helpers.get_auxiliary_tla_files(model_path)
-    model._parse()
+
+    try:
+        model.parse()
+    except ModelParsingError as e:
+        print("Parsing error 💥")
+        print(e)
+        raise typer.Exit(code=5)
 
     return model
 
@@ -133,9 +140,10 @@ def typecheck():
     try:
         model.typecheck()
         print("Type checking OK ✅")
-    except ModelError as e:
+    except ModelTypecheckingError as e:
         print("Type checking error 💥")
         print(e)
+        raise typer.Exit(code=6)
 
 
 @app.command(
@@ -158,7 +166,7 @@ def check(
         help="Comma-separated list of invariants to check (overwrites config file).",
     ),
     traces_dir: Optional[str] = typer.Option(
-        default=None,
+        None,
         help="Path to store generated trace files (overwrites config file).",
     ),
 ):
@@ -202,7 +210,7 @@ def sample(
         help="Comma-separated list of model predicates describing desired properties in the final state of the execution (overwrites config file).",
     ),
     traces_dir: Optional[str] = typer.Option(
-        const_values.DEFAULT_TRACES_DIR,
+        None,
         help="Path to store generated trace files (overwrites config file).",
     ),
 ):
@@ -318,7 +326,7 @@ def _load_model_with_arguments(
     else:
         raise ValueError("Unknown checker mode")
 
-    if traces_dir is None:
+    if not traces_dir:
         timestamp = time.strftime("%Y%m%d-%H%M%S")
         traces_dir = os.path.join(const_values.DEFAULT_TRACES_DIR, timestamp)
 
@@ -435,6 +443,14 @@ def reset():
         print(f"Model file removed")
 
 
+@app.command()
+def version():
+    """
+    Print current version of Modelator.
+    """
+    print(f"modelator {__version__}")
+
+
 app_apalache = typer.Typer(
     name="apalache",
     help="Apalache: check whether the JAR file is locally available or download it.",
@@ -479,6 +495,13 @@ def get(
     jar_path = apalache_jar.apalache_jar_build_path(
         const_values.DEFAULT_CHECKERS_LOCATION, version
     )
+    if apalache_jar.apalache_jar_exists(jar_path, version):
+        typer.confirm(
+            f"Apalache version {version} already exists at {jar_path}\n"
+            "Do you want to download it again?",
+            abort=True,
+        )
+
     print(f"Downloading Apalache version {version}")
     try:
         apalache_jar.apalache_jar_download(

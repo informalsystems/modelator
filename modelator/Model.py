@@ -36,22 +36,21 @@ class Model:
             next_predicate=next,
             files_contents=auxiliary_files,
         )
-        # a member function which will raise a ModelParsingError exception in case of problems
-        m._parse()
+        m.parse()
 
         return m
 
-    def _parse(self) -> Optional[ModelParsingError]:
+    def parse(self):
 
         for monitor in self.monitors:
             monitor.on_parse_start(res=ModelResult(model=self))
         try:
-            parse(tla_file_name=self.tla_file_path, files=self.files_contents)
-            self.parsable = True
-        except ModelParsingError as p_error:
-            self.parsable = False
-            self.last_parsing_error = p_error
-            raise p_error
+            parse(self.tla_file_path, self.files_contents)
+            self.parsed_ok = True
+        except ModelParsingError as e:
+            self.parsed_ok = False
+            self.last_parsing_error = e
+            raise e
         else:
             # TODO: this only works when the model is in a single file (it will not get all the
             # operators from all extendees)
@@ -68,20 +67,19 @@ class Model:
         finally:
             for monitor in self.monitors:
                 monitor.on_parse_finish(
-                    res=ModelResult(self, parsing_error=not self.parsable)
+                    res=ModelResult(self, parsing_error=not self.parsed_ok)
                 )
 
-    def typecheck(self) -> Optional[ModelTypecheckingError]:
-        if self.parsable is False:
+    def typecheck(self):
+        if not self.parsed_ok:
             raise self.last_parsing_error
 
-        parsing_not_needed = self.parsable is True and self.autoparse is True
-        # a helper function which will raise a ModelTypechecking exception in case types do not match
-        typecheck(
-            tla_file_name=self.tla_file_path,
-            files=self.files_contents,
-            do_parse=not parsing_not_needed,
-        )
+        if not (self.parsed_ok and self.autoparse):
+            # do_parse
+            pass
+
+        # will raise ModelTypecheckingError if types do not match
+        typecheck(self.tla_file_path, self.files_contents)
 
     def instantiate(self, constants: Dict):
         self.constants = constants
@@ -116,6 +114,10 @@ class Model:
 
         try:
             result = check_func(tla_file_name, files, args, traces_dir)
+        except ModelParsingError as e:
+            raise e
+        except ModelTypecheckingError as e:
+            raise e
         except Exception as e:
             self.logger.error("Problem running {}: {}".format(checker, e))
             raise ModelCheckingError(e)
@@ -138,37 +140,50 @@ class Model:
     ):
         if original_predicate_name is None:
             original_predicate_name = predicate
+
         if traces_dir:
             traces_dir += "/" + original_predicate_name
 
-        self.logger.debug("starting with {}".format(predicate))
-        check_result = self._modelcheck_predicates(
-            predicates=[predicate],
-            constants=constants,
-            checker=checker,
-            tla_file_name=tla_file_name,
-            files=files,
-            checker_params=checker_params,
-            traces_dir=traces_dir,
-        )
-        self.logger.debug("finished with {}".format(predicate))
+        try:
+            self.logger.debug("starting with {}".format(predicate))
+            check_result = self._modelcheck_predicates(
+                predicates=[predicate],
+                constants=constants,
+                checker=checker,
+                tla_file_name=tla_file_name,
+                files=files,
+                checker_params=checker_params,
+                traces_dir=traces_dir,
+            )
+            self.logger.debug("finished with {}".format(predicate))
 
-        mod_res.lock.acquire()
-        mod_res._finished_operators.append(original_predicate_name)
-        mod_res._in_progress_operators.remove(original_predicate_name)
+            mod_res.lock.acquire()
+            mod_res._finished_operators.append(original_predicate_name)
+            mod_res._in_progress_operators.remove(original_predicate_name)
 
-        if check_result.is_ok == result_considered_success:
-            mod_res._successful.append(original_predicate_name)
-        else:
-            mod_res._unsuccessful.append(original_predicate_name)
-            mod_res.operator_errors[original_predicate_name] = check_result.error_msg
+            if check_result.is_ok == result_considered_success:
+                mod_res._successful.append(original_predicate_name)
+            else:
+                mod_res._unsuccessful.append(original_predicate_name)
 
-        mod_res.lock.release()
+            mod_res.lock.release()
 
-        # in the current implementation, this will only return one trace (as a counterexample)
-        if check_result.traces:
-            mod_res._traces[original_predicate_name] = check_result.traces
-            mod_res.add_trace_paths(original_predicate_name, check_result.trace_paths)
+            # in the current implementation, this will only return one trace (as a counterexample)
+            if check_result.traces:
+                mod_res._traces[original_predicate_name] = check_result.traces
+                mod_res.add_trace_paths(
+                    original_predicate_name, check_result.trace_paths
+                )
+
+        except ModelParsingError as e:
+            mod_res.lock.acquire()
+            mod_res.parsing_error = e
+            mod_res.lock.release()
+
+        except ModelTypecheckingError as e:
+            mod_res.lock.acquire()
+            mod_res.typing_error = e
+            mod_res.lock.release()
 
         for monitor_func in monitor_update_functions:
             monitor_func(res=mod_res)
@@ -187,7 +202,7 @@ class Model:
                 "Currently, only the Apalache checker is supported. Support for TLC coming soon"
             )
 
-        if self.parsable is False:
+        if not self.parsed_ok:
             raise self.last_parsing_error
 
         if invariants == []:
@@ -250,7 +265,7 @@ class Model:
         traces_dir: Optional[str] = None,
     ) -> ModelResult:
 
-        if self.parsable is False:
+        if not self.parsed_ok:
             raise self.last_parsing_error
 
         if examples == []:
