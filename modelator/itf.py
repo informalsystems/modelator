@@ -270,17 +270,22 @@ class ITF:
             for (root_key, li) in e_step_dict.items():
                 if diff:
                     st += "<details open>\n\n"
-                    st += f"<summary>{root_key}</summary>\n\n"
+                    st += f"<summary><code>{root_key.removeprefix('.')}</code></summary>\n\n"
                     st += "\n|KeyPath|Old|New|\n"
                     st += "|-|-|-|\n"
                     for (k, u, v) in li:
-                        st += f"|`{md_sanitize(k)}`|`{md_sanitize(str(u))}`|`{md_sanitize(str(v))}`|\n"
+                        st += f"|`{md_sanitize(k.removeprefix('.'))}`"
+                        st += f"|`{md_sanitize(str(u))}`"
+                        st += f"|`{md_sanitize(str(v))}`"
+                        st += "|\n"
                     st += "\n</details>\n"
                 else:
                     st += "\n|KeyPath|Value|\n"
                     st += "|-|-|\n"
                     for (k, _, v) in li:
-                        st += f"|`{md_sanitize(str(k))}`|`{md_sanitize(str(v))}`|\n"
+                        st += f"|`{md_sanitize(k.removeprefix('.'))}`"
+                        st += f"|`{md_sanitize(str(v))}`"
+                        st += "|\n"
                     st += "\n"
             st += "\n"
             st += "</details>\n\n"
