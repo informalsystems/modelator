@@ -91,34 +91,41 @@ class ModelResult:
         indent = " " * 4
         s = StringIO()
 
-        for op in self.inprogress():
-            s.write(f"- {op} ⏳\n")
+        if self.parsing_error:
+            s.write(f"Parsing error 💥\n")
+            s.write(f"{indent}{self.parsing_error}\n")
+        elif self.typing_error:
+            s.write(f"Type checking error 💥\n")
+            s.write(f"{indent}{self.typing_error}\n")
+        else:
+            for op in self.inprogress():
+                s.write(f"- {op} ⏳\n")
 
-        for op in self.successful():
-            s.write(f"- {op} OK ✅\n")
+            for op in self.successful():
+                s.write(f"- {op} OK ✅\n")
 
-            trace = self.traces(op)
-            if trace:
-                s.write(f"{indent}Trace: {trace}\n")
+                trace = self.traces(op)
+                if trace:
+                    s.write(f"{indent}Trace: {trace}\n")
 
-            trace_paths = self.trace_paths(op)
-            if trace_paths:
-                s.write(f"{indent}Trace files: {trace_paths}\n")
+                trace_paths = self.trace_paths(op)
+                if trace_paths:
+                    s.write(f"{indent}Trace files: {trace_paths}\n")
 
-        for op in self.unsuccessful():
-            s.write(f"- {op} FAILED ❌\n")
+            for op in self.unsuccessful():
+                s.write(f"- {op} FAILED ❌\n")
 
-            if op in self.operator_errors and self.operator_errors[op]:
-                s.write(indent)
-                s.write(str(self.operator_errors[op]).replace("\n", f"{indent}\n"))
+                if op in self.operator_errors and self.operator_errors[op]:
+                    s.write(indent)
+                    s.write(str(self.operator_errors[op]).replace("\n", f"{indent}\n"))
 
-            trace = self.traces(op)
-            if trace:
-                s.write(f"{indent}Trace: {trace}\n")
+                trace = self.traces(op)
+                if trace:
+                    s.write(f"{indent}Trace: {trace}\n")
 
-            trace_paths = self.trace_paths(op)
-            if trace_paths:
-                s.write(f"{indent}Trace files: {trace_paths}\n")
+                trace_paths = self.trace_paths(op)
+                if trace_paths:
+                    s.write(f"{indent}Trace files: {trace_paths}\n")
 
         string = s.getvalue()
         s.close()
