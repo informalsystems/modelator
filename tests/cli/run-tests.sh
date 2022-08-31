@@ -2,6 +2,7 @@
 
 # See https://sipb.mit.edu/doc/safe-shell/
 set -eu -o pipefail
+shopt -s failglob
 
 MDX=ocaml-mdx
 TRACES_DIR="./traces/"
@@ -18,13 +19,13 @@ eval $(opam env)
 SCRIPT_EXIT_CODE=0
 
 test_file() {
-    echo "Testing file $1..."
+    echo "▶️ Testing file $1..."
     $MDX test -v $1
     if [ -f "$1.corrected" ]; then
-        echo "FAILED: see $1.corrected"
+        echo "❌ FAILED: see $1.corrected"
         SCRIPT_EXIT_CODE=1
     else
-        echo "OK"
+        echo "✅ OK"
     fi
 }
 
