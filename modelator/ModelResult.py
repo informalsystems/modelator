@@ -1,7 +1,7 @@
 from datetime import datetime
 from io import StringIO
 from threading import Lock
-from typing import List
+from typing import List, Optional
 
 
 class ModelResult:
@@ -13,7 +13,11 @@ class ModelResult:
     """
 
     def __init__(
-        self, model, all_operators=None, parsing_error=False, typing_error=False
+        self,
+        model,
+        all_operators=None,
+        parsing_error: Optional[str] = None,
+        typing_error: Optional[str] = None,
     ) -> None:
         self._model = model
         self._time = datetime.now()

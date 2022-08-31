@@ -66,17 +66,11 @@ class Model:
 
         finally:
             for monitor in self.monitors:
-                monitor.on_parse_finish(
-                    res=ModelResult(self, parsing_error=not self.parsed_ok)
-                )
+                monitor.on_parse_finish(res=ModelResult(self, parsing_error=None))
 
     def typecheck(self):
         if not self.parsed_ok:
             raise self.last_parsing_error
-
-        if not (self.parsed_ok and self.autoparse):
-            # do_parse
-            pass
 
         # will raise ModelTypecheckingError if types do not match
         typecheck(self.tla_file_path, self.files_contents)
@@ -135,14 +129,14 @@ class Model:
         mod_res,
         monitor_update_functions,
         result_considered_success: bool,
-        original_predicate_name: str = None,
+        original_predicate: str = None,
         traces_dir: Optional[str] = None,
     ):
-        if original_predicate_name is None:
-            original_predicate_name = predicate
+        if not original_predicate:
+            original_predicate = predicate
 
         if traces_dir:
-            traces_dir += "/" + original_predicate_name
+            traces_dir += "/" + original_predicate
 
         try:
             self.logger.debug("starting with {}".format(predicate))
@@ -158,23 +152,19 @@ class Model:
             self.logger.debug("finished with {}".format(predicate))
 
             mod_res.lock.acquire()
-            mod_res._finished_operators.append(original_predicate_name)
-            mod_res._in_progress_operators.remove(original_predicate_name)
+            mod_res._finished_operators.append(original_predicate)
+            mod_res._in_progress_operators.remove(original_predicate)
 
             if check_result.is_ok == result_considered_success:
-                mod_res._successful.append(original_predicate_name)
+                mod_res._successful.append(original_predicate)
             else:
-                mod_res._unsuccessful.append(original_predicate_name)
-                mod_res.operator_errors[
-                    original_predicate_name
-                ] = check_result.error_msg
+                mod_res._unsuccessful.append(original_predicate)
+                mod_res.operator_errors[original_predicate] = check_result.error_msg
 
             # in the current implementation, this will only return one trace (as a counterexample)
             if check_result.traces:
-                mod_res._traces[original_predicate_name] = check_result.traces
-                mod_res.add_trace_paths(
-                    original_predicate_name, check_result.trace_paths
-                )
+                mod_res._traces[original_predicate] = check_result.traces
+                mod_res.add_trace_paths(original_predicate, check_result.trace_paths)
 
             mod_res.lock.release()
 

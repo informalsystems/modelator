@@ -66,7 +66,7 @@ class HtmlModelMonitor(ModelMonitor):
 
     def _update_title(self, res):
         self.title = res.model().module_name
-        if res.parsing_error is True:
+        if res.parsing_error:
             self.title = self.title + ": parsing problem!"
 
     def _add_section(self, section):
