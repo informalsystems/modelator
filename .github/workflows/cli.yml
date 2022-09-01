@@ -47,10 +47,11 @@ jobs:
           ocaml-compiler: 4.13.x
       - name: Install MDX
         run: opam install mdx
-      - name: Install Modelator
+      - name: Install and setup Modelator
         run: |
           source .venv/bin/activate
           poetry install --no-interaction
+          modelator apalache get
       - name: Run tests
         run: |
           source .venv/bin/activate
