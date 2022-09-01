@@ -1,4 +1,5 @@
 import json
+from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Dict, List, Tuple
 
@@ -168,7 +169,7 @@ class ITF:
         return [ITF(state) for state in data["states"]]
 
     @staticmethod
-    def diff(itfs: List["ITF"]):
+    def diff(itfs: List["ITF"]) -> List[List[Tuple[str, Any, Any]]]:
         def format_path(path):
             if len(path) == 0:
                 return ""
@@ -201,6 +202,94 @@ class ITF:
                     current_diff.append((format_path(l_path), t1, t2))
             trace_diff.append(sorted(current_diff))
         return trace_diff
+
+    @staticmethod
+    def flatten(
+        itfs: List["ITF"], diff: bool = True
+    ) -> List[Dict[str, List[Tuple[str, Any, Any]]]]:
+        def format_path(path: List[str]) -> List[str]:
+            if len(path) == 0:
+                return []
+            match path[0]:
+                case "record":
+                    st = [f".{path[1]}"] + format_path(path[2:])
+                case "function":
+                    st = [f"({path[1]})"] + format_path(path[3:])
+                case "set":
+                    st = ["{}"] + format_path(path[2:])
+                case "sequence":
+                    st = [f"[{path[1]}]"] + format_path(path[2:])
+                case "object":
+                    st = format_path(path[1:])
+                case _:
+                    raise RuntimeError(f"{path} : no match")
+            return st
+
+        trace_diff = []
+        if diff:
+            iterator = zip(itfs[:], itfs[1:])
+        else:
+            iterator = zip([ITF({}) for _ in itfs], itfs[:])
+
+        for (old, new) in iterator:
+            current_diff = defaultdict(list)
+            ddiff = deepdiff.DeepDiff(old.itf, new.itf, ignore_order=True, view="tree")
+            for vs in ddiff.values():
+                for v in vs:
+                    l_path = v.path(output_format="list")
+                    t1 = None if isinstance(v.t1, deepdiff.helper.NotPresent) else v.t1
+                    if not diff:
+                        assert t1 is None
+                    t2 = None if isinstance(v.t2, deepdiff.helper.NotPresent) else v.t2
+                    formatted_path = format_path(l_path)
+                    if diff:
+                        root_key = formatted_path[0]
+                    else:
+                        root_key = None
+                    current_diff[root_key].append(("".join(formatted_path), t1, t2))
+            trace_diff.append(current_diff)
+        return trace_diff
+
+    @staticmethod
+    def markdown(itfs: List["ITF"], diff: bool = True) -> str:
+        def md_sanitize(x: str) -> str:
+            return x.replace("|", "\\|")
+
+        st = "# ITF"
+        if diff:
+            st += "-Diff"
+        st += " Markdown\n\n"
+
+        for (i, e_step_dict) in enumerate(ITF.flatten(itfs, diff)):
+            if diff:
+                st += f"## Step {i+1} to Step {i+2}\n\n"
+            else:
+                st += f"## Step {i+1}\n\n"
+            st += "<details open>\n\n"
+            st += "<summary>Variables</summary>\n\n"
+            for (root_key, li) in e_step_dict.items():
+                if diff:
+                    st += "<details open>\n\n"
+                    st += f"<summary><code>{root_key.removeprefix('.')}</code></summary>\n\n"
+                    st += "\n|KeyPath|Old|New|\n"
+                    st += "|-|-|-|\n"
+                    for (k, u, v) in li:
+                        st += f"|`{md_sanitize(k.removeprefix('.'))}`"
+                        st += f"|`{md_sanitize(str(u))}`"
+                        st += f"|`{md_sanitize(str(v))}`"
+                        st += "|\n"
+                    st += "\n</details>\n"
+                else:
+                    st += "\n|KeyPath|Value|\n"
+                    st += "|-|-|\n"
+                    for (k, _, v) in li:
+                        st += f"|`{md_sanitize(k.removeprefix('.'))}`"
+                        st += f"|`{md_sanitize(str(v))}`"
+                        st += "|\n"
+                    st += "\n"
+            st += "\n"
+            st += "</details>\n\n"
+        return st
 
     @staticmethod
     def print_diff(itfs: List["ITF"], **kargs):

@@ -9,6 +9,7 @@ from modelator import __version__
 from modelator import ModelResult, const_values
 from modelator.cli.model_config_file import load_config_file
 from modelator.cli.model_file import ModelFile
+from modelator.itf import ITF
 from modelator.Model import Model
 from modelator.utils import apalache_jar, tla_helpers
 from modelator.utils.model_exceptions import ModelParsingError, ModelTypecheckingError
@@ -409,6 +410,14 @@ def _run_checker(mode, model, config):
         checker_params=config["params"],
         traces_dir=config["traces_dir"],
     )
+
+    for itf_json_file in Path(config["traces_dir"]).glob("**/*.itf.json"):
+        itf_trace = ITF.from_itf_json(itf_json_file)
+        with open(itf_json_file.with_suffix(".md"), "w", encoding="utf-8") as f:
+            f.write(ITF.markdown(itf_trace, diff=False))
+        with open(itf_json_file.with_suffix(".diff.md"), "w", encoding="utf-8") as f:
+            f.write(ITF.markdown(itf_trace, diff=True))
+
     print(f"Results:\n{result}")
     print(f"Total time: {(timer() - start_time):.2f} seconds")
 
