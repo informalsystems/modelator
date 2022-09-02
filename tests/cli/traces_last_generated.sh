@@ -19,7 +19,7 @@ DIR=$DIR/$PROPERTY_NAME
 [ ! -d "$DIR" ] && echo "Directory $DIR does not exist" && exit 1
 
 # last file in the directory by time
-LAST_FILE=$(ls -rt $DIR | tail -1)
+LAST_FILE=$(ls -rt $DIR | grep .itf.json | tail -1)
 
 # Return last generated trace file
 echo $DIR/$LAST_FILE
