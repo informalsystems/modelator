@@ -1,10 +1,8 @@
 import os
-from operator import neg
+from pathlib import Path
 from typing import Dict, List, Tuple
 
 import modelator_py.util.tla as tla_parsing
-
-from modelator import const_values
 
 
 def get_auxiliary_tla_files(model_name: str) -> Dict[str, str]:
@@ -70,29 +68,40 @@ def tla_file_with_negated_predicates(
     return negated_file_name, negated_file_content, negated_predicates
 
 
-def get_model_elements(model_name: str) -> Tuple[List[str], List[str]]:
+def get_model_elements(model_path: str) -> Tuple[List[str], List[str], str]:
     """
-    TODO: this only works when the model is in a single file (it will not get all the
-        operators from all extendees)
-
+    Return the lists of all variable and operator names in the module (including
+    extendees and instancees, recursively), and the module name.
     """
+    variables = []
+    operators = []
 
-    with open(model_name, "r") as f:
+    path = Path(model_path)
+    model_dir = path.parent
+
+    if not path.is_file():
+        return [], [], ""
+
+    with open(model_path, "r") as f:
         tla_spec = f.read()
         tree = tla_parsing.parser.parse(tla_spec)
-        variables = []
-        operators = []
-        if tree is None:
+        if not tree:
             raise ValueError("Expecting this file to be parsable")
-        else:
-            for body_element in tree.body:
-                if isinstance(body_element, tla_parsing.ast.Nodes.Variables):
-                    variables = [str(d) for d in body_element.declarations]
 
-                if isinstance(body_element, tla_parsing.ast.Nodes.Definition):
-                    operators.append(body_element.definition.name)
+        for body_element in tree.body:
+            if isinstance(body_element, tla_parsing.ast.Nodes.Variables):
+                variables = [str(d) for d in body_element.declarations]
 
-        return variables, operators, tree.name
+            if isinstance(body_element, tla_parsing.ast.Nodes.Definition):
+                operators.append(body_element.definition.name)
+
+        for module in tree.extendees + tree.instancees:
+            mod_path = os.path.join(model_dir, module + ".tla")
+            mod_variables, mod_operators, _ = get_model_elements(mod_path)
+            variables.extend(mod_variables)
+            operators.extend(mod_operators)
+
+    return variables, operators, tree.name
 
 
 def create_file(module, extends, content):
