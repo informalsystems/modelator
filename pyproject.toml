@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "modelator"
-version = "0.6.1"
+version = "0.6.2"
 description = "Framework for Model Based Testing"
 authors = [
   "Andrey Kuprianov <andrey@informal.systems>",
@@ -61,3 +61,13 @@ pytest11 = { pytest-modelator = "modelator.pytest" }
 markers = [
   "network: marks test as running over network (deselect with '-m \"not network\"')",
 ]
+
+[tool.semantic_release]
+version_variable = ["modelator/_version.py:__version__"]
+version_toml = ["pyproject.toml:tool.poetry.version"]
+major_on_zero = true
+branch = "dev"
+upload_to_PyPI = true
+upload_to_release = false
+upload_to_repository = false
+build_command = "poetry build"
