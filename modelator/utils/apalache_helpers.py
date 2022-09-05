@@ -39,13 +39,30 @@ def write_trace_files_to(apalache_result: Dict, traces_dir: str) -> List[str]:
     return trace_paths
 
 
-def extract_counterexample(files: Dict[str, str]):
-    cex_tla_content = files[APALACHE_DEFAULTS["result_violation_tla_file"]]
+def extract_simulations(files: Dict[str, str], num_simulations: int = 1):
+    itf_tests = []
+    for i in range(num_simulations):
+        file_name = "example" + str(i) + ".itf.json"
+        test_content = json.loads(files[file_name])["states"]
+        itf_tests.append(test_content)
+
+    return itf_tests
+
+
+def extract_counterexample(
+    files: Dict[str, str], trace_name=APALACHE_DEFAULTS["trace_name"]
+):
+
+    print(f"files are {files}")
+    tla_file_name = trace_name + ".tla"
+    cex_tla_content = files[tla_file_name]
+
     violated_invariant = extract_line_with(
         APALACHE_STDOUT["INVARIANT_VIOLATION"], cex_tla_content
     )
 
-    itf_file_content = files[APALACHE_DEFAULTS["result_violation_itf_file"]]
+    itf_file_name = trace_name + ".itf.json"
+    itf_file_content = files[itf_file_name]
     counterexample = json.loads(itf_file_content)["states"]
 
     return (violated_invariant, counterexample)

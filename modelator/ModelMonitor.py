@@ -29,3 +29,12 @@ class ModelMonitor:
 
     def on_check_finish(self, res: ModelResult):
         pass
+
+    def on_simulate_start(self, res: ModelResult):
+        pass
+
+    def on_simulate_update(self, res: ModelResult):
+        pass
+
+    def on_simulate_finish(self, res: ModelResult):
+        pass
