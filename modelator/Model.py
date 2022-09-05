@@ -184,7 +184,7 @@ class Model:
 
     def check(
         self,
-        invariants: List[str] = [],
+        invariants: Optional[List[str]] = None,
         constants: Dict[str, Any] = {},
         checker: str = const_values.APALACHE,
         checker_params: Dict[str, str] = {},
@@ -199,7 +199,7 @@ class Model:
         if not self.parsed_ok:
             raise self.last_parsing_error
 
-        if invariants == []:
+        if invariants is None:
             invariants = [
                 str(op)
                 for op in self.operators
@@ -252,7 +252,7 @@ class Model:
 
     def sample(
         self,
-        examples: List[str] = [],
+        examples: Optional[List[str]] = None,
         constants: Dict[str, Any] = {},
         checker: str = const_values.APALACHE,
         checker_params: Dict[str, str] = {},
@@ -262,7 +262,7 @@ class Model:
         if not self.parsed_ok:
             raise self.last_parsing_error
 
-        if examples == []:
+        if examples is None:
             # take all operators that are prefixed/suffixed with Ex
             examples = [
                 str(op)
