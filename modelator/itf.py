@@ -119,6 +119,44 @@ class ITFSequence:
 
 
 @dataclass
+class ITFBigint:
+    bigint: int
+
+    def __init__(self, num) -> None:
+        self.bigint = int(num)
+
+    def pretty(self) -> str:
+        return str(self.bigint)
+
+    def __repr__(self):
+        return self.pretty()
+
+    def to_json(self):
+        return json.dumps(self.num)
+
+
+@dataclass
+class ITFTuple:
+    tuple: List
+
+    def __init__(self, data) -> None:
+        self.tuple = []
+        for v in data:
+            self.tuple.append(ITF.parse(v))
+
+    def pretty(self) -> str:
+        seq_str = ", ".join(map(lambda x: x.pretty(), self.tuple))
+        result = f"<<{seq_str}>>"
+        return result
+
+    def __repr__(self):
+        return self.pretty()
+
+    def to_json(self):
+        return [elem.to_json() for elem in self.tuple]
+
+
+@dataclass
 class ITFObject:
     object: Any
 
@@ -142,19 +180,25 @@ class ITFObject:
 
 @dataclass
 class ITF:
-    itf: ITFRecord | ITFFunction | ITFSequence | ITFSet | ITFObject
+    itf: ITFRecord | ITFFunction | ITFSequence | ITFSet | ITFTuple | ITFBigint | ITFObject
 
     def __init__(self, data):
         self.itf = ITF.parse(data)
 
     @staticmethod
-    def parse(data) -> ITFRecord | ITFFunction | ITFSequence | ITFSet | ITFObject:
+    def parse(
+        data,
+    ) -> ITFRecord | ITFFunction | ITFSequence | ITFSet | ITFTuple | ITFBigint | ITFObject:
         match data:
             case dict():
                 if "#map" in data:
                     return ITFFunction(data["#map"])
                 if "#set" in data:
                     return ITFSet(data["#set"])
+                if "#tup" in data:
+                    return ITFTuple(data["#tup"])
+                if "#bigint" in data:
+                    return ITFBigint(data["#bigint"])
                 data = {k: v for (k, v) in data.items() if not k.startswith("#")}
                 return ITFRecord(data)
             case list():
@@ -182,6 +226,10 @@ class ITF:
                     st = "{}" + format_path(path[2:])
                 case "sequence":
                     st = f"[{path[1]}]" + format_path(path[2:])
+                case "tuple":
+                    st = f"[{path[1]}]" + format_path(path[2:])
+                case "bigint":
+                    st = format_path(path[1:])
                 case "object":
                     st = format_path(path[1:])
                 case _:
@@ -219,6 +267,10 @@ class ITF:
                     st = ["{}"] + format_path(path[2:])
                 case "sequence":
                     st = [f"[{path[1]}]"] + format_path(path[2:])
+                case "tuple":
+                    st = [f"[{path[1]}]"] + format_path(path[2:])
+                case "bigint":
+                    st = format_path(path[1:])
                 case "object":
                     st = format_path(path[1:])
                 case _:
