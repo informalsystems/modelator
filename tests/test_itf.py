@@ -22,6 +22,9 @@ def test_itf_diff_print(capfd, snapshot, itf_json_file):
     assert out == snapshot
 
 
+# Apalache docs on ITF Informal Trace Format
+# https://apalache.informal.systems/docs/adr/015adr-trace.html
+
 sanitize_pairs = [
     (
         {
