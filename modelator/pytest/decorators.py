@@ -26,6 +26,10 @@ def sanitize_itf(obj):
                 }
             if "#set" in obj:
                 return {freeze(sanitize_itf(e)) for e in obj["#set"]}
+            if "#bigint" in obj:
+                return int(obj["#bigint"])
+            if "#tup" in obj:
+                return [sanitize_itf(e) for e in obj["#tup"]]
             return {
                 sanitize_itf(k): sanitize_itf(v)
                 for (k, v) in obj.items()
