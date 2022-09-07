@@ -187,7 +187,8 @@ def simulate(
 
     config["params"]["save_runs"] = True
     config["params"]["length"] = simulation_length
-    config["params"]["max_run"] = num_simulations
+    # -1 is necessary because Apalache will create one extra run: 0, 1,2,..., num_simulations
+    config["params"]["max_run"] = num_simulations - 1
 
     _run_checker("simulate", model, config)
 
