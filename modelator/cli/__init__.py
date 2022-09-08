@@ -255,7 +255,7 @@ def sample(
         None,
         help="Comma-separated list of constant definitions in the format 'name=value' (overwrites config file).",
     ),
-    examples: Optional[str] = typer.Option(
+    tests: Optional[str] = typer.Option(
         None,
         help="Comma-separated list of model predicates describing desired properties in the final state of the execution (overwrites config file).",
     ),
@@ -265,14 +265,14 @@ def sample(
     ),
 ):
     """
-    Generate execution traces that reach the state described by the `examples` properties.
+    Generate execution traces that reach the state described by the `tests` properties.
 
     If extra options are provided, they will be passed directly to the model-checker,
     overwriting values in the config file.
     """
     model, config = _load_model_with_arguments(
         "sample",
-        examples,
+        tests,
         model_path,
         config_path,
         init,
@@ -372,7 +372,7 @@ def _load_model_with_arguments(
     if mode == "check":
         properties_config_name = "invariants"
     elif mode == "sample" or mode == "simulate":
-        properties_config_name = "examples"
+        properties_config_name = "tests"
     else:
         raise ValueError("Unknown checker mode")
 
@@ -447,11 +447,11 @@ def _run_checker(mode, model, config):
     elif mode == "sample":
         handler = model.sample
         action = "Sampling"
-        properties_config_name = "examples"
+        properties_config_name = "tests"
     elif mode == "simulate":
         handler = model.simulate
         action = "Simulating"
-        properties_config_name = "examples"
+        properties_config_name = "tests"
     else:
         raise ValueError("Unknown checker mode")
 

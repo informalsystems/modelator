@@ -34,7 +34,7 @@ Model:
 Config at model/Test1.config.toml:
 - config_file_path: None
 - constants: {}
-- examples: []
+- tests: []
 - init: Init
 - invariants: ['Inv']
 - next: Next
