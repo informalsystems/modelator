@@ -40,7 +40,7 @@ $ rm -r test_tracesXX || true
 ```
 
 ```sh
-$ modelator simulate --model-path model/Test1.tla --num-simulations 4 --simulation-length 3 --traces-dir test_tracesXX
+$ modelator simulate --model-path model/Test1.tla --max-trace 4 --length 3 --traces-dir test_tracesXX
 Simulating...
 ...
 ```
