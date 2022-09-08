@@ -43,9 +43,6 @@ def wrap_command(
     json_command = {}
     json_command["args"] = {}
 
-    if args is not None and cmd != const_values.CHECK_CMD:
-        assert const_values.CONFIG not in args
-
     if checker == const_values.APALACHE:
         json_command["args"]["cmd"] = cmd
 

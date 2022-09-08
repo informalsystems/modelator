@@ -28,6 +28,9 @@ class ModelResult:
         self._successful = []
         self._unsuccessful = []
         self._traces = {}
+        # unlike traces in self._traces and self._trace_paths, these are not bound to any predicate/invariant
+        self._simulation_traces = set()
+        self._simulation_traces_paths = set()
         self._trace_paths = {}
         self.lock = Lock()
         self.parsing_error = parsing_error
@@ -127,6 +130,15 @@ class ModelResult:
                     s.write(f"{indent}{error}\n")
 
                 self._write_traces(s, indent, op)
+
+            s.write("Simulation completed✅\n")
+            if len(self._simulation_traces_paths) > 0:
+                s.write(
+                    f"{indent}Trace files: {' '.join(self._simulation_traces_paths)}\n"
+                )
+            else:
+                for trace_path in self._simulation_traces_paths:
+                    s.write(f"{indent}Trace: {trace_path}\n")
 
         string = s.getvalue()
         s.close()

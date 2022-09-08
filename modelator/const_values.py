@@ -25,6 +25,7 @@ APALACHE_SHA_CHECKSUMS = {
 APALACHE_DEFAULTS = {
     "result_violation_tla_file": "violation.tla",
     "result_violation_itf_file": "violation.itf.json",
+    "trace_name": "violation",
 }
 
 APALACHE_STDOUT = {
@@ -47,6 +48,7 @@ CHECK = "check"
 PARSE_CMD = "parse"
 CHECK_CMD = "check"
 TYPECHECK_CMD = "typecheck"
+SIMULATE_CMD = "simulate"
 
 DEFAULT_INVARIANTS = ["Inv"]
 DEFAULT_INIT = "Init"

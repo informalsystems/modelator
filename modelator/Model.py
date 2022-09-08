@@ -8,6 +8,7 @@ from typing_extensions import Self
 
 from modelator import const_values
 from modelator.checker.check import check_apalache, check_tlc
+from modelator.checker.simulate import simulate_apalache
 from modelator.ModelMonitor import ModelMonitor
 from modelator.ModelResult import ModelResult
 from modelator.parse import parse
@@ -184,7 +185,7 @@ class Model:
 
     def check(
         self,
-        invariants: List[str] = [],
+        invariants: Optional[List[str]] = None,
         constants: Dict[str, Any] = {},
         checker: str = const_values.APALACHE,
         checker_params: Dict[str, str] = {},
@@ -199,7 +200,7 @@ class Model:
         if not self.parsed_ok:
             raise self.last_parsing_error
 
-        if invariants == []:
+        if invariants is None:
             invariants = [
                 str(op)
                 for op in self.operators
@@ -250,9 +251,48 @@ class Model:
         self.all_checks.append(mod_res)
         return mod_res
 
+    def simulate(
+        self,
+        # have to keep this unused argument around bcs simulate is one of the
+        # handlers (parallel to check and sample), where other handlers expect
+        # invariants/examples here
+        examples: Optional[List[str]] = None,
+        constants=None,
+        checker: str = const_values.APALACHE,
+        checker_params: Dict[str, str] = {},
+        traces_dir: Optional[str] = None,
+    ) -> ModelResult:
+
+        if not self.parsed_ok:
+            raise self.last_parsing_error
+
+        mod_res = ModelResult(model=self)
+
+        for monitor in self.monitors:
+            monitor.on_sample_start(res=mod_res)
+
+        if not checker == const_values.APALACHE:
+            raise NotImplementedError("Only Apalache checker supported")
+
+        simulation_traces, paths = simulate_apalache(
+            tla_file_name=self.tla_file_path,
+            files=self.files_contents,
+            args=checker_params,
+            traces_dir=traces_dir,
+            cmd=const_values.SIMULATE_CMD,
+        )
+
+        mod_res._simulation_traces = simulation_traces
+        mod_res._simulation_traces_paths = paths
+
+        for monitor in self.monitors:
+            monitor.on_simulate_finish(res=mod_res)
+
+        return mod_res
+
     def sample(
         self,
-        examples: List[str] = [],
+        examples: Optional[List[str]] = None,
         constants: Dict[str, Any] = {},
         checker: str = const_values.APALACHE,
         checker_params: Dict[str, str] = {},
@@ -262,7 +302,7 @@ class Model:
         if not self.parsed_ok:
             raise self.last_parsing_error
 
-        if examples == []:
+        if examples is None:
             # take all operators that are prefixed/suffixed with Ex
             examples = [
                 str(op)

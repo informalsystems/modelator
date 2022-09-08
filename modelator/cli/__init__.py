@@ -150,6 +150,55 @@ def typecheck():
 @app.command(
     context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
 )
+def simulate(
+    ctx: typer.Context,
+    model_path: Optional[str] = typer.Option(None, help="Path to the TLA+ model file."),
+    config_path: Optional[str] = typer.Option(
+        None, help="Path to TOML file with model and model checker configurations."
+    ),
+    init: Optional[str] = typer.Option(None, help="Model's init predicate."),
+    next: Optional[str] = typer.Option(None, help="Model's next predicate."),
+    constants: Optional[str] = typer.Option(
+        None,
+        help="Comma-separated list of constant definitions in the format 'name=value' (overwrites config file).",
+    ),
+    length: Optional[int] = typer.Option(
+        default=10, help="Number of steps in each simulation"
+    ),
+    max_trace: Optional[int] = typer.Option(
+        default=5, help="Number of simulated traces to generate."
+    ),
+    traces_dir: Optional[str] = typer.Option(
+        None,
+        help="Path to store generated trace files (overwrites config file).",
+    ),
+):
+    """
+    Generate execution traces by simulating the model evolution.
+    """
+    model, config = _load_model_with_arguments(
+        "simulate",
+        None,
+        model_path,
+        config_path,
+        init,
+        next,
+        constants,
+        traces_dir,
+        ctx.args,
+    )
+
+    config["params"]["save_runs"] = True
+    config["params"]["length"] = length
+    # -1 is necessary because Apalache will create one extra run: 0, 1,2,..., num_simulations
+    config["params"]["max_run"] = max_trace - 1
+
+    _run_checker("simulate", model, config)
+
+
+@app.command(
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
+)
 def check(
     ctx: typer.Context,
     model_path: Optional[str] = typer.Option(None, help="Path to the TLA+ model file."),
@@ -322,7 +371,7 @@ def _load_model_with_arguments(
     """
     if mode == "check":
         properties_config_name = "invariants"
-    elif mode == "sample":
+    elif mode == "sample" or mode == "simulate":
         properties_config_name = "examples"
     else:
         raise ValueError("Unknown checker mode")
@@ -365,7 +414,7 @@ def _load_model_with_arguments(
         )
         raise typer.Exit(code=1)
 
-    if not config[properties_config_name]:
+    if (mode == "sample" or mode == "check") and not config[properties_config_name]:
         print(
             "ERROR: could not find properties to check; either:\n"
             "- load a configuration together with a model "
@@ -399,6 +448,10 @@ def _run_checker(mode, model, config):
         handler = model.sample
         action = "Sampling"
         properties_config_name = "examples"
+    elif mode == "simulate":
+        handler = model.simulate
+        action = "Simulating"
+        properties_config_name = "examples"
     else:
         raise ValueError("Unknown checker mode")
 
@@ -406,8 +459,8 @@ def _run_checker(mode, model, config):
     print("{} {}... ".format(action, ", ".join(config[properties_config_name])))
     result: ModelResult = handler(
         config[properties_config_name],
-        constants=config["constants"],
         checker_params=config["params"],
+        constants=config["constants"],
         traces_dir=config["traces_dir"],
     )
 
