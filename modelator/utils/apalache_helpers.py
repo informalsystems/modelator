@@ -54,7 +54,6 @@ def extract_counterexample(
     files: Dict[str, str], trace_name=APALACHE_DEFAULTS["trace_name"]
 ):
 
-    print(f"files are {files}")
     tla_file_name = trace_name + ".tla"
     cex_tla_content = files[tla_file_name]
 
