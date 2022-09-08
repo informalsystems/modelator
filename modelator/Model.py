@@ -274,7 +274,7 @@ class Model:
         if not checker == const_values.APALACHE:
             raise NotImplementedError("Only Apalache checker supported")
 
-        simulation_result = simulate_apalache(
+        simulation_traces, paths = simulate_apalache(
             tla_file_name=self.tla_file_path,
             files=self.files_contents,
             args=checker_params,
@@ -282,7 +282,8 @@ class Model:
             cmd=const_values.SIMULATE_CMD,
         )
 
-        mod_res._simulation_traces = simulation_result
+        mod_res._simulation_traces = simulation_traces
+        mod_res._simulation_traces_paths = paths
 
         for monitor in self.monitors:
             monitor.on_simulate_finish(res=mod_res)

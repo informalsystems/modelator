@@ -61,13 +61,15 @@ def simulate_apalache(
     simulate_logger.debug(f"result files: {list(result['files'].keys())}")
     simulate_logger.debug(f"result stdout: {result['stdout']}")
 
+    traces_paths = []
     if traces_dir:
         trace_paths = apalache_helpers.write_trace_files_to(result, traces_dir)
         for trace_path in trace_paths:
             simulate_logger.info(f"Wrote trace file to {trace_path}")
+            traces_paths.append(trace_path)
 
     simulation_tests = apalache_helpers.extract_simulations(
         files=result["files"], num_simulations=json_command["args"]["max_run"]
     )
     traces = [[ITF(state) for state in trace] for trace in simulation_tests]
-    return traces
+    return traces, traces_paths
