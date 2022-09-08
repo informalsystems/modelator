@@ -162,17 +162,20 @@ def simulate(
         None,
         help="Comma-separated list of constant definitions in the format 'name=value' (overwrites config file).",
     ),
-    simulation_length: Optional[int] = typer.Option(
+    length: Optional[int] = typer.Option(
         default=10, help="Number of steps in each simulation"
     ),
-    num_simulations: Optional[int] = typer.Option(
-        default=5, help="Number of simulations to produce."
+    max_trace: Optional[int] = typer.Option(
+        default=5, help="Number of simulated traces to generate."
     ),
     traces_dir: Optional[str] = typer.Option(
         None,
         help="Path to store generated trace files (overwrites config file).",
     ),
 ):
+    """
+    Generate execution traces by simulating the model evolution.
+    """
     model, config = _load_model_with_arguments(
         "simulate",
         None,
@@ -186,9 +189,9 @@ def simulate(
     )
 
     config["params"]["save_runs"] = True
-    config["params"]["length"] = simulation_length
+    config["params"]["length"] = length
     # -1 is necessary because Apalache will create one extra run: 0, 1,2,..., num_simulations
-    config["params"]["max_run"] = num_simulations - 1
+    config["params"]["max_run"] = max_trace - 1
 
     _run_checker("simulate", model, config)
 
