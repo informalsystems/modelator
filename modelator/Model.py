@@ -282,8 +282,10 @@ class Model:
             cmd=const_values.SIMULATE_CMD,
         )
 
-        mod_res._simulation_traces = simulation_traces
-        mod_res._simulation_traces_paths = paths
+        # had to add [1:] because apalache simulate produces one extra trace (and I suspect
+        # that example0.itf.json and example1.itf.json are the same)
+        mod_res._simulation_traces = simulation_traces[1:]
+        mod_res._simulation_traces_paths = paths[1:]
 
         for monitor in self.monitors:
             monitor.on_simulate_finish(res=mod_res)
