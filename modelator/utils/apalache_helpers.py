@@ -19,8 +19,9 @@ def write_trace_files_to(apalache_result: Dict, traces_dir: str) -> List[str]:
     # create directory if it does not exist
     Path(traces_dir).mkdir(parents=True, exist_ok=True)
 
+    itfs_filenames_pattern = re.compile(r"\d\.itf\.json$")
     itfs_filenames = [
-        f for f in apalache_result["files"].keys() if f.endswith(".itf.json")
+        f for f in apalache_result["files"].keys() if itfs_filenames_pattern.search(f)
     ]
     itfs_filenames.sort()
 
