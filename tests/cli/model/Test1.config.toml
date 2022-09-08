@@ -2,7 +2,7 @@
 init = "Init"
 # next = "Next"
 invariants = ["Inv"]
-# examples = ["ExTest", "ExFail"]
+# tests = ["ExTest", "ExFail"]
 
 [Config]
 # location for the generated trace files

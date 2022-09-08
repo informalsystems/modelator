@@ -11,7 +11,7 @@ $ modelator sample
 Running `sample` without specifying a model should fail:
 
 ```sh
-$ modelator sample --examples=ThreeSteps
+$ modelator sample --tests=ThreeSteps
 ...
 [1]
 ```
@@ -27,7 +27,7 @@ ERROR: config file not found
 Running `sample` with a model and a property to sample should succeed:
 
 ```sh
-$ modelator sample --model-path model/Test3.tla --examples ThreeSteps
+$ modelator sample --model-path model/Test3.tla --tests ThreeSteps
 ...
 - ThreeSteps OK ✅
 ...
@@ -45,7 +45,7 @@ $ ./traces_last_generated.sh ThreeSteps | xargs -I {} ./traces_length.sh {}
 Running `sample` with a model and a property to sample should succeed and generate 3 trace files:
 
 ```sh
-$ modelator sample --model-path model/Test3.tla --examples ThreeSteps --max_error=3
+$ modelator sample --model-path model/Test3.tla --tests ThreeSteps --max_error=3
 ...
 - ThreeSteps OK ✅
 ...
@@ -63,7 +63,7 @@ $ ./traces_last_generated.sh ThreeSteps | xargs -I {} ./traces_length.sh {}
 Running `sample` on a property that is not defined in the model should fail:
 
 ```sh
-$ modelator sample --model-path model/Test3.tla --examples=NonExistingProperty
+$ modelator sample --model-path model/Test3.tla --tests=NonExistingProperty
 ...
 ERROR: NonExistingProperty not defined in the model
 ...
