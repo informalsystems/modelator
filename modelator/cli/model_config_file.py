@@ -60,7 +60,7 @@ def _set_default_values(config):
         "init": "Init",
         "next": "Next",
         "invariants": [],
-        "examples": [],
+        "tests": [],
         "config_file_path": None,
         **config["Model"],
     }

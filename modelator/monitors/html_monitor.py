@@ -33,7 +33,7 @@ class HtmlModelMonitor(ModelMonitor):
 
     def on_sample_start(self, res: ModelResult):
         self._update_title(res)
-        self._add_section(MonitorSection.create_from("Examples", res))
+        self._add_section(MonitorSection.create_from("Tests", res))
         self.write_file()
 
     def on_sample_update(self, res: ModelResult):
