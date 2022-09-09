@@ -12,7 +12,6 @@ DIR="$TRACES_DIR"
 
 
 # Return the number of files in the directory
-# - tail -n+2 for discarding the first file (violation.itf.json)
 # - xargs for trimming whitespace
-NUM_TRACE_FILES=$(ls -rt $DIR | grep .itf.json | tail -n+2 | wc -l | xargs)
+NUM_TRACE_FILES=$(ls -rt $DIR | grep .itf.json | tail -n+1 | wc -l | xargs)
 echo $NUM_TRACE_FILES

@@ -15,7 +15,9 @@ def extract_tla_module_name(tla_file_content: str):
     return match.group("moduleName")
 
 
-def write_trace_files_to(apalache_result: Dict, traces_dir: str) -> List[str]:
+def write_trace_files_to(
+    apalache_result: Dict, traces_dir: str, simulate: bool = False
+) -> List[str]:
     # create directory if it does not exist
     Path(traces_dir).mkdir(parents=True, exist_ok=True)
 
@@ -24,6 +26,10 @@ def write_trace_files_to(apalache_result: Dict, traces_dir: str) -> List[str]:
         f for f in apalache_result["files"].keys() if itfs_filenames_pattern.search(f)
     ]
     itfs_filenames.sort()
+    if simulate is True and len(itfs_filenames) > 0:
+        # had to add [1:] because apalache simulate produces one extra trace (and I suspect
+        # that example0.itf.json and example1.itf.json are the same)
+        itfs_filenames = itfs_filenames[1:]
 
     trace_paths = []
     for filename in itfs_filenames:
@@ -40,12 +46,12 @@ def write_trace_files_to(apalache_result: Dict, traces_dir: str) -> List[str]:
     return trace_paths
 
 
-def extract_simulations(files: Dict[str, str], num_simulations: int = 1):
+def extract_simulations(trace_paths: List[str]):
     itf_tests = []
-    for i in range(num_simulations):
-        file_name = "example" + str(i) + ".itf.json"
-        test_content = json.loads(files[file_name])["states"]
-        itf_tests.append(test_content)
+    for path in trace_paths:
+        with open(path) as simulation_content:
+            simulation_json = json.load(simulation_content)["states"]
+            itf_tests.append(simulation_json)
 
     return itf_tests
 
