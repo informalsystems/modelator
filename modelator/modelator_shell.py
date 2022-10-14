@@ -12,3 +12,5 @@ from modelator import const_values
 from modelator.Model import Model
 
 const_values.SHELL_ACTIVE = True
+
+__all__ = ["Model"]

@@ -1,8 +1,6 @@
 import logging
 import os
-import threading
-from copy import copy
-from typing import Any, Dict, List, Optional, Union, final
+from typing import Any, Dict, List, Optional, Union
 
 from typing_extensions import Self
 from watchdog.events import FileSystemEventHandler
@@ -11,7 +9,7 @@ from watchdog.observers import Observer
 from modelator import ModelResult, const_values
 from modelator.Model import Model
 from modelator.utils import tla_helpers
-from modelator.utils.model_exceptions import ModelError, ModelParsingError
+from modelator.utils.model_exceptions import ModelError
 
 
 class ModelShell(Model):

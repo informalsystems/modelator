@@ -93,7 +93,7 @@ def load(
         try:
             config = load_config_file(config_path)
         except FileNotFoundError:
-            print(f"ERROR: config file not found")
+            print("ERROR: config file not found")
             raise typer.Exit(code=4)
 
     ModelFile.save(model, config, config_path)
@@ -120,7 +120,7 @@ def reload():
         try:
             config = load_config_file(config_path)
         except FileNotFoundError:
-            print(f"ERROR: config file not found")
+            print("ERROR: config file not found")
             raise typer.Exit(code=4)
 
     ModelFile.save(model, config, config_path)
@@ -327,7 +327,7 @@ def _load_config_and_merge_arguments(
     try:
         config = load_config_file(config_path)
     except FileNotFoundError:
-        print(f"ERROR: config file not found")
+        print("ERROR: config file not found")
         raise typer.Exit(code=4)
 
     # Overwrite configuration with passed arguments
@@ -501,7 +501,7 @@ def reset():
     Removes any loaded model.
     """
     if ModelFile.clean():
-        print(f"Model file removed")
+        print("Model file removed")
 
 
 @app.command()
@@ -525,7 +525,7 @@ app.add_typer(app_apalache, name="apalache")
 @app_apalache.command()
 def info(
     version: Optional[str] = typer.Argument(
-        const_values.DEFAULT_APALACHE_VERSION, help=f"Apalache's version."
+        const_values.DEFAULT_APALACHE_VERSION, help="Apalache's version."
     ),
 ):
     """
@@ -541,13 +541,13 @@ def info(
         existing_version = apalache_jar.apalache_jar_version(jar_path)
         print(f"Apalache JAR file exists and its version is {existing_version}")
     else:
-        print(f"Apalache JAR file not found")
+        print("Apalache JAR file not found")
 
 
 @app_apalache.command()
 def get(
     version: Optional[str] = typer.Argument(
-        const_values.DEFAULT_APALACHE_VERSION, help=f"Apalache's version."
+        const_values.DEFAULT_APALACHE_VERSION, help="Apalache's version."
     ),
 ):
     """

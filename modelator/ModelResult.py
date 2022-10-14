@@ -108,10 +108,10 @@ class ModelResult:
         s = StringIO()
 
         if self.parsing_error:
-            s.write(f"Parsing error 💥\n")
+            s.write("Parsing error 💥\n")
             s.write(f"{indent}{self.parsing_error}\n")
         elif self.typing_error:
-            s.write(f"Type checking error 💥\n")
+            s.write("Type checking error 💥\n")
             s.write(f"{indent}{self.typing_error}\n")
         else:
             for op in self.inprogress():

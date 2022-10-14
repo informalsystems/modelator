@@ -69,7 +69,7 @@ def check_apalache(
     do_typecheck: bool = True,
     traces_dir: Optional[str] = None,
 ) -> CheckResult:
-    check_logger.debug(f"# check_apalache")
+    check_logger.debug("# check_apalache")
     check_logger.debug(f"- tla_file_name: {tla_file_name}")
     check_logger.debug(f"- files: {list(files.keys())}")
     check_logger.debug(f"- args: {args}")
@@ -126,7 +126,7 @@ def check_apalache(
         inv_violated, counterexample = apalache_helpers.extract_counterexample(
             result["files"]
         )
-    except:
+    except Exception:
         check_logger.error(
             f"Could not extract counterexample from Apalache output: {result['stdout']}"
         )
