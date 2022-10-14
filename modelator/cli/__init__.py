@@ -347,7 +347,7 @@ def _load_config_and_merge_arguments(
     # Update model-cheker arguments. Note that `extra_args` may contain any
     # field name, even some not supported in the toml configuration file.
     if extra_args:
-        config["params"] = { **config["params"], **extra_args}
+        config["params"] = {**config["params"], **extra_args}
         config_from_arguments["params"] = extra_args
 
     return config, config_from_arguments
