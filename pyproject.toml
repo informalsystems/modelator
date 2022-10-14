@@ -71,3 +71,6 @@ upload_to_PyPI = true
 upload_to_release = false
 upload_to_repository = false
 build_command = "poetry build"
+
+[tool.isort]
+profile = "black"
