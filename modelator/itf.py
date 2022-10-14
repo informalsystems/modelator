@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Tuple, Union
 
 import deepdiff
 import tabulate
+from modelator.utils.helpers import remove_prefix
 
 
 @dataclass
@@ -319,11 +320,11 @@ class ITF:
             for (root_key, li) in e_step_dict.items():
                 if diff:
                     st += "<details open>\n\n"
-                    st += f"<summary><code>{root_key.removeprefix('.')}</code></summary>\n\n"
+                    st += f"<summary><code>{remove_prefix(root_key, '.')}</code></summary>\n\n"
                     st += "\n|KeyPath|Old|New|\n"
                     st += "|-|-|-|\n"
                     for (k, u, v) in li:
-                        st += f"|`{md_sanitize(k.removeprefix('.'))}`"
+                        st += f"|`{md_sanitize(remove_prefix(k,'.'))}`"
                         st += f"|`{md_sanitize(str(u))}`"
                         st += f"|`{md_sanitize(str(v))}`"
                         st += "|\n"
@@ -332,7 +333,7 @@ class ITF:
                     st += "\n|KeyPath|Value|\n"
                     st += "|-|-|\n"
                     for (k, _, v) in li:
-                        st += f"|`{md_sanitize(k.removeprefix('.'))}`"
+                        st += f"|`{md_sanitize(remove_prefix(k, '.'))}`"
                         st += f"|`{md_sanitize(str(v))}`"
                         st += "|\n"
                     st += "\n"
