@@ -164,12 +164,9 @@ class ITFObject:
         self.object = data
 
     def pretty(self) -> str:
-        match self.object:
-            case str():
-                result = f'"{self.object}"'
-            case _:
-                result = f"{self.object}"
-        return result
+        if isinstance(self.object, str):
+            return f'"{self.object}"'
+        return f"{self.object}"
 
     def __repr__(self):
         return self.pretty()
@@ -189,22 +186,20 @@ class ITF:
     def parse(
         data,
     ) -> ITFRecord | ITFFunction | ITFSequence | ITFSet | ITFTuple | ITFBigint | ITFObject:
-        match data:
-            case dict():
-                if "#map" in data:
-                    return ITFFunction(data["#map"])
-                if "#set" in data:
-                    return ITFSet(data["#set"])
-                if "#tup" in data:
-                    return ITFTuple(data["#tup"])
-                if "#bigint" in data:
-                    return ITFBigint(data["#bigint"])
-                data = {k: v for (k, v) in data.items() if not k.startswith("#")}
-                return ITFRecord(data)
-            case list():
-                return ITFSequence(data)
-            case _:
-                return ITFObject(data)
+        if isinstance(data, dict):
+            if "#map" in data:
+                return ITFFunction(data["#map"])
+            if "#set" in data:
+                return ITFSet(data["#set"])
+            if "#tup" in data:
+                return ITFTuple(data["#tup"])
+            if "#bigint" in data:
+                return ITFBigint(data["#bigint"])
+            data = {k: v for (k, v) in data.items() if not k.startswith("#")}
+            return ITFRecord(data)
+        if isinstance(data, list):
+            return ITFSequence(data)
+        return ITFObject(data)
 
     @staticmethod
     def from_itf_json(path) -> List["ITF"]:
@@ -217,23 +212,22 @@ class ITF:
         def format_path(path):
             if len(path) == 0:
                 return ""
-            match path[0]:
-                case "record":
-                    st = f".{path[1]}" + format_path(path[2:])
-                case "function":
-                    st = f"({path[1]})" + format_path(path[3:])
-                case "set":
-                    st = "{}" + format_path(path[2:])
-                case "sequence":
-                    st = f"[{path[1]}]" + format_path(path[2:])
-                case "tuple":
-                    st = f"[{path[1]}]" + format_path(path[2:])
-                case "bigint":
-                    st = format_path(path[1:])
-                case "object":
-                    st = format_path(path[1:])
-                case _:
-                    raise RuntimeError(f"{path} : no match")
+            if path[0] == "record":
+                st = f".{path[1]}" + format_path(path[2:])
+            elif path[0] == "function":
+                st = f"({path[1]})" + format_path(path[3:])
+            elif path[0] == "set":
+                st = "{}" + format_path(path[2:])
+            elif path[0] == "sequence":
+                st = f"[{path[1]}]" + format_path(path[2:])
+            elif path[0] == "tuple":
+                st = f"[{path[1]}]" + format_path(path[2:])
+            elif path[0] == "bigint":
+                st = format_path(path[1:])
+            elif path[0] == "object":
+                st = format_path(path[1:])
+            else:
+                raise RuntimeError(f"{path} : no match")
             return st
 
         trace_diff = []
@@ -258,23 +252,22 @@ class ITF:
         def format_path(path: List[str]) -> List[str]:
             if len(path) == 0:
                 return []
-            match path[0]:
-                case "record":
-                    st = [f".{path[1]}"] + format_path(path[2:])
-                case "function":
-                    st = [f"({path[1]})"] + format_path(path[3:])
-                case "set":
-                    st = ["{}"] + format_path(path[2:])
-                case "sequence":
-                    st = [f"[{path[1]}]"] + format_path(path[2:])
-                case "tuple":
-                    st = [f"[{path[1]}]"] + format_path(path[2:])
-                case "bigint":
-                    st = format_path(path[1:])
-                case "object":
-                    st = format_path(path[1:])
-                case _:
-                    raise RuntimeError(f"{path} : no match")
+            if path[0] == "record":
+                st = [f".{path[1]}"] + format_path(path[2:])
+            elif path[0] == "function":
+                st = [f"({path[1]})"] + format_path(path[3:])
+            elif path[0] == "set":
+                st = ["{}"] + format_path(path[2:])
+            elif path[0] == "sequence":
+                st = [f"[{path[1]}]"] + format_path(path[2:])
+            elif path[0] == "tuple":
+                st = [f"[{path[1]}]"] + format_path(path[2:])
+            elif path[0] == "bigint":
+                st = format_path(path[1:])
+            elif path[0] == "object":
+                st = format_path(path[1:])
+            else:
+                raise RuntimeError(f"{path} : no match")
             return st
 
         trace_diff = []
