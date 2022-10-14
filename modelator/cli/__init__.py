@@ -522,8 +522,8 @@ app_apalache = typer.Typer(
 app.add_typer(app_apalache, name="apalache")
 
 
-@app_apalache.command()
-def info(
+@app_apalache.command(name="info")
+def apalache_info(
     version: Optional[str] = typer.Argument(
         const_values.DEFAULT_APALACHE_VERSION, help="Apalache's version."
     ),
