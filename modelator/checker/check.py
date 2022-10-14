@@ -4,13 +4,10 @@ from modelator_py.apalache.pure import apalache_pure
 from modelator_py.tlc.pure import tlc_pure
 from modelator_py.util.tlc import tlc_itf
 
+from modelator import const_values
 from modelator.checker.CheckResult import CheckResult
 from modelator.const_values import APALACHE_STDOUT
-from modelator import const_values
-from modelator.utils import (
-    apalache_helpers,
-    tlc_helpers,
-)
+from modelator.utils import apalache_helpers, tlc_helpers
 from modelator.utils.modelator_helpers import (
     create_logger,
     extract_line_with,

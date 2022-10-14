@@ -1,12 +1,12 @@
 import os
-from pathlib import Path
 import time
+from pathlib import Path
 from timeit import default_timer as timer
-import typer
 from typing import Dict, List, Optional
 
-from modelator import __version__
-from modelator import ModelResult, const_values
+import typer
+
+from modelator import ModelResult, __version__, const_values
 from modelator.cli.model_config_file import load_config_file
 from modelator.cli.model_file import ModelFile
 from modelator.itf import ITF

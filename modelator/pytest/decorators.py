@@ -20,9 +20,7 @@ from modelator.Model import Model
 def sanitize_itf(obj):
     if isinstance(obj, dict):
         if "#map" in obj:
-            return {
-                freeze(sanitize_itf(k)): sanitize_itf(v) for (k, v) in obj["#map"]
-            }
+            return {freeze(sanitize_itf(k)): sanitize_itf(v) for (k, v) in obj["#map"]}
         if "#set" in obj:
             return {freeze(sanitize_itf(e)) for e in obj["#set"]}
         if "#bigint" in obj:

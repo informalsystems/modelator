@@ -2,20 +2,16 @@ from typing import Dict, Optional
 
 from modelator_py.apalache.pure import apalache_pure
 
+from modelator import const_values
 from modelator.checker.CheckResult import CheckResult
 from modelator.const_values import APALACHE_STDOUT
-from modelator import const_values
 from modelator.utils import apalache_helpers
-from modelator.utils.modelator_helpers import (
-    create_logger,
-    wrap_command,
-)
+from modelator.utils.modelator_helpers import create_logger, wrap_command
 
 from ..itf import ITF
 from ..parse import parse
 from ..typecheck import typecheck
 from ..utils.ErrorMessage import ErrorMessage
-
 
 simulate_logger = create_logger(logger_name=__file__, loglevel="error")
 

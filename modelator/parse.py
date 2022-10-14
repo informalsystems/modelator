@@ -2,6 +2,7 @@ import os
 from typing import Dict
 
 from modelator_py.apalache.pure import apalache_pure
+
 from modelator.utils.apalache_helpers import extract_parse_error
 from modelator.utils.model_exceptions import ModelParsingError
 from modelator.utils.modelator_helpers import wrap_command
