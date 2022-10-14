@@ -27,7 +27,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.8"
 deepdiff = "^5.8.1"
 tabulate = "^0.8.9"
 modelator-py = "^0.2.2"
