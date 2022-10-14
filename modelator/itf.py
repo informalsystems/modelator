@@ -1,7 +1,7 @@
 import json
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
 import deepdiff
 import tabulate
@@ -177,7 +177,9 @@ class ITFObject:
 
 @dataclass
 class ITF:
-    itf: ITFRecord | ITFFunction | ITFSequence | ITFSet | ITFTuple | ITFBigint | ITFObject
+    itf: Union[
+        ITFRecord, ITFFunction, ITFSequence, ITFSet, ITFTuple, ITFBigint, ITFObject
+    ]
 
     def __init__(self, data):
         self.itf = ITF.parse(data)
@@ -185,7 +187,9 @@ class ITF:
     @staticmethod
     def parse(
         data,
-    ) -> ITFRecord | ITFFunction | ITFSequence | ITFSet | ITFTuple | ITFBigint | ITFObject:
+    ) -> Union[
+        ITFRecord, ITFFunction, ITFSequence, ITFSet, ITFTuple, ITFBigint, ITFObject
+    ]:
         if isinstance(data, dict):
             if "#map" in data:
                 return ITFFunction(data["#map"])

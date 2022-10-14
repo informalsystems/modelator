@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 import pytest
 
@@ -7,7 +8,7 @@ from modelator.pytest.decorators import mbt, step
 
 @dataclass
 class Number:
-    val: int | None
+    val: Optional[int]
 
 
 @pytest.fixture
