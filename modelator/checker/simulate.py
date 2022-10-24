@@ -2,20 +2,13 @@ from typing import Dict, Optional
 
 from modelator_py.apalache.pure import apalache_pure
 
-from modelator.checker.CheckResult import CheckResult
-from modelator.const_values import APALACHE_STDOUT
 from modelator import const_values
 from modelator.utils import apalache_helpers
-from modelator.utils.modelator_helpers import (
-    create_logger,
-    wrap_command,
-)
+from modelator.utils.modelator_helpers import create_logger, wrap_command
 
 from ..itf import ITF
 from ..parse import parse
 from ..typecheck import typecheck
-from ..utils.ErrorMessage import ErrorMessage
-
 
 simulate_logger = create_logger(logger_name=__file__, loglevel="error")
 
@@ -29,7 +22,7 @@ def simulate_apalache(
     traces_dir: Optional[str] = None,
     cmd=const_values.SIMULATE_CMD,
 ):
-    simulate_logger.debug(f"# SIMULATE_apalache")
+    simulate_logger.debug("# SIMULATE_apalache")
     simulate_logger.debug(f"- tla_file_name: {tla_file_name}")
     simulate_logger.debug(f"- files: {list(files.keys())}")
     simulate_logger.debug(f"- args: {args}")

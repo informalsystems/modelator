@@ -1,10 +1,12 @@
 import json
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
 import deepdiff
 import tabulate
+
+from modelator.utils.helpers import remove_prefix
 
 
 @dataclass
@@ -164,12 +166,9 @@ class ITFObject:
         self.object = data
 
     def pretty(self) -> str:
-        match self.object:
-            case str():
-                result = f'"{self.object}"'
-            case _:
-                result = f"{self.object}"
-        return result
+        if isinstance(self.object, str):
+            return f'"{self.object}"'
+        return f"{self.object}"
 
     def __repr__(self):
         return self.pretty()
@@ -180,7 +179,9 @@ class ITFObject:
 
 @dataclass
 class ITF:
-    itf: ITFRecord | ITFFunction | ITFSequence | ITFSet | ITFTuple | ITFBigint | ITFObject
+    itf: Union[
+        ITFRecord, ITFFunction, ITFSequence, ITFSet, ITFTuple, ITFBigint, ITFObject
+    ]
 
     def __init__(self, data):
         self.itf = ITF.parse(data)
@@ -188,23 +189,23 @@ class ITF:
     @staticmethod
     def parse(
         data,
-    ) -> ITFRecord | ITFFunction | ITFSequence | ITFSet | ITFTuple | ITFBigint | ITFObject:
-        match data:
-            case dict():
-                if "#map" in data:
-                    return ITFFunction(data["#map"])
-                if "#set" in data:
-                    return ITFSet(data["#set"])
-                if "#tup" in data:
-                    return ITFTuple(data["#tup"])
-                if "#bigint" in data:
-                    return ITFBigint(data["#bigint"])
-                data = {k: v for (k, v) in data.items() if not k.startswith("#")}
-                return ITFRecord(data)
-            case list():
-                return ITFSequence(data)
-            case _:
-                return ITFObject(data)
+    ) -> Union[
+        ITFRecord, ITFFunction, ITFSequence, ITFSet, ITFTuple, ITFBigint, ITFObject
+    ]:
+        if isinstance(data, dict):
+            if "#map" in data:
+                return ITFFunction(data["#map"])
+            if "#set" in data:
+                return ITFSet(data["#set"])
+            if "#tup" in data:
+                return ITFTuple(data["#tup"])
+            if "#bigint" in data:
+                return ITFBigint(data["#bigint"])
+            data = {k: v for (k, v) in data.items() if not k.startswith("#")}
+            return ITFRecord(data)
+        if isinstance(data, list):
+            return ITFSequence(data)
+        return ITFObject(data)
 
     @staticmethod
     def from_itf_json(path) -> List["ITF"]:
@@ -217,23 +218,22 @@ class ITF:
         def format_path(path):
             if len(path) == 0:
                 return ""
-            match path[0]:
-                case "record":
-                    st = f".{path[1]}" + format_path(path[2:])
-                case "function":
-                    st = f"({path[1]})" + format_path(path[3:])
-                case "set":
-                    st = "{}" + format_path(path[2:])
-                case "sequence":
-                    st = f"[{path[1]}]" + format_path(path[2:])
-                case "tuple":
-                    st = f"[{path[1]}]" + format_path(path[2:])
-                case "bigint":
-                    st = format_path(path[1:])
-                case "object":
-                    st = format_path(path[1:])
-                case _:
-                    raise RuntimeError(f"{path} : no match")
+            if path[0] == "record":
+                st = f".{path[1]}" + format_path(path[2:])
+            elif path[0] == "function":
+                st = f"({path[1]})" + format_path(path[3:])
+            elif path[0] == "set":
+                st = "{}" + format_path(path[2:])
+            elif path[0] == "sequence":
+                st = f"[{path[1]}]" + format_path(path[2:])
+            elif path[0] == "tuple":
+                st = f"[{path[1]}]" + format_path(path[2:])
+            elif path[0] == "bigint":
+                st = format_path(path[1:])
+            elif path[0] == "object":
+                st = format_path(path[1:])
+            else:
+                raise RuntimeError(f"{path} : no match")
             return st
 
         trace_diff = []
@@ -258,23 +258,22 @@ class ITF:
         def format_path(path: List[str]) -> List[str]:
             if len(path) == 0:
                 return []
-            match path[0]:
-                case "record":
-                    st = [f".{path[1]}"] + format_path(path[2:])
-                case "function":
-                    st = [f"({path[1]})"] + format_path(path[3:])
-                case "set":
-                    st = ["{}"] + format_path(path[2:])
-                case "sequence":
-                    st = [f"[{path[1]}]"] + format_path(path[2:])
-                case "tuple":
-                    st = [f"[{path[1]}]"] + format_path(path[2:])
-                case "bigint":
-                    st = format_path(path[1:])
-                case "object":
-                    st = format_path(path[1:])
-                case _:
-                    raise RuntimeError(f"{path} : no match")
+            if path[0] == "record":
+                st = [f".{path[1]}"] + format_path(path[2:])
+            elif path[0] == "function":
+                st = [f"({path[1]})"] + format_path(path[3:])
+            elif path[0] == "set":
+                st = ["{}"] + format_path(path[2:])
+            elif path[0] == "sequence":
+                st = [f"[{path[1]}]"] + format_path(path[2:])
+            elif path[0] == "tuple":
+                st = [f"[{path[1]}]"] + format_path(path[2:])
+            elif path[0] == "bigint":
+                st = format_path(path[1:])
+            elif path[0] == "object":
+                st = format_path(path[1:])
+            else:
+                raise RuntimeError(f"{path} : no match")
             return st
 
         trace_diff = []
@@ -322,11 +321,11 @@ class ITF:
             for (root_key, li) in e_step_dict.items():
                 if diff:
                     st += "<details open>\n\n"
-                    st += f"<summary><code>{root_key.removeprefix('.')}</code></summary>\n\n"
+                    st += f"<summary><code>{remove_prefix(root_key, '.')}</code></summary>\n\n"
                     st += "\n|KeyPath|Old|New|\n"
                     st += "|-|-|-|\n"
                     for (k, u, v) in li:
-                        st += f"|`{md_sanitize(k.removeprefix('.'))}`"
+                        st += f"|`{md_sanitize(remove_prefix(k,'.'))}`"
                         st += f"|`{md_sanitize(str(u))}`"
                         st += f"|`{md_sanitize(str(v))}`"
                         st += "|\n"
@@ -335,7 +334,7 @@ class ITF:
                     st += "\n|KeyPath|Value|\n"
                     st += "|-|-|\n"
                     for (k, _, v) in li:
-                        st += f"|`{md_sanitize(k.removeprefix('.'))}`"
+                        st += f"|`{md_sanitize(remove_prefix(k, '.'))}`"
                         st += f"|`{md_sanitize(str(v))}`"
                         st += "|\n"
                     st += "\n"

@@ -1,7 +1,7 @@
 import logging
-from pathlib import Path
 import threading
 from copy import copy
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 from typing_extensions import Self
@@ -207,7 +207,7 @@ class Model:
                 if tla_helpers._default_invariant_criteria(str(op))
             ]
 
-        constants = self.constants | constants
+        constants = {**self.constants, **constants}
 
         mod_res = ModelResult(model=self, all_operators=invariants)
 
@@ -312,7 +312,7 @@ class Model:
                 if tla_helpers._default_example_criteria(str(op))
             ]
 
-        constants = self.constants | constants
+        constants = {**self.constants, **constants}
 
         mod_res = ModelResult(model=self, all_operators=examples)
 

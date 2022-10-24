@@ -54,7 +54,7 @@ def _set_default_values(config):
     """
     Set default values for missing keys in the configuration.
     """
-    config = {"Model": {}, "Constants": {}, "Config": {}, "Apalache": {}} | config
+    config = {"Model": {}, "Constants": {}, "Config": {}, "Apalache": {}, **config}
 
     config["Model"] = {
         "init": "Init",
@@ -62,16 +62,16 @@ def _set_default_values(config):
         "invariants": [],
         "examples": [],
         "config_file_path": None,
-    } | config["Model"]
+        **config["Model"],
+    }
 
     config["Config"] = {
         "traces_dir": None,
-    } | config["Config"]
+        **config["Config"],
+    }
 
-    default_apalache_params = dict(
-        [(p, None) for p in _supported_apalache_parameters()]
-    )
-    config["Apalache"] = default_apalache_params | config["Apalache"]
+    default_apalache_params = {p: None for p in _supported_apalache_parameters()}
+    config["Apalache"] = {**default_apalache_params, **config["Apalache"]}
 
     return config
 
@@ -80,13 +80,13 @@ def _flatten(config):
     """
     Flatten nested dictionaries.
     """
-    config = config | config["Model"]
+    config = {**config, **config["Model"]}
     del config["Model"]
 
     config["constants"] = config["Constants"]
     del config["Constants"]
 
-    config = config | config["Config"]
+    config = {**config, **config["Config"]}
     del config["Config"]
 
     return config

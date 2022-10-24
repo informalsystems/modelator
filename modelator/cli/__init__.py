@@ -1,12 +1,12 @@
 import os
-from pathlib import Path
 import time
+from pathlib import Path
 from timeit import default_timer as timer
-import typer
 from typing import Dict, List, Optional
 
-from modelator import __version__
-from modelator import ModelResult, const_values
+import typer
+
+from modelator import ModelResult, __version__, const_values
 from modelator.cli.model_config_file import load_config_file
 from modelator.cli.model_file import ModelFile
 from modelator.itf import ITF
@@ -93,7 +93,7 @@ def load(
         try:
             config = load_config_file(config_path)
         except FileNotFoundError:
-            print(f"ERROR: config file not found")
+            print("ERROR: config file not found")
             raise typer.Exit(code=4)
 
     ModelFile.save(model, config, config_path)
@@ -120,7 +120,7 @@ def reload():
         try:
             config = load_config_file(config_path)
         except FileNotFoundError:
-            print(f"ERROR: config file not found")
+            print("ERROR: config file not found")
             raise typer.Exit(code=4)
 
     ModelFile.save(model, config, config_path)
@@ -327,7 +327,7 @@ def _load_config_and_merge_arguments(
     try:
         config = load_config_file(config_path)
     except FileNotFoundError:
-        print(f"ERROR: config file not found")
+        print("ERROR: config file not found")
         raise typer.Exit(code=4)
 
     # Overwrite configuration with passed arguments
@@ -342,12 +342,12 @@ def _load_config_and_merge_arguments(
         config_from_arguments[properties_config_name] = properties
     if traces_dir:
         config_from_arguments["traces_dir"] = traces_dir
-    config |= config_from_arguments
+    config = {**config, **config_from_arguments}
 
     # Update model-cheker arguments. Note that `extra_args` may contain any
     # field name, even some not supported in the toml configuration file.
     if extra_args:
-        config["params"] |= extra_args
+        config["params"] = {**config["params"], **extra_args}
         config_from_arguments["params"] = extra_args
 
     return config, config_from_arguments
@@ -402,8 +402,8 @@ def _load_model_with_arguments(
     if not model:
         model, saved_config, _ = ModelFile.load(LOG_LEVEL)
         if saved_config:
-            config |= saved_config
-            config |= config_from_arguments
+            config = {**config, **saved_config}
+            config = {**config, **config_from_arguments}
 
     if not model:
         print(
@@ -501,7 +501,7 @@ def reset():
     Removes any loaded model.
     """
     if ModelFile.clean():
-        print(f"Model file removed")
+        print("Model file removed")
 
 
 @app.command()
@@ -522,10 +522,10 @@ app_apalache = typer.Typer(
 app.add_typer(app_apalache, name="apalache")
 
 
-@app_apalache.command()
-def info(
+@app_apalache.command(name="info")
+def apalache_info(
     version: Optional[str] = typer.Argument(
-        const_values.DEFAULT_APALACHE_VERSION, help=f"Apalache's version."
+        const_values.DEFAULT_APALACHE_VERSION, help="Apalache's version."
     ),
 ):
     """
@@ -541,13 +541,13 @@ def info(
         existing_version = apalache_jar.apalache_jar_version(jar_path)
         print(f"Apalache JAR file exists and its version is {existing_version}")
     else:
-        print(f"Apalache JAR file not found")
+        print("Apalache JAR file not found")
 
 
 @app_apalache.command()
 def get(
     version: Optional[str] = typer.Argument(
-        const_values.DEFAULT_APALACHE_VERSION, help=f"Apalache's version."
+        const_values.DEFAULT_APALACHE_VERSION, help="Apalache's version."
     ),
 ):
     """

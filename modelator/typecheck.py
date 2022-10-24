@@ -1,6 +1,8 @@
 import os
 from typing import Dict
+
 from modelator_py.apalache.pure import apalache_pure
+
 from modelator import const_values
 from modelator.utils.apalache_helpers import extract_typecheck_error
 from modelator.utils.model_exceptions import ModelTypecheckingError

@@ -1,8 +1,9 @@
+import logging
 import os
 import re
 from typing import Dict, Optional
+
 from .. import const_values
-import logging
 
 
 def create_logger(logger_name, loglevel):

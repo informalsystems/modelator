@@ -112,7 +112,7 @@ def extract_typecheck_error(parser_output: str):
         if reportActive is True:
             # find error reports which point to exact locations
             match_exact_loc = re.search(
-                "\[(?P<fileName>\w+\.tla):(?P<lineNumber>\d+):.+\]: (?P<info>.+) E@.+",
+                r"\[(?P<fileName>\w+\.tla):(?P<lineNumber>\d+):.+\]: (?P<info>.+) E@.+",
                 line,
             )
             if match_exact_loc is not None:

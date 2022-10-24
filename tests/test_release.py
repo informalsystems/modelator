@@ -1,5 +1,6 @@
-import modelator
 import subprocess
+
+import modelator
 
 
 def test_version():

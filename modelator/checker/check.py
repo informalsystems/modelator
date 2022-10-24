@@ -4,13 +4,10 @@ from modelator_py.apalache.pure import apalache_pure
 from modelator_py.tlc.pure import tlc_pure
 from modelator_py.util.tlc import tlc_itf
 
+from modelator import const_values
 from modelator.checker.CheckResult import CheckResult
 from modelator.const_values import APALACHE_STDOUT
-from modelator import const_values
-from modelator.utils import (
-    apalache_helpers,
-    tlc_helpers,
-)
+from modelator.utils import apalache_helpers, tlc_helpers
 from modelator.utils.modelator_helpers import (
     create_logger,
     extract_line_with,
@@ -72,7 +69,7 @@ def check_apalache(
     do_typecheck: bool = True,
     traces_dir: Optional[str] = None,
 ) -> CheckResult:
-    check_logger.debug(f"# check_apalache")
+    check_logger.debug("# check_apalache")
     check_logger.debug(f"- tla_file_name: {tla_file_name}")
     check_logger.debug(f"- files: {list(files.keys())}")
     check_logger.debug(f"- args: {args}")
@@ -129,7 +126,7 @@ def check_apalache(
         inv_violated, counterexample = apalache_helpers.extract_counterexample(
             result["files"]
         )
-    except:
+    except Exception:
         check_logger.error(
             f"Could not extract counterexample from Apalache output: {result['stdout']}"
         )

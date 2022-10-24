@@ -13,26 +13,22 @@ class Status(Enum):
     unknown = "unknown"
 
     def __str__(self):
-        match self:
-            case Status.success:
-                return "✅"
-            case Status.failure:
-                return "❌"
-            case Status.inprogress:
-                return "⏳"
-            case _:
-                return "❓"
+        if self == Status.success:
+            return "✅"
+        if self == Status.failure:
+            return "❌"
+        if self == Status.inprogress:
+            return "⏳"
+        return "❓"
 
     def html_color(self):
-        match self:
-            case Status.success:
-                return "green"
-            case Status.failure:
-                return "red"
-            case Status.inprogress:
-                return ""
-            case Status.unknown:
-                return "yellow"
+        if self == Status.success:
+            return "green"
+        if self == Status.failure:
+            return "red"
+        if self == Status.inprogress:
+            return ""
+        return "yellow"
 
 
 class MonitorEntry:

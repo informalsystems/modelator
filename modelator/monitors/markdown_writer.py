@@ -27,7 +27,7 @@ class MarkdownWriter:
 
     def _write_section(self, section):
         time_format = "%Y-%m-%d %H:%M:%S"
-        self.fd.write(f"---\n")
+        self.fd.write("---\n")
         self.fd.write(f"## {section.name}\n\n")
         self.fd.write(f"- Start time: {section.start_time.strftime(time_format)}\n")
         update_time = (

@@ -18,27 +18,24 @@ from modelator.Model import Model
 
 
 def sanitize_itf(obj):
-    match obj:
-        case dict():
-            if "#map" in obj:
-                return {
-                    freeze(sanitize_itf(k)): sanitize_itf(v) for (k, v) in obj["#map"]
-                }
-            if "#set" in obj:
-                return {freeze(sanitize_itf(e)) for e in obj["#set"]}
-            if "#bigint" in obj:
-                return int(obj["#bigint"])
-            if "#tup" in obj:
-                return [sanitize_itf(e) for e in obj["#tup"]]
-            return {
-                sanitize_itf(k): sanitize_itf(v)
-                for (k, v) in obj.items()
-                if not k.startswith("#")
-            }
-        case list():
-            return [sanitize_itf(e) for e in obj]
-        case _:
-            return obj
+    if isinstance(obj, dict):
+        if "#map" in obj:
+            return {freeze(sanitize_itf(k)): sanitize_itf(v) for (k, v) in obj["#map"]}
+        if "#set" in obj:
+            return {freeze(sanitize_itf(e)) for e in obj["#set"]}
+        if "#bigint" in obj:
+            return int(obj["#bigint"])
+        if "#tup" in obj:
+            return [sanitize_itf(e) for e in obj["#tup"]]
+        return {
+            sanitize_itf(k): sanitize_itf(v)
+            for (k, v) in obj.items()
+            if not k.startswith("#")
+        }
+    if isinstance(obj, list):
+        return [sanitize_itf(e) for e in obj]
+    else:
+        return obj
 
 
 def dict_get_keypath(data, property_path=None):
@@ -51,11 +48,10 @@ def dict_get_keypath(data, property_path=None):
     if property_path is not None:
         keys = property_path.split(".")
         for key in keys:
-            match data:
-                case dict():
-                    data = data[key]
-                case list():
-                    data = data[int(key)]
+            if isinstance(data, dict):
+                data = data[key]
+            elif isinstance(data, list):
+                data = data[int(key)]
     return data
 
 
