@@ -30,7 +30,7 @@ classifiers = [
 python = "^3.8"
 deepdiff = "^5.8.1"
 tabulate = "^0.8.9"
-modelator-py = { git = "https://github.com/informalsystems/modelator-py", branch = "rano/py3.8" }
+modelator-py = "^0.2.3"
 watchdog = "^2.1.8"
 typing-extensions = "^4.2.0"
 wget = "^3.2"
