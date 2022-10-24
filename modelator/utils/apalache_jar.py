@@ -5,6 +5,7 @@ import os
 import subprocess
 import zipfile
 from pathlib import Path
+from urllib.error import HTTPError
 from urllib.request import urlopen
 
 from .. import const_values
@@ -68,10 +69,25 @@ def apalache_jar_download(
     if sha256_checksum is None:
         try:
             sha256_checksum = const_values.APALACHE_SHA_CHECKSUMS[expected_version]
-        except KeyError:
-            raise ValueError(
-                "SHA Checksum is missing. Add it manually to `const_values.APALACHE_SHA_CHECKSUMS`"
-            )
+        except KeyError as k_err:
+            checksum_url = const_values.apalache_checksum_url(expected_version)
+            try:
+                with urlopen(checksum_url) as zip_response:
+                    for line in zip_response.readlines():
+                        if b"apalache.zip" in line:
+                            sha256_checksum, _ = line.decode().split()
+                    if sha256_checksum is None:
+                        raise ValueError(
+                            "SHA Checksum is missing from Apalache release. Check Apalache repository to debug."
+                        ) from k_err
+            except HTTPError as h_err:
+                if h_err.code == 404:
+                    raise ValueError(
+                        "SHA Checksum is missing. Add it manually to `const_values.APALACHE_SHA_CHECKSUMS`"
+                    ) from h_err
+                raise ValueError(
+                    f"Error while fetching the checksum: ({h_err.code}) {h_err.reason}"
+                ) from h_err
 
     release_url = const_values.apalache_release_url(expected_version)
 

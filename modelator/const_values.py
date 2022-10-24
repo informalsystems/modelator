@@ -39,6 +39,10 @@ def apalache_release_url(expected_version):
     return f"https://github.com/informalsystems/apalache/releases/download/v{expected_version}/apalache.zip"
 
 
+def apalache_checksum_url(expected_version: str):
+    return f"https://github.com/informalsystems/apalache/releases/download/v{expected_version}/sha256sum.txt"
+
+
 DEFAULT_TLC_JAR = "jars/tla2tools-v1.8.0.jar"
 
 PARSE = "parse"
