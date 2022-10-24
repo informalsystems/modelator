@@ -67,10 +67,9 @@ version_variable = ["modelator/_version.py:__version__"]
 version_toml = ["pyproject.toml:tool.poetry.version"]
 major_on_zero = true
 branch = "dev"
-upload_to_PyPI = true
-upload_to_release = false
-upload_to_repository = false
-build_command = "poetry build"
+upload_to_release = true
+upload_to_repository = true
+build_command = "pip install poetry && poetry build"
 
 [tool.isort]
 profile = "black"
