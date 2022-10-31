@@ -4,6 +4,7 @@ from pathlib import Path
 from timeit import default_timer as timer
 from typing import Dict, List, Optional
 
+import semver
 import typer
 
 from modelator import ModelResult, __version__, const_values
@@ -544,10 +545,20 @@ def apalache_info(
         print("Apalache JAR file not found")
 
 
+def version_callback(value: str):
+    try:
+        semver.parse(value)
+    except ValueError as e:
+        raise typer.BadParameter(str(e))
+    return value
+
+
 @app_apalache.command()
 def get(
     version: Optional[str] = typer.Argument(
-        const_values.DEFAULT_APALACHE_VERSION, help="Apalache's version."
+        const_values.DEFAULT_APALACHE_VERSION,
+        help="Apalache's version.",
+        callback=version_callback,
     ),
 ):
     """

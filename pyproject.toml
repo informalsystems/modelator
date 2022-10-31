@@ -40,6 +40,7 @@ typer = {extras = ["all"], version = "^0.6.1"}
 rich = "^12.5.1"
 pyrsistent = "^0.18.1"
 munch = "^2.5.0"
+semver = "^2.13.0"
 
 [tool.poetry.dev-dependencies]
 fire = "^0.4.0"
