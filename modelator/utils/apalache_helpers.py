@@ -27,9 +27,10 @@ def write_trace_files_to(
     ]
     itfs_filenames.sort()
     if simulate is True and len(itfs_filenames) > 0:
-        # had to add [1:] because apalache simulate produces one extra trace (and I suspect
-        # that example0.itf.json and example1.itf.json are the same)
-        itfs_filenames = itfs_filenames[1:]
+        # have to filter out the "example0.itf.json" because in the simulation mode and older versions
+        # of Apalache (e.g., current Modelator's default, 0.25.10), an additional examples under the name
+        # "example0.itf.json" is generated.
+        itfs_filenames = [f for f in itfs_filenames if not f == "example0.itf.json"]
 
     trace_paths = []
     for filename in itfs_filenames:
