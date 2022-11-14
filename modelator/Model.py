@@ -255,8 +255,8 @@ class Model:
         self,
         # have to keep this unused argument around bcs simulate is one of the
         # handlers (parallel to check and sample), where other handlers expect
-        # invariants/examples here
-        examples: Optional[List[str]] = None,
+        # invariants/tests here
+        tests: Optional[List[str]] = None,
         constants=None,
         checker: str = const_values.APALACHE,
         checker_params: Dict[str, str] = {},
@@ -282,10 +282,8 @@ class Model:
             cmd=const_values.SIMULATE_CMD,
         )
 
-        # had to add [1:] because apalache simulate produces one extra trace (and I suspect
-        # that example0.itf.json and example1.itf.json are the same)
-        mod_res._simulation_traces = simulation_traces[1:]
-        mod_res._simulation_traces_paths = paths[1:]
+        mod_res._simulation_traces = simulation_traces
+        mod_res._simulation_traces_paths = paths
 
         for monitor in self.monitors:
             monitor.on_simulate_finish(res=mod_res)
@@ -294,7 +292,7 @@ class Model:
 
     def sample(
         self,
-        examples: Optional[List[str]] = None,
+        tests: Optional[List[str]] = None,
         constants: Dict[str, Any] = {},
         checker: str = const_values.APALACHE,
         checker_params: Dict[str, str] = {},
@@ -304,9 +302,9 @@ class Model:
         if not self.parsed_ok:
             raise self.last_parsing_error
 
-        if examples is None:
+        if tests is None:
             # take all operators that are prefixed/suffixed with Ex
-            examples = [
+            tests = [
                 str(op)
                 for op in self.operators
                 if tla_helpers._default_example_criteria(str(op))
@@ -314,13 +312,13 @@ class Model:
 
         constants = {**self.constants, **constants}
 
-        mod_res = ModelResult(model=self, all_operators=examples)
+        mod_res = ModelResult(model=self, all_operators=tests)
 
         for monitor in self.monitors:
             monitor.on_sample_start(res=mod_res)
 
         threads = []
-        for example_predicate in examples:
+        for example_predicate in tests:
             (
                 negated_name,
                 negated_content,

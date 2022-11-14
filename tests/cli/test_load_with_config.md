@@ -34,11 +34,11 @@ Model:
 Config at model/Test1.config.toml:
 - config_file_path: None
 - constants: {}
-- examples: []
 - init: Init
 - invariants: ['Inv']
 - next: Next
 - params: {'cinit': None, 'config': None, 'length': 5, 'max_error': None, 'no_deadlock': True, 'view': None}
+- tests: []
 - traces_dir: traces/Test1
 ```
 
