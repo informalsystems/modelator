@@ -29,10 +29,10 @@ def simulate_apalache(
     simulate_logger.debug(f"- traces_dir: {traces_dir}")
 
     if do_parse is True:
-        parse(tla_file_name, files)
+        parse(tla_file_name, files, args)
 
     if do_typecheck is True:
-        typecheck(tla_file_name, files)
+        typecheck(tla_file_name, files, args)
 
     json_command = wrap_command(
         cmd=cmd,

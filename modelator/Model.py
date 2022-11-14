@@ -41,12 +41,12 @@ class Model:
 
         return m
 
-    def parse(self):
+    def parse(self, args: Dict[str, str]):
 
         for monitor in self.monitors:
             monitor.on_parse_start(res=ModelResult(model=self))
         try:
-            parse(self.tla_file_path, self.files_contents)
+            parse(self.tla_file_path, self.files_contents, args)
             self.parsed_ok = True
         except ModelParsingError as e:
             self.parsed_ok = False
@@ -69,12 +69,12 @@ class Model:
             for monitor in self.monitors:
                 monitor.on_parse_finish(res=ModelResult(self, parsing_error=None))
 
-    def typecheck(self):
+    def typecheck(self, args: Dict[str, str]):
         if not self.parsed_ok:
             raise self.last_parsing_error
 
         # will raise ModelTypecheckingError if types do not match
-        typecheck(self.tla_file_path, self.files_contents)
+        typecheck(self.tla_file_path, self.files_contents, args)
 
     def instantiate(self, constants: Dict):
         self.constants = constants

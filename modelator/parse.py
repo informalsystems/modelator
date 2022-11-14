@@ -8,13 +8,13 @@ from modelator.utils.model_exceptions import ModelParsingError
 from modelator.utils.modelator_helpers import wrap_command
 
 
-def parse(tla_file_name: str, files: Dict[str, str]):
+def parse(tla_file_name: str, files: Dict[str, str], args: Dict[str, str]):
     """
     Call Apalache's parser. Return nothing if ok, otherwise raise a
     ModelParsingError.
     """
 
-    json_command = wrap_command("parse", tla_file_name, files)
+    json_command = wrap_command("parse", tla_file_name, files, args=args)
     result = apalache_pure(json=json_command)
 
     if result["return_code"] != 0:
