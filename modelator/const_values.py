@@ -6,7 +6,7 @@ import appdirs
 APALACHE = "apalache"
 TLC = "tlc"
 
-DEFAULT_APALACHE_VERSION = "0.25.10"
+DEFAULT_APALACHE_VERSION = "0.30.1"
 DEFAULT_CHECKERS_LOCATION = os.path.join(appdirs.user_data_dir(__package__), "checkers")
 DEFAULT_APALACHE_LOCATION = os.path.join(DEFAULT_CHECKERS_LOCATION, "apalache")
 
