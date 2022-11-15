@@ -30,9 +30,7 @@ Check that the number and length of the generated trace files are as expected:
 
 ```sh
 $ ./traces_num_generated.sh Inv
-1
-$ ./traces_last_generated.sh Inv | xargs -I {} ./traces_length.sh {}
-10
+[1]
 ```
 
 Running `check` trying to prove a property that is not an invariant should fail:
@@ -85,9 +83,7 @@ Check that the number and length of the generated trace files are as expected:
 
 ```sh
 $ ./traces_num_generated.sh Inv
-1
-$ ./traces_last_generated.sh Inv | xargs -I {} ./traces_length.sh {}
-10
+[1]
 $ ./traces_num_generated.sh InvB
 1
 $ ./traces_last_generated.sh InvB | xargs -I {} ./traces_length.sh {}

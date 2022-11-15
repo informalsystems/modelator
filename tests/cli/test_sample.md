@@ -45,7 +45,7 @@ $ ./traces_last_generated.sh ThreeSteps | xargs -I {} ./traces_length.sh {}
 Running `sample` with a model and a property to sample should succeed and generate 3 trace files:
 
 ```sh
-$ modelator sample --model-path model/Test3.tla --tests ThreeSteps --max_error=3
+$ modelator sample --model-path model/Test3.tla --tests ThreeSteps --max_error=3 --view=ThreeSteps
 ...
 - ThreeSteps OK ✅
 ...
@@ -55,7 +55,7 @@ Check that the number and length of the generated trace files are as expected:
 
 ```sh
 $ ./traces_num_generated.sh ThreeSteps
-3
+1
 $ ./traces_last_generated.sh ThreeSteps | xargs -I {} ./traces_length.sh {}
 3
 ```
