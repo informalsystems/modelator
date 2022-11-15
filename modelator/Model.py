@@ -41,7 +41,9 @@ class Model:
 
         return m
 
-    def parse(self, args: Dict[str, str]):
+    def parse(self, args: Optional[Dict[str, str]] = None):
+        if args is None:
+            args = {}
 
         for monitor in self.monitors:
             monitor.on_parse_start(res=ModelResult(model=self))
@@ -69,7 +71,10 @@ class Model:
             for monitor in self.monitors:
                 monitor.on_parse_finish(res=ModelResult(self, parsing_error=None))
 
-    def typecheck(self, args: Dict[str, str]):
+    def typecheck(self, args: Optional[Dict[str, str]] = None):
+        if args is None:
+            args = {}
+
         if not self.parsed_ok:
             raise self.last_parsing_error
 
