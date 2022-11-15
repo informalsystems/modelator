@@ -209,7 +209,7 @@ def simulate(
         ctx.args,
     )
 
-    config["params"]["save_runs"] = True
+    config["params"]["output_traces"] = True
     config["params"]["length"] = length
     config["params"]["max_run"] = max_trace
 
