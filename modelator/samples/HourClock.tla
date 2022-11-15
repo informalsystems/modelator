@@ -2,7 +2,7 @@
 
 EXTENDS Naturals, Sequences
 VARIABLES
-  \* @typeAlias: STATE = [ hr: Int ];
+  \* @typeAlias: state = { hr: Int };
   \* @type: Int;
   hr
 Init == hr \in (1..12)
