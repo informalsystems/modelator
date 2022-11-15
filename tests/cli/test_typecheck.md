@@ -40,7 +40,7 @@ Type checking error 💥
 ```
 
 ```sh
-$ modelator sample --model-path model/errors/TestError2.tla --examples Inv
+$ modelator sample --model-path model/errors/TestError2.tla --tests Inv
 ...
 Type checking error 💥
 ...
