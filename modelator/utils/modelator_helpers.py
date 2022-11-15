@@ -75,7 +75,8 @@ def wrap_command(
             json_command["args"][arg] = args[arg]
 
     if cmd in [const_values.PARSE_CMD, const_values.TYPECHECK_CMD]:
-        json_command["args"].pop("config")
+        if "config" in json_command["args"]:
+            json_command["args"].pop("config")
 
     if checker == const_values.TLC:
         json_command["jar"] = os.path.abspath(const_values.DEFAULT_TLC_JAR)
