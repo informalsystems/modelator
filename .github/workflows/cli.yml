@@ -10,8 +10,6 @@ on:
       - tests/cli/*.sh
       - pyproject.toml
       - poetry.lock
-    branches:
-      - dev
 
 jobs:
   mdx:
