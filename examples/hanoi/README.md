@@ -1,4 +1,6 @@
-# HanoiTower in Modelator
+# Tower of Hanoi in Modelator
+
+[About Tower of Hanoi](https://en.wikipedia.org/wiki/Tower_of_Hanoi)
 
 ## Directory structure
 
