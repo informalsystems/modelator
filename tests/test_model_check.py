@@ -38,7 +38,6 @@ def _matching_check_value(
     trace_filenames = [os.path.basename(p) for p in check_result.trace_paths]
     if check_result.is_ok:
         assert len(check_result.trace_paths) == 0
-        # doesn't make sense
         assert all([f.startswith("example") for f in trace_filenames])
     else:
         assert len(check_result.trace_paths) == 1
