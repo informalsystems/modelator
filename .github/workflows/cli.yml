@@ -63,3 +63,7 @@ jobs:
           cd tests/cli
           eval $(opam env)
           ./run-tests.sh
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 15
