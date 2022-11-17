@@ -6,7 +6,7 @@ import appdirs
 APALACHE = "apalache"
 TLC = "tlc"
 
-DEFAULT_APALACHE_VERSION = "0.25.10"
+DEFAULT_APALACHE_VERSION = "0.30.1"
 DEFAULT_CHECKERS_LOCATION = os.path.join(appdirs.user_data_dir(__package__), "checkers")
 DEFAULT_APALACHE_LOCATION = os.path.join(DEFAULT_CHECKERS_LOCATION, "apalache")
 
@@ -53,6 +53,11 @@ PARSE_CMD = "parse"
 CHECK_CMD = "check"
 TYPECHECK_CMD = "typecheck"
 SIMULATE_CMD = "simulate"
+
+GLOBAL_ARGS = ["features", "out_dir"]
+
+PARSE_CMD_ARGS = ["output"]
+TYPECHECK_CMD_ARGS = ["infer_poly", "output"]
 
 DEFAULT_INVARIANTS = ["Inv"]
 DEFAULT_INIT = "Init"

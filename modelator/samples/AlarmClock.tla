@@ -3,7 +3,7 @@
 EXTENDS Naturals, Sequences
 
 VARIABLES
-  \* @typeAlias: STATE = [ hr: Int, alarmHr: Int, alarmOn: Bool ];
+  \* @typeAlias: state = { hr: Int, alarmHr: Int, alarmOn: Bool };
   \* @type: Int;
   hr,
   \* @type: Int;

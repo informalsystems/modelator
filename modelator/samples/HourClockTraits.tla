@@ -6,7 +6,7 @@ ExThreeHours == hr = 3
 
 ExHourDecrease == hr' < hr
 
-\* @type: Seq(STATE) => Bool;
+\* @type: Seq($state) => Bool;
 ExFullRun(trace) ==
     /\ Len(trace) = 12
     /\ \A s1, s2 \in DOMAIN trace:
@@ -19,7 +19,7 @@ InvNoUnderflow  == hr >= 1
 InvExThreeHours == ~ExThreeHours
 InvExHourDecrease == ~ExHourDecrease
 
-\* @type: Seq(STATE) => Bool;
+\* @type: Seq($state) => Bool;
 InvExFullRun(trace) == ~ExFullRun(trace)
 
 ==================================

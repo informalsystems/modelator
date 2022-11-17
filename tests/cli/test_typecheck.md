@@ -30,6 +30,36 @@ $ modelator reset
 ...
 ```
 
+## Run `typecheck` on the model with type old-style type annotations (prior to Apalache 0.29)
+
+```sh
+$ modelator load model/transferLegacy.tla
+...
+```
+
+First, run typecheck with no extra options.
+
+```
+$ modelator typecheck
+Type checking error 💥
+...
+[6]
+```
+
+Then, run typecheck but with an extra option to enable legacy types.
+
+```
+$ modelator typecheck --features=no-rows
+Type checking OK ✅
+```
+
+Clean the generated files after the test:
+
+```sh
+$ modelator reset
+...
+```
+
 ## Run `check` and `sample` on a model with incorrect type annotations
 
 ```sh
@@ -40,8 +70,15 @@ Type checking error 💥
 ```
 
 ```sh
-$ modelator sample --model-path model/errors/TestError2.tla --examples Inv
+$ modelator sample --model-path model/errors/TestError2.tla --tests Inv
 ...
 Type checking error 💥
+...
+```
+
+Clean the generated files after the test:
+
+```sh
+$ modelator reset
 ...
 ```

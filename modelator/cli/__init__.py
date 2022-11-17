@@ -43,7 +43,9 @@ def common(
     pass
 
 
-def _create_and_parse_model(model_path: str, init="Init", next="Next", constants={}):
+def _create_and_parse_model(
+    model_path: str, init="Init", next="Next", constants={}, *, args: Dict[str, str]
+):
     try:
         model = Model(model_path, init, next, constants=constants)
     except ValueError:
@@ -53,7 +55,7 @@ def _create_and_parse_model(model_path: str, init="Init", next="Next", constants
     model.files_contents = tla_helpers.get_auxiliary_tla_files(model_path)
 
     try:
-        model.parse()
+        model.parse(args=args)
     except ModelParsingError as e:
         print("Parsing error 💥")
         print(e)
@@ -62,8 +64,11 @@ def _create_and_parse_model(model_path: str, init="Init", next="Next", constants
     return model
 
 
-@app.command()
+@app.command(
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
+)
 def load(
+    ctx: typer.Context,
     path: str = typer.Argument(..., help="Path to a TLA+ model file."),
     config_path: Optional[str] = typer.Option(
         None,
@@ -86,7 +91,9 @@ def load(
         )
 
     print(f"Loading {path}... ")
-    model = _create_and_parse_model(path)
+    extra_args = [arg[2:] for arg in ctx.args if arg.startswith("--")]
+    extra_args = _parse_list_of_assignments(extra_args)
+    model = _create_and_parse_model(path, args=extra_args)
 
     config = None
     if config_path:
@@ -101,8 +108,12 @@ def load(
     print("Loading OK ✅")
 
 
-@app.command()
-def reload():
+@app.command(
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
+)
+def reload(
+    ctx: typer.Context,
+):
     """
     Reload model and configuration files, if any.
     """
@@ -114,7 +125,9 @@ def reload():
     model_path = model.tla_file_path
 
     print(f"Reloading {model_path}... ")
-    model = _create_and_parse_model(model_path)
+    extra_args = [arg[2:] for arg in ctx.args if arg.startswith("--")]
+    extra_args = _parse_list_of_assignments(extra_args)
+    model = _create_and_parse_model(model_path, args=extra_args)
 
     if config_path:
         print(f"Loading {config_path}... ")
@@ -128,8 +141,12 @@ def reload():
     print("Loading OK ✅")
 
 
-@app.command()
-def typecheck():
+@app.command(
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
+)
+def typecheck(
+    ctx: typer.Context,
+):
     """
     Type check the loaded model, if available.
     """
@@ -140,7 +157,10 @@ def typecheck():
         return
 
     try:
-        model.typecheck()
+        extra_args = [arg[2:] for arg in ctx.args if arg.startswith("--")]
+        extra_args = _parse_list_of_assignments(extra_args)
+
+        model.typecheck(extra_args)
         print("Type checking OK ✅")
     except ModelTypecheckingError as e:
         print("Type checking error 💥")
@@ -189,7 +209,7 @@ def simulate(
         ctx.args,
     )
 
-    config["params"]["save_runs"] = True
+    config["params"]["output_traces"] = True
     config["params"]["length"] = length
     config["params"]["max_run"] = max_trace
 
@@ -396,7 +416,11 @@ def _load_model_with_arguments(
     # Load a model from a given path...
     if model_path:
         model = _create_and_parse_model(
-            model_path, config["init"], config["next"], config["constants"]
+            model_path,
+            config["init"],
+            config["next"],
+            config["constants"],
+            args=config["params"],
         )
 
     # or load a model saved in a pickle file.

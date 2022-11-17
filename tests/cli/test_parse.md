@@ -23,7 +23,7 @@ Parsing error 💥
 ```
 
 ```sh
-$ modelator sample --model-path model/errors/TestError1.tla --examples Inv
+$ modelator sample --model-path model/errors/TestError1.tla --tests Inv
 ...
 Parsing error 💥
 ...

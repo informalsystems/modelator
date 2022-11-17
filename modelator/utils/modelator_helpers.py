@@ -44,9 +44,6 @@ def wrap_command(
     json_command = {}
     json_command["args"] = {}
 
-    if checker == const_values.APALACHE:
-        json_command["args"]["cmd"] = cmd
-
     # TODO: come up with a more systematic way of setting defaults when they would make more sense for an end user
     # (such as here, where Apalache default for nworkers is 1) --> maybe inside shell, at the very frontend?
 
@@ -59,11 +56,6 @@ def wrap_command(
         else:
             json_command["args"]["workers"] = "auto"
 
-    json_command["args"]["file"] = os.path.basename(tla_file_name)
-
-    # send only basenames of files to modelator-py
-    json_command["files"] = {os.path.basename(f): files[f] for f in files}
-
     if cmd == const_values.CHECK_CMD:
         tla_module_name = tla_file_name.split(".")[0]
         config_file_name = tla_module_name + ".cfg"
@@ -74,10 +66,38 @@ def wrap_command(
         for arg in args:
             json_command["args"][arg] = args[arg]
 
+    if cmd == const_values.PARSE_CMD:
+        not_accepted_args = [
+            a
+            for a in json_command["args"]
+            if a not in const_values.PARSE_CMD_ARGS
+            and a not in const_values.GLOBAL_ARGS
+        ]
+        for e in not_accepted_args:
+            json_command["args"].pop(e)
+
+    if cmd == const_values.TYPECHECK_CMD:
+        not_accepted_args = [
+            a
+            for a in json_command["args"]
+            if a not in const_values.TYPECHECK_CMD_ARGS
+            and a not in const_values.GLOBAL_ARGS
+        ]
+        for e in not_accepted_args:
+            json_command["args"].pop(e)
+
+    json_command["args"]["file"] = os.path.basename(tla_file_name)
+
+    # send only basenames of files to modelator-py
+    json_command["files"] = {os.path.basename(f): files[f] for f in files}
+
     if checker == const_values.TLC:
         json_command["jar"] = os.path.abspath(const_values.DEFAULT_TLC_JAR)
     else:
         json_command["jar"] = os.path.abspath(const_values.DEFAULT_APALACHE_JAR)
+
+    if checker == const_values.APALACHE:
+        json_command["args"]["cmd"] = cmd
 
     return json_command
 

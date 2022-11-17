@@ -9,12 +9,14 @@ from modelator.utils.model_exceptions import ModelTypecheckingError
 from modelator.utils.modelator_helpers import wrap_command
 
 
-def typecheck(tla_file_name: str, files: Dict[str, str]):
+def typecheck(tla_file_name: str, files: Dict[str, str], args: Dict[str, str]):
     """
     Call Apalache's typechecker. Return nothing if ok, otherwise raise a
     ModelParsingError.
     """
-    json_command = wrap_command(const_values.TYPECHECK_CMD, tla_file_name, files)
+    json_command = wrap_command(
+        const_values.TYPECHECK_CMD, tla_file_name, files, args=args
+    )
     result = apalache_pure(json=json_command)
 
     if result["return_code"] != 0:
