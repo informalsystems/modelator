@@ -67,21 +67,23 @@ def wrap_command(
             json_command["args"][arg] = args[arg]
 
     if cmd == const_values.PARSE_CMD:
-        for e in [
+        not_accepted_args = [
             a
             for a in json_command["args"]
             if a not in const_values.PARSE_CMD_ARGS
             and a not in const_values.GLOBAL_ARGS
-        ]:
+        ]
+        for e in not_accepted_args:
             json_command["args"].pop(e)
 
     if cmd == const_values.TYPECHECK_CMD:
-        for e in [
+        not_accepted_args = [
             a
             for a in json_command["args"]
             if a not in const_values.TYPECHECK_CMD_ARGS
             and a not in const_values.GLOBAL_ARGS
-        ]:
+        ]
+        for e in not_accepted_args:
             json_command["args"].pop(e)
 
     json_command["args"]["file"] = os.path.basename(tla_file_name)
