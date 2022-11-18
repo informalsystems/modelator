@@ -10,7 +10,11 @@ on:
 jobs:
   dependency-version-check:
     runs-on: "ubuntu-latest"
+    container: "archlinux"
     steps:
+      - name: Install dependencies
+        run: |
+          pacman -Syu --needed --noconfirm git yq
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Check for git version
