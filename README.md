@@ -1,7 +1,7 @@
 # Modelator
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/informalsystems/modelator?sort=semver&include_prereleases)](https://github.com/informalsystems/modelator/releases)
+[![Release](https://img.shields.io/pypi/v/modelator)](https://pypi.org/project/modelator)
 [![Build Status](https://github.com/informalsystems/modelator/actions/workflows/python.yml/badge.svg)](https://github.com/informalsystems/modelator/actions/workflows/python.yml)
 
 This repository contains the source code for `modelator` - a framework and tools for model-based testing.
