@@ -1,8 +1,5 @@
 # Modelator
 
-| ⚠️ We are working on a new and entirely reworked Modelator architecture for improved performance and interoperability. Therefore, the current version is not maintained. The reworked version will be released in Q3 2022. ⚠️ |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/informalsystems/modelator?sort=semver&include_prereleases)](https://github.com/informalsystems/modelator/releases)
 [![Build Status](https://github.com/informalsystems/modelator/actions/workflows/python.yml/badge.svg)](https://github.com/informalsystems/modelator/actions/workflows/python.yml)
