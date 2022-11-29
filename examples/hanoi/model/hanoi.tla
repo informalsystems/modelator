@@ -4,7 +4,7 @@ EXTENDS Apalache, Integers, Sequences, SequencesExt
 VARIABLES
     \* @type: Seq(Seq(Int));
     hanoi,
-    \* @type: [tag: Str, source: Int, target: Int];
+    \* @type: {tag: Str, source: Int, target: Int};
     action
 
 N_DISC == 3
@@ -17,7 +17,7 @@ INIT_TOWER ==
 
 Init ==
     /\ hanoi = << INIT_TOWER, <<>>, <<>> >>
-    /\ action = [tag |-> "init", n_disc |-> N_DISC]
+    /\ action = [tag |-> "init", source |-> 0, target |-> 0]
 
 
 \* @type: (Int, Int) => Bool;
