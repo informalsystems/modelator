@@ -4,6 +4,8 @@ from munch import Munch
 
 from modelator.pytest.decorators import itf, step
 
+N_DISC = 3
+
 
 # pytest.fixture allows a variable to be persistent through out the test.
 # we want the SUT state to persist during the test.
@@ -17,8 +19,8 @@ def sut():
 # this is done by annotating with `@step(TAG)`.
 @step("init")
 def init(sut, action):
-    print(f"N_DISC: {action.n_disc}")
-    sut.hanoi = HanoiTower(action.n_disc)
+    print(f"N_DISC: {N_DISC}")
+    sut.hanoi = HanoiTower(N_DISC)
 
 
 # note how `action`` variable is automatically available from ITF trace.
