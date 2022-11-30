@@ -28,7 +28,7 @@ For detailed installation instructions and clarifications of dependencies, check
 
 # Using Modelator
 
-For a full example of running Modelator together with the system implementation and the corresponding TLA+ model, see the [Towers of Hanoi example](https://github.com/informalsystems/modelator/tree/rano/tutorial/examples/hanoi).
+For a full example of running Modelator together with the system implementation and the corresponding TLA+ model, see the [Towers of Hanoi example](examples/hanoi).
 
 To see all commands of the Modelator CLI, run `modelator --help`.
 
