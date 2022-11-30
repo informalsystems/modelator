@@ -5,11 +5,11 @@
 [![Build Status](https://github.com/informalsystems/modelator/actions/workflows/python.yml/badge.svg)](https://github.com/informalsystems/modelator/actions/workflows/python.yml)
 
 Modelator is a tool that enables automatic generation of tests from models.
-Modelator takes [TLA+ models](https://mbt.informal.systems/docs/tla_basics_tutorials/tutorial.html) as its input and generates tests that can be run against an implementation of the model.
+Modelator takes [TLA+ models](https://mbt.informal.systems/docs/tla_basics_tutorials/tutorial.html) as its input and generates tests that can be executed against an implementation of the model.
 
-Under the hood, Modelator uses [Apalache](https://apalache.informal.systems/), our in-house model checker, to generate tests from models.
+Under the hood, Modelator uses [Apalache](https://apalache.informal.systems), our in-house model checker, to generate tests from models.
 
-Modelator is used by [Atomkraft](https://github.com/informalsystems/atomkraft), a testing framework for the [Cosmos blockchains network](https://cosmos.network/).
+Modelator is used by [Atomkraft](https://github.com/informalsystems/atomkraft), a testing framework for the [Cosmos blockchains network](https://cosmos.network).
 
 # Installing Modelator
 

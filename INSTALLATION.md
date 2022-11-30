@@ -8,7 +8,7 @@ To install and use Modelator, make sure your system has
 ## Python
 
 Installing Modelator requires [Python](https://www.python.org) 3.8 or newer, together with its package manager [pip](https://pip.pypa.io/en/stable/installation/).
-(They come pre-installed on Linux and MacOS.)
+(They usually come pre-installed on Linux and MacOS.)
 
 A good tool for managing different python versions is [pyenv](<(https://github.com/pyenv/pyenv)>).
 For example:
@@ -22,7 +22,7 @@ These two commands set the python version to 3.10.6. If you want to go back to y
 (For the Python version to be changed only in a current working directory, use the analogous `pyenv local...` command.)
 
 Once you have the correct version of Python, run `pip install modelator`.
-That's it! Please verify that the tool is working by writing `modelator` on the command line.
+That's it! Please verify that the tool works by executing `modelator` command on the terminal.
 You should see something like this:
 
 ![Modelator CLI](docs/images/modelator_cli.png)
