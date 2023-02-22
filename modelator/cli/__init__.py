@@ -413,13 +413,12 @@ def _load_model_with_arguments(
 
     model = None
 
-    if os.path.exists(model_path) == False:
-        raise RuntimeError(
-            f"Model file {model_path} does not exist"
-        )
-
     # Load a model from a given path...
     if model_path:
+        if not os.path.exists(model_path):
+            raise RuntimeError(
+                f"Model file does not exist: {model_path}"
+            )
         model = _create_and_parse_model(
             model_path,
             config["init"],
