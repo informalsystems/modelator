@@ -34,8 +34,10 @@ jobs:
           args: unclog
 
       - name: Parse release version
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
         run: |
-          echo "RELEASE_VERSION=`sed 's/^\[RELEASE\] v//g' <<< "${{ github.event.pull_request.title }}"`" >> $GITHUB_ENV
+          echo "RELEASE_VERSION=`sed 's/^\[RELEASE\] v//g' <<< "${TITLE}"`" >> $GITHUB_ENV
 
       - name: Tag and make a Github release
         run: ./scripts/github_release.sh
