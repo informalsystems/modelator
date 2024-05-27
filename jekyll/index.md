@@ -8,7 +8,7 @@ has_children: true
 
 # Model Based Testing
 Building a model of our software gives us a couple of elegant and efficient ways to increase confidence in its correctness.
-Modeling languages (such as [TLA+](https://lamport.azurewebsites.net/tla/tla.html) or [Quint](https://github.com/informalsystems/quint)) are supported by _model checkers_, which enable us to reason about the model's properties.
+Modeling languages (such as [TLA+](https://lamport.azurewebsites.net/tla/tla.html) and [Quint](https://github.com/informalsystems/quint)) are supported by _model checkers_, which enable us to reason about the model's properties.
 We can specify desired properties and verify that the model satisfies them, or we can generate a large number of tests directly from the model and run them against the implementation.
 
 A model can be written even before the development starts.
