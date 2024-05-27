@@ -14,18 +14,14 @@ We can specify desired properties and verify that the model satisfies them. We c
 A model can be written even before the development starts.
 This enables finding problems early on, in the development phase.
 
-Besides being a tool for finding difficult-to-spot problems, models serve as high-level, yet precise and executable specifications.
+Besides being a tool for finding difficult-to-spot problems, models serve as high-level yet precise and executable specifications.
 
 
 # Model Based Techniques @ Informal Systems
 
 At Informal Systems, we use model-based techniques both in our development practice and as a part of our security audit services.
-We develop and maintain the following tools that make model-based techniques easy to incorporate in the development and auditing practice:
+We develop and maintain the following tools that make model-based techniques easy to incorporate into the development and auditing practice:
  - [Quint](https://github.com/informalsystems/quint), a modern modeling language
  - [Apalache](https://apalache.informal.systems/), a symbolic model checker
  - [Modelator](https://github.com/informalsystems/modelator), a tool that enables automatic generation of tests from models
  - [cosmwasm-to-quint](https://github.com/informalsystems/cosmwasm-to-quint), a tool for generating Quint model stubs and accompanying tests directly from [CosmWasm](https://cosmwasm.com/) contracts
-
-
-
-
