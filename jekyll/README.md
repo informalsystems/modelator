@@ -1,4 +1,4 @@
-# Jekyll Website for Model Based Testing
+# Jekyll Website for Model Based Techniques
 
 The website is live at [https://mbt.informal.systems](https://mbt.informal.systems)
 
