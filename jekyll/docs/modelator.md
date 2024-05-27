@@ -2,7 +2,7 @@
 title: Modelator
 description: Tool to model based testing from Informal Systems
 layout: default
-parent: Model Based Testing
+parent: Model Based Techniques
 nav_order: 3
 ---
 

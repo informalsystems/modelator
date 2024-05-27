@@ -2,7 +2,7 @@
 title: Model extraction
 description: Extract abstract model from your implementation
 layout: default
-parent: Model Based Testing
+parent: Model Based Techniques
 nav_order: 2
 --- -->
 
