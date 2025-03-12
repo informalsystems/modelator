@@ -37,6 +37,3 @@ to incorporate into the development and auditing practice:
 We bring rigorous protocol design, formal verification, and a dedication to sustainability, empowering teams to create systems people can fully rely on.
 
 Our team is growing! Check out [our careers page](https://informal.systems/careers) to join our team of engineers, researchers, and security experts.
-
----
-*This documentation is maintained by [Informal Systems](https://informal.systems), a workers' cooperative specializing in protocol design, formal verification, and security audits.*
