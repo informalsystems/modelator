@@ -19,9 +19,6 @@ Besides being a tool for finding difficult-to-spot problems, models serve as hig
 
 # Model Based Techniques @ Informal Systems
 
-At Informal Systems, we use model-based techniques both in our development practice and as a part of our security audit services.
-We develop and maintain the following tools that make model-based techniques easy to incorporate into the development and auditing practice:
-
 At [Informal Systems](https://informal.systems), we use model-based techniques both in our development practice and as a part of our security audit services.
 As a premier partner in protocol design and cross-chain infrastructure, we develop and maintain the following tools that make model-based techniques easy
 to incorporate into the development and auditing practice:
@@ -37,6 +34,3 @@ to incorporate into the development and auditing practice:
 We bring rigorous protocol design, formal verification, and a dedication to sustainability, empowering teams to create systems people can fully rely on.
 
 Our team is growing! Check out [our careers page](https://informal.systems/careers) to join our team of engineers, researchers, and security experts.
-
----
-*This documentation is maintained by [Informal Systems](https://informal.systems), a workers' cooperative specializing in protocol design, formal verification, and security audits.*
